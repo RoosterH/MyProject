@@ -8,31 +8,54 @@ import Modal from '../../shared/components/UIElements/Modal';
 import './EventItem.css';
 
 const EventItem = props => {
-	const [showMap, setShowMap] = useState(false);
-
-	const openMapHandler = props => {
-		setShowMap(true);
+	const [showModal, setShowModal] = useState(false);
+	const openModalHandler = () => setShowModal(true);
+	const closeModalHandler = () => {
+		closeMapContainer();
+		setShowModal(false);
 	};
 
+	const [showMap, setShowMap] = useState(false);
+	const openMapHandler = () => {
+		openModalHandler();
+		setShowMap(true);
+	};
 	const closeMapHandler = () => setShowMap(false);
 
+	const [showCourse, setShowCourse] = useState(false);
+	const openCourseHandler = () => {
+		openModalHandler();
+		setShowCourse(true);
+	};
+	const closeCourseHandler = () => setShowCourse(false);
+
+	const closeMapContainer = () => {
+		showMap && closeMapHandler();
+		showCourse && closeCourseHandler();
+	};
 	return (
 		// React.Frgment connect multiple components
 		<React.Fragment>
 			{/* Render Modal */}
 			<Modal
-				show={showMap}
-				onCancel={closeMapHandler}
+				show={showModal}
+				onCancel={() => closeModalHandler()}
 				header={props.event.title}
 				contentClass="event-item__modal-content"
 				footerClass="event-item__modal-actions"
-				footer={<Button onClick={closeMapHandler}>CLOSE</Button>}>
+				footer={<Button onClick={() => closeModalHandler()}>CLOSE</Button>}>
 				{/* render props.children */}
 				<div className="map-container">
-					<img src={props.event.courseMap} className="map-container"></img>
-					{/*<Map center={props.event.coordinate} zoom={10} />*/}
+					{showCourse && (
+						<img
+							src={props.event.courseMap}
+							alt={props.event.alt}
+							className="map-container"></img>
+					)}
+					{showMap && <Map center={props.event.coordinate} zoom={10} />}
 				</div>
 			</Modal>
+
 			<Card className="event-item__content">
 				<div>
 					<h2>{props.event.title}</h2>
@@ -46,7 +69,7 @@ const EventItem = props => {
 					</h3>
 					<h3>{props.event.venue}</h3>
 					<h4>{props.event.address}</h4>
-					<Button inverse onClick={openMapHandler}>
+					<Button inverse onClick={() => openMapHandler()}>
 						Google Map
 					</Button>
 					<p>{props.event.description}</p>
@@ -56,7 +79,7 @@ const EventItem = props => {
 						title={props.event.title}
 						alt={props.event.title + 'course map'}
 						src={props.event.courseMap}
-						onClick={openMapHandler}></Image>
+						onClick={() => openCourseHandler()}></Image>
 				</div>
 				<div className="event-item__actions">
 					<Button to={`/events/${props.event.id}/form`}>ENTRY FORM</Button>
