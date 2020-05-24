@@ -3,15 +3,17 @@ import {
 	BrowserRouter as Router,
 	Route,
 	// Redirect,
-	Switch,
+	Switch
 } from 'react-router-dom';
 
 import Clubs from './clubs/pages/Clubs';
-import NewClub from './clubs/pages/NewClub';
 import Event from './event/pages/Event';
 import Events from './events/pages/Events';
 import MainNavigation from './shared/components/Navigation/MainNavigation';
+import NewClub from './clubs/pages/NewClub';
+import NewEvent from './event/pages/NewEvent';
 import Users from './users/pages/Users';
+import UpdateEvent from './event/pages/updateEvent';
 
 const App = () => {
 	return (
@@ -30,7 +32,13 @@ const App = () => {
 					<Route path="/Events/" exact>
 						<Events />
 					</Route>
-					<Route exact path="/Events/:id">
+					<Route path="/Events/New" exact>
+						<NewEvent />
+					</Route>
+					<Route path="/Events/Update/:eid " exact>
+						<UpdateEvent />
+					</Route>
+					<Route path="/Events/:eid" exact>
 						<Event />
 					</Route>
 				</Switch>

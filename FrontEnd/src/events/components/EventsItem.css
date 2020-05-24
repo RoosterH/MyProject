@@ -1,6 +1,6 @@
 .events-item {
 	margin: 1rem;
-	width: calc(45% - 2rem);
+	width: calc(99% - 2rem);
 	min-width: 17.5rem;
 }
 
@@ -30,17 +30,17 @@
 	margin-right: 1rem;
 }
 
-.events-item__info h2 {
+.events-item__info h3 {
 	font-size: 1.5rem;
 	margin: 0 0 0.5rem 0;
 	font-weight: normal;
 	color: #ffd900;
 }
 
-.events-item:hover h2,
-.events-item:active h2,
 .events-item:hover h3,
-.events-item:active h3 {
+.events-item:active h3,
+.events-item:hover h4,
+.events-item:active h4 {
 	color: #292929;
 }
 

@@ -11,11 +11,13 @@ const EventsItem = props => {
 			<Card className="events-item__content">
 				<Link to={`/Events/${props.id}`}>
 					<div className="events-item__image">
-						<Avatar image={props.image} alt={props.name} />
+						<Avatar image={props.imageUrl} alt={props.name} />
 					</div>
 					<div className="events-item__info">
-						<h2>Event: {props.name}</h2>
-						<h3>Details: {props.detail}</h3>
+						<h3>Event: {props.name}</h3>
+						<h4>
+							Date: {props.startDate} to {props.endDate}
+						</h4>
 					</div>
 				</Link>
 			</Card>
