@@ -13,7 +13,7 @@ import MainNavigation from './shared/components/Navigation/MainNavigation';
 import NewClub from './clubs/pages/NewClub';
 import NewEvent from './event/pages/NewEvent';
 import Users from './users/pages/Users';
-import UpdateEvent from './event/pages/updateEvent';
+import UpdateEvent from './event/pages/UpdateEvent';
 
 const App = () => {
 	return (
@@ -26,19 +26,19 @@ const App = () => {
 						<Clubs />
 						<Users />
 					</Route>
-					<Route path="/Clubs/New" exact>
+					<Route path="/clubs/new" exact>
 						<NewClub />
 					</Route>
-					<Route path="/Events/" exact>
+					<Route path="/events/" exact>
 						<Events />
 					</Route>
-					<Route path="/Events/New" exact>
+					<Route path="/events/new" exact>
 						<NewEvent />
 					</Route>
-					<Route path="/Events/Update/:eid " exact>
+					<Route path="/events/update/:id" exact>
 						<UpdateEvent />
 					</Route>
-					<Route path="/Events/:eid" exact>
+					<Route path="/events/:id" exact>
 						<Event />
 					</Route>
 				</Switch>

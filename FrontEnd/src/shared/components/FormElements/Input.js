@@ -37,8 +37,8 @@ const Input = props => {
 	 * and to determine what to be displayed in our component return section
 	 **/
 	const [inputState, dispatch] = useReducer(inputReducer, {
-		value: '',
-		isValid: false,
+		value: props.initialValue || '',
+		isValid: props.initialValid || false,
 		isTouched: false
 	});
 
@@ -76,6 +76,7 @@ const Input = props => {
 				onChange={changeHandler}
 				onBlur={touchHandler}
 				value={inputState.value}
+				file={props.file}
 			/>
 		) : (
 			<textarea
@@ -94,7 +95,7 @@ const Input = props => {
 			}`}
 		>
 			<label htmlFor={props.id}>{props.label}</label>
-			{element}{' '}
+			{element}
 			{!inputState.isValid && inputState.isTouched && <p>{props.errorText}</p>}
 		</div>
 	);

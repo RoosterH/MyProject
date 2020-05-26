@@ -12,15 +12,15 @@ const NavLinks = props => {
 				</NavLink>
 			</li>
 			<li>
-				<NavLink to="/Events/" exact>
+				<NavLink to="/events/" exact>
 					MY CLUB EVENTS
 				</NavLink>
 			</li>
 			<li>
-				<NavLink to="/Events/New">ADD EVENT</NavLink>
+				<NavLink to="/events/new">ADD EVENT</NavLink>
 			</li>
 			<li>
-				<NavLink to="/Auth">AUTHENTICATE</NavLink>
+				<NavLink to="/auth">AUTHENTICATE</NavLink>
 			</li>
 		</ul>
 	);

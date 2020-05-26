@@ -12,13 +12,13 @@ export const EVENTS = [
 		title: 'SCCA - San Francisco Region - Solo 1',
 		imageUrl:
 			'https://media.gettyimages.com/photos/san-jose-twilight-picture-id1058214402?s=2048x2048',
-		startDate: '06/25/2020 Sat',
-		endDate: '06/26/2020 Sun',
+		startDate: '06/25/2020',
+		endDate: '06/26/2020',
 		venue: 'NASA Crows Landing Airport and Test Facility',
 		address: 'Crows Landing, CA',
-		coordinate: { lat: 37.4015069, lng: -121.1059222 },
+		coordinate: '37.4015069, -121.1059222',
 		description:
-			"SCCA - San Francisco Region - Solo. Reminder: You have to work! We keep a running list of those of you have skipped out on work. Check it out HERE and make sure you aren't on it.",
+			"SCCA - San Francisco Region - Solo1. Reminder: You have to work! We keep a running list of those of you have skipped out on work. Check it out HERE and make sure you aren't on it.",
 		courseMap:
 			'https://www.bmwautocross.com/wp-content/uploads/2019/10/20191019-ggcautoxCourseMap-FINAL.png'
 	},
@@ -27,12 +27,12 @@ export const EVENTS = [
 		name: 'SCCA - San Francisco Region - Solo 2',
 		title: 'SCCA - San Francisco Region - Solo 2',
 		imageUrl: BigEvent,
-		startDate: '07/25/2020 Sat',
-		endDate: '07/26/2020 Sun',
+		startDate: '07/25/2020',
+		endDate: '07/26/2020',
 		venue: 'NASA Crows Landing Airport and Test FacilityCrows Landing',
 		address: 'Crows Landing, CA',
-		coordinate: { lat: 37.4015069, lng: -121.1059222 },
-		description: 'SCCA - San Francisco Region - Solo',
+		coordinate: '37.4015069, -121.1059222',
+		description: 'SCCA - San Francisco Region - Solo2',
 		courseMap:
 			'https://www.bmwautocross.com/wp-content/uploads/2019/10/20191019-ggcautoxCourseMap-FINAL.png'
 	},
@@ -40,13 +40,13 @@ export const EVENTS = [
 		id: 'u3',
 		name: 'SCCA - San Francisco Region - Solo 3',
 		title: 'SCCA - San Francisco Region - Solo 3',
-		startDate: '08/25/2020 Fri',
-		endDate: '08/27/2020 Sat',
+		startDate: '08/25/2020',
+		endDate: '08/26/2020',
 		imageUrl: `${process.env.PUBLIC_URL}/event.jpg`, // public folder
 		venue: 'NASA Crows Landing Airport and Test FacilityCrows Landing',
 		address: 'Crows Landing',
-		description: 'SCCA - San Francisco Region - Solo',
-		coordinate: { lat: 37.4015069, lng: -121.1059222 },
+		description: 'SCCA - San Francisco Region - Solo3',
+		coordinate: '37.4015069, -121.1059222',
 		courseMap:
 			'https://www.bmwautocross.com/wp-content/uploads/2019/10/20191019-ggcautoxCourseMap-FINAL.png'
 	}
@@ -54,7 +54,7 @@ export const EVENTS = [
 // Events is called in App.js where the route been defined
 // @to-do
 const Event = () => {
-	const eventId = useParams().eid;
+	const eventId = useParams().id;
 	const event = EVENTS.find(element => element.id === eventId);
 
 	if (event === undefined) {

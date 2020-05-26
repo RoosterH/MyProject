@@ -5,6 +5,7 @@ import Card from '../../shared/components/UIElements/Card';
 import Image from '../../shared/components/UIElements/Image';
 import Map from '../../shared/components/UIElements/Map';
 import Modal from '../../shared/components/UIElements/Modal';
+
 import './EventItem.css';
 
 const EventItem = props => {
@@ -33,6 +34,22 @@ const EventItem = props => {
 		showMap && closeMapHandler();
 		showCourse && closeCourseHandler();
 	};
+	var startDate = new Date(props.event.startDate);
+	var startDay = startDate.toLocaleDateString('en-US', {
+		weekday: 'short'
+	});
+	var endDate = new Date(props.event.endDate);
+	var endDay = endDate.toLocaleDateString('en-US', {
+		weekday: 'short'
+	});
+
+	const coordinate = props.event.coordinate.split(',');
+	const coordinateJSON = JSON.parse(
+		JSON.stringify({
+			lat: parseFloat(coordinate[0]),
+			lng: parseFloat(coordinate[1])
+		})
+	);
 	return (
 		// React.Frgment connect multiple components
 		<React.Fragment>
@@ -43,16 +60,18 @@ const EventItem = props => {
 				header={props.event.title}
 				contentClass="event-item__modal-content"
 				footerClass="event-item__modal-actions"
-				footer={<Button onClick={() => closeModalHandler()}>CLOSE</Button>}>
+				footer={<Button onClick={() => closeModalHandler()}>CLOSE</Button>}
+			>
 				{/* render props.children */}
 				<div className="map-container">
 					{showCourse && (
 						<img
 							src={props.event.courseMap}
 							alt={props.event.alt}
-							className="map-container"></img>
+							className="map-container"
+						></img>
 					)}
-					{showMap && <Map center={props.event.coordinate} zoom={10} />}
+					{showMap && <Map center={coordinateJSON} zoom={10} />}
 				</div>
 			</Modal>
 
@@ -65,7 +84,7 @@ const EventItem = props => {
 				</div>
 				<div className="event-item__info">
 					<h3>
-						{props.event.startDate} -- {props.event.endDate}
+						{props.event.startDate},{startDay} — {props.event.endDate},{endDay}
 					</h3>
 					<h3>{props.event.venue}</h3>
 					<h4>{props.event.address}</h4>
@@ -79,11 +98,12 @@ const EventItem = props => {
 						title={props.event.title}
 						alt={props.event.title + 'course map'}
 						src={props.event.courseMap}
-						onClick={() => openCourseHandler()}></Image>
+						onClick={() => openCourseHandler()}
+					></Image>
 				</div>
 				<div className="event-item__actions">
 					<Button to={`/events/${props.event.id}/form`}>ENTRY FORM</Button>
-					<Button to={`/events/${props.event.id}`}>EDIT</Button>
+					<Button to={`/events/update/${props.event.id}`}>EDIT</Button>
 					<Button danger>DELETE</Button>
 				</div>
 			</Card>

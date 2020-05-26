@@ -1,0 +1,26 @@
+.event-form {
+	list-style: none;
+	margin: 0 auto;
+	padding: 1rem;
+	width: 90%;
+	max-width: 40rem;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+	border-radius: 6px;
+	background: white;
+}
+
+.event-form__coursemap {
+	display: block;
+}
+
+.event-form__coursemap img {
+	width: 6rem;
+	height: 6rem;
+}
+
+@media (min-width: 768px) {
+	.event-form__coursemap {
+		width: 30rem;
+		/*height: 30rem;*/
+	}
+}

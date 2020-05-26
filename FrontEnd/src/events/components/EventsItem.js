@@ -6,17 +6,25 @@ import Card from '../../shared/components/UIElements/Card';
 import './EventsItem.css';
 
 const EventsItem = props => {
+	var startDate = new Date(props.startDate);
+	var startDay = startDate.toLocaleDateString('en-US', {
+		weekday: 'short'
+	});
+	var endDate = new Date(props.endDate);
+	var endDay = endDate.toLocaleDateString('en-US', {
+		weekday: 'short'
+	});
 	return (
 		<li className="events-item">
 			<Card className="events-item__content">
-				<Link to={`/Events/${props.id}`}>
+				<Link to={`/events/${props.id}`}>
 					<div className="events-item__image">
 						<Avatar image={props.imageUrl} alt={props.name} />
 					</div>
 					<div className="events-item__info">
 						<h3>Event: {props.name}</h3>
 						<h4>
-							Date: {props.startDate} to {props.endDate}
+							Date: {props.startDate}, {startDay} — {props.endDate}, {endDay}
 						</h4>
 					</div>
 				</Link>
