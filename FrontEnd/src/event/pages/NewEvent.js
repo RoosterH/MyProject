@@ -14,7 +14,35 @@ const NewEvent = () => {
 	const [formState, inputHandler] = useForm(
 		{
 			// validity of individual input
+			name: {
+				value: '',
+				isValid: false
+			},
 			title: {
+				value: '',
+				isValid: false
+			},
+			eventImage: {
+				value: '',
+				isValid: false
+			},
+			startDate: {
+				value: '',
+				isValid: false
+			},
+			endDate: {
+				value: '',
+				isValid: false
+			},
+			venue: {
+				value: '',
+				isValid: false
+			},
+			address: {
+				value: '',
+				isValid: false
+			},
+			coordinate: {
 				value: '',
 				isValid: false
 			},
@@ -41,12 +69,30 @@ const NewEvent = () => {
 	return (
 		<form className="event-form" onSubmit={eventSubmitHandler}>
 			<Input
+				id="name"
+				element="input"
+				type="text"
+				label="Name"
+				validators={[VALIDATOR_REQUIRE()]}
+				errorText="Please enter a valid title."
+				onInput={inputHandler}
+			/>
+			<Input
 				id="title"
 				element="input"
 				type="text"
 				label="Title"
 				validators={[VALIDATOR_REQUIRE()]}
 				errorText="Please enter a valid title."
+				onInput={inputHandler}
+			/>
+			<Input
+				id="eventImage"
+				element="input"
+				type="file"
+				label="Event Image (optional in jpg or png)"
+				validators={[VALIDATOR_FILE()]}
+				errorText="Please select a jpg or png file."
 				onInput={inputHandler}
 			/>
 			<Input
@@ -106,7 +152,7 @@ const NewEvent = () => {
 				id="courseMap"
 				element="input"
 				type="file"
-				label="Course Map (jpg or png)"
+				label="Course Map (optional in jpg or png)"
 				validators={[VALIDATOR_FILE()]}
 				errorText="Please select a jpg or png file."
 				onInput={inputHandler}

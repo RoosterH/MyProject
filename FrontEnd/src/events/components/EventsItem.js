@@ -19,7 +19,7 @@ const EventsItem = props => {
 			<Card className="events-item__content">
 				<Link to={`/events/${props.id}`}>
 					<div className="events-item__image">
-						<Avatar image={props.imageUrl} alt={props.name} />
+						<Avatar image={props.eventImage} alt={props.name} />
 					</div>
 					<div className="events-item__info">
 						<h3>Event: {props.name}</h3>

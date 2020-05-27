@@ -42,7 +42,7 @@ const Input = props => {
 		isTouched: false
 	});
 
-	// props is from NewEvent.js <Input onInput={}/> which is a callback function
+	// props is from NewEvent.js/UpdateEvent.js <Input onInput={}/> which is a callback function
 	const { id, onInput } = props;
 	const { value, isValid } = inputState;
 

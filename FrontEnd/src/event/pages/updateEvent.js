@@ -21,6 +21,7 @@ const formatDate = props => {
 };
 
 const UpdateEvent = () => {
+	// Modal section
 	const [showModal, setShowModal] = useState(false);
 	const openModalHandler = () => setShowModal(true);
 	const closeModalHandler = () => {
@@ -39,10 +40,9 @@ const UpdateEvent = () => {
 		showCourse && closeCourseHandler();
 	};
 
+	// Form section
 	const eventId = useParams().id;
-
 	const event = EVENTS.find(element => element.id === eventId);
-
 	const [formState, inputHandler] = useForm(
 		{
 			name: {
@@ -53,8 +53,8 @@ const UpdateEvent = () => {
 				value: event.title,
 				isValid: true
 			},
-			imageUrl: {
-				value: event.imageUrl,
+			eventImage: {
+				value: event.eventImage,
 				isValid: true
 			},
 			startDate: {
@@ -93,6 +93,7 @@ const UpdateEvent = () => {
 		event.preventDefault();
 		console.log(formState.inputs);
 	};
+
 	if (!event) {
 		return (
 			<div className="center">
@@ -101,8 +102,12 @@ const UpdateEvent = () => {
 		);
 	}
 
-	const startDate = formatDate(formState.inputs.startDate.value);
+	// changing date format from dd-mm-year to mm-dd-year
+	let today = new Date().toISOString().substr(0, 10);
+	var startDate = formatDate(formState.inputs.startDate.value);
 	const endDate = formatDate(formState.inputs.endDate.value);
+
+	// construct course map element to show it on modal
 	const courseMap = event.courseMap;
 	const courseMapElement =
 		courseMap !== undefined ? (
@@ -168,20 +173,21 @@ const UpdateEvent = () => {
 					initialValid={formState.inputs.title.isValid}
 				/>
 				<Input
-					id="imageUrl"
+					id="eventImage"
 					element="input"
 					type="text"
-					label="imageUrl"
+					label="Event Image (optional in jpg or png)"
 					validators={[VALIDATOR_REQUIRE()]}
-					errorText="Please enter a valid url"
+					errorText="Image format jpg or png"
 					onInput={inputHandler}
-					initialValue={formState.inputs.imageUrl.value}
-					initialValid={formState.inputs.imageUrl.isValid}
+					initialValue={formState.inputs.eventImage.value}
+					initialValid={formState.inputs.eventImage.isValid}
 				/>
 				<Input
 					id="startDate"
 					element="input"
 					type="date"
+					min={today}
 					label="StartDate"
 					validators={[VALIDATOR_REQUIRE()]}
 					errorText="Please enter a valid date"
@@ -193,6 +199,7 @@ const UpdateEvent = () => {
 					id="endDate"
 					element="input"
 					type="date"
+					min={formState.inputs.startDate.value}
 					label="EndDate"
 					validators={[VALIDATOR_REQUIRE()]}
 					errorText="Please enter a valid date"
@@ -247,7 +254,7 @@ const UpdateEvent = () => {
 					id="courseMap"
 					element="input"
 					type="file"
-					label="Course Map"
+					label="Course Map (optional in jpg or png)"
 					validators={[VALIDATOR_FILE()]}
 					errorText="Image format jpg or png"
 					onInput={inputHandler}

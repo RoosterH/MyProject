@@ -41,10 +41,13 @@ export const validate = (value, validators) => {
 		if (validator.type === VALIDATOR_TYPE_EMAIL) {
 			isValid = isValid && /^\S+@\S+\.\S+$/.test(value);
 		}
+
+		// image file is optional so value === '' is still good
 		if (validator.type === VALIDATOR_TYPE_FILE) {
 			isValid =
 				isValid &&
-				(value.toLowerCase().endsWith('.jpg') ||
+				(value === '' ||
+					value.toLowerCase().endsWith('.jpg') ||
 					value.toLowerCase().endsWith('.png'));
 		}
 	}

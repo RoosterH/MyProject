@@ -24,7 +24,7 @@ const EventList = props => {
 				<EventsItem
 					key={event.id}
 					id={event.id}
-					imageUrl={event.imageUrl}
+					eventImage={event.eventImage}
 					name={event.name}
 					startDate={event.startDate}
 					endDate={event.endDate}

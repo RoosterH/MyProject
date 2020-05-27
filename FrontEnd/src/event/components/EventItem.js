@@ -50,6 +50,16 @@ const EventItem = props => {
 			lng: parseFloat(coordinate[1])
 		})
 	);
+
+	const eventImageElement =
+		props.event.eventImage !== '' ? (
+			<div className="event-item__image">
+				<img src={props.event.eventImage} alt={props.title} />
+			</div>
+		) : (
+			<div></div>
+		);
+
 	return (
 		// React.Frgment connect multiple components
 		<React.Fragment>
@@ -79,9 +89,7 @@ const EventItem = props => {
 				<div>
 					<h2>{props.event.title}</h2>
 				</div>
-				<div className="event-item__image">
-					<img src={props.event.imageUrl} alt={props.title} />
-				</div>
+				{eventImageElement}
 				<div className="event-item__info">
 					<h3>
 						{props.event.startDate},{startDay} — {props.event.endDate},{endDay}

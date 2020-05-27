@@ -10,7 +10,7 @@ export const EVENTS = [
 		id: 'u1',
 		name: 'SCCA - San Francisco Region - Solo 1',
 		title: 'SCCA - San Francisco Region - Solo 1',
-		imageUrl:
+		eventImage:
 			'https://media.gettyimages.com/photos/san-jose-twilight-picture-id1058214402?s=2048x2048',
 		startDate: '06/25/2020',
 		endDate: '06/26/2020',
@@ -26,7 +26,7 @@ export const EVENTS = [
 		id: 'u2',
 		name: 'SCCA - San Francisco Region - Solo 2',
 		title: 'SCCA - San Francisco Region - Solo 2',
-		imageUrl: BigEvent,
+		eventImage: BigEvent,
 		startDate: '07/25/2020',
 		endDate: '07/26/2020',
 		venue: 'NASA Crows Landing Airport and Test FacilityCrows Landing',
@@ -42,7 +42,7 @@ export const EVENTS = [
 		title: 'SCCA - San Francisco Region - Solo 3',
 		startDate: '08/25/2020',
 		endDate: '08/26/2020',
-		imageUrl: `${process.env.PUBLIC_URL}/event.jpg`, // public folder
+		eventImage: `${process.env.PUBLIC_URL}/event.jpg`, // public folder
 		venue: 'NASA Crows Landing Airport and Test FacilityCrows Landing',
 		address: 'Crows Landing',
 		description: 'SCCA - San Francisco Region - Solo3',
