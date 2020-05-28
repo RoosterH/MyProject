@@ -1,7 +1,8 @@
 import React from 'react';
 
-import EventsItem from './EventsItem';
+import Button from '../../shared/components/FormElements/Button';
 import Card from '../../shared/components/UIElements/Card';
+import EventsItem from './EventsItem';
 import './EventsList.css';
 
 // treat this as a function looks like
@@ -12,7 +13,7 @@ const EventList = props => {
 			<div className="center">
 				<Card>
 					<h2>No event found. Please click to create a new event</h2>
-					<button className="big-btn">Create a new event</button>
+					<Button to="/events/new">Create a new event</Button>
 				</Card>
 			</div>
 		);

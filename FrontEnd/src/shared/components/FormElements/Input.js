@@ -3,7 +3,9 @@ import React, { useReducer, useEffect } from 'react';
 import { validate } from '../../util/validators';
 import './Input.css';
 
-// if action.type === 'CHANGE', we will return new set of state
+// this function is to validate action whenever there is a state change
+// action.type === 'CHANGE' comes from onChange, we will return new set of state
+// action.type === 'TOUCH' comes from onBlur
 const inputReducer = (state, action) => {
 	switch (action.type) {
 		case 'CHANGE':
@@ -52,6 +54,7 @@ const Input = props => {
 		onInput(id, value, isValid);
 	}, [id, value, isValid, onInput]);
 
+	// onChange=changeHandler, onChange will be triggered when user enters something on the form
 	const changeHandler = event => {
 		// calling distach function to dispatch actions to reducer
 		dispatch({

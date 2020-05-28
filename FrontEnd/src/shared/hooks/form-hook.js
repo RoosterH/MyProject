@@ -11,8 +11,9 @@ const formReducer = (state, action) => {
 		case 'INPUT_CHANGE':
 			let formIsValid = true;
 			/**
-			 * state.inputs is our form inputs.  We have 2 inputs id="title" and
-			 * id="descrption". The following for loop validates all inputs on the form.
+			 * state.inputs is our form inputs that defined in useReducer initial state.
+			 * We have inputs such as id="title", id="descrption", ... etc. The following for loop
+			 * validates all inputs on the form.
 			 */
 			for (const inputId in state.inputs) {
 				// matching inputId(either "title" or "description") with action.inputId
@@ -29,10 +30,17 @@ const formReducer = (state, action) => {
 			return {
 				...state,
 				inputs: {
+					// spread operator means the current inputs original state
+					// we only override the action item to make to the next state
 					...state.inputs,
 					[action.inputId]: { value: action.value, isValid: action.isValid }
 				},
 				isValid: formIsValid
+			};
+		case 'SET_DATA':
+			return {
+				inputs: action.inputs,
+				isValid: action.formIsValid
 			};
 		default:
 			return state;
@@ -41,10 +49,18 @@ const formReducer = (state, action) => {
 
 // custom hook naming convention starts with lower case
 export const useForm = (initialInputs, initialFormValidaty) => {
+	/**
+	 * useReducer defines how state changes when an action occurs. We can define different logic per action inside of
+	 * useReducer.  "formState" will be the result for the next state.
+	 **/
 	const [formState, dispatch] = useReducer(formReducer, {
 		/**
-		 * The following section is the initial state, our form has 2 inputs id="title" and
-		 * id="descrption".  We will check if any of the input has the state change
+		 * The following section is the initial state, inputs are the actions such as
+		 * title: {
+		 *      value: '',
+		 *      isValid: false
+		 * }
+		 * title is the id of the inputs.  We will check if any of the input has the state change
 		 * */
 		inputs: initialInputs,
 		// overall form validity
@@ -68,5 +84,18 @@ export const useForm = (initialInputs, initialFormValidaty) => {
 		});
 	}, []);
 
-	return [formState, inputHandler];
+	const setFormData = useCallback((inputData, formValidity) => {
+		dispatch({
+			type: 'SET_DATA',
+			inputs: inputData,
+			formIsValid: formValidity
+		});
+	}, []);
+
+	/**
+	 * formState: next state return value
+	 * inputHandler: a callback function that can be called for type: 'INPUT_CHANGE'
+	 * setForData: a callback function for type: 'SET_DATA'
+	 **/
+	return [formState, inputHandler, setFormData];
 };

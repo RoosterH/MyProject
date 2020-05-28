@@ -66,6 +66,7 @@ const NewEvent = () => {
 		console.log(formState.inputs);
 	};
 
+	// the purpose of onInput is to enter back the value after been validated to NewEvent
 	return (
 		<form className="event-form" onSubmit={eventSubmitHandler}>
 			<Input
