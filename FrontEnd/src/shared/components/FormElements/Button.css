@@ -22,9 +22,6 @@
 }
 
 .button--inverse {
-	padding: 0.2rem 0.2rem 0.2rem 0.2rem;
-	font-size: small;
-	font-family: sans-serif;
 	background: transparent;
 	color: #106daf;
 }
@@ -42,6 +39,7 @@
 
 .button--danger:hover,
 .button--danger:active {
+	color: #292929;
 	background: #f34343;
 	border-color: #f34343;
 }
@@ -56,7 +54,11 @@
 }
 
 .button--small {
-	font-size: 0.8rem;
+	padding: 0.2rem 0.2rem 0.2rem 0.2rem;
+	font-size: small;
+	font-family: sans-serif;
+	background: transparent;
+	color: #106daf;
 }
 
 .button--big {

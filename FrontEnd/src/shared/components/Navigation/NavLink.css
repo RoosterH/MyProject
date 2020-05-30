@@ -27,17 +27,21 @@
 
 .nav-links a.active {
 	background: #f8df00;
-	border-color: #292929;
 	color: #292929;
+	border: 1px solid rgb(1, 105, 15);
+	margin: 5px;
+	outline-style: ridge;
+	outline-color: rgb(3, 190, 60);
 }
 
 .nav-links button {
 	cursor: pointer;
-	border: 1px solid #292929;
 	color: #292929;
 	background: transparent;
 	padding: 0.5rem;
 	font: inherit;
+	border: 1px solid rgb(1, 105, 15);
+	margin: 5px;
 }
 
 .nav-links button:focus {
@@ -62,17 +66,27 @@
 	.nav-links a {
 		color: white;
 		text-decoration: none;
+		border: 1px solid rgb(1, 105, 15);
+		margin: 5px;
+		outline-style: ridge;
+		outline-color: rgb(3, 190, 60);
 	}
 
 	.nav-links button {
-		border: 1px solid white;
 		color: white;
-		background: transparent;
+		border: 1px solid rgb(1, 105, 15);
+		margin: 5px;
+		outline-style: ridge;
+		outline-color: rgb(3, 190, 60);
 	}
 
 	.nav-links button:hover,
 	.nav-links button:active {
 		background: #f8df00;
 		color: #292929;
+		border: 1px solid rgb(1, 105, 15);
+		margin: 5px;
+		outline-style: ridge;
+		outline-color: rgb(3, 190, 60);
 	}
 }

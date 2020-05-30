@@ -65,6 +65,10 @@
 	text-align: right;
 }
 
+.event-item__modal-delete {
+	padding: 0;
+}
+
 .event-item__actions button,
 .event-item__actions a {
 	margin: 0.5rem;
@@ -87,5 +91,9 @@
 	.event-item__coursemap {
 		width: 30rem;
 		/*height: 30rem;*/
+	}
+	.event-item__modal {
+		width: 45%;
+		height: 20%;
 	}
 }

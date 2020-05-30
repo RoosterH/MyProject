@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useContext } from 'react';
 
 import Input from '../../shared/components/FormElements/Input';
 import Button from '../../shared/components/FormElements/Button';
+import { ClubAuthContext } from '../../shared/context/auth-context';
 import { useForm } from '../../shared/hooks/form-hook';
 import {
 	VALIDATOR_REQUIRE,
@@ -11,6 +12,9 @@ import {
 import './EventForm.css';
 
 const NewEvent = () => {
+	const clubAuthContext = useContext(ClubAuthContext);
+	const clubId = clubAuthContext.clubId;
+
 	const [formState, inputHandler] = useForm(
 		{
 			// validity of individual input
@@ -76,6 +80,13 @@ const NewEvent = () => {
 				label="Name"
 				validators={[VALIDATOR_REQUIRE()]}
 				errorText="Please enter a valid title."
+				onInput={inputHandler}
+			/>
+			<Input
+				id={clubId}
+				element="input"
+				type="text"
+				label="ClubId"
 				onInput={inputHandler}
 			/>
 			<Input

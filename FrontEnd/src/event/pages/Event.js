@@ -8,6 +8,7 @@ import EventItem from '../components/EventItem';
 export const EVENTS = [
 	{
 		id: 'u1',
+		clubId: 'c1',
 		name: 'SCCA - San Francisco Region - Solo 1',
 		title: 'SCCA - San Francisco Region - Solo 1',
 		eventImage:
@@ -24,6 +25,7 @@ export const EVENTS = [
 	},
 	{
 		id: 'u2',
+		clubId: 'c1',
 		name: 'SCCA - San Francisco Region - Solo 2',
 		title: 'SCCA - San Francisco Region - Solo 2',
 		eventImage: BigEvent,
@@ -38,6 +40,7 @@ export const EVENTS = [
 	},
 	{
 		id: 'u3',
+		clubId: 'c2',
 		name: 'SCCA - San Francisco Region - Solo 3',
 		title: 'SCCA - San Francisco Region - Solo 3',
 		startDate: '08/25/2020',

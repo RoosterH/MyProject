@@ -30,11 +30,26 @@
 	padding: 1rem 0.5rem;
 }
 
+.modal-delete {
+	left: 20%;
+	right: 20%;
+	align-self: center;
+	width: 60%;
+	height: 25%;
+}
+
 @media (min-width: 768px) {
 	.modal {
 		align-self: center;
 		width: 90%;
 		height: 50%;
+	}
+	.modal-delete {
+		align-self: center;
+		width: 46%;
+		height: 20%;
+		left: 22%;
+		right: 22%;
 	}
 }
 
