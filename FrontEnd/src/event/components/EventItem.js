@@ -7,7 +7,6 @@ import Map from '../../shared/components/UIElements/Map';
 import Modal from '../../shared/components/UIElements/Modal';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import './EventItem.css';
-import ClubAuth from '../../clubs/pages/ClubsAuth';
 
 const EventItem = props => {
 	// useContext is listening to "ClubAuthContext"

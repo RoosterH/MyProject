@@ -13,7 +13,6 @@ import './EventForm.css';
 
 const NewEvent = () => {
 	const clubAuthContext = useContext(ClubAuthContext);
-	const clubId = clubAuthContext.clubId;
 
 	const [formState, inputHandler] = useForm(
 		{
@@ -80,13 +79,6 @@ const NewEvent = () => {
 				label="Name"
 				validators={[VALIDATOR_REQUIRE()]}
 				errorText="Please enter a valid title."
-				onInput={inputHandler}
-			/>
-			<Input
-				id={clubId}
-				element="input"
-				type="text"
-				label="ClubId"
 				onInput={inputHandler}
 			/>
 			<Input

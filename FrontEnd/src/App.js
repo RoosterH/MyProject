@@ -9,7 +9,6 @@ import {
 import Clubs from './clubs/pages/Clubs';
 import ClubAuth from './clubs/pages/ClubsAuth';
 import ClubEvents from './clubs/pages/ClubEvents';
-import ClubSignup from './clubs/pages/ClubsSignup';
 import Error from './shared/util/error';
 import Event from './event/pages/Event';
 import Events from './events/pages/Events';
@@ -114,19 +113,19 @@ const App = () => {
 				setClubId: setClubId
 			}}
 		>
-			{/* <UserAuthContext.Provider
+			<UserAuthContext.Provider
 				value={{
 					isUserLoggedIn: isUserLoggedIn,
 					userLogin: userLogin,
 					userLogout: userLogout
 				}}
-			> */}
-			<Router>
-				<MainNavigation />
-				{/* main is defiend in /shared/components/Navigation/MainHeader.css */}
-				<main>{routes}</main>
-			</Router>
-			{/* </UserAuthContext.Provider> */}
+			>
+				<Router>
+					<MainNavigation />
+					{/* main is defiend in /shared/components/Navigation/MainHeader.css */}
+					<main>{routes}</main>
+				</Router>
+			</UserAuthContext.Provider>
 		</ClubAuthContext.Provider>
 	);
 };
