@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 const clubsRoutes = require('./routes/clubsRoutes');
 const eventsRoutes = require('./routes/eventsRoutes');
@@ -29,7 +30,20 @@ app.use((error, req, res, next) => {
 	}
 	// if error comes with a code, we use that code; otherwise send back 500
 	res.status(error.code || 500);
-	res.json({ message: error.message } || 'An unknown error occurred!');
+	res.json(
+		{ message: error.message } || 'An unknown error occurred!'
+	);
 });
 
-app.listen(5000);
+mongoose
+	.connect(
+		'mongodb+srv://hung:hung@hungjencluster0-ahunv.mongodb.net/MySeatTime?retryWrites=true&w=majority',
+		{ useNewUrlParser: true, useUnifiedTopology: true }
+	)
+
+	.then(() => {
+		app.listen(5000);
+	})
+	.catch(err => {
+		console.log(err);
+	});

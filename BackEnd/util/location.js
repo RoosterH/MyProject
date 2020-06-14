@@ -20,7 +20,6 @@ async function getCoordinatesForAddress(address) {
 		);
 		throw error;
 	}
-	console.log(data);
 	const cooridnates = data.results[0].geometry.location;
 
 	return cooridnates;

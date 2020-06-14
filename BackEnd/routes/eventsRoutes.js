@@ -11,19 +11,24 @@ const router = express.Router();
 
 // pass the pointer of the function, we don't want to execute here.
 // Express will use the pointer to execute the function when it's needed
+router.get('/', eventsController.getAllEvents);
+
+router.get('/date/', eventsController.getEventsByDate);
+
 router.get('/:eid', eventsController.getEventById);
 
 router.get('/clubs/:cid', eventsController.getEventsByClubId);
 
-let today = new Date();
+let todayUTC = new Date();
 
 router.post(
 	'/',
 	[
 		check('name').isLength({ min: 5 }),
-		check('title').isLength({ min: 5 }),
-		check('startDate').custom(value => Date.parse(value) > today),
-		check('endDate').custom((value, { req }) => value >= req.body.startDate),
+		check('startDate').custom(value => Date.parse(value) > todayUTC),
+		check('endDate').custom(
+			(value, { req }) => value >= req.body.startDate
+		),
 		check('venue').not().isEmpty(),
 		check('address').isLength({ min: 10 }),
 		check('description').isLength({ min: 10 })
@@ -35,9 +40,10 @@ router.patch(
 	'/:eid',
 	[
 		check('name').isLength({ min: 5 }),
-		check('title').isLength({ min: 5 }),
-		check('startDate').custom(value => Date.parse(value) > today),
-		check('endDate').custom((value, { req }) => value >= req.body.startDate),
+		check('startDate').custom(value => Date.parse(value) > todayUTC),
+		check('endDate').custom(
+			(value, { req }) => value >= req.body.startDate
+		),
 		check('venue').not().isEmpty(),
 		check('address').isLength({ min: 10 }),
 		check('description').isLength({ min: 10 })
