@@ -19,6 +19,7 @@ const eventSchema = new Schema({
 	},
 	description: { type: String, requried: true },
 	courseMap: { type: String },
+	// using ref as foreign key pointing to Club
 	clubId: {
 		type: mongoose.Types.ObjectId,
 		required: true,

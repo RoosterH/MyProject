@@ -12,9 +12,10 @@ const clubSchema = new Schema({
 		unique: true,
 		set: v => v.toLowerCase()
 	},
-	password: { type: String, required: true, minlength: 7 },
+	password: { type: String, required: true, minlength: 6 },
 	image: { type: String, require: true },
 	// because a club could have multiple events so we need to use array
+	// using ref as a foreing key referring to Event
 	events: [
 		{
 			type: mongoose.Types.ObjectId,

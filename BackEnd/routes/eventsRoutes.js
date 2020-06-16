@@ -54,4 +54,3 @@ router.patch(
 router.delete('/:eid', eventsController.deleteEvent);
 
 module.exports = router;
-// Date.parse(value) >= Date.parse(req.params('startDate')

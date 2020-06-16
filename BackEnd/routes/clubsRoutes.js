@@ -25,7 +25,15 @@ router.post(
 
 router.post('/login', clubsController.loginClub);
 
-router.patch('/:cid', clubsController.updateClub);
+router.patch(
+	'/:cid',
+	[
+		check('name').not().isEmpty(),
+		check('email').normalizeEmail().isEmail(),
+		check('password').isLength({ min: 6 })
+	],
+	clubsController.updateClub
+);
 
 router.delete('/:cid', clubsController.deleteClub);
 

@@ -95,7 +95,7 @@ const getEventsByClubId = async (req, res, next) => {
 
 	if (!club || club.events.length === 0) {
 		const error = new HttpError(
-			'Could not find any event with provided ID',
+			'This club does not have any event yet.',
 			404
 		);
 
@@ -130,7 +130,7 @@ const getEventByDate = async (req, res, next) => {
 
 	if (!events || events.length === 0) {
 		const error = new HttpError(
-			'Could not find any event with provided ID',
+			'Could not find any event with the date range',
 			404
 		);
 
@@ -144,7 +144,8 @@ const getEventByDate = async (req, res, next) => {
 
 // POST /api/events/
 const createEvent = async (req, res, next) => {
-	// validate request
+	// validate request, req checks are defined in eventRoutes.js using
+	// express-validator
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		const errorFormatter = ({ value, msg, param, location }) => {
@@ -335,8 +336,8 @@ const deleteEvent = async (req, res, next) => {
 
 	let event;
 	try {
-		// populate allows us to access a document in another collection and to work with
-		// data in that existing document
+		// populate allows us to access a document in another collection
+		// and to work with data in that existing document
 		event = await Event.findById(eventId).populate('clubId');
 	} catch (err) {
 		const error = new HttpError(

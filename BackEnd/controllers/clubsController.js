@@ -182,7 +182,7 @@ const updateClub = async (req, res, next) => {
 		await club.save();
 	} catch (err) {
 		const error = new HttpError(
-			'Updating club failed. Please try again later.',
+			`Updating club failed with the following error: ${err}`,
 			500
 		);
 		return next(error);
