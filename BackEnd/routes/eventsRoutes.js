@@ -17,7 +17,7 @@ router.get('/date/', eventsController.getEventsByDate);
 
 router.get('/:eid', eventsController.getEventById);
 
-router.get('/clubs/:cid', eventsController.getEventsByClubId);
+router.get('/club/:cid', eventsController.getEventsByClubId);
 
 let todayUTC = new Date();
 

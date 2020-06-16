@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
+// each club has multiple events and each event is owned by a club
 const eventSchema = new Schema({
 	name: { type: String, required: true },
 	image: { type: String },
@@ -18,7 +19,11 @@ const eventSchema = new Schema({
 	},
 	description: { type: String, requried: true },
 	courseMap: { type: String },
-	clubId: { type: String, required: true }
+	clubId: {
+		type: mongoose.Types.ObjectId,
+		required: true,
+		ref: 'Club'
+	}
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

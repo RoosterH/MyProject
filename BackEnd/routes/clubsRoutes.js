@@ -9,7 +9,7 @@ const clubsController = require('../controllers/clubsController');
 const router = express.Router();
 
 // /api/clubs
-router.get('/', clubsController.getClubs);
+router.get('/', clubsController.getAllClubs);
 
 router.get('/:cid', clubsController.getClubById);
 

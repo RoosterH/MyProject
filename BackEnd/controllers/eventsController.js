@@ -3,10 +3,13 @@ const { v4: uuidv4 } = require('uuid');
 const { validationResult } = require('express-validator');
 const HttpError = require('../models/httpError');
 const moment = require('moment');
+const mongoose = require('mongoose');
 
 // for Google Geocode API that converts address to coordinates
 const getCoordinatesForAddress = require('../util/location');
 const Event = require('../models/event');
+const Club = require('../models/club');
+const mongooseUniqueValidator = require('mongoose-unique-validator');
 
 const errMsg = errors => {
 	var msg;
@@ -22,22 +25,22 @@ const getAllEvents = async (req, res, next) => {
 
 	let events;
 	try {
-		events = await Event.find({}).sort({ startDate: 1 });
+		events = await Event.find({}).sort({ startDate: 1, endDate: 1 });
 	} catch (err) {
 		const error = new HttpError(
-			'Fetching events failed, please try again later',
+			'Get all events process failed. Please try again later',
 			500
 		);
 		return next(error);
 	}
 
 	if (!events || events.length === 0) {
-		const error = new HttpError('Failed to fetch all events.', 404);
+		const error = new HttpError('No event available.', 404);
 
 		return next(error);
 	}
 
-	res.json({
+	res.status(200).json({
 		events: events.map(event => event.toObject({ getters: true }))
 	});
 };
@@ -53,7 +56,7 @@ const getEventById = async (req, res, next) => {
 	} catch (err) {
 		// this error is displayed if the request to the DB had some issues
 		const error = new HttpError(
-			'Something went wrong.  Could not connect to DB to retrieve the event.',
+			'Get event by ID process failed. Please try again later.',
 			500
 		);
 		return next(error);
@@ -69,25 +72,28 @@ const getEventById = async (req, res, next) => {
 	}
 
 	// convert Mongoose object to a normal js object and get rid of _ of _id using getters: true
-	res.json({ event: event.toObject({ getters: true }) }); // { event } => { event: event }
+	res.status(200).json({ event: event.toObject({ getters: true }) }); // { event } => { event: event }
 };
 
-// GET /api/events/clubs/:cid
+// GET /api/events/club/:cid
 const getEventsByClubId = async (req, res, next) => {
 	const cId = req.params.cid;
 
-	let events;
+	let club;
 	try {
-		events = await Event.find({ clubId: cId }).sort({ startDate: 1 });
+		club = await Club.findById(cId).populate({
+			path: 'events',
+			options: { sort: { startDate: 1, endDate: 1 } }
+		});
 	} catch (err) {
 		const error = new HttpError(
-			'Fetching events failed, please try again later',
+			'Get events by club ID process failed. Please try again later',
 			500
 		);
 		return next(error);
 	}
 
-	if (!events || events.length === 0) {
+	if (!club || club.events.length === 0) {
 		const error = new HttpError(
 			'Could not find any event with provided ID',
 			404
@@ -96,11 +102,14 @@ const getEventsByClubId = async (req, res, next) => {
 		return next(error);
 	}
 
-	res.json({
-		events: events.map(event => event.toObject({ getters: true }))
+	res.status(200).json({
+		events: club.events.map(event =>
+			event.toObject({ getters: true })
+		)
 	});
 };
 
+// GET /api/events/date/
 const getEventByDate = async (req, res, next) => {
 	let Dec31 = '12, 31';
 	let today = moment().format('YYYY, MM, DD');
@@ -110,10 +119,10 @@ const getEventByDate = async (req, res, next) => {
 		events = await Event.find({
 			startDate: { $gte: today },
 			endDate: { $lte: yearEnd }
-		}).sort({ startDate: 1 });
+		}).sort({ startDate: 1, endDate: 1 });
 	} catch (err) {
 		const error = new HttpError(
-			'Fetching events failed, please try again later',
+			'Get event by date process failed. Please try again later',
 			500
 		);
 		return next(error);
@@ -128,7 +137,7 @@ const getEventByDate = async (req, res, next) => {
 		return next(error);
 	}
 
-	res.json({
+	res.status(200).json({
 		events: events.map(event => event.toObject({ getters: true }))
 	});
 };
@@ -144,7 +153,7 @@ const createEvent = async (req, res, next) => {
 		const result = validationResult(req).formatWith(errorFormatter);
 		return next(
 			new HttpError(
-				`Invalid input, please check your data: ${result.array()}`,
+				`Create event process failed. Please check your data: ${result.array()}`,
 				422
 			)
 		);
@@ -163,7 +172,26 @@ const createEvent = async (req, res, next) => {
 		clubId
 	} = req.body;
 
-	// for async error handling, we need to use try catch if the function returns error
+	// Validate clubId exists. If not, sends back an error
+	let club;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Create event process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'Create event. Unauthorized request.',
+			404
+		);
+		return next(error);
+	}
+
 	let coordinate;
 	try {
 		coordinate = await getCoordinatesForAddress(address);
@@ -187,17 +215,38 @@ const createEvent = async (req, res, next) => {
 	});
 
 	try {
-		// save to MongoDB, asynch call, since it may take take to access DB
-		await newEvent.save();
+		/**
+		 * 2 operations here: 1. save the event to DB. 2. store the event ID to club
+		 * create a session for transaction, transaction is atomic meaning a logical unit
+		 * of work must be either completed with all of its data modifications, or none
+		 * of them is performed. Also it's isolated, modifications of data must be independent
+		 * of another transaction.
+		 **/
+		const session = await mongoose.startSession();
+		session.startTransaction();
+		await newEvent.save({ session: session });
+		/**
+		 * push here is not an array push method. Instead it's a Mongoose method that
+		 * establishes connection between two models which are club and event in this case.
+		 * Behind the scence, Mongo DB grabs newEvent ID and adds it to events field of the
+		 * club.
+		 **/
+		club.events.push(newEvent);
+		await club.save({ session: session });
+		// only both tasks succeed, we commit the transaction
+		await session.commitTransaction();
 	} catch (err) {
+		console.log('err = ', err);
 		const error = new HttpError(
-			'Event creation failed, please try it later.',
+			'Create event failed. Please try again later.',
 			500
 		);
 		return next(error);
 	}
 
-	res.status(201).json({ event: newEvent });
+	res
+		.status(201)
+		.json({ event: newEvent.toObject({ getters: true }) });
 };
 
 // PATCH /api/events/:eid
@@ -210,7 +259,7 @@ const updateEvent = async (req, res, next) => {
 		};
 		const result = validationResult(req).formatWith(errorFormatter);
 		const error = new HttpError(
-			`Invalid input, please check your data: ${result.array()}`,
+			`Update event process failed, please check your data: ${result.array()}`,
 			422
 		);
 
@@ -243,10 +292,17 @@ const updateEvent = async (req, res, next) => {
 		event = await Event.findById(eventId);
 	} catch (err) {
 		const error = new HttpError(
-			'Something went wrong while updating event, the event cannot be found in DB',
+			'Update event process failed, please try again later.',
 			500
 		);
 		return next(error);
+	}
+
+	if (!event) {
+		return next(
+			new HttpError('Update event failed finding the event.'),
+			404
+		);
 	}
 
 	// update event info
@@ -264,7 +320,7 @@ const updateEvent = async (req, res, next) => {
 		await event.save();
 	} catch (err) {
 		const error = new HttpError(
-			'Something went wrong while updating event. Save to DB failed please try again later.',
+			'Updating event failed. Please try again later.',
 			500
 		);
 		return next(error);
@@ -279,17 +335,38 @@ const deleteEvent = async (req, res, next) => {
 
 	let event;
 	try {
-		event = await Event.findById(eventId);
+		// populate allows us to access a document in another collection and to work with
+		// data in that existing document
+		event = await Event.findById(eventId).populate('clubId');
 	} catch (err) {
 		const error = new HttpError(
-			'Failed to delete the event while getting the event info, please try it later.',
+			'Delete event process failed. Please try again later.',
 			500
 		);
 		return next(error);
 	}
 
+	if (!event) {
+		const error = new HttpError(
+			'Delete event failed finding the event.',
+			404
+		);
+		return next(error);
+	}
+
 	try {
-		await event.remove();
+		// we need to use populate('clubId') above to be able to modify data in
+		// event.clubId.events
+		const sess = await mongoose.startSession();
+		sess.startTransaction();
+		await event.remove({ session: sess });
+		/**
+		 * pull the event out from the clubId events
+		 **/
+		event.clubId.events.pull(event);
+		await event.clubId.save({ session: sess });
+		// only both tasks succeed, we commit the transaction
+		await sess.commitTransaction();
 	} catch (err) {
 		const error = new HttpError(
 			'Failed to delete the event.  Please try it later.',
