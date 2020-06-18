@@ -1,8 +1,10 @@
-import React, { useContext } from 'react';
+import React, { useState, useContext } from 'react';
 
 import Button from '../../shared/components/FormElements/Button';
 import Card from '../../shared/components/UIElements/Card';
+import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import Input from '../../shared/components/FormElements/Input';
+import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import { useForm } from '../../shared/hooks/form-hook';
@@ -13,19 +15,15 @@ import {
 
 import './ClubsAuth.css';
 
-const CLUBS = [
-	{ name: 'AAS', password: 'havefun', id: 'c1' },
-	{ name: 'SCCASFR', password: 'autocross', id: 'c2' },
-	{ name: 'GGLC', password: 'lotusisfun', id: 'c3' },
-	{ name: 'BMWCCA', password: 'bmwsucks', id: 'c4' }
-];
-
 const ClubAuth = () => {
 	const clubAuthContext = useContext(ClubAuthContext);
+	const [isLoginMode, setIsLoginMode] = useState(true);
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState();
 
-	const [formState, inputHandler] = useForm(
+	const [formState, inputHandler, setFormData] = useForm(
 		{
-			name: {
+			email: {
 				value: '',
 				isValid: false
 			},
@@ -37,53 +35,157 @@ const ClubAuth = () => {
 		false
 	);
 
-	const eventSubmitHandler = event => {
+	const switchModeHandler = () => {
+		if (!isLoginMode) {
+			setFormData(
+				{
+					...formState.inputs,
+					name: undefined
+				},
+				formState.inputs.email.isValid &&
+					formState.inputs.password.isValid
+			);
+		} else {
+			setFormData(
+				{
+					...formState.inputs,
+					name: {
+						value: '',
+						isValid: false
+					}
+				},
+				false
+			);
+		}
+		setIsLoginMode(prevMode => !prevMode);
+	};
+
+	const eventSubmitHandler = async event => {
 		// meaning we don't want to reload the page after form submission
 		// all the input values stay intact on the form
 		event.preventDefault();
-		console.log('clubName = ', formState.inputs.name.value);
-		const identifiedClub = CLUBS.find(
-			club =>
-				club.name === formState.inputs.name.value &&
-				club.password === formState.inputs.password.value
-		);
-		console.log('identifiedClub=', identifiedClub);
-		if (identifiedClub) {
-			console.log('clubauth1 id =', identifiedClub.id);
-			clubAuthContext.clubLogin();
-			console.log('clubauth2 id=', clubAuthContext.clubId);
+		setIsLoading(true);
+		if (isLoginMode) {
+			try {
+				// fetch sends a http request to backend
+				// the request needs to match backend clubsRoutes /signup route
+				const response = await fetch(
+					'http://localhost:5000/api/clubs/login',
+					{
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							email: formState.inputs.email.value,
+							password: formState.inputs.password.value
+						})
+					}
+				);
+
+				// parse the response body, this is the response back from back
+				const responseData = await response.json();
+				// response with 400/500 status code
+				if (!response.ok) {
+					throw new Error(responseData.message);
+				}
+				setIsLoading(false);
+				clubAuthContext.clubLogin();
+			} catch (err) {
+				setIsLoading(false);
+				setError(
+					err.message || 'System failure, please try again later.'
+				);
+			}
+		} else {
+			try {
+				// fetch sends a http request to backend
+				// the request needs to match backend clubsRoutes /signup route
+				const response = await fetch(
+					'http://localhost:5000/api/clubs/signup',
+					{
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							name: formState.inputs.name.value,
+							email: formState.inputs.email.value,
+							password: formState.inputs.password.value
+						})
+					}
+				);
+
+				// parse the response body, this is the response back from back
+				const responseData = await response.json();
+				// response with 400/500 status code
+				if (!response.ok) {
+					throw new Error(responseData.message);
+				}
+				setIsLoading(false);
+				clubAuthContext.clubLogin();
+			} catch (err) {
+				setIsLoading(false);
+				setError(
+					err.message || 'System failure, please try again later.'
+				);
+			}
 		}
 	};
 
+	const errorHandler = () => {
+		setError(null);
+	};
 	return (
-		<Card className="authentication">
-			<form title="Club Login" onSubmit={eventSubmitHandler}>
-				<Input
-					id="name"
-					element="input"
-					type="text"
-					label="Name"
-					validators={[VALIDATOR_REQUIRE()]}
-					errorText="Please enter a valid club name or email."
-					onInput={inputHandler}
-				/>
-				<Input
-					id="password"
-					element="input"
-					type="password"
-					label="Password"
-					validators={[VALIDATOR_MINLENGTH(5)]}
-					errorText="Please enter a valid password."
-					onInput={inputHandler}
-				/>
-				<Button disabled={!formState.isValid}>LOGIN</Button>
-				<Button to="/">CANCEL</Button>
-			</form>
-			<p>No Account? Please sign up a new account.</p>
-			<Button inverse to="/clubs/signup">
+		<React.Fragment>
+			{/* error coming from const [error, setError] = useState(); */}
+			<ErrorModal error={error} onClear={errorHandler} />
+			<Card className="authentication">
+				{isLoading && <LoadingSpinner asOverlay />}
+				<form title="Club Login" onSubmit={eventSubmitHandler}>
+					{!isLoginMode && (
+						<Input
+							element="input"
+							id="name"
+							type="text"
+							label="Club Name"
+							validators={[VALIDATOR_REQUIRE()]}
+							errorText="Please enter club name."
+							onInput={inputHandler}
+						/>
+					)}
+					<Input
+						id="email"
+						element="input"
+						type="text"
+						label="Email"
+						validators={[VALIDATOR_REQUIRE()]}
+						errorText="Please enter a valid club email."
+						onInput={inputHandler}
+					/>
+					<Input
+						id="password"
+						element="input"
+						type="password"
+						label="Password"
+						validators={[VALIDATOR_MINLENGTH(5)]}
+						errorText="Please enter a valid password."
+						onInput={inputHandler}
+					/>
+					<Button disabled={!formState.isValid}>
+						{isLoginMode ? 'LOGIN' : 'SIGNUP'}
+					</Button>
+					<Button to="/">CANCEL</Button>
+				</form>
+				<p>No Account? Please sign up a new account.</p>
+				{/* <Button inverse  to="/clubs/signup">
 				SIGNUP
-			</Button>
-		</Card>
+			</Button> */}
+				<Button inverse onClick={switchModeHandler}>
+					SWITCH TO {isLoginMode ? 'SIGNUP' : 'LOGIN'}
+				</Button>
+			</Card>
+		</React.Fragment>
 	);
 };
 

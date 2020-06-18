@@ -1,6 +1,4 @@
-import React from "react";
-
-import "./UsersList.css";
+import './ClubsList.css';
 
 const UsersList = props => {};
 

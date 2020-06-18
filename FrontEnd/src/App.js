@@ -9,11 +9,11 @@ import {
 import Clubs from './clubs/pages/Clubs';
 import ClubAuth from './clubs/pages/ClubsAuth';
 import ClubEvents from './clubs/pages/ClubEvents';
+import ClubSignup from './clubs/pages/ClubSignup';
 import Error from './shared/util/error';
 import Event from './event/pages/Event';
 import Events from './events/pages/Events';
 import MainNavigation from './shared/components/Navigation/MainNavigation';
-import NewClub from './clubs/pages/NewClub';
 import NewEvent from './event/pages/NewEvent';
 import Users from './users/pages/Users';
 import UpdateEvent from './event/pages/UpdateEvent';
@@ -55,8 +55,8 @@ const App = () => {
 			<Switch>
 				<Route path="/" exact>
 					<Clubs />
-					<Users />
-					<Events />
+					{/* <Users />
+					<Events /> */}
 				</Route>
 				<Route path={'/:cid/events'} exact>
 					<ClubEvents />
@@ -93,8 +93,11 @@ const App = () => {
 				<Route path="/clubs/auth" exact>
 					<ClubAuth />
 				</Route>
-				<Route path="/clubs/new" exact>
+				{/* <Route path="/clubs/new" exact>
 					<NewClub />
+				</Route> */}
+				<Route path="/clubs/signup" exact>
+					<ClubSignup />
 				</Route>
 				<Route path="/error" exact>
 					<Error />
@@ -111,15 +114,13 @@ const App = () => {
 				clubLogin: clubLogin,
 				clubLogout: clubLogout,
 				setClubId: setClubId
-			}}
-		>
+			}}>
 			<UserAuthContext.Provider
 				value={{
 					isUserLoggedIn: isUserLoggedIn,
 					userLogin: userLogin,
 					userLogout: userLogout
-				}}
-			>
+				}}>
 				<Router>
 					<MainNavigation />
 					{/* main is defiend in /shared/components/Navigation/MainHeader.css */}
