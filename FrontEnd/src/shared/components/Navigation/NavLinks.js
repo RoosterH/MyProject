@@ -1,7 +1,10 @@
 import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 
-import { ClubAuthContext, UserAuthContext } from '../../context/auth-context';
+import {
+	ClubAuthContext,
+	UserAuthContext
+} from '../../context/auth-context';
 import './NavLink.css';
 
 const NavLinks = props => {

@@ -24,7 +24,6 @@ const ClubsList = props => {
 					image={club.image}
 					name={club.name}
 					eventCount={club.events.length}
-					className="avatar2"
 				/>
 			))}
 		</ul>

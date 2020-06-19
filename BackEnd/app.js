@@ -4,14 +4,31 @@ const mongoose = require('mongoose');
 
 const clubsRoutes = require('./routes/clubsRoutes');
 const eventsRoutes = require('./routes/eventsRoutes');
+const usersRoutes = require('./routes/usersRoutes');
 const HttpError = require('./models/httpError');
 const app = express();
 
 // bodyParser.json() will parse the json to js data structure such as array then call next automatically.
 app.use(bodyParser.json());
 
+// this is to avoid CORS error
+app.use((req, res, next) => {
+	// add certain headers to the response so we can attach it to the response sent back
+	// to the front end to work around CORS policy issue
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader(
+		'Access-Control-Allow-Headers',
+		'Origin, X-Requested-Width, Content-Type, Accept, Authorization'
+	);
+	res.setHeader(
+		'Access-Control-Allow-Methods',
+		'GET, POST, PATCH, DELETE'
+	);
+	next();
+});
 app.use('/api/events/', eventsRoutes);
 app.use('/api/clubs/', clubsRoutes);
+app.use('/api/users/', usersRoutes);
 
 // this route is for the requests that are not in any of the routes
 app.use((req, res, next) => {

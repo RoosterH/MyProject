@@ -23,6 +23,7 @@ router.post(
 	clubsController.createClub
 );
 
+// login, due to security reasons, we don't want to do a check for the input data
 router.post('/login', clubsController.loginClub);
 
 router.patch(

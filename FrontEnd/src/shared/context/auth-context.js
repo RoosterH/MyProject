@@ -11,6 +11,9 @@ export const ClubAuthContext = createContext({
 
 export const UserAuthContext = createContext({
 	isUserLoggedIn: false,
+	userId: '',
 	userLogin: () => {},
-	userLogout: () => {}
+	userLogout: () => {},
+	setUserId: () => {},
+	getUserId: () => {}
 });
