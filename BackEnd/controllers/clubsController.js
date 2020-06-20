@@ -108,6 +108,7 @@ const createClub = async (req, res, next) => {
 
 // POST '/api/clubs/login'
 const loginClub = async (req, res, next) => {
+	console.log('I am logged in');
 	const { name, password, email } = req.body;
 
 	// validation to make sure email does not exist in our DB
@@ -130,9 +131,10 @@ const loginClub = async (req, res, next) => {
 		return next(error);
 	}
 
-	res
-		.status(200)
-		.json({ message: `Club ${existingClub.name} logged in.` });
+	res.status(200).json({
+		message: `Club ${existingClub.name} logged in.`,
+		club: existingClub.toObject({ getters: true })
+	});
 };
 
 // PATCH '/api/clubs/:cid'

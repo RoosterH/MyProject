@@ -74,9 +74,8 @@ const ClubAuth = () => {
 		if (isLoginMode) {
 			try {
 				// use custom hook.
-				await sendRequest(
+				const responseData = await sendRequest(
 					'http://localhost:5000/api/clubs/login',
-
 					'POST',
 					{
 						'Content-Type': 'application/json'
@@ -86,14 +85,16 @@ const ClubAuth = () => {
 						password: formState.inputs.password.value
 					})
 				);
-				clubAuthContext.clubLogin();
+				// club.id is coming from clubsController loginClub
+				// id is from {getters: true}
+				clubAuthContext.clubLogin(responseData.club.id);
 			} catch (err) {
 				// empty. Custom hook takes care of it already
 			}
 		} else {
 			try {
 				// the request needs to match backend clubsRoutes /signup route
-				await sendRequest(
+				const responseData = await sendRequest(
 					'http://localhost:5000/api/clubs/signup',
 					'POST',
 					{
@@ -106,7 +107,9 @@ const ClubAuth = () => {
 					})
 				);
 
-				clubAuthContext.clubLogin();
+				// club.id is coming from clubsController createClub
+				// id is from {getters: true}
+				clubAuthContext.clubLogin(responseData.club.id);
 			} catch (err) {}
 		}
 	};

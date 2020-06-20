@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const clubsRoutes = require('./routes/clubsRoutes');
 const eventsRoutes = require('./routes/eventsRoutes');
 const usersRoutes = require('./routes/usersRoutes');
+
 const HttpError = require('./models/httpError');
 const app = express();
 
@@ -26,6 +27,7 @@ app.use((req, res, next) => {
 	);
 	next();
 });
+
 app.use('/api/events/', eventsRoutes);
 app.use('/api/clubs/', clubsRoutes);
 app.use('/api/users/', usersRoutes);

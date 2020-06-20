@@ -14,7 +14,7 @@ const NavLinks = props => {
 	const userAuthContext = useContext(UserAuthContext);
 	const userLoggedIn = userAuthContext.isUserLoggedIn;
 
-	console.log('in Navlink clubId = ', clubAuth.clubId);
+	let cid = clubAuth.clubId;
 	return (
 		<ul className="nav-links">
 			<li>
@@ -24,14 +24,14 @@ const NavLinks = props => {
 			</li>
 			{clubLoggedIn && (
 				<li>
-					<NavLink to="/c1/events/" exact>
+					<NavLink to={`/${cid}/events/`} exact>
 						CLUB EVENTS
 					</NavLink>
 				</li>
 			)}
 			{clubLoggedIn && (
 				<li>
-					<NavLink to="/c1/events/new" exact>
+					<NavLink to={`/clubs/events/new`} exact>
 						ADD EVENT
 					</NavLink>
 				</li>

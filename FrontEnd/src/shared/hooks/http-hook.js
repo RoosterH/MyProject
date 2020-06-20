@@ -20,7 +20,6 @@ export const useHttpClient = () => {
 			 * by clicking a different link/button.  We need to abort the current http
 			 * request since we are no longer on the submit page.
 			 */
-
 			const httpAbortCtrl = new AbortController();
 			activeHttpRequests.current.push(httpAbortCtrl);
 
@@ -29,8 +28,8 @@ export const useHttpClient = () => {
 				// the request needs to match backend clubsRoutes /signup route
 				const response = await fetch(url, {
 					method,
-					body,
 					headers,
+					body,
 					// signal links httpAbortCtrl to fetch request, so we will be able to use
 					// httpAbortCtrl to cancel the request
 					signal: httpAbortCtrl.signal

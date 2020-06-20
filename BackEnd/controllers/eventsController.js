@@ -144,6 +144,7 @@ const getEventByDate = async (req, res, next) => {
 
 // POST /api/events/
 const createEvent = async (req, res, next) => {
+	console.log('I am creating event.');
 	// validate request, req checks are defined in eventRoutes.js using
 	// express-validator
 	const errors = validationResult(req);

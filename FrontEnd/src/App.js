@@ -9,7 +9,6 @@ import {
 import Clubs from './clubs/pages/Clubs';
 import ClubAuth from './clubs/pages/ClubAuth';
 import ClubEvents from './clubs/pages/ClubEvents';
-import ClubSignup from './clubs/pages/ClubSignup';
 import Error from './shared/util/error';
 import Event from './event/pages/Event';
 import Events from './events/pages/Events';
@@ -27,26 +26,33 @@ import {
 const App = () => {
 	// club context
 	const [isClubLoggedIn, setIsClubLoggedIn] = useState(false);
-	const clubLogin = useCallback(() => {
+	const [clubId, setClubId] = useState(false);
+
+	const clubLogin = useCallback(cid => {
 		setIsClubLoggedIn(true);
+		setClubId(cid);
 	}, []);
 	const clubLogout = useCallback(() => {
 		setIsClubLoggedIn(false);
+		setClubId(null);
 	}, []);
 
-	const [clubId, setClubIdHandler] = useState('');
-	const setClubId = useCallback(id => {
-		setClubIdHandler(id);
-		console.log('App id = ', id);
-	}, []);
+	// const [clubId, setClubIdHandler] = useState('');
+	// const setClubId = useCallback(id => {
+	// 	setClubIdHandler(id);
+	// }, []);
 
 	// user context
 	const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
-	const userLogin = useCallback(() => {
+	const [userId, setUserId] = useState(false);
+
+	const userLogin = useCallback(uid => {
 		setIsUserLoggedIn(true);
+		setUserId(uid);
 	}, []);
 	const userLogout = useCallback(() => {
 		setIsUserLoggedIn(false);
+		setUserId(null);
 	}, []);
 
 	let routes;
@@ -59,13 +65,13 @@ const App = () => {
 					<Users />
 					<Events />
 				</Route>
-				<Route path={'/:cid/events'} exact>
+				<Route path={'/:clubId/events'} exact>
 					<ClubEvents />
 				</Route>
 				<Route path={'/events/:id'} exact>
 					<Event />
 				</Route>
-				<Route path="/:cid/events/new" exact>
+				<Route path="/clubs/events/new" exact>
 					<NewEvent />
 				</Route>
 				<Route path="/events/update/:id" exact>
@@ -78,6 +84,7 @@ const App = () => {
 			</Switch>
 		);
 	} else {
+		// club not logged in
 		routes = (
 			<Switch>
 				<Route path="/" exact>
@@ -94,9 +101,7 @@ const App = () => {
 				<Route path="/clubs/auth" exact>
 					<ClubAuth />
 				</Route>
-				<Route path="/clubs/signup" exact>
-					<ClubSignup />
-				</Route>
+				<Route path="/clubs/signup" exact></Route>
 				<Route path="/users/auth" exact>
 					<UserAuth />
 				</Route>
@@ -111,16 +116,16 @@ const App = () => {
 		<ClubAuthContext.Provider
 			value={{
 				isClubLoggedIn: isClubLoggedIn,
-				clubId: clubId,
 				clubLogin: clubLogin,
 				clubLogout: clubLogout,
-				setClubId: setClubId
+				clubId: clubId
 			}}>
 			<UserAuthContext.Provider
 				value={{
 					isUserLoggedIn: isUserLoggedIn,
 					userLogin: userLogin,
-					userLogout: userLogout
+					userLogout: userLogout,
+					userId: userId
 				}}>
 				<Router>
 					<MainNavigation />
