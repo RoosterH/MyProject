@@ -23,9 +23,11 @@ const EventList = props => {
 		<ul className="events-list">
 			{props.items.map(event => (
 				<EventsItem
+					// In React, each child in the array should have a unique "key" prop
+					// so when render it will only render one element not the whole array
 					key={event.id}
 					id={event.id}
-					eventImage={event.eventImage}
+					image={event.image}
 					name={event.name}
 					startDate={event.startDate}
 					endDate={event.endDate}

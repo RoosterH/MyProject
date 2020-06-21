@@ -88,7 +88,7 @@ const NewEvent = () => {
 				})
 			);
 			// Redirect the club to a diffrent page
-			history.push(`/${clubAuthContext.clubId}/events`);
+			history.push(`/club/${clubAuthContext.clubId}`);
 		} catch (err) {}
 	};
 
@@ -120,7 +120,7 @@ const NewEvent = () => {
 					id="startDate"
 					element="input"
 					type="date"
-					label="Starting Date"
+					label="Starting Date (Future date from today)"
 					validators={[VALIDATOR_REQUIRE()]}
 					errorText="Please enter a valid date."
 					onInput={inputHandler}

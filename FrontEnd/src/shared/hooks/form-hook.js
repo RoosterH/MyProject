@@ -16,6 +16,9 @@ const formReducer = (state, action) => {
 			 * validates all inputs on the form.
 			 */
 			for (const inputId in state.inputs) {
+				if (!state.inputs[inputId]) {
+					continue;
+				}
 				// matching inputId(either "title" or "description") with action.inputId
 				if (inputId === action.inputId) {
 					// matches with action.inputId meaning there is a change so we want to
@@ -33,7 +36,10 @@ const formReducer = (state, action) => {
 					// spread operator means the current inputs original state
 					// we only override the action item to make to the next state
 					...state.inputs,
-					[action.inputId]: { value: action.value, isValid: action.isValid }
+					[action.inputId]: {
+						value: action.value,
+						isValid: action.isValid
+					}
 				},
 				isValid: formIsValid
 			};

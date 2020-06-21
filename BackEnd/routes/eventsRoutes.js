@@ -3,9 +3,11 @@
  */
 const express = require('express');
 const { check } = require('express-validator');
+const moment = require('moment');
 
 const eventsController = require('../controllers/eventsController');
 const HttpError = require('../models/httpError');
+const e = require('express');
 
 const router = express.Router();
 
@@ -19,13 +21,19 @@ router.get('/:eid', eventsController.getEventById);
 
 router.get('/club/:cid', eventsController.getEventsByClubId);
 
-let todayUTC = new Date();
+// router.get('/user/:uid', eventsController.getEventsByUserId);
 
+let today = moment().format('YYYY, MM, DD');
+
+// only clubs are able to create an event
 router.post(
 	'/',
 	[
 		check('name').isLength({ min: 5 }),
-		check('startDate').custom(value => Date.parse(value) > todayUTC),
+		//check('startDate').custom(value => Date.parse(value) > today),
+		check('startDate').custom(
+			value => moment(value).format('YYYY, MM, DD') > today
+		),
 		check('endDate').custom(
 			(value, { req }) => value >= req.body.startDate
 		),

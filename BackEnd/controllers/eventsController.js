@@ -94,17 +94,16 @@ const getEventsByClubId = async (req, res, next) => {
 	}
 
 	if (!club || club.events.length === 0) {
-		const error = new HttpError(
-			'This club does not have any event yet.',
-			404
-		);
+		const error = new HttpError('Could not find any event.', 404);
 
 		return next(error);
 	}
 
 	res.status(200).json({
 		events: club.events.map(event =>
-			event.toObject({ getters: true })
+			event.toObject({
+				getters: true
+			})
 		)
 	});
 };
@@ -144,7 +143,6 @@ const getEventByDate = async (req, res, next) => {
 
 // POST /api/events/
 const createEvent = async (req, res, next) => {
-	console.log('I am creating event.');
 	// validate request, req checks are defined in eventRoutes.js using
 	// express-validator
 	const errors = validationResult(req);
@@ -238,7 +236,6 @@ const createEvent = async (req, res, next) => {
 		// only both tasks succeed, we commit the transaction
 		await session.commitTransaction();
 	} catch (err) {
-		console.log('err = ', err);
 		const error = new HttpError(
 			'Create event failed. Please try again later.',
 			500

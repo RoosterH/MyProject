@@ -51,7 +51,6 @@ const getClubById = (req, res, next) => {
 const createClub = async (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
-		console.log(errors);
 		const errorFormatter = ({ value, msg, param, location }) => {
 			return `${param} : ${msg} `;
 		};
@@ -108,7 +107,6 @@ const createClub = async (req, res, next) => {
 
 // POST '/api/clubs/login'
 const loginClub = async (req, res, next) => {
-	console.log('I am logged in');
 	const { name, password, email } = req.body;
 
 	// validation to make sure email does not exist in our DB
@@ -227,7 +225,6 @@ const deleteClub = async (req, res, next) => {
 		await club.remove({ session: session });
 		await session.commitTransaction();
 	} catch (err) {
-		console.log('err2 = ', err);
 		const error = new HttpError(
 			'Delete club failed, please try again later.',
 			500

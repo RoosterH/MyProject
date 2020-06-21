@@ -6,6 +6,7 @@ import { createContext } from 'react';
  * const clubAuthContext = useContext(ClubAuthContext);
  * inside of isLoginMode we assign clubId using
  * clubAuthContext.clubLogin(responseData.club.id);
+ * responseData comes from backend clubsController.js loginClub where it returns club as an object
  * In NewEvent.js, we set a listener
  * const clubAuth = useContext(ClubAuthContext);
  * We then will be able to get clubId by using

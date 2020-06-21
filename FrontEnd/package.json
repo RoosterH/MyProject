@@ -4,6 +4,7 @@
 	"private": true,
 	"dependencies": {
 		"formik": "^2.1.4",
+		"moment": "^2.27.0",
 		"react": "^16.11.0",
 		"react-dom": "^16.11.0",
 		"react-router-dom": "^5.2.0",

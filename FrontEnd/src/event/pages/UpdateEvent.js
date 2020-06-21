@@ -6,7 +6,6 @@ import Card from '../../shared/components/UIElements/Card';
 import Image from '../../shared/components/UIElements/Image';
 import Input from '../../shared/components/FormElements/Input';
 import Modal from '../../shared/components/UIElements/Modal';
-import { EVENTS } from './Event';
 import { useForm } from '../../shared/hooks/form-hook';
 import {
 	VALIDATOR_REQUIRE,
@@ -89,7 +88,10 @@ const UpdateEvent = () => {
 		},
 		false
 	);
-	const identifiedEvent = EVENTS.find(element => element.id === eventId);
+	const EVENTS = [];
+	const identifiedEvent = EVENTS.find(
+		element => element.id === eventId
+	);
 
 	useEffect(() => {
 		if (identifiedEvent) {
@@ -180,8 +182,7 @@ const UpdateEvent = () => {
 						title={identifiedEvent.title}
 						alt={identifiedEvent.title + 'course map'}
 						src={identifiedEvent.courseMap}
-						onClick={() => openCourseHandler()}
-					></Image>
+						onClick={() => openCourseHandler()}></Image>
 				</div>
 			</div>
 		) : (
@@ -197,16 +198,16 @@ const UpdateEvent = () => {
 					header={identifiedEvent.title}
 					contentClass="event-item__modal-content"
 					footerClass="event-item__modal-actions"
-					footer={<Button onClick={() => closeModalHandler()}>CLOSE</Button>}
-				>
+					footer={
+						<Button onClick={() => closeModalHandler()}>CLOSE</Button>
+					}>
 					{/* render props.children */}
 					<div className="map-container">
 						{showCourse && (
 							<img
 								src={identifiedEvent.courseMap}
 								alt={identifiedEvent.alt}
-								className="map-container"
-							></img>
+								className="map-container"></img>
 						)}
 						/>}
 					</div>
@@ -214,7 +215,9 @@ const UpdateEvent = () => {
 			)}
 
 			{formState.inputs.title.value && (
-				<form className="event-form" onSubmit={eventUpdateSubmitHandler}>
+				<form
+					className="event-form"
+					onSubmit={eventUpdateSubmitHandler}>
 					<Input
 						id="name"
 						element="input"
