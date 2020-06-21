@@ -98,9 +98,9 @@ const App = () => {
 				<Route path="/events/:id" exact>
 					<Event />
 				</Route>
-				{/* <Route path={'/events/club/:clubId'} exact>
+				<Route path={'/events/club/:clubId'} exact>
 					<ClubEvents />
-				</Route> */}
+				</Route>
 				<Route path="/clubs/auth" exact>
 					<ClubAuth />
 				</Route>

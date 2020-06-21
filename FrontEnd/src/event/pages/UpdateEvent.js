@@ -49,11 +49,7 @@ const UpdateEvent = () => {
 				value: '',
 				isValid: false
 			},
-			title: {
-				value: '',
-				isValid: false
-			},
-			eventImage: {
+			image: {
 				value: '',
 				isValid: false
 			},
@@ -101,12 +97,8 @@ const UpdateEvent = () => {
 						value: identifiedEvent.name,
 						isValid: true
 					},
-					title: {
-						value: identifiedEvent.title,
-						isValid: true
-					},
-					eventImage: {
-						value: identifiedEvent.eventImage,
+					image: {
+						value: identifiedEvent.image,
 						isValid: true
 					},
 					startDate: {
@@ -179,8 +171,8 @@ const UpdateEvent = () => {
 				Current Course Map: {courseMap}
 				<div>
 					<Image
-						title={identifiedEvent.title}
-						alt={identifiedEvent.title + 'course map'}
+						title={identifiedEvent.name}
+						alt={identifiedEvent.name + 'course map'}
 						src={identifiedEvent.courseMap}
 						onClick={() => openCourseHandler()}></Image>
 				</div>
@@ -191,13 +183,14 @@ const UpdateEvent = () => {
 
 	return (
 		<React.Fragment>
-			{formState.inputs.title.value && (
+			{formState.inputs.name.value && (
 				<Modal
 					show={showModal}
 					onCancel={() => closeModalHandler()}
-					header={identifiedEvent.title}
-					contentClass="event-item__modal-content"
+					header={identifiedEvent.name}
+					contentClass="event-item__modal__content"
 					footerClass="event-item__modal-actions"
+					headerClass="event-item__modal__header"
 					footer={
 						<Button onClick={() => closeModalHandler()}>CLOSE</Button>
 					}>
@@ -209,12 +202,11 @@ const UpdateEvent = () => {
 								alt={identifiedEvent.alt}
 								className="map-container"></img>
 						)}
-						/>}
 					</div>
 				</Modal>
 			)}
 
-			{formState.inputs.title.value && (
+			{formState.inputs.name.value && (
 				<form
 					className="event-form"
 					onSubmit={eventUpdateSubmitHandler}>
@@ -230,26 +222,15 @@ const UpdateEvent = () => {
 						initialValid={formState.inputs.name.isValid}
 					/>
 					<Input
-						id="title"
-						element="input"
-						type="text"
-						label="Title"
-						validators={[VALIDATOR_REQUIRE()]}
-						errorText="Please enter a valid title"
-						onInput={inputHandler}
-						initialValue={formState.inputs.title.value}
-						initialValid={formState.inputs.title.isValid}
-					/>
-					<Input
-						id="eventImage"
+						id="image"
 						element="input"
 						type="text"
 						label="Event Image (optional in jpg or png)"
 						validators={[VALIDATOR_REQUIRE()]}
 						errorText="Image format jpg or png"
 						onInput={inputHandler}
-						initialValue={formState.inputs.eventImage.value}
-						initialValid={formState.inputs.eventImage.isValid}
+						initialValue={formState.inputs.image.value}
+						initialValid={formState.inputs.image.isValid}
 					/>
 					<Input
 						id="startDate"

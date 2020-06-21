@@ -14,9 +14,10 @@ const ModalOverlay = props => {
 			</header>
 			<form
 				onSubmit={
-					props.onSubmit ? props.onSubmit : event => event.preventDefault()
-				}
-			>
+					props.onSubmit
+						? props.onSubmit
+						: event => event.preventDefault()
+				}>
 				<div className={`modal__content ${props.contentClass}`}>
 					{props.children}
 				</div>
@@ -26,7 +27,10 @@ const ModalOverlay = props => {
 			</form>
 		</div>
 	);
-	return ReactDOM.createPortal(content, document.getElementById('modal-hook'));
+	return ReactDOM.createPortal(
+		content,
+		document.getElementById('modal-hook')
+	);
 };
 
 const Modal = props => {
@@ -38,8 +42,7 @@ const Modal = props => {
 				mountOnEnter
 				unmountOnExit
 				timeout={10}
-				classNames="modal "
-			>
+				classNames="modal ">
 				{/* import all props to ModalOverlay */}
 				<ModalOverlay {...props} />
 			</CSSTransition>

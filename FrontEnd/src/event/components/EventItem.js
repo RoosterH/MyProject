@@ -61,7 +61,7 @@ const EventItem = props => {
 	const eventImageElement =
 		props.event.image !== '' ? (
 			<div className="event-item__image">
-				<img src={props.event.image} alt={props.title} />
+				<img src={props.event.image} alt={props.name} />
 			</div>
 		) : (
 			<div></div>
@@ -74,7 +74,7 @@ const EventItem = props => {
 			<Modal
 				show={showModal}
 				onCancel={() => closeModalHandler()}
-				header={props.event.title}
+				header={props.event.name}
 				contentClass="event-item__modal-content"
 				footerClass="event-item__modal-actions"
 				footer={
@@ -83,10 +83,13 @@ const EventItem = props => {
 				{/* render props.children */}
 				<div className="map-container">
 					{showCourse && (
-						<img
-							src={props.event.courseMap}
-							alt={props.event.alt}
-							className="map-container"></img>
+						<React.Fragment>
+							<h3>Right click on map for more actions.</h3>
+							<img
+								src={props.event.courseMap}
+								alt={props.event.alt}
+								className="map-container"></img>
+						</React.Fragment>
 					)}
 					{showMap && (
 						<Map center={props.event.coordinate} zoom={10} />
@@ -113,14 +116,14 @@ const EventItem = props => {
 					</React.Fragment>
 				}>
 				<p className="modal__content">
-					Do you really want to delete {props.event.title}? It cannot
+					Do you really want to delete {props.event.name}? It cannot
 					be recovered after deletion.
 				</p>
 			</Modal>
 
 			<Card className="event-item__content">
 				<div>
-					<h2>{props.event.title}</h2>
+					<h2>{props.event.name}</h2>
 				</div>
 				{eventImageElement}
 				<div className="event-item__info">
@@ -136,8 +139,8 @@ const EventItem = props => {
 				</div>
 				<div className="event-item__coursemap">
 					<Image
-						title={props.event.title}
-						alt={props.event.title + 'course map'}
+						title={props.event.name}
+						alt={props.event.name + 'course map'}
 						src={props.event.courseMap}
 						onClick={() => openCourseHandler()}></Image>
 				</div>

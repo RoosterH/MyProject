@@ -8,7 +8,7 @@ import { useParams } from 'react-router-dom';
 import EventItem from '../components/EventItem';
 
 // Events is called in App.js where the route been defined
-// @to-do
+// path={'/events/:id'}
 const Event = () => {
 	const [loadedEvent, setLoadedEvent] = useState();
 	const {

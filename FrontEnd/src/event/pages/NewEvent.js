@@ -104,7 +104,7 @@ const NewEvent = () => {
 					type="text"
 					label="Name"
 					validators={[VALIDATOR_REQUIRE()]}
-					errorText="Please enter a valid title."
+					errorText="Please enter a valid name."
 					onInput={inputHandler}
 				/>
 				<Input
