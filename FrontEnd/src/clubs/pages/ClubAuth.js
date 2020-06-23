@@ -1,4 +1,5 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 
 import Button from '../../shared/components/FormElements/Button';
 import Card from '../../shared/components/UIElements/Card';
@@ -66,6 +67,7 @@ const ClubAuth = () => {
 		setIsLoginMode(prevMode => !prevMode);
 	};
 
+	const history = useHistory();
 	const clubSubmitHandler = async event => {
 		// meaning we don't want to reload the page after form submission
 		// all the input values stay intact on the form
@@ -85,6 +87,17 @@ const ClubAuth = () => {
 						password: formState.inputs.password.value
 					})
 				);
+
+				/**
+				 * Need to put redirect before calling clubAuthContext.clubLogin(responseData.club.id).
+				 * Otherwise App.js has ClubAuthContext.provider will re-render App and go to
+				 * <Redirect to="/"> If we have components that send http request in that Route
+				 * the http request will be aborted and got a warning:
+				 * Warning: Can't perform a React state update on an unmounted component. when
+				 * trying to redirect page after logging
+				 */
+				history.push(`/events/club/${responseData.club.id}`);
+
 				// club.id is coming from clubsController loginClub
 				// id is from {getters: true}
 				clubAuthContext.clubLogin(responseData.club.id);
@@ -107,12 +120,23 @@ const ClubAuth = () => {
 					})
 				);
 
+				history.push(`/events/club/${responseData.club.id}`);
 				// club.id is coming from clubsController createClub
 				// id is from {getters: true}
 				clubAuthContext.clubLogin(responseData.club.id);
 			} catch (err) {}
 		}
 	};
+
+	useEffect(() => {
+		if (!isLoading && clubAuthContext.clubId) {
+			if (isLoginMode) {
+				history.push(`/events/club/${clubAuthContext.clubId}`);
+			} else {
+				history.push(`/events/`);
+			}
+		}
+	}, [isLoading, isLoginMode, clubAuthContext, history]);
 
 	// set Card title
 	const cardTitle = isLoginMode ? 'Club Login' : 'Club Signup';
@@ -123,7 +147,9 @@ const ClubAuth = () => {
 			<ErrorModal error={error} onClear={clearError} />
 			<Card className="authentication" title={cardTitle}>
 				{isLoading && <LoadingSpinner asOverlay />}
-				<form title="Club Login" onSubmit={clubSubmitHandler}>
+				<form
+					title="Club Authentication"
+					onSubmit={clubSubmitHandler}>
 					{!isLoginMode && (
 						<Input
 							element="input"

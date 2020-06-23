@@ -31,6 +31,7 @@ const EventList = props => {
 					name={event.name}
 					startDate={event.startDate}
 					endDate={event.endDate}
+					venue={event.venue}
 				/>
 			))}
 		</ul>

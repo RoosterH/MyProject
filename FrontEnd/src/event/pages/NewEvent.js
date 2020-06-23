@@ -88,7 +88,7 @@ const NewEvent = () => {
 				})
 			);
 			// Redirect the club to a diffrent page
-			history.push(`/club/${clubAuthContext.clubId}`);
+			history.push(`/events/club/${clubAuthContext.clubId}`);
 		} catch (err) {}
 	};
 

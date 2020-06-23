@@ -26,7 +26,7 @@ import {
 const App = () => {
 	// club context
 	const [isClubLoggedIn, setIsClubLoggedIn] = useState(false);
-	const [clubId, setClubId] = useState(false);
+	const [clubId, setClubId] = useState(null);
 
 	const clubLogin = useCallback(cid => {
 		setIsClubLoggedIn(true);
@@ -62,8 +62,7 @@ const App = () => {
 			<Switch>
 				<Route path="/" exact>
 					<Clubs />
-					<Users />
-					<Events />
+					{/* <Events /> */}
 				</Route>
 				<Route path={'/events/club/:clubId'} exact>
 					<ClubEvents />

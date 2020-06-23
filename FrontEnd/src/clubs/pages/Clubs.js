@@ -2,29 +2,29 @@ import React, { useEffect, useState } from 'react';
 
 import ClubsList from '../components/ClubsList';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
+import { useHttpClient } from '../../shared/hooks/http-hook';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
 const Clubs = () => {
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState();
-	const [loadedClubs, setLoadedClubs] = useState();
+	const {
+		isLoading,
+		error,
+		sendRequest,
+		clearError
+	} = useHttpClient();
 
+	const [loadedClubs, setLoadedClubs] = useState();
 	// if the dependency is empty, it will only run once
 	// don't make useEffect function async, because useEffect does not want the
 	// function returns a promise
 	useEffect(() => {
-		const sendRequest = async () => {
-			setIsLoading(true);
+		const fetchClubs = async () => {
 			try {
 				// send GET request to backend
-				const response = await fetch(
+				const responseData = await sendRequest(
 					'http://localhost:5000/api/clubs'
 				);
-				const responseData = await response.json();
 
-				if (!response.ok) {
-					throw new Error(responseData.message);
-				}
 				/**
 				 * this corresponds to back end clubsController.getAllClubs
 				 * res.status(200).json({
@@ -33,21 +33,14 @@ const Clubs = () => {
 				 **/
 				//
 				setLoadedClubs(responseData.clubs);
-			} catch (err) {
-				setError(err.message);
-			}
-			setIsLoading(false);
+			} catch (err) {}
 		};
-		sendRequest();
-	}, []);
-
-	const errorHandler = () => {
-		setError(null);
-	};
+		fetchClubs();
+	}, [sendRequest]);
 
 	return (
 		<React.Fragment>
-			<ErrorModal error={error} onClear={errorHandler} />
+			<ErrorModal error={error} onClear={clearError} />
 			{isLoading && (
 				<div className="center">
 					<LoadingSpinner />

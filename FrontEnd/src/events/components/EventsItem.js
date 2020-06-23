@@ -22,9 +22,10 @@ const EventsItem = props => {
 						/>
 					</div>
 					<div className="events-item__info">
-						<h3>Event: {props.name}</h3>
+						<h3>{props.name}</h3>
 						<h4>
-							Date: {startDate} - {endDate}
+							{startDate} - {endDate} <br />
+							Venue: {props.venue}
 						</h4>
 					</div>
 				</Link>

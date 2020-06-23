@@ -24,7 +24,7 @@ const NavLinks = props => {
 			</li>
 			{clubLoggedIn && (
 				<li>
-					<NavLink to={`/${cid}/events/`} exact>
+					<NavLink to={`/events/club/${cid}/`} exact>
 						CLUB EVENTS
 					</NavLink>
 				</li>
