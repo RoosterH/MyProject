@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { useHistory } from 'react-router-dom';
+import moment from 'moment';
 
 import Input from '../../shared/components/FormElements/Input';
 import Button from '../../shared/components/FormElements/Button';
@@ -77,8 +78,8 @@ const NewEvent = () => {
 				},
 				JSON.stringify({
 					name: formState.inputs.name.value,
-					startDate: formState.inputs.startDate.value,
-					endDate: formState.inputs.endDate.value,
+					startDate: moment(formState.inputs.startDate.value),
+					endDate: moment(formState.inputs.endDate.value),
 					venue: formState.inputs.venue.value,
 					address: formState.inputs.address.value,
 					description: formState.inputs.description.value,

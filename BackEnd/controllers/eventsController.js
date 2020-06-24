@@ -250,19 +250,20 @@ const createEvent = async (req, res, next) => {
 
 // PATCH /api/events/:eid
 const updateEvent = async (req, res, next) => {
-	// validate request
+	// validate request, req checks are defined in eventRoutes.js using
+	// express-validator
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		const errorFormatter = ({ value, msg, param, location }) => {
 			return `${param} : ${msg} `;
 		};
 		const result = validationResult(req).formatWith(errorFormatter);
-		const error = new HttpError(
-			`Update event process failed, please check your data: ${result.array()}`,
-			422
+		return next(
+			new HttpError(
+				`Update2 event process failed. Please check your data: ${result.array()}`,
+				422
+			)
 		);
-
-		return next(error);
 	}
 
 	// we allow all the data to be updated except id and clubId

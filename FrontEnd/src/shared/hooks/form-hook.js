@@ -12,7 +12,7 @@ const formReducer = (state, action) => {
 			let formIsValid = true;
 			/**
 			 * state.inputs is our form inputs that defined in useReducer initial state.
-			 * We have inputs such as id="title", id="descrption", ... etc. The following for loop
+			 * We have inputs such as id="name", id="descrption", ... etc. The following for loop
 			 * validates all inputs on the form.
 			 */
 			for (const inputId in state.inputs) {
