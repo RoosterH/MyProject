@@ -265,7 +265,7 @@ const UpdateEvent = () => {
 						id="startDate"
 						element="input"
 						type="date"
-						min={moment().format('MM/DD/YYYY')}
+						min={moment().add(1, 'days').format('YYYY-MM-DD')}
 						label="StartDate"
 						validators={[VALIDATOR_STARTDATE()]}
 						errorText="Please enter a valid date"
@@ -277,7 +277,7 @@ const UpdateEvent = () => {
 						id="endDate"
 						element="input"
 						type="date"
-						min={moment(loadedEvent.startDate).format('MM/DD/YYYY')}
+						min={moment(loadedEvent.startDate).format('YYYY-MM-DD')}
 						label="EndDate"
 						validators={[VALIDATOR_REQUIRE()]}
 						errorText="Please enter a valid date"

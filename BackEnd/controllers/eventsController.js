@@ -319,6 +319,7 @@ const updateEvent = async (req, res, next) => {
 	try {
 		await event.save();
 	} catch (err) {
+		console.log(err);
 		const error = new HttpError(
 			'Updating event failed. Please try again later.',
 			500

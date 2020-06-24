@@ -53,10 +53,16 @@ const EventItem = props => {
 		showMap && closeMapHandler();
 		showCourse && closeCourseHandler();
 	};
+
+	// date related section
 	let startDate = moment(props.event.startDate).format(
 		'MM/DD/YYYY, ddd'
 	);
 	let endDate = moment(props.event.endDate).format('MM/DD/YYYY, ddd');
+	let formStartDate = moment(props.event.startDate).format(
+		'YYYY-MM-DD'
+	);
+	let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');
 
 	const eventImageElement =
 		props.event.image !== '' ? (
@@ -67,6 +73,7 @@ const EventItem = props => {
 			<div></div>
 		);
 
+	console.log('startDate = ', startDate);
 	return (
 		// React.Frgment connect multiple components
 		<React.Fragment>
@@ -150,16 +157,18 @@ const EventItem = props => {
 							ENTRY FORM
 						</Button>
 					)}
-					{clubAuth.isClubLoggedIn && (
-						<Button to={`/events/update/${props.event.id}`}>
-							EDIT
-						</Button>
-					)}
-					{clubAuth.isClubLoggedIn && (
-						<Button danger onClick={showDeleteWarningHandler}>
-							DELETE
-						</Button>
-					)}
+					{clubAuth.isClubLoggedIn &&
+						formStartDate > validFormModDate && (
+							<Button to={`/events/update/${props.event.id}`}>
+								EDIT
+							</Button>
+						)}
+					{clubAuth.isClubLoggedIn &&
+						formStartDate > validFormModDate && (
+							<Button danger onClick={showDeleteWarningHandler}>
+								DELETE
+							</Button>
+						)}
 				</div>
 			</Card>
 		</React.Fragment>
