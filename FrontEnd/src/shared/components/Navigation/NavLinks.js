@@ -31,7 +31,7 @@ const NavLinks = props => {
 			)}
 			{clubLoggedIn && (
 				<li>
-					<NavLink to={`/clubs/events/new`} exact>
+					<NavLink to="/clubs/events/new" exact>
 						ADD EVENT
 					</NavLink>
 				</li>

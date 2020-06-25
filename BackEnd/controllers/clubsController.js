@@ -197,7 +197,10 @@ const deleteClub = async (req, res, next) => {
 
 	let club;
 	try {
-		club = await Club.findById(clubId);
+		// we need to populate events for the deleting club
+		// so we could re-assign those events to dummy club and add them to
+		// dummy club events list
+		club = await Club.findById(clubId).populate('events');
 	} catch (err) {
 		const error = new HttpError(
 			'Delete club process failed, please try again later.',
@@ -214,17 +217,40 @@ const deleteClub = async (req, res, next) => {
 		return next(error);
 	}
 	let clubName = club.name;
+	// We do not want to delete all the associated events with clubs.
+	// Instead we will be assiging the associated clubId to our dummy club (MySeatTime).
+	const dummyClubId = mongoose.Types.ObjectId(
+		'5ef4f30cbaea80121c04c710'
+	);
 	try {
+		// using transaction here to make sure all the operations are done
 		const session = await mongoose.startSession();
 		session.startTransaction();
 
-		await Event.deleteMany(
-			{ _id: { $in: club.events } },
-			{ session: session }
-		);
+		// transfer all the events to dummy club so the events won't be deleted
+		await club.events.map(async event => {
+			// assign the event clubId to dummyClub since we are deleting the original club
+			event.clubId = dummyClubId;
+			event.save({
+				session: session
+			});
+
+			/**
+			 * push the event to dummyClub events list
+			 * We need to use await, otherwise, it won't work.
+			 * In order to use await, we need to make the callback as async
+			 */
+			let dummyClub = await Club.findById(dummyClubId).populate(
+				'events'
+			);
+			dummyClub.events.push(event);
+			dummyClub.save({ session: session });
+		});
+
 		await club.remove({ session: session });
 		await session.commitTransaction();
 	} catch (err) {
+		console.log('err', err);
 		const error = new HttpError(
 			'Delete club failed, please try again later.',
 			500

@@ -21,16 +21,16 @@ router.get('/club/:cid', eventsController.getEventsByClubId);
 
 // router.get('/user/:uid', eventsController.getEventsByUserId);
 
-// last day to allow for event modification update/delete
+// last valid day to allow for event addition, modification, or deletion
 let validFormModDate = moment().add(1, 'days').format('YYYY,MM,DD');
-
+console.log('validDate', validFormModDate);
 // only clubs are able to create an event
 router.post(
 	'/',
 	[
 		check('name').isLength({ min: 5 }),
 		check('startDate').custom(
-			value => moment(value).format('YYYY, MM, DD') > validFormModDate
+			value => moment(value).format('YYYY,MM,DD') > validFormModDate
 		),
 		check('endDate').custom(
 			(value, { req }) => value >= req.body.startDate

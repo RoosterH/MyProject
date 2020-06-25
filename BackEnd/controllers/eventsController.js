@@ -175,6 +175,7 @@ const createEvent = async (req, res, next) => {
 	// Validate clubId exists. If not, sends back an error
 	let club;
 	try {
+		console.log('create clubId = ', clubId);
 		club = await Club.findById(clubId);
 	} catch (err) {
 		const error = new HttpError(
@@ -231,6 +232,8 @@ const createEvent = async (req, res, next) => {
 		 * Behind the scence, Mongo DB grabs newEvent ID and adds it to events field of the
 		 * club.
 		 **/
+		console.log('club = ', club);
+		console.log('club.events = ', club.events);
 		club.events.push(newEvent);
 		await club.save({ session: session });
 		// only both tasks succeed, we commit the transaction
@@ -340,6 +343,7 @@ const deleteEvent = async (req, res, next) => {
 		// and to work with data in that existing document
 		event = await Event.findById(eventId).populate('clubId');
 	} catch (err) {
+		console.log('err = ', err);
 		const error = new HttpError(
 			'Delete event process failed. Please try again later.',
 			500
@@ -358,16 +362,16 @@ const deleteEvent = async (req, res, next) => {
 	try {
 		// we need to use populate('clubId') above to be able to modify data in
 		// event.clubId.events
-		const sess = await mongoose.startSession();
-		sess.startTransaction();
-		await event.remove({ session: sess });
+		const session = await mongoose.startSession();
+		session.startTransaction();
+		await event.remove({ session: session });
 		/**
 		 * pull the event out from the clubId events
 		 **/
 		event.clubId.events.pull(event);
-		await event.clubId.save({ session: sess });
+		await event.clubId.save({ session: session });
 		// only both tasks succeed, we commit the transaction
-		await sess.commitTransaction();
+		await session.commitTransaction();
 	} catch (err) {
 		const error = new HttpError(
 			'Failed to delete the event.  Please try it later.',

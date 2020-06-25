@@ -87,7 +87,6 @@ const ClubAuth = () => {
 						password: formState.inputs.password.value
 					})
 				);
-
 				/**
 				 * Need to put redirect before calling clubAuthContext.clubLogin(responseData.club.id).
 				 * Otherwise App.js has ClubAuthContext.provider will re-render App and go to
@@ -97,7 +96,6 @@ const ClubAuth = () => {
 				 * trying to redirect page after logging
 				 */
 				history.push(`/events/club/${responseData.club.id}`);
-
 				// club.id is coming from clubsController loginClub
 				// id is from {getters: true}
 				clubAuthContext.clubLogin(responseData.club.id);

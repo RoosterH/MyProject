@@ -1,18 +1,32 @@
 import React, { useState, useContext } from 'react';
+import { useHistory } from 'react-router-dom';
 import moment from 'moment';
 
 import Button from '../../shared/components/FormElements/Button';
 import Card from '../../shared/components/UIElements/Card';
+import ErrorModal from '../../shared/components/UIElements/ErrorModal';
+import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import Image from '../../shared/components/UIElements/Image';
 import Map from '../../shared/components/UIElements/Map';
 import Modal from '../../shared/components/UIElements/Modal';
+
 import { ClubAuthContext } from '../../shared/context/auth-context';
+import { useHttpClient } from '../../shared/hooks/http-hook';
+
 import './EventItem.css';
 
 const EventItem = props => {
+	const {
+		isLoading,
+		error,
+		sendRequest,
+		clearError
+	} = useHttpClient();
+
 	// useContext is listening to "ClubAuthContext"
 	const clubAuth = useContext(ClubAuthContext);
 
+	// modal section
 	const [showModal, setShowModal] = useState(false);
 	const openModalHandler = () => setShowModal(true);
 	const closeModalHandler = () => {
@@ -20,26 +34,34 @@ const EventItem = props => {
 		setShowModal(false);
 	};
 
+	// modals for courseMap and delete confirmation
 	const [showMap, setShowMap] = useState(false);
 	const [showConfirmModal, setShowConfirmModal] = useState(false);
 
+	// event handlers
 	const openMapHandler = () => {
 		openModalHandler();
 		setShowMap(true);
 	};
 	const closeMapHandler = () => setShowMap(false);
-
 	const showDeleteWarningHandler = () => {
 		setShowConfirmModal(true);
 	};
-
 	const cancelDeleteHandler = () => {
 		setShowConfirmModal(false);
 	};
 
-	const confirmDeleteHandler = () => {
-		setShowConfirmModal(false);
-		console.log('Deleting ...');
+	const history = useHistory();
+	const confirmDeleteHandler = async () => {
+		console.log('props = ', props);
+		try {
+			setShowConfirmModal(false);
+			await sendRequest(
+				`http://localhost:5000/api/events/${props.event.id}`,
+				'DELETE'
+			);
+			history.push(`/events/club/${clubAuth.clubId}`);
+		} catch (err) {}
 	};
 
 	const [showCourse, setShowCourse] = useState(false);
@@ -73,10 +95,17 @@ const EventItem = props => {
 			<div></div>
 		);
 
-	console.log('startDate = ', startDate);
+	if (isLoading) {
+		return (
+			<div className="center">
+				<LoadingSpinner />
+			</div>
+		);
+	}
 	return (
 		// React.Frgment connect multiple components
 		<React.Fragment>
+			<ErrorModal error={error} onClear={clearError} />
 			{/* Modal to show google map and course map */}
 			<Modal
 				show={showModal}
@@ -127,7 +156,6 @@ const EventItem = props => {
 					be recovered after deletion.
 				</p>
 			</Modal>
-
 			<Card className="event-item__content">
 				<div>
 					<h2>{props.event.name}</h2>

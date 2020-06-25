@@ -11,6 +11,7 @@
 }
 
 .nav-links li {
+	list-style-type: none;
 	margin: 1rem;
 }
 

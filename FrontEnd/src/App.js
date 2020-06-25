@@ -24,28 +24,26 @@ import {
 } from './shared/context/auth-context';
 
 const App = () => {
-	// club context
+	// clubAuthContext state
 	const [isClubLoggedIn, setIsClubLoggedIn] = useState(false);
 	const [clubId, setClubId] = useState(null);
 
+	// define callbacks of ClubAuthContext
 	const clubLogin = useCallback(cid => {
 		setIsClubLoggedIn(true);
 		setClubId(cid);
+		console.log('clubAuth ClubId = ', cid);
 	}, []);
 	const clubLogout = useCallback(() => {
 		setIsClubLoggedIn(false);
 		setClubId(null);
 	}, []);
 
-	// const [clubId, setClubIdHandler] = useState('');
-	// const setClubId = useCallback(id => {
-	// 	setClubIdHandler(id);
-	// }, []);
-
-	// user context
+	// userAuthContext state
 	const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
 	const [userId, setUserId] = useState(false);
 
+	// define callbacks of userAuthContext
 	const userLogin = useCallback(uid => {
 		setIsUserLoggedIn(true);
 		setUserId(uid);
@@ -64,10 +62,10 @@ const App = () => {
 					<Clubs />
 					{/* <Events /> */}
 				</Route>
-				<Route path={'/events/club/:clubId'} exact>
+				<Route path="/events/club/:clubId" exact>
 					<ClubEvents />
 				</Route>
-				<Route path={'/events/:id'} exact>
+				<Route path="/events/:id" exact>
 					<Event />
 				</Route>
 				<Route path="/clubs/events/new" exact>
@@ -79,7 +77,7 @@ const App = () => {
 				<Route path="/error" exact>
 					<Error />
 				</Route>
-				<Redirect to="/" />
+				<Redirect to="/error" />
 			</Switch>
 		);
 	} else {
@@ -97,20 +95,19 @@ const App = () => {
 				<Route path="/events/:id" exact>
 					<Event />
 				</Route>
-				<Route path={'/events/club/:clubId'} exact>
+				<Route path="/events/club/:clubId" exact>
 					<ClubEvents />
 				</Route>
 				<Route path="/clubs/auth" exact>
 					<ClubAuth />
 				</Route>
-				<Route path="/clubs/signup" exact></Route>
 				<Route path="/users/auth" exact>
 					<UserAuth />
 				</Route>
 				<Route path="/error" exact>
 					<Error />
 				</Route>
-				<Redirect to="/" />
+				<Redirect to="error" />
 			</Switch>
 		);
 	}
@@ -118,16 +115,16 @@ const App = () => {
 		<ClubAuthContext.Provider
 			value={{
 				isClubLoggedIn: isClubLoggedIn,
+				clubId: clubId,
 				clubLogin: clubLogin,
-				clubLogout: clubLogout,
-				clubId: clubId
+				clubLogout: clubLogout
 			}}>
 			<UserAuthContext.Provider
 				value={{
 					isUserLoggedIn: isUserLoggedIn,
+					userId: userId,
 					userLogin: userLogin,
-					userLogout: userLogout,
-					userId: userId
+					userLogout: userLogout
 				}}>
 				<Router>
 					<MainNavigation />
