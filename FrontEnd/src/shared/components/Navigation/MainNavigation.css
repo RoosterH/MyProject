@@ -21,6 +21,7 @@
 .main-navigation__menu_title,
 .main-navigation__menu_title a {
 	color: whitesmoke;
+	margin-right: 5px;
 }
 
 .main-navigation__menu_title a:hover {

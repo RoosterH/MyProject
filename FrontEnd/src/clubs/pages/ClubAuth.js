@@ -98,7 +98,10 @@ const ClubAuth = () => {
 				history.push(`/events/club/${responseData.club.id}`);
 				// club.id is coming from clubsController loginClub
 				// id is from {getters: true}
-				clubAuthContext.clubLogin(responseData.club.id);
+				clubAuthContext.clubLogin(
+					responseData.club.id,
+					responseData.club.name
+				);
 			} catch (err) {
 				// empty. Custom hook takes care of it already
 			}

@@ -27,25 +27,30 @@ const App = () => {
 	// clubAuthContext state
 	const [isClubLoggedIn, setIsClubLoggedIn] = useState(false);
 	const [clubId, setClubId] = useState(null);
+	const [clubName, setClubName] = useState(null);
 
 	// define callbacks of ClubAuthContext
-	const clubLogin = useCallback(cid => {
+	const clubLogin = useCallback((cid, cname) => {
 		setIsClubLoggedIn(true);
 		setClubId(cid);
+		setClubName(cname);
 	}, []);
 	const clubLogout = useCallback(() => {
 		setIsClubLoggedIn(false);
 		setClubId(null);
+		setClubName(null);
 	}, []);
 
 	// userAuthContext state
 	const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
-	const [userId, setUserId] = useState(false);
+	const [userId, setUserId] = useState(null);
+	const [userName, setUserName] = useState(null);
 
 	// define callbacks of userAuthContext
-	const userLogin = useCallback(uid => {
+	const userLogin = useCallback((uid, uname) => {
 		setIsUserLoggedIn(true);
 		setUserId(uid);
+		setUserName(uname);
 	}, []);
 	const userLogout = useCallback(() => {
 		setIsUserLoggedIn(false);
@@ -115,6 +120,7 @@ const App = () => {
 			value={{
 				isClubLoggedIn: isClubLoggedIn,
 				clubId: clubId,
+				clubName: clubName,
 				clubLogin: clubLogin,
 				clubLogout: clubLogout
 			}}>
@@ -122,6 +128,7 @@ const App = () => {
 				value={{
 					isUserLoggedIn: isUserLoggedIn,
 					userId: userId,
+					userName: userName,
 					userLogin: userLogin,
 					userLogout: userLogout
 				}}>

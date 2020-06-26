@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import MainHeader from './MainHeader';
@@ -6,8 +6,10 @@ import NavLinks from './NavLinks';
 import SideDrawer from './SideDrawer';
 import Backdrop from '../UIElements/Backdrop';
 import './MainNavigation.css';
+import { ClubAuthContext } from '../../context/auth-context';
 
 const MainNavigation = props => {
+	const clubAuth = useContext(ClubAuthContext);
 	/* 
         create drawerIsOpen state drawerIsOpen is a var, setDrawIsOpen is the function that updates drawIsOpen when user hits 'main-navigation__menu-btn' call openDrawerHandler, once drawerIsOpen Backdrop and SideDrawer will be kicied in. In SideDrawer, it calls CSSTransition to mount/unmount "side-drawer" 
      */
@@ -20,6 +22,14 @@ const MainNavigation = props => {
 	const closeDrawerHandler = () => {
 		setDrawerIsOpen(false);
 	};
+
+	const clubNameElement = clubAuth.isClubLoggedIn ? (
+		<h1 className="main-navigation__menu_title">
+			{clubAuth.clubName}
+		</h1>
+	) : (
+		<h1> </h1>
+	);
 
 	return (
 		// <React.Fragment> is a wrapper helps solve multiple return issues.
@@ -37,8 +47,7 @@ const MainNavigation = props => {
 			<MainHeader>
 				<button
 					className="main-navigation__menu-btn"
-					onClick={openDrawerHandler}
-				>
+					onClick={openDrawerHandler}>
 					<span />
 					<span />
 					<span />
@@ -48,6 +57,7 @@ const MainNavigation = props => {
 						MySeatTime
 					</Link>
 				</h1>
+				{clubNameElement}
 				{/* main-navigation__head is for desktop screen that only shows >= 768px */}
 				<nav className="main-navigation__header-nav">
 					<NavLinks />

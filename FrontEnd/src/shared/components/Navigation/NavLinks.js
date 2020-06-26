@@ -65,7 +65,6 @@ const NavLinks = props => {
 			)}
 			{clubLoggedIn && (
 				<li>
-					{/* <button onClick={clubAuth.clubLogout}>LOGOUT</button> */}
 					<button onClick={logout}>LOGOUT</button>
 				</li>
 			)}
