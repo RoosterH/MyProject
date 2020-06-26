@@ -22,7 +22,7 @@ const getAllClubs = async (req, res, next) => {
 	}
 
 	if (!clubs || clubs.length === 0) {
-		const error = new HttpError('No clubs in the DB.', 500);
+		const error = new HttpError('No clubs in the DB.', 404);
 		return next(error);
 	}
 
@@ -32,16 +32,22 @@ const getAllClubs = async (req, res, next) => {
 };
 
 // GET /api/clubs/:id
-const getClubById = (req, res, next) => {
+const getClubById = async (req, res, next) => {
 	clubId = req.params.cid;
-	const club = DUMMY_CLUBS.find(c => c.id === clubId);
-	if (!club) {
-		return next(
-			new HttpError(
-				'Get club by ID process failed. Please try again later.'
-			),
-			404
+	let club;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Get club process failed.  Please try again later.',
+			500
 		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError('No clubs in the DB.', 404);
+		return next(error);
 	}
 
 	res.status(200).json({ club: club });
@@ -199,7 +205,7 @@ const deleteClub = async (req, res, next) => {
 	try {
 		// we need to populate events for the deleting club
 		// so we could re-assign those events to dummy club and add them to
-		// dummy club events list
+		// dummy club(MySeatTime) events list
 		club = await Club.findById(clubId).populate('events');
 	} catch (err) {
 		const error = new HttpError(

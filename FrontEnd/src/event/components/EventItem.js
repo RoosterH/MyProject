@@ -53,9 +53,8 @@ const EventItem = props => {
 
 	const history = useHistory();
 	const confirmDeleteHandler = async () => {
-		console.log('props = ', props);
+		setShowConfirmModal(false);
 		try {
-			setShowConfirmModal(false);
 			await sendRequest(
 				`http://localhost:5000/api/events/${props.event.id}`,
 				'DELETE'
@@ -95,13 +94,6 @@ const EventItem = props => {
 			<div></div>
 		);
 
-	if (isLoading) {
-		return (
-			<div className="center">
-				<LoadingSpinner />
-			</div>
-		);
-	}
 	return (
 		// React.Frgment connect multiple components
 		<React.Fragment>
@@ -157,6 +149,7 @@ const EventItem = props => {
 				</p>
 			</Modal>
 			<Card className="event-item__content">
+				{isLoading && <LoadingSpinner asOverlay />}
 				<div>
 					<h2>{props.event.name}</h2>
 				</div>
