@@ -157,8 +157,8 @@ const NewEvent = () => {
 					id="description"
 					element="textarea"
 					label="Description"
-					validators={[VALIDATOR_MINLENGTH(5)]}
-					errorText="Please enter a valid description with min length 5 chars."
+					validators={[VALIDATOR_MINLENGTH(10)]}
+					errorText="Please enter a valid description with min length 10 chars."
 					onInput={inputHandler}
 				/>
 				<Input

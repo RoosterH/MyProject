@@ -301,7 +301,7 @@ const UpdateEvent = () => {
 						element="input"
 						type="text"
 						label="Address"
-						validators={[VALIDATOR_REQUIRE()]}
+						validators={[VALIDATOR_MINLENGTH(10)]}
 						errorText="Please enter a valid address"
 						onInput={inputHandler}
 						initialValue={loadedEvent.address}
@@ -311,8 +311,8 @@ const UpdateEvent = () => {
 						id="description"
 						element="textarea"
 						label="Description"
-						validators={[VALIDATOR_MINLENGTH(5)]}
-						errorText="Please enter a valid description (min. 5 characters)"
+						validators={[VALIDATOR_MINLENGTH(10)]}
+						errorText="Please enter a valid description (min. 10 characters)"
 						onInput={inputHandler}
 						initialValue={loadedEvent.description}
 						initialValid={true}

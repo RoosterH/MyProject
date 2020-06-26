@@ -173,18 +173,18 @@ const EventItem = props => {
 						onClick={() => openCourseHandler()}></Image>
 				</div>
 				<div className="event-item__actions">
-					{clubAuth.isClubLoggedIn && (
+					{clubAuth.clubId === props.event.clubId && (
 						<Button to={`/events/${props.event.id}/form`}>
 							ENTRY FORM
 						</Button>
 					)}
-					{clubAuth.isClubLoggedIn &&
+					{clubAuth.clubId === props.event.clubId &&
 						formStartDate > validFormModDate && (
 							<Button to={`/events/update/${props.event.id}`}>
 								EDIT
 							</Button>
 						)}
-					{clubAuth.isClubLoggedIn &&
+					{clubAuth.clubId === props.event.clubId &&
 						formStartDate > validFormModDate && (
 							<Button danger onClick={showDeleteWarningHandler}>
 								DELETE

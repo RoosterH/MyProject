@@ -177,7 +177,7 @@ const ClubAuth = () => {
 							element="input"
 							type="password"
 							label="Password (min length 6 letters)"
-							validators={[VALIDATOR_MINLENGTH(5)]}
+							validators={[VALIDATOR_MINLENGTH(6)]}
 							errorText="Please enter a valid password."
 							onInput={inputHandler}
 						/>
