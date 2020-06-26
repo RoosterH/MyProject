@@ -32,7 +32,6 @@ const App = () => {
 	const clubLogin = useCallback(cid => {
 		setIsClubLoggedIn(true);
 		setClubId(cid);
-		console.log('clubAuth ClubId = ', cid);
 	}, []);
 	const clubLogout = useCallback(() => {
 		setIsClubLoggedIn(false);

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useHistory } from 'react-router-dom';
 
 import {
 	ClubAuthContext,
@@ -14,6 +14,12 @@ const NavLinks = props => {
 	const userAuthContext = useContext(UserAuthContext);
 	const userLoggedIn = userAuthContext.isUserLoggedIn;
 
+	// create a logout callback function to re-direct page after logging out
+	const history = useHistory();
+	const logout = () => {
+		clubAuth.clubLogout();
+		history.push('/');
+	};
 	let cid = clubAuth.clubId;
 	return (
 		<ul className="nav-links">
@@ -59,7 +65,8 @@ const NavLinks = props => {
 			)}
 			{clubLoggedIn && (
 				<li>
-					<button onClick={clubAuth.clubLogout}>LOGOUT</button>
+					{/* <button onClick={clubAuth.clubLogout}>LOGOUT</button> */}
+					<button onClick={logout}>LOGOUT</button>
 				</li>
 			)}
 		</ul>

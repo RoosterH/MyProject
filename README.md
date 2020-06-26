@@ -10,7 +10,7 @@ Fixed issues:
 1. ADD/EDIT EVENT startDate/endDate min and validators - fixed with moment
 2. Need to support dynamic clubid when club login and direct to /:cid/events/ => using history
 
-==================================================================================================================
+========================================
 API:
 ===========
 NavLink
@@ -63,7 +63,7 @@ DELETE
 
 /api/users
 
-==================================================================================================================
+========================================
 Work flow:
 ===========
 FrontEnd

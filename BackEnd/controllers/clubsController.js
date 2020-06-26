@@ -250,7 +250,6 @@ const deleteClub = async (req, res, next) => {
 		await club.remove({ session: session });
 		await session.commitTransaction();
 	} catch (err) {
-		console.log('err', err);
 		const error = new HttpError(
 			'Delete club failed, please try again later.',
 			500

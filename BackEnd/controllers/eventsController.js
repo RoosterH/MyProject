@@ -175,7 +175,6 @@ const createEvent = async (req, res, next) => {
 	// Validate clubId exists. If not, sends back an error
 	let club;
 	try {
-		console.log('create clubId = ', clubId);
 		club = await Club.findById(clubId);
 	} catch (err) {
 		const error = new HttpError(
@@ -232,8 +231,6 @@ const createEvent = async (req, res, next) => {
 		 * Behind the scence, Mongo DB grabs newEvent ID and adds it to events field of the
 		 * club.
 		 **/
-		console.log('club = ', club);
-		console.log('club.events = ', club.events);
 		club.events.push(newEvent);
 		await club.save({ session: session });
 		// only both tasks succeed, we commit the transaction
@@ -322,7 +319,6 @@ const updateEvent = async (req, res, next) => {
 	try {
 		await event.save();
 	} catch (err) {
-		console.log(err);
 		const error = new HttpError(
 			'Updating event failed. Please try again later.',
 			500
@@ -343,7 +339,6 @@ const deleteEvent = async (req, res, next) => {
 		// and to work with data in that existing document
 		event = await Event.findById(eventId).populate('clubId');
 	} catch (err) {
-		console.log('err = ', err);
 		const error = new HttpError(
 			'Delete event process failed. Please try again later.',
 			500
