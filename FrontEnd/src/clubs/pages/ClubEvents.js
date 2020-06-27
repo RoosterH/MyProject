@@ -25,9 +25,7 @@ const ClubEvents = () => {
 					`http://localhost:5000/api/events/club/${clubId}`
 				);
 				setLoadedEvents(responseData.events);
-			} catch (err) {
-				console.log('err = ', err);
-			}
+			} catch (err) {}
 		};
 		fetechEvents();
 	}, [sendRequest, clubId]);

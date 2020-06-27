@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import Button from '../../shared/components/FormElements/Button';
@@ -21,6 +21,7 @@ import './ClubAuth.css';
 const ClubAuth = () => {
 	const clubAuthContext = useContext(ClubAuthContext);
 	const [isLoginMode, setIsLoginMode] = useState(true);
+	const [isSignUp, setIsSignup] = useState(false);
 	const {
 		isLoading,
 		error,
@@ -106,6 +107,7 @@ const ClubAuth = () => {
 				// empty. Custom hook takes care of it already
 			}
 		} else {
+			//club signup
 			try {
 				// the request needs to match backend clubsRoutes /signup route
 				const responseData = await sendRequest(
@@ -120,27 +122,19 @@ const ClubAuth = () => {
 						password: formState.inputs.password.value
 					})
 				);
-
-				history.push(`/events/club/${responseData.club.id}`);
-				// club.id is coming from clubsController createClub
-				// id is from {getters: true}
-				clubAuthContext.clubLogin(responseData.club.id);
+				// set isLoginMode and isSignUp to true to render login page
+				setIsLoginMode(true);
+				setIsSignup(true);
 			} catch (err) {}
 		}
 	};
 
-	useEffect(() => {
-		if (!isLoading && clubAuthContext.clubId) {
-			if (isLoginMode) {
-				history.push(`/events/club/${clubAuthContext.clubId}`);
-			} else {
-				history.push(`/events/`);
-			}
-		}
-	}, [isLoading, isLoginMode, clubAuthContext, history]);
-
 	// set Card title
-	const cardTitle = isLoginMode ? 'Club Login' : 'Club Signup';
+	const cardTitle = isLoginMode
+		? isSignUp
+			? 'Account created. Please login'
+			: 'Club Login'
+		: 'Club Signup';
 
 	return (
 		<React.Fragment>
