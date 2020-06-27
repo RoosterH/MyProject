@@ -1,8 +1,8 @@
 const { v4: uuidv4 } = require('uuid');
 const { validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
 
 const HttpError = require('../models/httpError');
-const Event = require('../models/event');
 const Club = require('../models/club');
 const mongoose = require('mongoose');
 const mongooseUniqueValidator = require('mongoose-unique-validator');
@@ -76,7 +76,7 @@ const createClub = async (req, res, next) => {
 		existingClub = await Club.findOne({ email: email });
 	} catch (err) {
 		const error = new HttpError(
-			'Signed up failed while validating your email.  Please try it again later',
+			'Signed up email validation failed.  Please try again later',
 			500
 		);
 		return next(error);
@@ -99,11 +99,26 @@ const createClub = async (req, res, next) => {
 		events: []
 	});
 
+	// Hash password
+	bcrypt.genSalt(10, (err, salt) =>
+		bcrypt.hash(newClub.password, salt, (err, hash) => {
+			if (err) {
+				const error = new HttpError(
+					'Signed up internal failure.  Please try again later',
+					500
+				);
+				return next(error);
+			}
+			// set password to hash
+			newClub.password = hash;
+		})
+	);
+
 	try {
 		await newClub.save();
 	} catch (err) {
 		const error = new HttpError(
-			'Faied to create a new club.  Please try it again later.',
+			'Faied to create a new club.  Please try again later.',
 			500
 		);
 		return next(error);
@@ -113,7 +128,7 @@ const createClub = async (req, res, next) => {
 
 // POST '/api/clubs/login'
 const loginClub = async (req, res, next) => {
-	const { name, password, email } = req.body;
+	const { password, email } = req.body;
 
 	// validation to make sure email does not exist in our DB
 	let existingClub;
@@ -135,6 +150,7 @@ const loginClub = async (req, res, next) => {
 		return next(error);
 	}
 
+	console.log('res = ', res);
 	res.status(200).json({
 		message: `Club ${existingClub.name} logged in.`,
 		club: existingClub.toObject({ getters: true })

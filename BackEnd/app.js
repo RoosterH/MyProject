@@ -1,16 +1,32 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const passport = require('passport');
+const session = require('express-session');
 
 const clubsRoutes = require('./routes/clubsRoutes');
 const eventsRoutes = require('./routes/eventsRoutes');
 const usersRoutes = require('./routes/usersRoutes');
-
 const HttpError = require('./models/httpError');
+
 const app = express();
 
 // bodyParser.json() will parse the json to js data structure such as array then call next automatically.
 app.use(bodyParser.json());
+// app.use(express.urlencoded({ extended: false }));
+
+// Express session
+app.use(
+	session({
+		secret: 'secret',
+		resave: true,
+		saveUninitialized: true
+	})
+);
+
+// passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
 // this is to avoid CORS error
 app.use((req, res, next) => {
@@ -59,7 +75,6 @@ mongoose
 		'mongodb+srv://hung:hung@hungjencluster0-ahunv.mongodb.net/MySeatTime?retryWrites=true&w=majority',
 		{ useNewUrlParser: true, useUnifiedTopology: true }
 	)
-
 	.then(() => {
 		app.listen(5000);
 	})

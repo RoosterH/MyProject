@@ -23,7 +23,6 @@ router.get('/club/:cid', eventsController.getEventsByClubId);
 
 // last valid day to allow for event addition, modification, or deletion
 let validFormModDate = moment().add(1, 'days').format('YYYY,MM,DD');
-console.log('validDate', validFormModDate);
 // only clubs are able to create an event
 router.post(
 	'/',
