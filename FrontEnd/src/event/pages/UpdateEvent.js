@@ -212,7 +212,7 @@ const UpdateEvent = () => {
 	return (
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
-			{!isLoading && loadedEvent && (
+			{!isLoading && loadedEvent && showCourse && (
 				<Modal
 					show={showModal}
 					onCancel={() => closeModalHandler()}
@@ -225,12 +225,10 @@ const UpdateEvent = () => {
 					}>
 					{/* render props.children */}
 					<div className="map-container">
-						{showCourse && (
-							<img
-								src={loadedEvent.courseMap}
-								alt={loadedEvent.alt}
-								className="map-container"></img>
-						)}
+						<img
+							src={loadedEvent.courseMap}
+							alt={loadedEvent.alt}
+							className="map-container"></img>
 					</div>
 				</Modal>
 			)}

@@ -66,12 +66,13 @@ export const useHttpClient = () => {
 
 	/**
 	 * useEffect cannot just be used to run some logic whenever a component re-renders,
-	 * but also to cleanup or to run some cleanup logic when a component un-mounts
-	 * The way it works is useEffect will get executed when the component mounts
-	 * but the return function is executed as the cleanup function before the next time
-	 * useEffect runs again or also when the component unmonunts
+	 * but also to cleanup or to run some cleanup logic when a component unmounts.
+	 * The way it works is in useEffect we will return a cleanup fcuntion.  React will run
+	 * it when the component un-mounts.
 	 **/
 	useEffect(() => {
+		// here we want to abort the abortCtrl.  abortCtrl is the only requests inside of
+		// the activeHttpRequests => activeHttpRequests.current.push(httpAbortCtrl);
 		return () => {
 			activeHttpRequests.current.forEach(abortCtrl =>
 				abortCtrl.abort()
