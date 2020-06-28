@@ -32,7 +32,8 @@ export const useHttpClient = () => {
 					body,
 					// signal links httpAbortCtrl to fetch request, so we will be able to use
 					// httpAbortCtrl to cancel the request
-					signal: httpAbortCtrl.signal
+					signal: httpAbortCtrl.signal,
+					credentials: 'include'
 				});
 
 				// parse the response body, this is the response back from back

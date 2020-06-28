@@ -10,6 +10,7 @@ const passport = require('passport'),
 const Club = require('../models/club');
 const HttpError = require('../models/httpError');
 const clubsController = require('../controllers/clubsController');
+const { ensureAuthenticated } = require('../util/auth');
 const e = require('express');
 
 const router = express.Router();
@@ -29,10 +30,7 @@ router.post(
 	clubsController.createClub
 );
 
-// login, due to security reasons, we don't want to do a check for the input data
-// router.post('/login', clubsController.loginClub);
-
-// passport
+// passport http://www.passportjs.org/docs/configure/
 passport.use(
 	new LocalStrategy(
 		{
@@ -41,15 +39,27 @@ passport.use(
 		},
 		async (username, password, next) => {
 			try {
-				let club = await Club.findOne({
-					email: username.toLowerCase()
-				});
+				let club;
+				try {
+					club = await Club.findOne({
+						email: username.toLowerCase()
+					});
+				} catch (err) {
+					const error = new HttpError(
+						'Logging in failed.  Please try agin later.',
+						500
+					);
+					// internal error returns next(error)
+					return next(error);
+				}
 				if (!club) {
 					const error = new HttpError(
 						'Logging in failed.  Please check your email/password',
 						401
 					);
-					return next(error);
+					// authentication error returns next(error, false) since we are not using
+					// flash message so we don't want to use next(null, fasle, {message: })
+					return next(error, false);
 				}
 				// match hashed password
 				bcrypt.compare(password, club.password, (err, isMatch) => {
@@ -61,13 +71,14 @@ passport.use(
 						return next(error);
 					}
 					if (isMatch) {
+						// Succeeded returns next(null, club)
 						return next(null, club);
 					} else {
 						const error = new HttpError(
 							'Logging in failed.  Please check your email/password',
 							401
 						);
-						return next(error);
+						return next(error, false);
 					}
 				});
 			} catch (err) {
@@ -90,17 +101,27 @@ passport.deserializeUser((id, done) => {
 	});
 });
 
+// Login, due to security reasons, we don't want to do express-validator for the input data
+// because that will provide hints to hackers
 router.post('/login', passport.authenticate('local'), (req, res) => {
-	// If this function gets called, authentication was successful.
-	// `req.user` contains the authenticated user which is the club in our case.
+	/** http://www.passportjs.org/docs/authenticate/
+	 * If this function gets called, authentication was successful.
+	 * `req.user` contains the authenticated user which is "club" in our case.
+	 * What happens is the original request was sent to LocalStrategy. LocalStrategy authenticates
+	 * the original request then sends a new request to passport.  This new request is the "req"
+	 * in this callback so "req" now contains user information.
+	 */
 	res.status(200).json({
 		message: `Club ${req.user.name} logged in.`,
 		club: req.user.toObject({ getters: true })
 	});
 });
 
+router.post('/logout', clubsController.logoutClub);
+
 router.patch(
 	'/:cid',
+	ensureAuthenticated,
 	[
 		check('name').not().isEmpty(),
 		check('email').normalizeEmail().isEmail(),
@@ -109,6 +130,10 @@ router.patch(
 	clubsController.updateClub
 );
 
-router.delete('/:cid', clubsController.deleteClub);
+router.delete(
+	'/:cid',
+	ensureAuthenticated,
+	clubsController.deleteClub
+);
 
 module.exports = router;

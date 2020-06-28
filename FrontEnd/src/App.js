@@ -58,7 +58,6 @@ const App = () => {
 	}, []);
 
 	let routes;
-
 	if (isClubLoggedIn) {
 		routes = (
 			<Switch>
@@ -92,6 +91,10 @@ const App = () => {
 					<Clubs />
 					<Users />
 					<Events />
+				</Route>
+				<Route path="/events/update/error" exact>
+					{/* this is for re-direction when sending a request to the url that needs authentication */}
+					<Error />
 				</Route>
 				<Route path="/events/" exact>
 					<Events />

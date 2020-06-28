@@ -101,7 +101,7 @@ const createClub = async (req, res, next) => {
 
 	// Hash password
 	bcrypt.genSalt(10, (err, salt) =>
-		bcrypt.hash(newClub.password, salt, (err, hash) => {
+		bcrypt.hash(newClub.password, salt, async (err, hash) => {
 			if (err) {
 				const error = new HttpError(
 					'Signed up internal failure.  Please try again later',
@@ -111,50 +111,19 @@ const createClub = async (req, res, next) => {
 			}
 			// set password to hash
 			newClub.password = hash;
+			try {
+				await newClub.save();
+			} catch (err) {
+				const error = new HttpError(
+					'Faied to create a new club.  Please try again later.',
+					500
+				);
+				return next(error);
+			}
 		})
 	);
 
-	try {
-		await newClub.save();
-	} catch (err) {
-		const error = new HttpError(
-			'Faied to create a new club.  Please try again later.',
-			500
-		);
-		return next(error);
-	}
 	res.status(201).json({ club: newClub.toObject({ getters: true }) });
-};
-
-// POST '/api/clubs/login'
-const loginClub = async (req, res, next) => {
-	const { password, email } = req.body;
-
-	// validation to make sure email does not exist in our DB
-	let existingClub;
-	try {
-		existingClub = await Club.findOne({ email: email.toLowerCase() });
-	} catch (err) {
-		const error = new HttpError(
-			'Login club process failed.  Please try again later',
-			500
-		);
-		return next(error);
-	}
-
-	if (!existingClub || existingClub.password !== password) {
-		const error = new HttpError(
-			'Logging in failed.  Invalid club Name/email and password',
-			401
-		);
-		return next(error);
-	}
-
-	console.log('res = ', res);
-	res.status(200).json({
-		message: `Club ${existingClub.name} logged in.`,
-		club: existingClub.toObject({ getters: true })
-	});
 };
 
 // PATCH '/api/clubs/:cid'
@@ -200,15 +169,29 @@ const updateClub = async (req, res, next) => {
 	club.password = password;
 	club.email = email;
 
-	try {
-		await club.save();
-	} catch (err) {
-		const error = new HttpError(
-			`Updating club failed with the following error: ${err}`,
-			500
-		);
-		return next(error);
-	}
+	// Hash password
+	bcrypt.genSalt(10, (err, salt) =>
+		bcrypt.hash(club.password, salt, async (err, hash) => {
+			if (err) {
+				const error = new HttpError(
+					'Update club internal failure. Please try again later',
+					500
+				);
+				return next(error);
+			}
+			// set password to hash
+			club.password = hash;
+			try {
+				await club.save();
+			} catch (err) {
+				const error = new HttpError(
+					`Updating club failed with the following error: ${err}`,
+					500
+				);
+				return next(error);
+			}
+		})
+	);
 
 	res.status(200).json({ club: club.toObject({ getters: true }) });
 };
@@ -282,10 +265,15 @@ const deleteClub = async (req, res, next) => {
 	res.status(200).json({ message: `Club ${clubName} is deleted.` });
 };
 
+const logoutClub = (req, res) => {
+	// logout() is a passport middleware
+	req.logout();
+	res.status(200).json({ message: `You are logged out.` });
+};
+
 exports.getAllClubs = getAllClubs;
 exports.getClubById = getClubById;
-
 exports.createClub = createClub;
-exports.loginClub = loginClub;
 exports.updateClub = updateClub;
 exports.deleteClub = deleteClub;
+exports.logoutClub = logoutClub;

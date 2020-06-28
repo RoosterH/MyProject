@@ -24,7 +24,7 @@ router.post(
 );
 
 // login, due to security reasons, we don't want to do a check for the input data
-router.post('/login', clubsController.loginClub);
+//router.post('/login', clubsController.loginClub);
 
 router.patch(
 	'/:cid',

@@ -16,11 +16,15 @@ app.use(bodyParser.json());
 // app.use(express.urlencoded({ extended: false }));
 
 // Express session
+// rolling: forced the session identifier cookie to be set on every response.
+// The expiration is reset to the original maxAge, resetting the expiration countdown.
 app.use(
 	session({
 		secret: 'secret',
 		resave: true,
-		saveUninitialized: true
+		saveUninitialized: true,
+		rolling: true,
+		maxAge: new Date(Date.now() + 3600)
 	})
 );
 
@@ -32,7 +36,21 @@ app.use(passport.session());
 app.use((req, res, next) => {
 	// add certain headers to the response so we can attach it to the response sent back
 	// to the front end to work around CORS policy issue
-	res.setHeader('Access-Control-Allow-Origin', '*');
+
+	/**
+	 * Because requests initiated by js by default does not contain credentials(cookies
+	 * or HTTP authentication). In order to keep Express Session persistent between React
+	 * and Express. We need to add => credentials: 'include' to all the fetch calls to backend.
+	 * For Backend, we will add 'Access-Control-Allow-Credentials', 'true' to accept js calls.
+	 * For security reason, we need to set 'Access-Control-Allow-Origin' to the specific host that sends
+	 * the request from due to security reason. => '*' can no longer be used.
+	 */
+	res.setHeader(
+		'Access-Control-Allow-Origin',
+		'http://localhost:3000'
+	);
+	res.setHeader('Access-Control-Allow-Credentials', 'true');
+
 	res.setHeader(
 		'Access-Control-Allow-Headers',
 		'Origin, X-Requested-Width, Content-Type, Accept, Authorization'
@@ -41,6 +59,7 @@ app.use((req, res, next) => {
 		'Access-Control-Allow-Methods',
 		'GET, POST, PATCH, DELETE'
 	);
+
 	next();
 });
 

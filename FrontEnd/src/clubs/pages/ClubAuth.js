@@ -105,12 +105,13 @@ const ClubAuth = () => {
 				);
 			} catch (err) {
 				// empty. Custom hook takes care of it already
+				console.log('ClubAuth err= ', err);
 			}
 		} else {
 			//club signup
 			try {
 				// the request needs to match backend clubsRoutes /signup route
-				const responseData = await sendRequest(
+				await sendRequest(
 					'http://localhost:5000/api/clubs/signup',
 					'POST',
 					{
@@ -125,7 +126,9 @@ const ClubAuth = () => {
 				// set isLoginMode and isSignUp to true to render login page
 				setIsLoginMode(true);
 				setIsSignup(true);
-			} catch (err) {}
+			} catch (err) {
+				console.log('err2 = ', err);
+			}
 		}
 	};
 
