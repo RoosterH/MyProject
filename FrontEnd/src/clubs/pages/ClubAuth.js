@@ -22,6 +22,7 @@ const ClubAuth = () => {
 	const clubAuthContext = useContext(ClubAuthContext);
 	const [isLoginMode, setIsLoginMode] = useState(true);
 	const [isSignUp, setIsSignup] = useState(false);
+	const [passwordError, setPasswordError] = useState();
 	const {
 		isLoading,
 		error,
@@ -48,7 +49,8 @@ const ClubAuth = () => {
 			setFormData(
 				{
 					...formState.inputs,
-					name: undefined
+					password: undefined,
+					passwordValidation: undefined
 				},
 				formState.inputs.email.isValid &&
 					formState.inputs.password.isValid
@@ -83,6 +85,11 @@ const ClubAuth = () => {
 					{
 						'Content-Type': 'application/json'
 					},
+					// {
+					// 	email: formState.inputs.email.value,
+					// 	password: formState.inputs.password.value,
+					// 	returnSecureToken: true
+					// }
 					JSON.stringify({
 						email: formState.inputs.email.value,
 						password: formState.inputs.password.value
@@ -110,6 +117,13 @@ const ClubAuth = () => {
 		} else {
 			//club signup
 			try {
+				if (
+					formState.inputs.password.value !==
+					formState.inputs.passwordValidation.value
+				) {
+					setPasswordError('Passwords do not match!');
+					throw new Error('password no match');
+				}
 				// the request needs to match backend clubsRoutes /signup route
 				await sendRequest(
 					'http://localhost:5000/api/clubs/signup',
@@ -131,7 +145,10 @@ const ClubAuth = () => {
 			}
 		}
 	};
-
+	const clearErr = () => {
+		clearError();
+		setPasswordError(null);
+	};
 	// set Card title
 	const cardTitle = isLoginMode
 		? isSignUp
@@ -142,7 +159,7 @@ const ClubAuth = () => {
 	return (
 		<React.Fragment>
 			{/* error coming from const [error, setError] = useState(); */}
-			<ErrorModal error={error} onClear={clearError} />
+			<ErrorModal error={error || passwordError} onClear={clearErr} />
 			<Card className="authentication" title={cardTitle}>
 				{isLoading && <LoadingSpinner asOverlay />}
 				<form
@@ -176,6 +193,17 @@ const ClubAuth = () => {
 							label="Password (min length 6 letters)"
 							validators={[VALIDATOR_MINLENGTH(6)]}
 							errorText="Please enter a valid password."
+							onInput={inputHandler}
+						/>
+					)}
+					{!isLoginMode && (
+						<Input
+							id="passwordValidation"
+							element="input"
+							type="password"
+							label="Please type password again"
+							validators={[VALIDATOR_MINLENGTH(6)]}
+							errorText="Please make sure passwords match."
 							onInput={inputHandler}
 						/>
 					)}
