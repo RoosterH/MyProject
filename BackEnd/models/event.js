@@ -24,7 +24,10 @@ const eventSchema = new Schema({
 		type: mongoose.Types.ObjectId,
 		required: true,
 		ref: 'Club'
-	}
+	},
+	// only used when deleting club that created the event. We want to keep a record for it.
+	// not working yet. need to fix it later
+	creator: { type: String }
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

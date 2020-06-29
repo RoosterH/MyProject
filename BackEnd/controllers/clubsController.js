@@ -225,7 +225,7 @@ const deleteClub = async (req, res, next) => {
 	// We do not want to delete all the associated events with clubs.
 	// Instead we will be assiging the associated clubId to our dummy club (MySeatTime).
 	const dummyClubId = mongoose.Types.ObjectId(
-		'5ef4f30cbaea80121c04c710'
+		'5ef702c7ba7511499165e653'
 	);
 	try {
 		// using transaction here to make sure all the operations are done
@@ -236,7 +236,7 @@ const deleteClub = async (req, res, next) => {
 		await club.events.map(async event => {
 			// assign the event clubId to dummyClub since we are deleting the original club
 			event.clubId = dummyClubId;
-			event.save({
+			await event.save({
 				session: session
 			});
 
@@ -249,11 +249,12 @@ const deleteClub = async (req, res, next) => {
 				'events'
 			);
 			dummyClub.events.push(event);
-			dummyClub.save({ session: session });
+			await dummyClub.save({ session: session });
 		});
 
 		await club.remove({ session: session });
 		await session.commitTransaction();
+		req.logout();
 	} catch (err) {
 		const error = new HttpError(
 			'Delete club failed, please try again later.',
