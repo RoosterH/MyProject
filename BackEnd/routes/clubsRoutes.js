@@ -28,7 +28,8 @@ router.post(
 	[
 		check('name').not().isEmpty(),
 		check('email').normalizeEmail().isEmail(),
-		check('password').isLength({ min: 6 })
+		check('password').isLength({ min: 6 }),
+		check('passwordValidation').isLength({ min: 6 })
 	],
 	clubsController.createClub
 );

@@ -42,7 +42,8 @@ export const validate = (value, validators) => {
 	let isValid = true;
 	for (const validator of validators) {
 		if (validator.type === VALIDATOR_TYPE_EMAIL) {
-			isValid = isValid && /^\S+@\S+\.\S+$/.test(value);
+			const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+			isValid = isValid && pattern.test(value);
 		}
 		// image file is optional so value === '' is still good
 		if (validator.type === VALIDATOR_TYPE_FILE) {

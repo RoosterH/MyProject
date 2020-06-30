@@ -145,7 +145,9 @@ const ClubAuth = () => {
 					JSON.stringify({
 						name: formState.inputs.name.value,
 						email: formState.inputs.email.value,
-						password: formState.inputs.password.value
+						password: formState.inputs.password.value,
+						passwordValidation:
+							formState.inputs.passwordValidation.value
 					})
 				);
 				// set isLoginMode and isSignUp to true to render login page

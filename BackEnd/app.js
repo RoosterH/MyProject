@@ -75,11 +75,10 @@ app.use((req, res, next) => {
 	throw error;
 });
 
-// this route is
+// this route is to Check if header has been sent meaning a response been sent already.
+// If that's the case, we want to return next and forward the error to it,
+// because we can only send the response once.
 app.use((error, req, res, next) => {
-	// Check if header has been sent meaning a response been sent already.
-	// If that's the case, we want to return next and forward the error to it,
-	// because we can only send the response once.
 	if (res.headerSent) {
 		return next(error);
 	}

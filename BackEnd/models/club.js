@@ -13,6 +13,7 @@ const clubSchema = new Schema({
 		set: v => v.toLowerCase()
 	},
 	password: { type: String, required: true, minlength: 6 },
+	passwordValidation: { type: String, minlength: 6 },
 	image: { type: String, require: true },
 	// because a club could have multiple events so we need to use array
 	// using ref as a foreing key referring to Event

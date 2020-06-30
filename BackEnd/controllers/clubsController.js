@@ -1,4 +1,3 @@
-const { v4: uuidv4 } = require('uuid');
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 
@@ -68,8 +67,15 @@ const createClub = async (req, res, next) => {
 		return next(error);
 	}
 
-	const { name, password, email } = req.body;
+	const { name, email, password, passwordValidation } = req.body;
 
+	if (password !== passwordValidation) {
+		const error = new HttpError(
+			'Sign up club.  Passwords do not match!',
+			403
+		);
+		return next(error);
+	}
 	// validation to make sure email does not exist in our DB
 	let existingClub;
 	try {
@@ -113,6 +119,11 @@ const createClub = async (req, res, next) => {
 			newClub.password = hash;
 			try {
 				await newClub.save();
+				// await is slow. need to send res here not outside; otherwise in case of
+				// an error res will be sent first then back to catch(err) here
+				res
+					.status(201)
+					.json({ club: newClub.toObject({ getters: true }) });
 			} catch (err) {
 				const error = new HttpError(
 					'Faied to create a new club.  Please try again later.',
@@ -122,8 +133,6 @@ const createClub = async (req, res, next) => {
 			}
 		})
 	);
-
-	res.status(201).json({ club: newClub.toObject({ getters: true }) });
 };
 
 // PATCH '/api/clubs/:cid'
