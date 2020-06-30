@@ -11,7 +11,7 @@ const Club = require('../models/club');
 const HttpError = require('../models/httpError');
 const clubsController = require('../controllers/clubsController');
 const { ensureAuthenticated } = require('../util/auth');
-const e = require('express');
+const fileUpload = require('../middleware/file-upload');
 
 const router = express.Router();
 
@@ -22,6 +22,9 @@ router.get('/:cid', clubsController.getClubById);
 
 router.post(
 	'/signup',
+	// single file, 'image' is the key name in the request body
+	// that is associated with the uploading file
+	fileUpload.single('image'),
 	[
 		check('name').not().isEmpty(),
 		check('email').normalizeEmail().isEmail(),

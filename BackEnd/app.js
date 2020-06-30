@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
 
 const clubsRoutes = require('./routes/clubsRoutes');
 const eventsRoutes = require('./routes/eventsRoutes');
@@ -13,7 +14,6 @@ const app = express();
 
 // bodyParser.json() will parse the json to js data structure such as array then call next automatically.
 app.use(bodyParser.json());
-// app.use(express.urlencoded({ extended: false }));
 
 // Express session
 // rolling: forced the session identifier cookie to be set on every response.
@@ -27,6 +27,7 @@ app.use(
 		maxAge: new Date(Date.now() + 3600)
 	})
 );
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // passport middleware
 app.use(passport.initialize());
