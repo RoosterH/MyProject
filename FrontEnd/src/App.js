@@ -25,40 +25,40 @@ import {
 
 const App = () => {
 	// clubAuthContext state
-	const [isClubLoggedIn, setIsClubLoggedIn] = useState(false);
+	const [clubToken, setClubToken] = useState(null);
 	const [clubId, setClubId] = useState(null);
 	const [clubName, setClubName] = useState(null);
 
 	// define callbacks of ClubAuthContext
-	const clubLogin = useCallback((cid, cname) => {
-		setIsClubLoggedIn(true);
+	const clubLogin = useCallback((cid, cname, ctoken) => {
+		setClubToken(ctoken);
 		setClubId(cid);
 		setClubName(cname);
 	}, []);
 	const clubLogout = useCallback(() => {
-		setIsClubLoggedIn(false);
+		setClubToken(null);
 		setClubId(null);
 		setClubName(null);
 	}, []);
 
 	// userAuthContext state
-	const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+	const [userToken, setUserToken] = useState(null);
 	const [userId, setUserId] = useState(null);
 	const [userName, setUserName] = useState(null);
 
 	// define callbacks of userAuthContext
-	const userLogin = useCallback((uid, uname) => {
-		setIsUserLoggedIn(true);
+	const userLogin = useCallback((uid, uname, utoken) => {
+		setUserToken(utoken);
 		setUserId(uid);
 		setUserName(uname);
 	}, []);
 	const userLogout = useCallback(() => {
-		setIsUserLoggedIn(false);
+		setUserToken(null);
 		setUserId(null);
 	}, []);
 
 	let routes;
-	if (isClubLoggedIn) {
+	if (clubToken) {
 		routes = (
 			<Switch>
 				<Route path="/" exact>
@@ -121,7 +121,8 @@ const App = () => {
 	return (
 		<ClubAuthContext.Provider
 			value={{
-				isClubLoggedIn: isClubLoggedIn,
+				isClubLoggedIn: !!clubToken,
+				clubToken: clubToken,
 				clubId: clubId,
 				clubName: clubName,
 				clubLogin: clubLogin,
@@ -129,7 +130,8 @@ const App = () => {
 			}}>
 			<UserAuthContext.Provider
 				value={{
-					isUserLoggedIn: isUserLoggedIn,
+					isUserLoggedIn: !!userToken,
+					userToken: userToken,
 					userId: userId,
 					userName: userName,
 					userLogin: userLogin,

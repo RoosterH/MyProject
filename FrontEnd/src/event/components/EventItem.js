@@ -57,7 +57,13 @@ const EventItem = props => {
 		try {
 			await sendRequest(
 				`http://localhost:5000/api/events/${props.event.id}`,
-				'DELETE'
+				'DELETE',
+				null,
+				{
+					// No need for content-type since body is null,
+					// adding JWT to header for authentication
+					Authorization: 'Bearer ' + clubAuth.clubToken
+				}
 			);
 			history.push(`/events/club/${clubAuth.clubId}`);
 		} catch (err) {}

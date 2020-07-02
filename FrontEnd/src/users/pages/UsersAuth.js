@@ -96,14 +96,14 @@ const UserAuth = () => {
 				await sendRequest(
 					'http://localhost:5000/api/users/signup',
 					'POST',
-					{
-						'Content-Type': 'application/json'
-					},
 					JSON.stringify({
 						name: formState.inputs.name.value,
 						email: formState.inputs.email.value,
 						password: formState.inputs.password.value
-					})
+					}),
+					{
+						'Content-Type': 'application/json'
+					}
 				);
 
 				userAuthContext.userLogin();

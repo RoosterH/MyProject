@@ -17,7 +17,7 @@ import {
 import './EventForm.css';
 
 const NewEvent = () => {
-	const clubAuthContext = useContext(ClubAuthContext);
+	const clubAuth = useContext(ClubAuthContext);
 	const {
 		isLoading,
 		error,
@@ -73,9 +73,6 @@ const NewEvent = () => {
 			await sendRequest(
 				'http://localhost:5000/api/events',
 				'POST',
-				{
-					'Content-Type': 'application/json'
-				},
 				JSON.stringify({
 					name: formState.inputs.name.value,
 					startDate: moment(formState.inputs.startDate.value),
@@ -85,11 +82,16 @@ const NewEvent = () => {
 					description: formState.inputs.description.value,
 					image: formState.inputs.image.value,
 					courseMap: formState.inputs.courseMap.value,
-					clubId: clubAuthContext.clubId
-				})
+					clubId: clubAuth.clubId
+				}),
+				{
+					'Content-Type': 'application/json',
+					// adding JWT to header for authentication
+					Authorization: 'Bearer ' + clubAuth.clubToken
+				}
 			);
 			// Redirect the club to a diffrent page
-			history.push(`/events/club/${clubAuthContext.clubId}`);
+			history.push(`/events/club/${clubAuth.clubId}`);
 		} catch (err) {}
 	};
 

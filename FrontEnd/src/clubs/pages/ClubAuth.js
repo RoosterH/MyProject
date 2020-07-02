@@ -6,7 +6,7 @@ import Card from '../../shared/components/UIElements/Card';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import Input from '../../shared/components/FormElements/Input';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
-import ImageUpload from '../../shared/components/FormElements/ImageUpload';
+// import ImageUpload from '../../shared/components/FormElements/ImageUpload';
 
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import { useForm } from '../../shared/hooks/form-hook';
@@ -46,36 +46,41 @@ const ClubAuth = () => {
 	);
 
 	const switchModeHandler = () => {
-		if (!isLoginMode) {
+		if (isLoginMode) {
+			// login mode
 			setFormData(
 				{
-					...formState.inputs,
-					// set to undefined because the value was set in login mode
-					name: undefined,
-					passwordValidation: undefined,
-					image: undefined
-				},
-				formState.inputs.email.isValid &&
-					formState.inputs.password.isValid
-			);
-		} else {
-			setFormData(
-				{
+					// when we switch from signup to login
+					// name, image, and passwordValidation are gone
+					// so we need to set their value and isValid
 					...formState.inputs,
 					name: {
 						value: '',
 						isValid: false
 					},
-					image: {
-						value: null,
-						isValid: false
-					},
+					// image: {
+					// 	value: null,
+					// 	isValid: false
+					// },
 					passwordValidation: {
 						value: '',
 						isValid: false
 					}
 				},
 				false
+			);
+		} else {
+			// signup mode
+			setFormData(
+				{
+					...formState.inputs,
+					// set to undefined because the value was set in login mode
+					name: undefined,
+					passwordValidation: undefined
+					// image: undefined
+				},
+				formState.inputs.email.isValid &&
+					formState.inputs.password.isValid
 			);
 		}
 		setIsLoginMode(prevMode => !prevMode);
@@ -93,18 +98,13 @@ const ClubAuth = () => {
 				const responseData = await sendRequest(
 					'http://localhost:5000/api/clubs/login',
 					'POST',
-					{
-						'Content-Type': 'application/json'
-					},
-					// {
-					// 	email: formState.inputs.email.value,
-					// 	password: formState.inputs.password.value,
-					// 	returnSecureToken: true
-					// }
 					JSON.stringify({
 						email: formState.inputs.email.value,
 						password: formState.inputs.password.value
-					})
+					}),
+					{
+						'Content-Type': 'application/json'
+					}
 				);
 				/**
 				 * Need to put redirect before calling clubAuthContext.clubLogin(responseData.club.id).
@@ -114,12 +114,13 @@ const ClubAuth = () => {
 				 * Warning: Can't perform a React state update on an unmounted component. when
 				 * trying to redirect page after logging
 				 */
-				history.push(`/events/club/${responseData.club.id}`);
+				history.push(`/events/club/${responseData.clubId}`);
 				// club.id is coming from clubsController loginClub
 				// id is from {getters: true}
 				clubAuthContext.clubLogin(
-					responseData.club.id,
-					responseData.club.name
+					responseData.clubId,
+					responseData.name,
+					responseData.token
 				);
 			} catch (err) {
 				// empty. Custom hook takes care of it already
@@ -128,6 +129,18 @@ const ClubAuth = () => {
 		} else {
 			//club signup
 			try {
+				// a browser API
+				// const formData = new FormData();
+				// formData.append('email', formState.inputs.email.value);
+				// formData.append('name', formState.inputs.name.value);
+				// formData.append('password', formState.inputs.password.value);
+				// formData.append(
+				// 	'passwordValidation',
+				// 	formState.inputs.passwordValidation.value
+				// );
+				//formData.append('image', formState.inputs.image.value);
+
+				// matching passwords
 				if (
 					formState.inputs.password.value !==
 					formState.inputs.passwordValidation.value
@@ -139,16 +152,16 @@ const ClubAuth = () => {
 				await sendRequest(
 					'http://localhost:5000/api/clubs/signup',
 					'POST',
-					{
-						'Content-Type': 'application/json'
-					},
 					JSON.stringify({
 						name: formState.inputs.name.value,
 						email: formState.inputs.email.value,
 						password: formState.inputs.password.value,
 						passwordValidation:
 							formState.inputs.passwordValidation.value
-					})
+					}),
+					{
+						'Content-Type': 'application/json'
+					}
 				);
 				// set isLoginMode and isSignUp to true to render login page
 				setIsLoginMode(true);
@@ -189,9 +202,9 @@ const ClubAuth = () => {
 							onInput={inputHandler}
 						/>
 					)}
-					{!isLoginMode && (
+					{/* {!isLoginMode && (
 						<ImageUpload center id="image" onInput={inputHandler} />
-					)}
+					)} */}
 					<Input
 						id="email"
 						element="input"

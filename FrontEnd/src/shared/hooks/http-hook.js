@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+// import axios from 'axios';
 
 export const useHttpClient = () => {
 	const [isLoading, setIsLoading] = useState(false);
@@ -12,7 +13,7 @@ export const useHttpClient = () => {
 	// the component that uses this hook re-rendered
 	// argument [] is the dependency as in useEffect, in our case there is no dependencies
 	const sendRequest = useCallback(
-		async (url, method = 'GET', headers = {}, body = null) => {
+		async (url, method = 'GET', body = null, headers = {}) => {
 			setIsLoading(true);
 			/**
 			 * Usage case of AbortController() is when the request been submitted
@@ -22,22 +23,46 @@ export const useHttpClient = () => {
 			 */
 			const httpAbortCtrl = new AbortController();
 			activeHttpRequests.current.push(httpAbortCtrl);
-
+			console.log('body = ', body);
+			console.log('headers = ', headers);
 			try {
 				// fetch sends a http request to backend
 				// the request needs to match backend clubsRoutes /signup route
 				const response = await fetch(url, {
 					method,
-					headers,
 					body,
+					headers,
 					// signal links httpAbortCtrl to fetch request, so we will be able to use
 					// httpAbortCtrl to cancel the request
-					signal: httpAbortCtrl.signal,
-					credentials: 'include'
+					signal: httpAbortCtrl.signal
 				});
 
 				// parse the response body, this is the response back from back
 				const responseData = await response.json();
+
+				// let responseData;
+				// let statusText;
+				// await axios({
+				// 	url,
+				// 	method,
+				// 	data: body,
+				//  headers,
+				// 	// signal links httpAbortCtrl to fetch request, so we will be able to use
+				// 	// httpAbortCtrl to cancel the request
+				// 	signal: httpAbortCtrl.signal,
+				// 	credentials: 'include'
+				// })
+				// 	.then(response => {
+				// 		console.log('response = ', response);
+				// 		responseData = response.data;
+				// 		statusText = response.statusText;
+				// 	})
+				// 	.catch(err => {
+				// 		responseData = err.response.data;
+				// 		statusText = err.response.statusText;
+				// 		console.log('response = ', err.response);
+				// 		console.log('catch err =', err);
+				// 	});
 
 				// once request completes, we want to remove the httpAbortCtrl
 				activeHttpRequests.current = activeHttpRequests.current.filter(
@@ -45,10 +70,19 @@ export const useHttpClient = () => {
 					reqCtrl => reqCtrl !== httpAbortCtrl
 				);
 
+				console.log('response = ', response);
+				console.log('response.ok = ', response.ok);
+
 				// response with 400/500 status code
 				if (!response.ok) {
 					throw new Error(responseData.message);
 				}
+
+				// for axios
+				// if (statusText !== 'OK') {
+				// 	throw new Error(responseData.message);
+				// }
+
 				setIsLoading(false);
 				return responseData;
 			} catch (err) {

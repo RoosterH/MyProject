@@ -1,10 +1,14 @@
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const HttpError = require('../models/httpError');
 const Club = require('../models/club');
 const mongoose = require('mongoose');
-const mongooseUniqueValidator = require('mongoose-unique-validator');
+
+const chekAuth = require('../middleware/check-auth');
+const config = require('../Config/Config');
+const JWT_PRIVATE_KEY = config.JWT_PRIVATE_KEY;
 
 // GET /api/clubs/
 const getAllClubs = async (req, res, next) => {
@@ -14,7 +18,7 @@ const getAllClubs = async (req, res, next) => {
 		clubs = await Club.find({}, '-password').sort({ name: 1 });
 	} catch (err) {
 		const error = new HttpError(
-			'Get all clubs process failed.  Please try again later.',
+			'Get all clubs process failed. Please try again later.',
 			500
 		);
 		return next(error);
@@ -38,7 +42,7 @@ const getClubById = async (req, res, next) => {
 		club = await Club.findById(clubId);
 	} catch (err) {
 		const error = new HttpError(
-			'Get club process failed.  Please try again later.',
+			'Get club process failed. Please try again later.',
 			500
 		);
 		return next(error);
@@ -54,6 +58,7 @@ const getClubById = async (req, res, next) => {
 
 // POST '/api/clubs/signup'
 const createClub = async (req, res, next) => {
+	console.log('in createclub');
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		const errorFormatter = ({ value, msg, param, location }) => {
@@ -71,7 +76,7 @@ const createClub = async (req, res, next) => {
 
 	if (password !== passwordValidation) {
 		const error = new HttpError(
-			'Sign up club.  Passwords do not match!',
+			'Sign up club. Passwords do not match!',
 			403
 		);
 		return next(error);
@@ -82,7 +87,7 @@ const createClub = async (req, res, next) => {
 		existingClub = await Club.findOne({ email: email });
 	} catch (err) {
 		const error = new HttpError(
-			'Signed up email validation failed.  Please try again later',
+			'Signed up email validation failed. Please try again later',
 			500
 		);
 		return next(error);
@@ -90,8 +95,20 @@ const createClub = async (req, res, next) => {
 
 	if (existingClub) {
 		const error = new HttpError(
-			'Signup failed.  Please contact our administrator if you continue to have the same issue.',
+			'Signup failed. Please contact our administrator if you continue to have the same issue.',
 			422
+		);
+		return next(error);
+	}
+
+	let hashedPassword;
+	try {
+		// genSalt = 12
+		hashedPassword = await bcrypt.hash(password, 12);
+	} catch (err) {
+		const error = new HttpError(
+			'Faied to create a new club. Please try again later.',
+			500
 		);
 		return next(error);
 	}
@@ -101,38 +118,119 @@ const createClub = async (req, res, next) => {
 		email,
 		image:
 			'http://www.americanautox.com/wp-content/uploads/2015/02/header_v2.png',
-		password,
+		password: hashedPassword,
 		events: []
 	});
 
-	// Hash password
-	bcrypt.genSalt(10, (err, salt) =>
-		bcrypt.hash(newClub.password, salt, async (err, hash) => {
-			if (err) {
-				const error = new HttpError(
-					'Signed up internal failure.  Please try again later',
-					500
-				);
-				return next(error);
-			}
-			// set password to hash
-			newClub.password = hash;
-			try {
-				await newClub.save();
-				// await is slow. need to send res here not outside; otherwise in case of
-				// an error res will be sent first then back to catch(err) here
-				res
-					.status(201)
-					.json({ club: newClub.toObject({ getters: true }) });
-			} catch (err) {
-				const error = new HttpError(
-					'Faied to create a new club.  Please try again later.',
-					500
-				);
-				return next(error);
-			}
-		})
-	);
+	try {
+		await newClub.save();
+		// await is slow. need to send res here not outside; otherwise in case of
+		// an error res will be sent first then back to catch(err) here
+	} catch (err) {
+		const error = new HttpError(
+			'Faied to create a new club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// jwt section
+	let token;
+	// use ClubId and email as the payload
+	// private key
+	try {
+		token = jwt.sign(
+			{ clubId: newClub.id, email: newClub.email },
+			JWT_PRIVATE_KEY,
+			{ expiresIn: '1h' }
+		);
+	} catch (err) {
+		const error = new HttpError(
+			'Internal error. Faied to create a new club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(201).json({
+		clubId: newClub.id,
+		name: newClub.name,
+		email: newClub.email,
+		token: token
+	});
+};
+
+// POST '/api/clubs/login'
+const loginClub = async (req, res, next) => {
+	console.log('in loginClub');
+	const { name, password, email } = req.body;
+
+	// validation to make sure email does not exist in our DB
+	let existingClub;
+	try {
+		existingClub = await Club.findOne({ email: email.toLowerCase() });
+	} catch (err) {
+		const error = new HttpError(
+			'Login club process failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!existingClub) {
+		const error = new HttpError(
+			'Login club failed. Invalid club Name/email and password',
+			401
+		);
+		return next(error);
+	}
+
+	let isValidPassword = false;
+	try {
+		isValidPassword = await bcrypt.compare(
+			password,
+			existingClub.password
+		);
+	} catch (err) {
+		const error = new HttpError(
+			'Login club internal failure. Please try again later',
+			401
+		);
+		return next(error);
+	}
+	if (!isValidPassword) {
+		const error = new HttpError(
+			'Logging in failed. Please check your email/password',
+			401
+		);
+		return next(error, false);
+	}
+
+	// verify jwt
+	// jwt section
+	let token;
+	// use clubId and email as the payload, when we decode the payload will be
+	// returned along with the token
+	try {
+		token = jwt.sign(
+			{ clubId: existingClub.id, email: existingClub.email },
+			JWT_PRIVATE_KEY,
+			{ expiresIn: '1h' }
+		);
+	} catch (err) {
+		const error = new HttpError(
+			'Internal error. Faied to login club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		clubId: existingClub.id,
+		name: existingClub.name,
+		email: existingClub.email,
+		token: token
+	});
 };
 
 // PATCH '/api/clubs/:cid'
@@ -263,7 +361,6 @@ const deleteClub = async (req, res, next) => {
 
 		await club.remove({ session: session });
 		await session.commitTransaction();
-		req.logout();
 	} catch (err) {
 		const error = new HttpError(
 			'Delete club failed, please try again later.',
@@ -276,14 +373,13 @@ const deleteClub = async (req, res, next) => {
 };
 
 const logoutClub = (req, res) => {
-	// logout() is a passport middleware
-	req.logout();
 	res.status(200).json({ message: `You are logged out.` });
 };
 
 exports.getAllClubs = getAllClubs;
 exports.getClubById = getClubById;
 exports.createClub = createClub;
+exports.loginClub = loginClub;
 exports.updateClub = updateClub;
 exports.deleteClub = deleteClub;
 exports.logoutClub = logoutClub;

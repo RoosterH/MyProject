@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const passport = require('passport');
+// const passport = require('passport');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 
@@ -18,20 +18,19 @@ app.use(bodyParser.json());
 // Express session
 // rolling: forced the session identifier cookie to be set on every response.
 // The expiration is reset to the original maxAge, resetting the expiration countdown.
-app.use(
-	session({
-		secret: 'secret',
-		resave: true,
-		saveUninitialized: true,
-		rolling: true,
-		maxAge: new Date(Date.now() + 3600)
-	})
-);
-app.use(bodyParser.urlencoded({ extended: false }));
+// app.use(
+// 	session({
+// 		secret: 'secret',
+// 		resave: true,
+// 		saveUninitialized: true,
+// 		rolling: true,
+// 		maxAge: new Date(Date.now() + 3600)
+// 	})
+// );
 
 // passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 // this is to avoid CORS error
 app.use((req, res, next) => {
@@ -46,15 +45,16 @@ app.use((req, res, next) => {
 	 * For security reason, we need to set 'Access-Control-Allow-Origin' to the specific host that sends
 	 * the request from due to security reason. => '*' can no longer be used.
 	 */
-	res.setHeader(
-		'Access-Control-Allow-Origin',
-		'http://localhost:3000'
-	);
-	res.setHeader('Access-Control-Allow-Credentials', 'true');
+	// res.setHeader(
+	// 	'Access-Control-Allow-Origin',
+	// 	'http://localhost:3000'
+	// );
+	// res.setHeader('Access-Control-Allow-Credentials', 'true');
 
+	res.setHeader('Access-Control-Allow-Origin', '*');
 	res.setHeader(
 		'Access-Control-Allow-Headers',
-		'Origin, X-Requested-Width, Content-Type, Accept, Authorization'
+		'Origin, X-Requested-With, Content-Type, Accept, Authorization'
 	);
 	res.setHeader(
 		'Access-Control-Allow-Methods',
@@ -75,7 +75,7 @@ app.use((req, res, next) => {
 	throw error;
 });
 
-// this route is to Check if header has been sent meaning a response been sent already.
+// this route is to check if header has been sent meaning a response been sent already.
 // If that's the case, we want to return next and forward the error to it,
 // because we can only send the response once.
 app.use((error, req, res, next) => {

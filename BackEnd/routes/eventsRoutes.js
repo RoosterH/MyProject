@@ -6,10 +6,7 @@ const { check } = require('express-validator');
 const moment = require('moment');
 
 const eventsController = require('../controllers/eventsController');
-const {
-	ensureAuthenticated,
-	forwardAuthenticated
-} = require('../util/auth');
+const checkAuth = require('../middleware/check-auth');
 
 const router = express.Router();
 
@@ -25,12 +22,15 @@ router.get('/club/:cid', eventsController.getEventsByClubId);
 
 // router.get('/user/:uid', eventsController.getEventsByUserId);
 
+// adding checkAuth middleware here will ensure all the requests below
+// need to be authenticated
+router.use(checkAuth);
+
 // last valid day to allow for event addition, modification, or deletion
 let validFormModDate = moment().add(1, 'days').format('YYYY,MM,DD');
 // only clubs are able to create an event
 router.post(
 	'/',
-	ensureAuthenticated,
 	[
 		check('name').isLength({ min: 5 }),
 		check('startDate').custom(
@@ -48,7 +48,6 @@ router.post(
 
 router.patch(
 	'/:eid',
-	ensureAuthenticated,
 	[
 		check('name').isLength({ min: 5 }),
 		check('startDate').custom(

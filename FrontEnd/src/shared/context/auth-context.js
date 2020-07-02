@@ -15,6 +15,7 @@ import { createContext } from 'react';
 //
 export const ClubAuthContext = createContext({
 	isClubLoggedIn: false,
+	clubToken: null,
 	clubId: null,
 	clubName: null,
 	clubLogin: () => {},
@@ -23,6 +24,7 @@ export const ClubAuthContext = createContext({
 
 export const UserAuthContext = createContext({
 	isUserLoggedIn: false,
+	userToken: null,
 	userId: null,
 	userName: null,
 	userLogin: () => {},

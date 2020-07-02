@@ -1,6 +1,6 @@
-import React from "react";
+import React from 'react';
 
-import "./UserItem.css";
+import './UserItem.css';
 
 const UserItem = props => {};
 

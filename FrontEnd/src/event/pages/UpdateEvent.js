@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import moment from 'moment';
 import { useParams, useHistory } from 'react-router-dom';
 
 import Button from '../../shared/components/FormElements/Button';
 import Card from '../../shared/components/UIElements/Card';
+import { ClubAuthContext } from '../../shared/context/auth-context';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import Image from '../../shared/components/UIElements/Image';
@@ -29,6 +30,8 @@ const UpdateEvent = () => {
 	} = useHttpClient();
 	// initial state undefined
 	const [loadedEvent, setLoadedEvent] = useState();
+
+	const clubAuth = useContext(ClubAuthContext);
 
 	// Modal section
 	const [showModal, setShowModal] = useState(false);
@@ -92,6 +95,7 @@ const UpdateEvent = () => {
 		false
 	);
 
+	// GET event from server
 	useEffect(() => {
 		const fetchEvent = async () => {
 			try {
@@ -151,9 +155,6 @@ const UpdateEvent = () => {
 			await sendRequest(
 				`http://localhost:5000/api/events/${eventId}`,
 				'PATCH',
-				{
-					'Content-Type': 'application/json'
-				},
 				JSON.stringify({
 					name: formState.inputs.name.value,
 					image: formState.inputs.image.value,
@@ -163,7 +164,12 @@ const UpdateEvent = () => {
 					address: formState.inputs.address.value,
 					description: formState.inputs.description.value,
 					courseMap: formState.inputs.courseMap.value
-				})
+				}),
+				{
+					'Content-Type': 'application/json',
+					// adding JWT to header for authentication
+					Authorization: 'Bearer ' + clubAuth.clubToken
+				}
 			);
 			history.push('/events/' + eventId);
 		} catch (err) {}
