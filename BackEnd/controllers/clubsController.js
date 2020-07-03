@@ -58,7 +58,6 @@ const getClubById = async (req, res, next) => {
 
 // POST '/api/clubs/signup'
 const createClub = async (req, res, next) => {
-	console.log('in createclub');
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		const errorFormatter = ({ value, msg, param, location }) => {
@@ -162,7 +161,6 @@ const createClub = async (req, res, next) => {
 
 // POST '/api/clubs/login'
 const loginClub = async (req, res, next) => {
-	console.log('in loginClub');
 	const { name, password, email } = req.body;
 
 	// validation to make sure email does not exist in our DB
@@ -180,7 +178,7 @@ const loginClub = async (req, res, next) => {
 	if (!existingClub) {
 		const error = new HttpError(
 			'Login club failed. Invalid club Name/email and password',
-			401
+			403
 		);
 		return next(error);
 	}
@@ -194,14 +192,14 @@ const loginClub = async (req, res, next) => {
 	} catch (err) {
 		const error = new HttpError(
 			'Login club internal failure. Please try again later',
-			401
+			500
 		);
 		return next(error);
 	}
 	if (!isValidPassword) {
 		const error = new HttpError(
 			'Logging in failed. Please check your email/password',
-			401
+			403
 		);
 		return next(error, false);
 	}
@@ -212,10 +210,11 @@ const loginClub = async (req, res, next) => {
 	// use clubId and email as the payload, when we decode the payload will be
 	// returned along with the token
 	try {
+		// encoding
 		token = jwt.sign(
 			{ clubId: existingClub.id, email: existingClub.email },
 			JWT_PRIVATE_KEY,
-			{ expiresIn: '1h' }
+			{ expiresIn: '24h' }
 		);
 	} catch (err) {
 		const error = new HttpError(

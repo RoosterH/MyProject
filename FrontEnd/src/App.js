@@ -17,6 +17,7 @@ import NewEvent from './event/pages/NewEvent';
 import Users from './users/pages/Users';
 import UserAuth from './users/pages/UsersAuth';
 import UpdateEvent from './event/pages/UpdateEvent';
+import { useClubAuth } from './shared/hooks/clubAuth-hook';
 
 import {
 	ClubAuthContext,
@@ -24,22 +25,13 @@ import {
 } from './shared/context/auth-context';
 
 const App = () => {
-	// clubAuthContext state
-	const [clubToken, setClubToken] = useState(null);
-	const [clubId, setClubId] = useState(null);
-	const [clubName, setClubName] = useState(null);
-
-	// define callbacks of ClubAuthContext
-	const clubLogin = useCallback((cid, cname, ctoken) => {
-		setClubToken(ctoken);
-		setClubId(cid);
-		setClubName(cname);
-	}, []);
-	const clubLogout = useCallback(() => {
-		setClubToken(null);
-		setClubId(null);
-		setClubName(null);
-	}, []);
+	const {
+		clubToken,
+		clubLogin,
+		clubLogout,
+		clubId,
+		clubName
+	} = useClubAuth();
 
 	// userAuthContext state
 	const [userToken, setUserToken] = useState(null);
@@ -121,7 +113,7 @@ const App = () => {
 	return (
 		<ClubAuthContext.Provider
 			value={{
-				isClubLoggedIn: !!clubToken,
+				isClubLoggedIn: !!clubToken, // !!null = true
 				clubToken: clubToken,
 				clubId: clubId,
 				clubName: clubName,

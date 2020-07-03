@@ -28,10 +28,6 @@ app.use(bodyParser.json());
 // 	})
 // );
 
-// passport middleware
-// app.use(passport.initialize());
-// app.use(passport.session());
-
 // this is to avoid CORS error
 app.use((req, res, next) => {
 	// add certain headers to the response so we can attach it to the response sent back

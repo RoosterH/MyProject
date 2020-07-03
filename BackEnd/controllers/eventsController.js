@@ -303,6 +303,12 @@ const updateEvent = async (req, res, next) => {
 		);
 	}
 
+	// we addded userData in check-auth after verifying jwt
+	if (event.clubId.toString() !== req.userData.clubId) {
+		const error = new HttpError('Unauthorized operation!!!', 401);
+		return next(error);
+	}
+
 	// update event info
 	event.name = name;
 	event.startDate = startDate;
@@ -349,6 +355,13 @@ const deleteEvent = async (req, res, next) => {
 			'Delete event failed finding the event.',
 			404
 		);
+		return next(error);
+	}
+
+	// because we populate clubId already so we can now use the getter id
+	// In updateEvent, there is no populate so we had to use clubId.toString()
+	if (event.clubId.id !== req.userData.clubId) {
+		const error = new HttpError('Unauthorized operation!!!', 401);
 		return next(error);
 	}
 

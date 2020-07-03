@@ -21,7 +21,9 @@ export const useClubLogOut = () => {
 			// use custom hook.
 			await sendRequest(
 				'http://localhost:5000/api/clubs/logout',
-				'POST'
+				'POST',
+				null,
+				{ Authorization: 'Bearer ' + clubAuth.clubToken }
 			);
 			/**
 			 * Need to put redirect before calling clubAuthContext.clubLogin(responseData.club.id).

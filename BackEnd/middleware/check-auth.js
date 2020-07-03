@@ -40,10 +40,8 @@ module.exports = (req, res, next) => {
 		const token = req.headers.authorization.split(' ')[1];
 		if (!token) {
 			// this throw will go into outer catch
-			console.log('check auth 1');
 			throw new Error('Authentication failed!');
 		}
-		console.log('JWT = ', JWT_PRIVATE_KEY);
 		// verify request token against server token generated from private key
 		const decodedToken = jwt.verify(token, JWT_PRIVATE_KEY);
 		// add data to the request
