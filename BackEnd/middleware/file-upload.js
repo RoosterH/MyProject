@@ -9,21 +9,25 @@ const MIME_TYPE_MAP = {
 // Execute multer as a function that we can pass configuration object.
 // The result is the actual fileUpload middleware
 const fileUpload = multer({
-	limit: 500000, // 500kB file size
+	limits: 1500000, // 1.5MB file size
 	storage: multer.diskStorage({
 		destination: (req, file, cb) => {
-			// storage path
-			cb(null, 'upload/images');
+			// 1st param is error = null
+			// 2nd param is storage path
+			cb(null, 'uploads/images');
 		},
 		filename: (req, file, cb) => {
 			// file extension
 			const ext = MIME_TYPE_MAP[file.mimetype];
-			// use uuid to generate a filename. The first param is for error
+			// 1st param is error = null
+			// 2nd is the filename
 			cb(null, uuid() + '.' + ext);
 		}
 	}),
 	fileFilter: (req, file, cb) => {
-		// !! meaning converts undefiend or null to false
+		// if extention is not defined in MIME_TYPE_MAP, it will return undefined
+		// '!!' meaning converts undefiend or null to false
+		// if it's defined !! will still be true
 		const isValid = !!MIME_TYPE_MAP[file.mimetype];
 		let error = isValid ? null : new Error('Invalid MIME type!');
 		cb(error, isValid);

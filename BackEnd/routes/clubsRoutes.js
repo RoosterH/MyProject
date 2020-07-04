@@ -10,7 +10,6 @@ const { check } = require('express-validator');
 const Club = require('../models/club');
 const HttpError = require('../models/httpError');
 const clubsController = require('../controllers/clubsController');
-const { ensureAuthenticated } = require('../util/auth');
 const fileUpload = require('../middleware/file-upload');
 const checkAuth = require('../middleware/check-auth');
 
@@ -25,7 +24,7 @@ router.post(
 	'/signup',
 	// single file, 'image' is the key name in the request body
 	// that is associated with the uploading file
-	//fileUpload.single('image'),
+	fileUpload.single('image'),
 	[
 		check('name').not().isEmpty(),
 		check('email').normalizeEmail().isEmail(),
@@ -34,10 +33,6 @@ router.post(
 	],
 	clubsController.createClub
 );
-
-// adding checkAuth middleware here will ensure all the requests below
-// need to be authenticated
-// router.use(checkAuth);
 
 // Login, due to security reasons, we don't want to do express-validator for the input data
 // because that will provide hints to hackers
@@ -65,7 +60,6 @@ router.post('/logout', clubsController.logoutClub);
 
 router.patch(
 	'/:cid',
-	ensureAuthenticated,
 	[
 		check('name').not().isEmpty(),
 		check('email').normalizeEmail().isEmail(),
@@ -74,10 +68,6 @@ router.patch(
 	clubsController.updateClub
 );
 
-router.delete(
-	'/:cid',
-	ensureAuthenticated,
-	clubsController.deleteClub
-);
+router.delete('/:cid', clubsController.deleteClub);
 
 module.exports = router;

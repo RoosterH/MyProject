@@ -9,12 +9,13 @@ const mongoose = require('mongoose');
 const chekAuth = require('../middleware/check-auth');
 const config = require('../Config/Config');
 const JWT_PRIVATE_KEY = config.JWT_PRIVATE_KEY;
+const DUMMY_CLUBID = config.DUMMY_CLUBID;
 
 // GET /api/clubs/
 const getAllClubs = async (req, res, next) => {
 	let clubs;
 	try {
-		// we don't want to display password field when querying clubs
+		// we don't want to return password field
 		clubs = await Club.find({}, '-password').sort({ name: 1 });
 	} catch (err) {
 		const error = new HttpError(
@@ -39,7 +40,8 @@ const getClubById = async (req, res, next) => {
 	clubId = req.params.cid;
 	let club;
 	try {
-		club = await Club.findById(clubId);
+		// we don't want to return password field
+		club = await Club.findById(clubId, '-password');
 	} catch (err) {
 		const error = new HttpError(
 			'Get club process failed. Please try again later.',
@@ -250,7 +252,8 @@ const updateClub = async (req, res, next) => {
 	}
 
 	const { name, password, email } = req.body;
-	const clubId = req.params.cid;
+	const clubId = req.userData.clubId; // use clubId from token instead of getting it from url to avoid hacking
+	console.log('clubId = ', clubId);
 	let club;
 	try {
 		club = await Club.findById(clubId);
@@ -275,36 +278,35 @@ const updateClub = async (req, res, next) => {
 	club.password = password;
 	club.email = email;
 
-	// Hash password
-	bcrypt.genSalt(10, (err, salt) =>
-		bcrypt.hash(club.password, salt, async (err, hash) => {
-			if (err) {
-				const error = new HttpError(
-					'Update club internal failure. Please try again later',
-					500
-				);
-				return next(error);
-			}
-			// set password to hash
-			club.password = hash;
-			try {
-				await club.save();
-			} catch (err) {
-				const error = new HttpError(
-					`Updating club failed with the following error: ${err}`,
-					500
-				);
-				return next(error);
+	let hashedPassword;
+	try {
+		// set password to hashed password. genSalt = 12
+		club.password = await bcrypt.hash(password, 12);
+
+		await club.save();
+	} catch (err) {
+		const error = new HttpError(
+			'Update club internal failure. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		club: club.toObject({
+			getters: true,
+			// use transform to filter out password
+			transform: (doc, ret, opt) => {
+				delete ret['password'];
+				return ret;
 			}
 		})
-	);
-
-	res.status(200).json({ club: club.toObject({ getters: true }) });
+	});
 };
 
 // DELETE '/api/clubs/:cid'
 const deleteClub = async (req, res, next) => {
-	const clubId = req.params.cid;
+	const clubId = req.userData.clubId; // use clubId in the jwt instaed of getting it from url
 
 	let club;
 	try {
@@ -327,12 +329,10 @@ const deleteClub = async (req, res, next) => {
 		);
 		return next(error);
 	}
+
 	let clubName = club.name;
 	// We do not want to delete all the associated events with clubs.
 	// Instead we will be assiging the associated clubId to our dummy club (MySeatTime).
-	const dummyClubId = mongoose.Types.ObjectId(
-		'5ef702c7ba7511499165e653'
-	);
 	try {
 		// using transaction here to make sure all the operations are done
 		const session = await mongoose.startSession();
@@ -341,7 +341,7 @@ const deleteClub = async (req, res, next) => {
 		// transfer all the events to dummy club so the events won't be deleted
 		await club.events.map(async event => {
 			// assign the event clubId to dummyClub since we are deleting the original club
-			event.clubId = dummyClubId;
+			event.clubId = DUMMY_CLUBID;
 			await event.save({
 				session: session
 			});
@@ -351,7 +351,7 @@ const deleteClub = async (req, res, next) => {
 			 * We need to use await, otherwise, it won't work.
 			 * In order to use await, we need to make the callback as async
 			 */
-			let dummyClub = await Club.findById(dummyClubId).populate(
+			let dummyClub = await Club.findById(DUMMY_CLUBID).populate(
 				'events'
 			);
 			dummyClub.events.push(event);

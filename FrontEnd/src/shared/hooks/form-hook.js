@@ -56,9 +56,14 @@ const formReducer = (state, action) => {
 // custom hook naming convention starts with lower case
 export const useForm = (initialInputs, initialFormValidaty) => {
 	/**
-	 * useReducer defines how state changes when an action occurs. We can define different logic per action inside of
-	 * useReducer.  "formState" will be the result for the next state.
+	 * useReducer defines how state changes when an action occurs. We can define different
+	 * logic per action inside of useReducer.  "formState" will be the result for the next
+	 * state.
 	 **/
+	// formReducer: reducer function
+	// {inputs: initalInputs, isValid: initialFormValidaty}: initial state
+	// dspatch: dispatch function to call reducer function
+	// formState: return value from reducer function
 	const [formState, dispatch] = useReducer(formReducer, {
 		/**
 		 * The following section is the initial state, inputs are the actions such as

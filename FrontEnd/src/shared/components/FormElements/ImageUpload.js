@@ -8,15 +8,12 @@ const ImageUpload = props => {
 	const [previewUrl, setPreviewUrl] = useState();
 	const [isValid, setIsValid] = useState(false);
 
-	// create a ref pointing to <input />
-	const filePickerRef = useRef();
-
 	// generate preview
 	useEffect(() => {
 		if (!file) {
 			return;
 		}
-		// FileReader is from browser side js
+		// FileReader is a browser js API
 		const fileReader = new FileReader();
 		// before calling readAsDataURL, we need to register onLoad
 		// So after readAsDataURL reads the file, onload will take care of the result
@@ -26,10 +23,19 @@ const ImageUpload = props => {
 		fileReader.readAsDataURL(file);
 	}, [file]);
 
+	// create a ref of fil
+	const filePickerRef = useRef();
+	const pickImageHandler = () => {
+		// click() is a method in <input /> DOM note, once it got clicked, it will open the file selector
+		filePickerRef.current.click();
+	};
+
+	// get an event object, this event is the file been picked
 	const pickedHandler = event => {
 		let pickedFile;
-		// because useState does not udpate value immediately so we cannot use
-		// isValid in props.onInput()
+		// Because useState does not udpate value immediately so we are unable
+		// to pass isValid to props.onInput(). Instead we need to create a new
+		// variable to pass to props.onInput()
 		let fileIsValid = isValid;
 		// native js code event.target has type="file" will have "files"
 		if (event.target.files && event.target.files.length === 1) {
@@ -41,29 +47,31 @@ const ImageUpload = props => {
 			setIsValid(false);
 			fileIsValid = false;
 		}
+		// we need to provide an onInput()
 		// return values when onInput been called
 		props.onInput(props.id, pickedFile, fileIsValid);
-	};
-
-	const pickImageHandler = () => {
-		// click() is a method in <input /> DOM note, once it got clicked, it will open the file selector
-		filePickerRef.current.click();
 	};
 
 	return (
 		// form-control is @ input.css, css is available globally once it's imported.
 		// Since we have imported input.css in input.js so we can use it here.
 		<div className="form-control">
-			{/* {display: none} to hide the image. image is still a part of DOM*/}
+			{/* The following input section is file picker, initially we want to hide it. 
+			Once Button been clicked, pickImageHandler will be called.  It calls
+			filePickerRef.current.click(); Inside <input> ref={filePickerRef}, it means 
+			we are calling click() method of file picker DOM node. That is why file picker gets 
+			displayed after button been clicked */}
+			{/* {display: none} to hide the file picker but it is still a part of DOM*/}
 			<input
 				id={props.id}
 				ref={filePickerRef}
 				style={{ display: 'none' }}
 				type="file"
-				accept=".jpg,.jpeg,.png"
-				onChange={pickedHandler}
+				accept=".jpg,.jpeg,.png" // accept is a default attribute for input type ="file"
+				onChange={pickedHandler} // gets triggered when a file been selected
 			/>
 			<div className={`image-upload ${props.center && 'center'}`}>
+				{/* image previewer  */}
 				<div className="image-upload__preview">
 					{previewUrl && <img src={previewUrl} alt="Preview" />}
 					{!previewUrl && <p>Please pick an image.</p>}

@@ -81,8 +81,7 @@ const NewEvent = () => {
 					address: formState.inputs.address.value,
 					description: formState.inputs.description.value,
 					image: formState.inputs.image.value,
-					courseMap: formState.inputs.courseMap.value,
-					clubId: clubAuth.clubId
+					courseMap: formState.inputs.courseMap.value
 				}),
 				{
 					'Content-Type': 'application/json',

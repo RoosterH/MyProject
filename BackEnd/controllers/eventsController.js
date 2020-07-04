@@ -166,12 +166,12 @@ const createEvent = async (req, res, next) => {
 		venue,
 		address,
 		description,
-		courseMap,
-		clubId
+		courseMap
 	} = req.body;
 
 	// Validate clubId exists. If not, sends back an error
 	let club;
+	let clubId = req.userData.clubId;
 	try {
 		club = await Club.findById(clubId);
 	} catch (err) {
@@ -205,7 +205,9 @@ const createEvent = async (req, res, next) => {
 		address,
 		coordinate,
 		description,
-		clubId,
+		// instead of getting the clubId from body that could be faked, we will get
+		// it from the token
+		clubId: clubId,
 		image:
 			'https://media.gettyimages.com/photos/san-jose-twilight-picture-id1058214402?s=2048x2048',
 		courseMap:

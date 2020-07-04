@@ -6,7 +6,7 @@ import Card from '../../shared/components/UIElements/Card';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import Input from '../../shared/components/FormElements/Input';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
-// import ImageUpload from '../../shared/components/FormElements/ImageUpload';
+import ImageUpload from '../../shared/components/FormElements/ImageUpload';
 
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import { useForm } from '../../shared/hooks/form-hook';
@@ -31,6 +31,13 @@ const ClubAuth = () => {
 		clearError
 	} = useHttpClient();
 
+	/**
+	 * Flow of usage of useForm:
+	 * setFormData: set initial form value
+	 * inputHandler: will be called in each <Input /> and <ImageUpload />. When there is an input
+	 * 				 useForm will get the input value and put it in the formState
+	 * formState: return value that contains all the form field values (including the other fields)
+	 */
 	const [formState, inputHandler, setFormData] = useForm(
 		{
 			email: {
@@ -52,16 +59,16 @@ const ClubAuth = () => {
 				{
 					// when we switch from signup to login
 					// name, image, and passwordValidation are gone
-					// so we need to set their value and isValid
+					// so we need to set their value to '' and isValid: false
 					...formState.inputs,
 					name: {
 						value: '',
 						isValid: false
 					},
-					// image: {
-					// 	value: null,
-					// 	isValid: false
-					// },
+					image: {
+						value: null,
+						isValid: false
+					},
 					passwordValidation: {
 						value: '',
 						isValid: false
@@ -76,8 +83,8 @@ const ClubAuth = () => {
 					...formState.inputs,
 					// set to undefined because the value was set in login mode
 					name: undefined,
+					image: undefined,
 					passwordValidation: undefined
-					// image: undefined
 				},
 				formState.inputs.email.isValid &&
 					formState.inputs.password.isValid
@@ -129,17 +136,6 @@ const ClubAuth = () => {
 		} else {
 			//club signup
 			try {
-				// a browser API
-				// const formData = new FormData();
-				// formData.append('email', formState.inputs.email.value);
-				// formData.append('name', formState.inputs.name.value);
-				// formData.append('password', formState.inputs.password.value);
-				// formData.append(
-				// 	'passwordValidation',
-				// 	formState.inputs.passwordValidation.value
-				// );
-				//formData.append('image', formState.inputs.image.value);
-
 				// matching passwords
 				if (
 					formState.inputs.password.value !==
@@ -148,20 +144,23 @@ const ClubAuth = () => {
 					setPasswordError('Passwords do not match!');
 					throw new Error('password no match');
 				}
+
+				// FormData() is a browser API. We can append text or binary data to FormData
+				const formData = new FormData();
+				formData.append('email', formState.inputs.email.value);
+				formData.append('name', formState.inputs.name.value);
+				formData.append('password', formState.inputs.password.value);
+				formData.append(
+					'passwordValidation',
+					formState.inputs.passwordValidation.value
+				);
+				formData.append('image', formState.inputs.image.value);
+
 				// the request needs to match backend clubsRoutes /signup route
 				await sendRequest(
 					'http://localhost:5000/api/clubs/signup',
 					'POST',
-					JSON.stringify({
-						name: formState.inputs.name.value,
-						email: formState.inputs.email.value,
-						password: formState.inputs.password.value,
-						passwordValidation:
-							formState.inputs.passwordValidation.value
-					}),
-					{
-						'Content-Type': 'application/json'
-					}
+					formData
 				);
 				// set isLoginMode and isSignUp to true to render login page
 				setIsLoginMode(true);
@@ -202,9 +201,9 @@ const ClubAuth = () => {
 							onInput={inputHandler}
 						/>
 					)}
-					{/* {!isLoginMode && (
+					{!isLoginMode && (
 						<ImageUpload center id="image" onInput={inputHandler} />
-					)} */}
+					)}
 					<Input
 						id="email"
 						element="input"

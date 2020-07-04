@@ -167,7 +167,7 @@ const UpdateEvent = () => {
 				}),
 				{
 					'Content-Type': 'application/json',
-					// adding JWT to header for authentication
+					// adding JWT to header for authentication, JWT contains clubId
 					Authorization: 'Bearer ' + clubAuth.clubToken
 				}
 			);

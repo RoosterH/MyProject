@@ -7,7 +7,6 @@ import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 
 // Events is called in App.js where the route been defined
-// @to-do
 const ClubEvents = () => {
 	const [loadedEvents, setLoadedEvents] = useState();
 	const {
