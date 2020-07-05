@@ -1,3 +1,6 @@
+const fs = require('fs'); // file system, a nodejs module
+const path = require('path');
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -15,38 +18,19 @@ const app = express();
 // bodyParser.json() will parse the json to js data structure such as array then call next automatically.
 app.use(bodyParser.json());
 
-// Express session
-// rolling: forced the session identifier cookie to be set on every response.
-// The expiration is reset to the original maxAge, resetting the expiration countdown.
-// app.use(
-// 	session({
-// 		secret: 'secret',
-// 		resave: true,
-// 		saveUninitialized: true,
-// 		rolling: true,
-// 		maxAge: new Date(Date.now() + 3600)
-// 	})
-// );
+// express.static() a middleware and returns the requested file
+app.use(
+	'/uploads/images',
+	express.static(path.join('uploads', 'images'))
+);
 
 // this is to avoid CORS error
 app.use((req, res, next) => {
 	// add certain headers to the response so we can attach it to the response sent back
 	// to the front end to work around CORS policy issue
 
-	/**
-	 * Because requests initiated by js by default does not contain credentials(cookies
-	 * or HTTP authentication). In order to keep Express Session persistent between React
-	 * and Express. We need to add => credentials: 'include' to all the fetch calls to backend.
-	 * For Backend, we will add 'Access-Control-Allow-Credentials', 'true' to accept js calls.
-	 * For security reason, we need to set 'Access-Control-Allow-Origin' to the specific host that sends
-	 * the request from due to security reason. => '*' can no longer be used.
-	 */
-	// res.setHeader(
-	// 	'Access-Control-Allow-Origin',
-	// 	'http://localhost:3000'
-	// );
-	// res.setHeader('Access-Control-Allow-Credentials', 'true');
-
+	//'Access-Control-Allow-Origin', '*' means server accepts request sent from any end point
+	// To specify an end point, we could do: 'Access-Control-Allow-Origin': '*'
 	res.setHeader('Access-Control-Allow-Origin', '*');
 	res.setHeader(
 		'Access-Control-Allow-Headers',
@@ -71,10 +55,28 @@ app.use((req, res, next) => {
 	throw error;
 });
 
-// this route is to check if header has been sent meaning a response been sent already.
-// If that's the case, we want to return next and forward the error to it,
-// because we can only send the response once.
+// this middleware is to check if there is any error occurring during
+// request processing
 app.use((error, req, res, next) => {
+	// if req failed and it contains a file, we want to delete the file
+	if (req.file) {
+		fs.unlink(req.file.path, err => {
+			console.log(err);
+		});
+	}
+	// req contains multiple files failed. delete them all
+	if (req.files) {
+		Object.keys(req.files).map(field => {
+			fs.unlink(req.files[field][0].path, err => {
+				console.log(err);
+			});
+		});
+	}
+	// header has been sent meaning a response been sent already.
+	// If that's the case, we want to return next and forward the error to it,
+	// because we can only send the response once.
+	// Usually that happens when there is a bug in the codes that we send
+	// response back multiple times.
 	if (res.headerSent) {
 		return next(error);
 	}

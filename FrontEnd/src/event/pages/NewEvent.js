@@ -5,14 +5,14 @@ import moment from 'moment';
 import Input from '../../shared/components/FormElements/Input';
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
+import ImageUpload from '../../shared/components/FormElements/ImageUpload.js';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import { useForm } from '../../shared/hooks/form-hook';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import {
 	VALIDATOR_REQUIRE,
-	VALIDATOR_MINLENGTH,
-	VALIDATOR_FILE
+	VALIDATOR_MINLENGTH
 } from '../../shared/util/validators';
 import './EventForm.css';
 
@@ -24,7 +24,7 @@ const NewEvent = () => {
 		sendRequest,
 		clearError
 	} = useHttpClient();
-	const [formState, inputHandler] = useForm(
+	const [formState, inputHandler, setFormData] = useForm(
 		{
 			// validity of individual input
 			name: {
@@ -32,7 +32,7 @@ const NewEvent = () => {
 				isValid: false
 			},
 			image: {
-				value: '',
+				value: null, // need to use null because it's a binary file
 				isValid: false
 			},
 			startDate: {
@@ -56,7 +56,7 @@ const NewEvent = () => {
 				isValid: false
 			},
 			courseMap: {
-				value: '',
+				value: null,
 				isValid: false
 			}
 		},
@@ -68,23 +68,45 @@ const NewEvent = () => {
 		// meaning we don't want to reload the page after form submission
 		// all the input values stay intact on the form
 		event.preventDefault();
+		setFormData(
+			{
+				...formState.inputs
+			},
+			formState.inputs.name.isValid &&
+				formState.inputs.startDate.isValid &&
+				formState.inputs.endDate.isValid &&
+				formState.inputs.venue.isValid &&
+				formState.inputs.address.isValid &&
+				formState.inputs.description.isValid &&
+				formState.inputs.image.isValid
+		);
 
 		try {
+			// FormData() is a browser API. We can append text or binary data to FormData
+			const formData = new FormData();
+			formData.append('name', formState.inputs.name.value);
+			formData.append(
+				'startDate',
+				moment(formState.inputs.startDate.value)
+			);
+			formData.append(
+				'endDate',
+				moment(formState.inputs.endDate.value)
+			);
+			formData.append('venue', formState.inputs.venue.value);
+			formData.append('address', formState.inputs.address.value);
+			formData.append(
+				'description',
+				formState.inputs.description.value
+			);
+			formData.append('image', formState.inputs.image.value);
+			formData.append('courseMap', formState.inputs.courseMap.value);
+
 			await sendRequest(
 				'http://localhost:5000/api/events',
 				'POST',
-				JSON.stringify({
-					name: formState.inputs.name.value,
-					startDate: moment(formState.inputs.startDate.value),
-					endDate: moment(formState.inputs.endDate.value),
-					venue: formState.inputs.venue.value,
-					address: formState.inputs.address.value,
-					description: formState.inputs.description.value,
-					image: formState.inputs.image.value,
-					courseMap: formState.inputs.courseMap.value
-				}),
+				formData,
 				{
-					'Content-Type': 'application/json',
 					// adding JWT to header for authentication
 					Authorization: 'Bearer ' + clubAuth.clubToken
 				}
@@ -109,14 +131,11 @@ const NewEvent = () => {
 					errorText="Please enter a valid name."
 					onInput={inputHandler}
 				/>
-				<Input
+				<ImageUpload
+					center
 					id="image"
-					element="input"
-					type="file"
-					label="Event Image (optional in jpg or png)"
-					validators={[VALIDATOR_FILE()]}
-					errorText="Please select a jpg or png file."
 					onInput={inputHandler}
+					errorText="Please provide an event image."
 				/>
 				<Input
 					id="startDate"
@@ -162,15 +181,7 @@ const NewEvent = () => {
 					errorText="Please enter a valid description with min length 10 chars."
 					onInput={inputHandler}
 				/>
-				<Input
-					id="courseMap"
-					element="input"
-					type="file"
-					label="Course Map (optional in jpg or png)"
-					validators={[VALIDATOR_FILE()]}
-					errorText="Please select a jpg or png file."
-					onInput={inputHandler}
-				/>
+				<ImageUpload center id="courseMap" onInput={inputHandler} />
 				<Button type="submit" disabled={!formState.isValid}>
 					Add Event
 				</Button>

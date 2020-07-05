@@ -101,7 +101,7 @@ const ClubAuth = () => {
 
 		if (isLoginMode) {
 			try {
-				// use custom hook.
+				// use custom hook. send login request to Backend
 				const responseData = await sendRequest(
 					'http://localhost:5000/api/clubs/login',
 					'POST',
@@ -157,6 +157,7 @@ const ClubAuth = () => {
 				formData.append('image', formState.inputs.image.value);
 
 				// the request needs to match backend clubsRoutes /signup route
+				// With fromData, headers cannot be {Content-Type: application/json}
 				await sendRequest(
 					'http://localhost:5000/api/clubs/signup',
 					'POST',
@@ -202,7 +203,12 @@ const ClubAuth = () => {
 						/>
 					)}
 					{!isLoginMode && (
-						<ImageUpload center id="image" onInput={inputHandler} />
+						<ImageUpload
+							center
+							id="image"
+							onInput={inputHandler}
+							errorText="Please provide a club image"
+						/>
 					)}
 					<Input
 						id="email"

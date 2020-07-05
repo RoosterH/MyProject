@@ -4,6 +4,7 @@
 .pnp.js
 FrontEnd/node_modules
 BackEnd/node_modules
+BackEnd/uploads
 
 
 # testing

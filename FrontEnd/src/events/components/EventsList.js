@@ -27,7 +27,7 @@ const EventList = props => {
 					// so when render it will only render one element not the whole array
 					key={event.id}
 					id={event.id}
-					image={event.image}
+					image={`http://localhost:5000/${event.image}`}
 					name={event.name}
 					startDate={event.startDate}
 					endDate={event.endDate}

@@ -1,12 +1,16 @@
 import React, { useRef, useState, useEffect } from 'react';
 
 import Button from './Button';
+import Image from '../UIElements/Image';
 import './ImageUpload.css';
 
 const ImageUpload = props => {
 	const [file, setFile] = useState();
-	const [previewUrl, setPreviewUrl] = useState();
+	const [previewUrl, setPreviewUrl] = useState(props.previewUrl);
 	const [isValid, setIsValid] = useState(false);
+	const buttonText = props.buttonText
+		? props.buttonText
+		: 'SELECT IMAGE';
 
 	// generate preview
 	useEffect(() => {
@@ -73,11 +77,17 @@ const ImageUpload = props => {
 			<div className={`image-upload ${props.center && 'center'}`}>
 				{/* image previewer  */}
 				<div className="image-upload__preview">
-					{previewUrl && <img src={previewUrl} alt="Preview" />}
-					{!previewUrl && <p>Please pick an image.</p>}
+					{previewUrl && (
+						<Image
+							src={previewUrl}
+							alt="Preview"
+							onClick={() => props.onClick()}
+						/>
+					)}
+					{!previewUrl && <p>'Please pick an image.'</p>}
 				</div>
 				<Button type="button" onClick={pickImageHandler}>
-					SELECT IMAGE{' '}
+					{buttonText}
 				</Button>
 			</div>
 			{!isValid && <p>{props.errorText}</p>}

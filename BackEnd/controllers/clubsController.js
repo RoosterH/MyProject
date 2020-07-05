@@ -6,7 +6,6 @@ const HttpError = require('../models/httpError');
 const Club = require('../models/club');
 const mongoose = require('mongoose');
 
-const chekAuth = require('../middleware/check-auth');
 const config = require('../Config/Config');
 const JWT_PRIVATE_KEY = config.JWT_PRIVATE_KEY;
 const DUMMY_CLUBID = config.DUMMY_CLUBID;
@@ -117,8 +116,7 @@ const createClub = async (req, res, next) => {
 	const newClub = new Club({
 		name,
 		email,
-		image:
-			'http://www.americanautox.com/wp-content/uploads/2015/02/header_v2.png',
+		image: req.file.path,
 		password: hashedPassword,
 		events: []
 	});

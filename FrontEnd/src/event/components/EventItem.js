@@ -25,7 +25,7 @@ const EventItem = props => {
 
 	// useContext is listening to "ClubAuthContext"
 	const clubAuth = useContext(ClubAuthContext);
-
+	console.log('image = ', props.event.image);
 	// modal section
 	const [showModal, setShowModal] = useState(false);
 	const openModalHandler = () => setShowModal(true);
@@ -94,7 +94,10 @@ const EventItem = props => {
 	const eventImageElement =
 		props.event.image !== '' ? (
 			<div className="event-item__image">
-				<img src={props.event.image} alt={props.name} />
+				<img
+					src={`http://localhost:5000/${props.event.image}`}
+					alt={props.name}
+				/>
 			</div>
 		) : (
 			<div></div>
@@ -120,7 +123,7 @@ const EventItem = props => {
 						<React.Fragment>
 							<h3>Right click on map for more actions.</h3>
 							<img
-								src={props.event.courseMap}
+								src={`http://localhost:5000/${props.event.courseMap}`}
 								alt={props.event.alt}
 								className="map-container"></img>
 						</React.Fragment>
@@ -175,7 +178,7 @@ const EventItem = props => {
 					<Image
 						title={props.event.name}
 						alt={props.event.name + 'course map'}
-						src={props.event.courseMap}
+						src={`http://localhost:5000/${props.event.courseMap}`}
 						onClick={() => openCourseHandler()}></Image>
 				</div>
 				<div className="event-item__actions">

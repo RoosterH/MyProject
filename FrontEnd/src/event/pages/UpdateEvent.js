@@ -7,13 +7,12 @@ import Card from '../../shared/components/UIElements/Card';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
-import Image from '../../shared/components/UIElements/Image';
+import ImageUpload from '../../shared/components/FormElements/ImageUpload';
 import Input from '../../shared/components/FormElements/Input';
 import Modal from '../../shared/components/UIElements/Modal';
 import { useForm } from '../../shared/hooks/form-hook';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import {
-	VALIDATOR_FILE,
 	VALIDATOR_REQUIRE,
 	VALIDATOR_MINLENGTH,
 	VALIDATOR_STARTDATE
@@ -48,13 +47,37 @@ const UpdateEvent = () => {
 	};
 	const closeCourseHandler = () => setShowCourse(false);
 
+	const [showImage, setShowImage] = useState(false);
+	const openImageHandler = () => {
+		openModalHandler();
+		setShowImage(true);
+	};
+	const closeImageHandler = () => setShowImage(false);
+
 	const closeMapContainer = () => {
 		showCourse && closeCourseHandler();
+		showImage && closeImageHandler();
 	};
 
-	// get eventId from url
-	const eventId = useParams().id;
 	const history = useHistory();
+
+	// get eventId from url
+	let eventId = useParams().id;
+
+	if (!eventId || eventId === 'error') {
+		// possibly page refresh, look for localStorage
+		const storageData = JSON.parse(localStorage.getItem('eventData'));
+		if (storageData && storageData.eventId) {
+			eventId = storageData.eventId;
+		}
+	} else {
+		localStorage.setItem(
+			'eventData',
+			JSON.stringify({
+				eventId: eventId
+			})
+		);
+	}
 
 	// Form section
 	const [formState, inputHandler, setFormData] = useForm(
@@ -151,26 +174,30 @@ const UpdateEvent = () => {
 
 	const eventUpdateSubmitHandler = async event => {
 		event.preventDefault();
+		localStorage.removeItem('eventData');
 		try {
+			const formData = new FormData();
+			formData.append('name', formState.inputs.name.value);
+			formData.append('startDate', formState.inputs.startDate.value);
+			formData.append('endDate', formState.inputs.endDate.value);
+			formData.append('venue', formState.inputs.venue.value);
+			formData.append('address', formState.inputs.address.value);
+			formData.append(
+				'description',
+				formState.inputs.description.value
+			);
+			formData.append('image', formState.inputs.image.value);
+			formData.append('courseMap', formState.inputs.courseMap.value);
 			await sendRequest(
 				`http://localhost:5000/api/events/${eventId}`,
 				'PATCH',
-				JSON.stringify({
-					name: formState.inputs.name.value,
-					image: formState.inputs.image.value,
-					startDate: moment(formState.inputs.startDate.value),
-					endDate: moment(formState.inputs.endDate.value),
-					venue: formState.inputs.venue.value,
-					address: formState.inputs.address.value,
-					description: formState.inputs.description.value,
-					courseMap: formState.inputs.courseMap.value
-				}),
+				formData,
 				{
-					'Content-Type': 'application/json',
 					// adding JWT to header for authentication, JWT contains clubId
 					Authorization: 'Bearer ' + clubAuth.clubToken
 				}
 			);
+
 			history.push('/events/' + eventId);
 		} catch (err) {}
 	};
@@ -192,37 +219,31 @@ const UpdateEvent = () => {
 		);
 	}
 
-	// construct course map element to show it on modal
-
-	const courseMap = loadedEvent.courseMap;
-	const courseMapElement =
-		courseMap !== undefined ? (
-			<div className="event-form__coursemap">
-				Current Course Map: {courseMap}
-				<div>
-					<Image
-						title={loadedEvent.name}
-						alt={loadedEvent.name + 'course map'}
-						src={loadedEvent.courseMap}
-						onClick={() => openCourseHandler()}></Image>
-				</div>
-			</div>
-		) : (
-			<div></div>
-		);
-
 	// React uses YYYY-MM-DD for date
-	var startDate = moment(loadedEvent.startDate).format('YYYY-MM-DD');
-	var endDate = moment(loadedEvent.endDate).format('YYYY-MM-DD');
+	if (loadedEvent) {
+		var startDate = moment(loadedEvent.startDate).format(
+			'YYYY-MM-DD'
+		);
+		var endDate = moment(loadedEvent.endDate).format('YYYY-MM-DD');
+	}
+
+	const removeEventData = async () => {
+		await localStorage.removeItem('eventData');
+		history.push(`/events/${loadedEvent.id}`);
+	};
 
 	return (
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
-			{!isLoading && loadedEvent && showCourse && (
+			{!isLoading && loadedEvent && (
 				<Modal
 					show={showModal}
 					onCancel={() => closeModalHandler()}
-					header={loadedEvent.name}
+					header={
+						showCourse
+							? loadedEvent.name + ' course map'
+							: loadedEvent.name
+					}
 					contentClass="event-item__modal__content"
 					footerClass="event-item__modal-actions"
 					headerClass="event-item__modal__header"
@@ -230,12 +251,22 @@ const UpdateEvent = () => {
 						<Button onClick={() => closeModalHandler()}>CLOSE</Button>
 					}>
 					{/* render props.children */}
-					<div className="map-container">
-						<img
-							src={loadedEvent.courseMap}
-							alt={loadedEvent.alt}
-							className="map-container"></img>
-					</div>
+					{showCourse && (
+						<div className="map-container">
+							<img
+								src={`http://localhost:5000/${loadedEvent.courseMap}`}
+								alt={loadedEvent.alt}
+								className="map-container"></img>
+						</div>
+					)}
+					{showImage && (
+						<div className="map-container">
+							<img
+								src={`http://localhost:5000/${loadedEvent.image}`}
+								alt={loadedEvent.alt}
+								className="map-container"></img>
+						</div>
+					)}
 				</Modal>
 			)}
 
@@ -254,16 +285,13 @@ const UpdateEvent = () => {
 						initialValue={loadedEvent.name}
 						initialValid={true}
 					/>
-					<Input
+					<ImageUpload
 						id="image"
-						element="input"
-						type="text"
-						label="Event Image (optional in jpg or png)"
-						validators={[VALIDATOR_REQUIRE()]}
-						errorText="Image format jpg or png"
+						previewUrl={`http://localhost:5000/${loadedEvent.image}`}
+						buttonText="Click to select a new image"
 						onInput={inputHandler}
-						initialValue={loadedEvent.image}
-						initialValid={true}
+						errorText="To replace, please select a new event image."
+						onClick={openImageHandler}
 					/>
 					<Input
 						id="startDate"
@@ -321,23 +349,22 @@ const UpdateEvent = () => {
 						initialValue={loadedEvent.description}
 						initialValid={true}
 					/>
-					<Input
+					<ImageUpload
 						id="courseMap"
-						element="input"
-						type="file"
-						label="Course Map (optional in jpg or png)"
-						validators={[VALIDATOR_FILE()]}
-						errorText="Image format jpg or png"
+						previewUrl={`http://localhost:5000/${loadedEvent.courseMap}`}
+						buttonText="Click to slect a new course map"
 						onInput={inputHandler}
-						initialValid={true}
+						errorText="To replace, please select a new course map."
+						onClick={openCourseHandler}
 					/>
-
-					{courseMapElement}
-
-					<Button type="submit" disabled={!formState.isValid}>
-						Update Event
-					</Button>
-					<Button to={`/events/${loadedEvent.id}`}>Cancel</Button>
+					<Button
+						type="submit"
+						disabled={!formState.isValid}
+						children="Update Event"></Button>
+					<Button
+						// to={`/events/${loadedEvent.id}`}
+						onClick={removeEventData}
+						children="Cancel"></Button>
 				</form>
 			)}
 		</React.Fragment>

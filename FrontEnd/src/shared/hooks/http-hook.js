@@ -27,14 +27,25 @@ export const useHttpClient = () => {
 			try {
 				// fetch sends a http request to backend
 				// the request needs to match backend clubsRoutes /signup route
-				const response = await fetch(url, {
-					method,
-					body,
-					headers,
-					// signal links httpAbortCtrl to fetch request, so we will be able to use
-					// httpAbortCtrl to cancel the request
-					signal: httpAbortCtrl.signal
-				});
+				let response;
+
+				try {
+					response = await fetch(url, {
+						method,
+						body,
+						headers,
+						// signal links httpAbortCtrl to fetch request, so we will be able to use
+						// httpAbortCtrl to cancel the request
+						signal: httpAbortCtrl.signal
+					});
+				} catch (err) {
+					// to avoid Warning: Can't perform a React state update on an unmounted component
+					// after aborting request, the following codes will be executed and changing state
+					// at setIsLoading(false) will trigger the above warning.  Also once request been
+					// aborted, response became null so all the calls for response no longer valid
+					// return here to avoid all the issues.
+					return;
+				}
 
 				// parse the response body, this is the response back from back
 				const responseData = await response.json();
@@ -51,6 +62,7 @@ export const useHttpClient = () => {
 				}
 
 				setIsLoading(false);
+
 				return responseData;
 			} catch (err) {
 				setError(err.message);
@@ -75,9 +87,9 @@ export const useHttpClient = () => {
 		// here we want to abort the abortCtrl.  abortCtrl is the only requests inside of
 		// the activeHttpRequests => activeHttpRequests.current.push(httpAbortCtrl);
 		return () => {
-			activeHttpRequests.current.forEach(abortCtrl =>
-				abortCtrl.abort()
-			);
+			activeHttpRequests.current.forEach(abortCtrl => {
+				abortCtrl.abort();
+			});
 		};
 	}, []);
 

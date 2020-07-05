@@ -6,6 +6,7 @@ const { check } = require('express-validator');
 const moment = require('moment');
 
 const eventsController = require('../controllers/eventsController');
+const fileUpload = require('../middleware/file-upload');
 const checkAuth = require('../middleware/check-auth');
 
 const router = express.Router();
@@ -31,8 +32,12 @@ let validFormModDate = moment().add(1, 'days').format('YYYY,MM,DD');
 // only clubs are able to create an event
 router.post(
 	'/',
+	fileUpload.fields([
+		{ name: 'image', maxCount: 1 },
+		{ name: 'courseMap', maxCount: 1 }
+	]),
 	[
-		check('name').isLength({ min: 5 }),
+		(check('name').isLength({ min: 5 }),
 		check('startDate').custom(
 			value => moment(value).format('YYYY,MM,DD') > validFormModDate
 		),
@@ -41,13 +46,17 @@ router.post(
 		),
 		check('venue').not().isEmpty(),
 		check('address').isLength({ min: 10 }),
-		check('description').isLength({ min: 10 })
+		check('description').isLength({ min: 10 }))
 	],
 	eventsController.createEvent
 );
 
 router.patch(
 	'/:eid',
+	fileUpload.fields([
+		{ name: 'image', maxCount: 1 },
+		{ name: 'courseMap', maxCount: 1 }
+	]),
 	[
 		check('name').isLength({ min: 5 }),
 		check('startDate').custom(

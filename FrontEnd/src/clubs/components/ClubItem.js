@@ -12,7 +12,7 @@ const ClubItem = props => {
 				<Link to={`/events/club/${props.id}`}>
 					<div className="club-item__image">
 						<Avatar
-							image={props.image}
+							image={`http://localhost:5000/${props.image}`}
 							alt={props.name}
 							className="avatar__club"
 						/>

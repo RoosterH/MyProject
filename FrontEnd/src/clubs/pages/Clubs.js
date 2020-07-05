@@ -18,6 +18,7 @@ const Clubs = () => {
 	// don't make useEffect function async, because useEffect does not want the
 	// function returns a promise
 	useEffect(() => {
+		let mounted = true;
 		const fetchClubs = async () => {
 			try {
 				// send GET request to backend
@@ -35,7 +36,10 @@ const Clubs = () => {
 				setLoadedClubs(responseData.clubs);
 			} catch (err) {}
 		};
-		fetchClubs();
+		if (mounted) {
+			fetchClubs();
+		}
+		return () => (mounted = false);
 	}, [sendRequest]);
 
 	return (

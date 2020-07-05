@@ -2,13 +2,8 @@
  * This route is for /api/clubs
  */
 const express = require('express');
-const bcrypt = require('bcryptjs');
 const { check } = require('express-validator');
-// const passport = require('passport'),
-// LocalStrategy = require('passport-local').Strategy;
 
-const Club = require('../models/club');
-const HttpError = require('../models/httpError');
 const clubsController = require('../controllers/clubsController');
 const fileUpload = require('../middleware/file-upload');
 const checkAuth = require('../middleware/check-auth');

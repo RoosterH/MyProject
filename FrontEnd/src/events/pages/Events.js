@@ -22,9 +22,11 @@ const Events = () => {
 				const responseData = await sendRequest(
 					'http://localhost:5000/api/events'
 				);
+
 				setLoadedEvents(responseData.events);
 			} catch (err) {}
 		};
+
 		fectchEvents();
 	}, [sendRequest]);
 

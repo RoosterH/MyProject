@@ -1,3 +1,5 @@
+const fs = require('fs'); // file system, a nodejs module
+
 const { validationResult } = require('express-validator');
 const HttpError = require('../models/httpError');
 const moment = require('moment');
@@ -8,6 +10,7 @@ const getCoordinatesForAddress = require('../util/location');
 const Event = require('../models/event');
 const Club = require('../models/club');
 const mongooseUniqueValidator = require('mongoose-unique-validator');
+const fileUpload = require('../middleware/file-upload');
 
 const errMsg = errors => {
 	var msg;
@@ -23,7 +26,10 @@ const getAllEvents = async (req, res, next) => {
 
 	let events;
 	try {
-		events = await Event.find({}).sort({ startDate: 1, endDate: 1 });
+		events = await Event.find({}).sort({
+			startDate: -1,
+			endDate: -1
+		});
 	} catch (err) {
 		const error = new HttpError(
 			'Get all events process failed. Please try again later',
@@ -81,7 +87,7 @@ const getEventsByClubId = async (req, res, next) => {
 	try {
 		club = await Club.findById(cId).populate({
 			path: 'events',
-			options: { sort: { startDate: 1, endDate: 1 } }
+			options: { sort: { startDate: -1, endDate: -1 } }
 		});
 	} catch (err) {
 		const error = new HttpError(
@@ -162,18 +168,18 @@ const createEvent = async (req, res, next) => {
 		name,
 		startDate,
 		endDate,
-		image,
 		venue,
 		address,
-		description,
-		courseMap
+		description
 	} = req.body;
 
 	// Validate clubId exists. If not, sends back an error
 	let club;
 	let clubId = req.userData.clubId;
+	let dupEvent;
 	try {
 		club = await Club.findById(clubId);
+		dupEvent = await Event.findOne({ name: name });
 	} catch (err) {
 		const error = new HttpError(
 			'Create event process failed. Please try again later.',
@@ -184,8 +190,15 @@ const createEvent = async (req, res, next) => {
 
 	if (!club) {
 		const error = new HttpError(
-			'Create event. Unauthorized request.',
+			'Create event failure. Unauthorized request.',
 			404
+		);
+		return next(error);
+	}
+	if (dupEvent) {
+		const error = new HttpError(
+			'Create event failure. Event name was taken. Please use a different name.',
+			400
 		);
 		return next(error);
 	}
@@ -197,10 +210,12 @@ const createEvent = async (req, res, next) => {
 		return next(error);
 	}
 
+	let imagePath = req.files.image[0].path;
+	let courseMapPath = req.files.courseMap[0].path;
 	const newEvent = new Event({
 		name,
-		startDate,
-		endDate,
+		startDate: moment(startDate),
+		endDate: moment(endDate),
 		venue,
 		address,
 		coordinate,
@@ -208,10 +223,8 @@ const createEvent = async (req, res, next) => {
 		// instead of getting the clubId from body that could be faked, we will get
 		// it from the token
 		clubId: clubId,
-		image:
-			'https://media.gettyimages.com/photos/san-jose-twilight-picture-id1058214402?s=2048x2048',
-		courseMap:
-			'https://www.bmwautocross.com/wp-content/uploads/2019/10/20191019-ggcautoxCourseMap-FINAL.png'
+		image: imagePath,
+		courseMap: courseMapPath
 	});
 
 	try {
@@ -271,11 +284,9 @@ const updateEvent = async (req, res, next) => {
 		name,
 		startDate,
 		endDate,
-		eventImage,
 		venue,
 		address,
-		description,
-		courseMap
+		description
 	} = req.body;
 
 	// for async error handling, we need to use try catch if the function returns error
@@ -311,19 +322,41 @@ const updateEvent = async (req, res, next) => {
 		return next(error);
 	}
 
+	// check whether image or courseMap been changed or not
+	let imagePath, courseMapPath;
+	if (req.files.image) {
+		imagePath = req.files.image[0].path;
+		fs.unlink(event.image, err => {
+			console.log(err);
+		});
+	}
+	if (req.files.courseMap) {
+		courseMapPath = req.files.courseMap[0].path;
+		fs.unlink(event.courseMap, err => {
+			console.log(err);
+		});
+	}
 	// update event info
 	event.name = name;
-	event.startDate = startDate;
-	event.endDate = endDate;
-	event.eventImage = eventImage;
+	console.log('startDate = ', startDate);
+	event.startDate = moment(startDate);
+	event.endDate = moment(endDate);
+	if (imagePath) {
+		event.image = imagePath;
+	}
 	event.venue = venue;
 	event.address = address;
 	event.description = description;
 	event.coordinate = coordinate;
-	event.courseMap = courseMap;
+	if (courseMapPath) {
+		event.courseMap = courseMapPath;
+	}
 
 	try {
 		await event.save();
+		res
+			.status(200)
+			.json({ event: event.toObject({ getters: true }) });
 	} catch (err) {
 		const error = new HttpError(
 			'Updating event failed. Please try again later.',
@@ -331,8 +364,6 @@ const updateEvent = async (req, res, next) => {
 		);
 		return next(error);
 	}
-
-	res.status(200).json({ event: event.toObject({ getters: true }) });
 };
 
 // DELETE /api/events/:eid
@@ -378,6 +409,7 @@ const deleteEvent = async (req, res, next) => {
 		 **/
 		event.clubId.events.pull(event);
 		await event.clubId.save({ session: session });
+
 		// only both tasks succeed, we commit the transaction
 		await session.commitTransaction();
 	} catch (err) {
@@ -388,6 +420,16 @@ const deleteEvent = async (req, res, next) => {
 		return next(error);
 	}
 
+	if (event.image) {
+		fs.unlink(event.image, err => {
+			console.log(err);
+		});
+	}
+	if (event.courseMap) {
+		fs.unlink(event.courseMap, err => {
+			console.log(err);
+		});
+	}
 	res.status(200).json({ message: `Event: ${event.name} deleted` });
 };
 

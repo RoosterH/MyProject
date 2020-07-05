@@ -30,11 +30,11 @@ const NavLinks = props => {
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
 			<ul className="nav-links">
-				<li>
+				{/* <li>
 					<NavLink to="/" exact>
 						Main Page
 					</NavLink>
-				</li>
+				</li> */}
 				{clubLoggedIn && (
 					<li>
 						<NavLink to={`/events/club/${cid}/`} exact>
