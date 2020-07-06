@@ -103,7 +103,7 @@ const NewEvent = () => {
 			formData.append('courseMap', formState.inputs.courseMap.value);
 
 			await sendRequest(
-				'http://localhost:5000/api/events',
+				process.env.REACT_APP_BACKEND_URL + '/events',
 				'POST',
 				formData,
 				{

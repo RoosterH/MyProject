@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-// import axios from 'axios';
 
 export const useHttpClient = () => {
 	const [isLoading, setIsLoading] = useState(false);
@@ -44,7 +43,9 @@ export const useHttpClient = () => {
 					// at setIsLoading(false) will trigger the above warning.  Also once request been
 					// aborted, response became null so all the calls for response no longer valid
 					// return here to avoid all the issues.
-					return;
+					if (err.message === 'The user aborted a request.') {
+						return;
+					}
 				}
 
 				// parse the response body, this is the response back from back

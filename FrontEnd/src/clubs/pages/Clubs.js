@@ -23,7 +23,7 @@ const Clubs = () => {
 			try {
 				// send GET request to backend
 				const responseData = await sendRequest(
-					'http://localhost:5000/api/clubs'
+					process.env.REACT_APP_BACKEND_URL + '/clubs'
 				);
 
 				/**

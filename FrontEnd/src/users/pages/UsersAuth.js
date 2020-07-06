@@ -75,7 +75,7 @@ const UserAuth = () => {
 			try {
 				// use custom hook.
 				await sendRequest(
-					'http://localhost:5000/api/users/login',
+					process.env.REACT_APP_BACKEND_URL + '/users/login',
 
 					'POST',
 					{
@@ -94,7 +94,7 @@ const UserAuth = () => {
 			try {
 				// the request needs to match backend clubsRoutes /signup route
 				await sendRequest(
-					'http://localhost:5000/api/users/signup',
+					process.env.REACT_APP_BACKEND_URL + '/users/signup',
 					'POST',
 					JSON.stringify({
 						name: formState.inputs.name.value,

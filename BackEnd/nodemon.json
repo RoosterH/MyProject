@@ -1,0 +1,9 @@
+{
+	"env": {
+		"MONGO_DB_USER": "hung",
+		"MONGO_DB_PASSWORD": "hung",
+		"MONGO_DB_NAME": "MySeatTime",
+		"GOOGLE_MAP_API_KEY": "AIzaSyACZSZtNh33iMJUXVaN4X-wOeNnlNjJajk",
+		"DUMMY_CLUB_ID": "5ef702c7ba7511499165e653"
+	}
+}

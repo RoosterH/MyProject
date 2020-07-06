@@ -103,7 +103,7 @@ const ClubAuth = () => {
 			try {
 				// use custom hook. send login request to Backend
 				const responseData = await sendRequest(
-					'http://localhost:5000/api/clubs/login',
+					process.env.REACT_APP_BACKEND_URL + '/clubs/login',
 					'POST',
 					JSON.stringify({
 						email: formState.inputs.email.value,
@@ -159,7 +159,7 @@ const ClubAuth = () => {
 				// the request needs to match backend clubsRoutes /signup route
 				// With fromData, headers cannot be {Content-Type: application/json}
 				await sendRequest(
-					'http://localhost:5000/api/clubs/signup',
+					process.env.REACT_APP_BACKEND_URL + '/clubs/signup',
 					'POST',
 					formData
 				);

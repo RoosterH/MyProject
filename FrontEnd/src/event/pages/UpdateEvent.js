@@ -123,7 +123,7 @@ const UpdateEvent = () => {
 		const fetchEvent = async () => {
 			try {
 				const responseData = await sendRequest(
-					`http://localhost:5000/api/events/${eventId}`
+					process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`
 				);
 				setLoadedEvent(responseData.event);
 
@@ -189,7 +189,7 @@ const UpdateEvent = () => {
 			formData.append('image', formState.inputs.image.value);
 			formData.append('courseMap', formState.inputs.courseMap.value);
 			await sendRequest(
-				`http://localhost:5000/api/events/${eventId}`,
+				process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`,
 				'PATCH',
 				formData,
 				{
@@ -254,7 +254,10 @@ const UpdateEvent = () => {
 					{showCourse && (
 						<div className="map-container">
 							<img
-								src={`http://localhost:5000/${loadedEvent.courseMap}`}
+								src={
+									process.env.REACT_APP_ASSET_URL +
+									`/${loadedEvent.courseMap}`
+								}
 								alt={loadedEvent.alt}
 								className="map-container"></img>
 						</div>
@@ -262,7 +265,10 @@ const UpdateEvent = () => {
 					{showImage && (
 						<div className="map-container">
 							<img
-								src={`http://localhost:5000/${loadedEvent.image}`}
+								src={
+									process.env.REACT_APP_ASSET_URL +
+									`/${loadedEvent.image}`
+								}
 								alt={loadedEvent.alt}
 								className="map-container"></img>
 						</div>
@@ -287,7 +293,10 @@ const UpdateEvent = () => {
 					/>
 					<ImageUpload
 						id="image"
-						previewUrl={`http://localhost:5000/${loadedEvent.image}`}
+						previewUrl={
+							process.env.REACT_APP_ASSET_URL +
+							`/${loadedEvent.image}`
+						}
 						buttonText="Click to select a new image"
 						onInput={inputHandler}
 						errorText="To replace, please select a new event image."
@@ -351,7 +360,10 @@ const UpdateEvent = () => {
 					/>
 					<ImageUpload
 						id="courseMap"
-						previewUrl={`http://localhost:5000/${loadedEvent.courseMap}`}
+						previewUrl={
+							process.env.REACT_APP_ASSET_URL +
+							`/${loadedEvent.courseMap}`
+						}
 						buttonText="Click to slect a new course map"
 						onInput={inputHandler}
 						errorText="To replace, please select a new course map."

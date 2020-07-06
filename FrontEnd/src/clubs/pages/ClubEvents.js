@@ -21,7 +21,7 @@ const ClubEvents = () => {
 		const fetechEvents = async () => {
 			try {
 				const responseData = await sendRequest(
-					`http://localhost:5000/api/events/club/${clubId}`
+					process.env.REACT_APP_BACKEND_URL + `/events/club/${clubId}`
 				);
 				setLoadedEvents(responseData.events);
 			} catch (err) {}

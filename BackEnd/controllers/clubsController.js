@@ -1,14 +1,13 @@
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 const HttpError = require('../models/httpError');
 const Club = require('../models/club');
-const mongoose = require('mongoose');
 
 const config = require('../Config/Config');
 const JWT_PRIVATE_KEY = config.JWT_PRIVATE_KEY;
-const DUMMY_CLUBID = config.DUMMY_CLUBID;
 
 // GET /api/clubs/
 const getAllClubs = async (req, res, next) => {
@@ -336,10 +335,13 @@ const deleteClub = async (req, res, next) => {
 		const session = await mongoose.startSession();
 		session.startTransaction();
 
+		const dummyClubId = mongoose.Types.ObjectId(
+			process.env.DUMMY_CLUBID
+		);
 		// transfer all the events to dummy club so the events won't be deleted
 		await club.events.map(async event => {
 			// assign the event clubId to dummyClub since we are deleting the original club
-			event.clubId = DUMMY_CLUBID;
+			event.clubId = dummyClubId;
 			await event.save({
 				session: session
 			});
@@ -349,7 +351,7 @@ const deleteClub = async (req, res, next) => {
 			 * We need to use await, otherwise, it won't work.
 			 * In order to use await, we need to make the callback as async
 			 */
-			let dummyClub = await Club.findById(DUMMY_CLUBID).populate(
+			let dummyClub = await Club.findById(dummyClubId).populate(
 				'events'
 			);
 			dummyClub.events.push(event);

@@ -20,7 +20,7 @@ const Events = () => {
 		const fectchEvents = async () => {
 			try {
 				const responseData = await sendRequest(
-					'http://localhost:5000/api/events'
+					process.env.REACT_APP_BACKEND_URL + '/events'
 				);
 
 				setLoadedEvents(responseData.events);

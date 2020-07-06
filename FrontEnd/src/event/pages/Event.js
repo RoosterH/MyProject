@@ -23,7 +23,7 @@ const Event = () => {
 		const fetechEvents = async () => {
 			try {
 				const responseData = await sendRequest(
-					`http://localhost:5000/api/events/${eId}`
+					process.env.REACT_APP_BACKEND_URL + `/events/${eId}`
 				);
 				setLoadedEvent(responseData.event);
 			} catch (err) {

@@ -20,7 +20,7 @@ export const useClubLogOut = () => {
 		try {
 			// use custom hook.
 			await sendRequest(
-				'http://localhost:5000/api/clubs/logout',
+				process.env.REACT_APP_BACKEND_URL + '/clubs/logout',
 				'POST',
 				null,
 				{ Authorization: 'Bearer ' + clubAuth.clubToken }
