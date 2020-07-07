@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { Suspense, useState, useCallback } from 'react';
 import {
 	BrowserRouter as Router,
 	Route,
@@ -6,23 +6,41 @@ import {
 	Redirect
 } from 'react-router-dom';
 
-import Clubs from './clubs/pages/Clubs';
-import ClubAuth from './clubs/pages/ClubAuth';
-import ClubEvents from './clubs/pages/ClubEvents';
-import Error from './shared/util/error';
-import Event from './event/pages/Event';
-import Events from './events/pages/Events';
+// import Clubs from './clubs/pages/Clubs';
+// import ClubAuth from './clubs/pages/ClubAuth';
+// import ClubEvents from './clubs/pages/ClubEvents';
+// import Error from './shared/util/error';
+// import Event from './event/pages/Event';
+// import Events from './events/pages/Events';
+// import NewEvent from './event/pages/NewEvent';
+// import Users from './users/pages/Users';
+// import UserAuth from './users/pages/UsersAuth';
+// import UpdateEvent from './event/pages/UpdateEvent';
+
 import MainNavigation from './shared/components/Navigation/MainNavigation';
-import NewEvent from './event/pages/NewEvent';
-import Users from './users/pages/Users';
-import UserAuth from './users/pages/UsersAuth';
-import UpdateEvent from './event/pages/UpdateEvent';
 import { useClubAuth } from './shared/hooks/clubAuth-hook';
 
 import {
 	ClubAuthContext,
 	UserAuthContext
 } from './shared/context/auth-context';
+import LoadingSpinner from './shared/components/UIElements/LoadingSpinner';
+
+// split codes using lazy load
+const Clubs = React.lazy(() => import('./clubs/pages/Clubs'));
+const ClubAuth = React.lazy(() => import('./clubs/pages/ClubAuth'));
+const ClubEvents = React.lazy(() =>
+	import('./clubs/pages/ClubEvents')
+);
+const Error = React.lazy(() => import('./shared/util/error'));
+const Event = React.lazy(() => import('./event/pages/Event'));
+const Events = React.lazy(() => import('./events/pages/Events'));
+const NewEvent = React.lazy(() => import('./event/pages/NewEvent'));
+const Users = React.lazy(() => import('./users/pages/Users'));
+const UserAuth = React.lazy(() => import('./users/pages/UsersAuth'));
+const UpdateEvent = React.lazy(() =>
+	import('./event/pages/UpdateEvent')
+);
 
 const App = () => {
 	const {
@@ -55,7 +73,6 @@ const App = () => {
 			<Switch>
 				<Route path="/" exact>
 					<Clubs />
-					{/* <Events /> */}
 				</Route>
 				<Route path="/events/club/:clubId" exact>
 					<ClubEvents />
@@ -132,7 +149,17 @@ const App = () => {
 				<Router>
 					<MainNavigation />
 					{/* main is defiend in /shared/components/Navigation/MainHeader.css */}
-					<main>{routes}</main>
+					<main>
+						{/* Suspense is for splitting codes */}
+						<Suspense
+							fallback={
+								<div className="center">
+									<LoadingSpinner />
+								</div>
+							}>
+							{routes}
+						</Suspense>
+					</main>
 				</Router>
 			</UserAuthContext.Provider>
 		</ClubAuthContext.Provider>
