@@ -60,6 +60,7 @@ const ImageUpload = props => {
 		// form-control is @ input.css, css is available globally once it's imported.
 		// Since we have imported input.css in input.js so we can use it here.
 		<div className="form-control">
+			<label htmlFor={props.id}>{props.label}</label>
 			{/* The following input section is file picker, initially we want to hide it. 
 			Once Button been clicked, pickImageHandler will be called.  It calls
 			filePickerRef.current.click(); Inside <input> ref={filePickerRef}, it means 

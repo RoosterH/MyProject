@@ -39,3 +39,51 @@
 	border-color: red;
 	background: #ffd1d1;
 }
+
+.search-form-inline {
+	display: inline-block;
+	flex-flow: row wrap;
+	align-items: center;
+}
+
+.search-form-inline label {
+	display: block;
+	margin: 0rem 0.1rem 0.2rem 1.5rem;
+	font-weight: lighter;
+}
+
+.search-form-inline input {
+	vertical-align: middle;
+	margin: 0rem 0.1rem 1rem 1rem;
+	padding: 5px;
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	font-size: 16px;
+	font-weight: lighter;
+	height: 2rem;
+	width: 9rem;
+}
+
+.search-form-inline button {
+	padding: 10px 20px;
+	background-color: dodgerblue;
+	border: 1px solid #ddd;
+	color: white;
+	cursor: pointer;
+}
+
+.search-form-inline button:hover {
+	background-color: royalblue;
+}
+
+@media (max-width: 768px) {
+	.search-form-inline input {
+		margin: 10px 0;
+	}
+
+	.search-form-inline {
+		flex-direction: column;
+		align-items: stretch;
+	}
+}

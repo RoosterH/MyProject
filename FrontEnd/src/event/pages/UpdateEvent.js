@@ -293,6 +293,7 @@ const UpdateEvent = () => {
 					/>
 					<ImageUpload
 						id="image"
+						label="Event image"
 						previewUrl={
 							process.env.REACT_APP_ASSET_URL +
 							`/${loadedEvent.image}`
@@ -360,6 +361,7 @@ const UpdateEvent = () => {
 					/>
 					<ImageUpload
 						id="courseMap"
+						label="Course Map"
 						previewUrl={
 							process.env.REACT_APP_ASSET_URL +
 							`/${loadedEvent.courseMap}`

@@ -70,6 +70,15 @@ const Input = props => {
 		});
 	};
 
+	console.log('class = ', props.className);
+	let className = props.className
+		? props.className
+		: `form-control ${
+				!inputState.isValid &&
+				inputState.isTouched &&
+				'form-control--invalid'
+		  }`;
+
 	const element =
 		props.element === 'input' ? (
 			<input
@@ -80,6 +89,9 @@ const Input = props => {
 				onBlur={touchHandler}
 				value={inputState.value}
 				file={props.file}
+				min={props.min}
+				max={props.max}
+				className={className}
 			/>
 		) : (
 			<textarea
@@ -92,12 +104,7 @@ const Input = props => {
 		);
 
 	return (
-		<div
-			className={`form-control ${
-				!inputState.isValid &&
-				inputState.isTouched &&
-				'form-control--invalid'
-			}`}>
+		<div className={className}>
 			<label htmlFor={props.id}>{props.label}</label>
 			{element}
 			{!inputState.isValid && inputState.isTouched && (

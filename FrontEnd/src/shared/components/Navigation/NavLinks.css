@@ -16,7 +16,7 @@
 }
 
 .nav-links a {
-	border: 1px solid transparent;
+	/* border: 1px solid transparent; */
 	color: #292929;
 	text-decoration: none;
 	padding: 0.5rem;
@@ -27,11 +27,11 @@
 }
 
 .nav-links a.active {
-	background: #f8df00;
-	color: #292929;
-	border: 1px solid rgb(1, 105, 15);
+	/* background: #f8df00; */
+	color: #f8df00;
+	/* border: 1px solid rgb(1, 105, 15); */
 	margin: 5px;
-	outline-style: ridge;
+	/* outline-style: ridge; */
 	outline-color: rgb(3, 190, 60);
 }
 
@@ -41,7 +41,7 @@
 	background: transparent;
 	padding: 0.5rem;
 	font: inherit;
-	border: 1px solid rgb(1, 105, 15);
+	/* border: 0px solid rgb(1, 105, 15); */
 	margin: 5px;
 }
 
@@ -67,17 +67,17 @@
 	.nav-links a {
 		color: white;
 		text-decoration: none;
-		border: 1px solid rgb(1, 105, 15);
+		/* border: 1px solid rgb(1, 105, 15); */
 		margin: 5px;
-		outline-style: ridge;
+		/* outline-style: ridge; */
 		outline-color: rgb(3, 190, 60);
 	}
 
 	.nav-links button {
 		color: white;
-		border: 1px solid rgb(1, 105, 15);
+		/* border: 1px solid rgb(1, 105, 15); */
 		margin: 5px;
-		outline-style: ridge;
+		/* outline-style: ridge; */
 		outline-color: rgb(3, 190, 60);
 	}
 
@@ -85,9 +85,9 @@
 	.nav-links button:active {
 		background: #f81100;
 		color: #292929;
-		border: 1px solid rgb(1, 105, 15);
+		/* border: 1px solid rgb(1, 105, 15); */
 		margin: 5px;
-		outline-style: ridge;
+		/* outline-style: ridge; */
 		outline-color: rgb(3, 190, 60);
 	}
 }

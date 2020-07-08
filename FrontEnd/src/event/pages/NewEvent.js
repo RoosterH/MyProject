@@ -134,6 +134,7 @@ const NewEvent = () => {
 				<ImageUpload
 					center
 					id="image"
+					label="Event Image"
 					onInput={inputHandler}
 					errorText="Please provide an event image."
 				/>
@@ -181,7 +182,12 @@ const NewEvent = () => {
 					errorText="Please enter a valid description with min length 10 chars."
 					onInput={inputHandler}
 				/>
-				<ImageUpload center id="courseMap" onInput={inputHandler} />
+				<ImageUpload
+					center
+					id="courseMap"
+					label="Course Map"
+					onInput={inputHandler}
+				/>
 				<Button type="submit" disabled={!formState.isValid}>
 					Add Event
 				</Button>

@@ -6,17 +6,6 @@ import {
 	Redirect
 } from 'react-router-dom';
 
-// import Clubs from './clubs/pages/Clubs';
-// import ClubAuth from './clubs/pages/ClubAuth';
-// import ClubEvents from './clubs/pages/ClubEvents';
-// import Error from './shared/util/error';
-// import Event from './event/pages/Event';
-// import Events from './events/pages/Events';
-// import NewEvent from './event/pages/NewEvent';
-// import Users from './users/pages/Users';
-// import UserAuth from './users/pages/UsersAuth';
-// import UpdateEvent from './event/pages/UpdateEvent';
-
 import MainNavigation from './shared/components/Navigation/MainNavigation';
 import { useClubAuth } from './shared/hooks/clubAuth-hook';
 
@@ -97,8 +86,6 @@ const App = () => {
 		routes = (
 			<Switch>
 				<Route path="/" exact>
-					<Clubs />
-					<Users />
 					<Events />
 				</Route>
 				<Route path="/events/update/error" exact>

@@ -1,0 +1,25 @@
+.search-page-header {
+	font-size: 25px;
+	font-weight: 600;
+	line-height: 1.5;
+	margin-left: 1rem;
+}
+
+.search-page-header h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	color: #4a4a4a;
+	font-family: Montserrat, sans-serif;
+	font-weight: 400;
+	text-rendering: geometricPrecision;
+}
+
+.search-frame {
+	/* width: 720rem;
+	height: 5rem; */
+	/* display: flex;
+	align-items: flex-start; */
+}
