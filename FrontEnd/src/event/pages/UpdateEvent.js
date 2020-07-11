@@ -303,6 +303,9 @@ const UpdateEvent = () => {
 						errorText="To replace, please select a new event image."
 						onClick={openImageHandler}
 					/>
+					<div>
+						<h4>Event Type: {loadedEvent.type}</h4>
+					</div>
 					<Input
 						id="startDate"
 						element="input"
@@ -319,7 +322,7 @@ const UpdateEvent = () => {
 						id="endDate"
 						element="input"
 						type="date"
-						min={moment(loadedEvent.startDate).format('YYYY-MM-DD')}
+						min={moment().add(1, 'days').format('YYYY-MM-DD')}
 						label="EndDate"
 						validators={[VALIDATOR_REQUIRE()]}
 						errorText="Please enter a valid date"
@@ -361,10 +364,12 @@ const UpdateEvent = () => {
 					/>
 					<ImageUpload
 						id="courseMap"
-						label="Course Map"
+						label="Course Map - Optional"
 						previewUrl={
-							process.env.REACT_APP_ASSET_URL +
-							`/${loadedEvent.courseMap}`
+							loadedEvent.courseMap
+								? process.env.REACT_APP_ASSET_URL +
+								  `/${loadedEvent.courseMap}`
+								: ''
 						}
 						buttonText="Click to slect a new course map"
 						onInput={inputHandler}

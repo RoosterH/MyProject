@@ -16,6 +16,8 @@ import {
 import LoadingSpinner from './shared/components/UIElements/LoadingSpinner';
 
 // split codes using lazy load
+// instead of import everything at once, we will split them so codes will built into
+// different chunks. When users open up the app, it will only load whatever it's needed.
 const Clubs = React.lazy(() => import('./clubs/pages/Clubs'));
 const ClubAuth = React.lazy(() => import('./clubs/pages/ClubAuth'));
 const ClubEvents = React.lazy(() =>
@@ -25,7 +27,7 @@ const Error = React.lazy(() => import('./shared/util/error'));
 const Event = React.lazy(() => import('./event/pages/Event'));
 const Events = React.lazy(() => import('./events/pages/Events'));
 const NewEvent = React.lazy(() => import('./event/pages/NewEvent'));
-const Users = React.lazy(() => import('./users/pages/Users'));
+// const Users = React.lazy(() => import('./users/pages/Users'));
 const UserAuth = React.lazy(() => import('./users/pages/UsersAuth'));
 const UpdateEvent = React.lazy(() =>
 	import('./event/pages/UpdateEvent')

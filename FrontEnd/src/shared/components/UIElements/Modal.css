@@ -38,7 +38,7 @@
 	height: 25%;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 780px) {
 	.modal {
 		align-self: center;
 		width: 90%;

@@ -15,6 +15,7 @@ import {
 	VALIDATOR_MINLENGTH
 } from '../../shared/util/validators';
 import './EventForm.css';
+import { eventTypes } from '../../event/components/EventTypes';
 
 const NewEvent = () => {
 	const clubAuth = useContext(ClubAuthContext);
@@ -30,6 +31,10 @@ const NewEvent = () => {
 			name: {
 				value: '',
 				isValid: false
+			},
+			type: {
+				value: 'autocross',
+				isValid: true
 			},
 			image: {
 				value: null, // need to use null because it's a binary file
@@ -57,7 +62,7 @@ const NewEvent = () => {
 			},
 			courseMap: {
 				value: null,
-				isValid: false
+				isValid: true
 			}
 		},
 		false
@@ -73,6 +78,7 @@ const NewEvent = () => {
 				...formState.inputs
 			},
 			formState.inputs.name.isValid &&
+				formState.inputs.type.isValid &&
 				formState.inputs.startDate.isValid &&
 				formState.inputs.endDate.isValid &&
 				formState.inputs.venue.isValid &&
@@ -85,6 +91,7 @@ const NewEvent = () => {
 			// FormData() is a browser API. We can append text or binary data to FormData
 			const formData = new FormData();
 			formData.append('name', formState.inputs.name.value);
+			formData.append('type', formState.inputs.type.value);
 			formData.append(
 				'startDate',
 				moment(formState.inputs.startDate.value)
@@ -116,6 +123,8 @@ const NewEvent = () => {
 		} catch (err) {}
 	};
 
+	console.log('type =', formState.inputs.type.value);
+	console.log('isValid = ', formState.isValid);
 	// the purpose of onInput is to enter back the value after been validated to NewEvent
 	return (
 		<React.Fragment>
@@ -139,10 +148,23 @@ const NewEvent = () => {
 					errorText="Please provide an event image."
 				/>
 				<Input
+					id="type"
+					element="select"
+					type="text"
+					label="Event Type"
+					initialValue="autocross"
+					initialValid={true}
+					options={eventTypes}
+					validators={[VALIDATOR_REQUIRE()]}
+					errorText="Please enter a valid event type."
+					onInput={inputHandler}
+				/>
+				<Input
 					id="startDate"
 					element="input"
 					type="date"
 					label="Starting Date (Future date from today)"
+					min={moment().add(1, 'days').format('YYYY-MM-DD')}
 					validators={[VALIDATOR_REQUIRE()]}
 					errorText="Please enter a valid date."
 					onInput={inputHandler}
@@ -152,6 +174,7 @@ const NewEvent = () => {
 					element="input"
 					type="date"
 					label="End Date"
+					min={moment().add(1, 'days').format('YYYY-MM-DD')}
 					validators={[VALIDATOR_REQUIRE()]}
 					errorText="Please enter a valid date."
 					onInput={inputHandler}
@@ -185,7 +208,7 @@ const NewEvent = () => {
 				<ImageUpload
 					center
 					id="courseMap"
-					label="Course Map"
+					label="Course Map - Optional"
 					onInput={inputHandler}
 				/>
 				<Button type="submit" disabled={!formState.isValid}>

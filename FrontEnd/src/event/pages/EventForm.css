@@ -9,6 +9,9 @@
 	background: white;
 }
 
+.event-form h2 {
+	font-weight: bold;
+}
 .event-form__coursemap {
 	display: block;
 }
@@ -18,7 +21,7 @@
 	height: 6rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 780px) {
 	.event-form__coursemap {
 		width: 30rem;
 		/*height: 30rem;*/

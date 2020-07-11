@@ -40,7 +40,7 @@
 	color: white;
 }
 
-/* default no display, display: block if window is >= 768px */
+/* default no display, display: block if window is >= 780px */
 .main-navigation__header-nav {
 	display: none;
 }
@@ -49,7 +49,7 @@
 	height: 100%;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 780px) {
 	.main-navigation__menu-btn {
 		display: none;
 	}

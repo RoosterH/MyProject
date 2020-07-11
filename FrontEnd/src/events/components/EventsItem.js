@@ -7,9 +7,8 @@ import Card from '../../shared/components/UIElements/Card';
 import './EventsItem.css';
 
 const EventsItem = props => {
-	let startDate = moment(props.startDate).format('MM/DD/YYYY, ddd');
-	let endDate = moment(props.endDate).format('MM/DD/YYYY, ddd');
-
+	let startDate = moment(props.startDate).format('MM/DD/YY, ddd');
+	let endDate = moment(props.endDate).format('MM/DD/YY, ddd');
 	return (
 		<li className="events-item">
 			<Card className="events-item__content">
@@ -22,11 +21,13 @@ const EventsItem = props => {
 						/>
 					</div>
 					<div className="events-item__info">
-						<h3>{props.name}</h3>
-						<h4>
-							{startDate} - {endDate} <br />
-							Venue: {props.venue}
-						</h4>
+						<h2>{props.type}</h2>
+						<h1>{props.name}</h1>
+						<h4>by {props.clubName}</h4>
+						<h2>
+							{startDate} - {endDate}{' '}
+						</h2>
+						<h2> {props.venue}</h2>
 					</div>
 				</Link>
 			</Card>

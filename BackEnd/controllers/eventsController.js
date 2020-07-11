@@ -11,6 +11,7 @@ const Event = require('../models/event');
 const Club = require('../models/club');
 const mongooseUniqueValidator = require('mongoose-unique-validator');
 const fileUpload = require('../middleware/file-upload');
+const { min } = require('moment');
 
 const errMsg = errors => {
 	var msg;
@@ -23,7 +24,6 @@ const errMsg = errors => {
 // GET /api/events/
 const getAllEvents = async (req, res, next) => {
 	const cId = req.params.cid;
-
 	let events;
 	try {
 		events = await Event.find({}).sort({
@@ -112,18 +112,20 @@ const getEventsByClubId = async (req, res, next) => {
 	});
 };
 
-// GET /api/events/date/
-const getEventByDate = async (req, res, next) => {
-	let Dec31 = '12, 31';
-	let today = moment().format('YYYY, MM, DD');
-	let yearEnd = moment().format(`YYYY, ${Dec31}`);
+// POST /api/events/date/
+const getEventsByDate = async (req, res, next) => {
+	const { eventType, startDate, endDate, distance, zip } = req.body;
 	let events;
+	// index {type: 1, startDate: 1}
 	try {
 		events = await Event.find({
-			startDate: { $gte: today },
-			endDate: { $lte: yearEnd }
-		}).sort({ startDate: 1, endDate: 1 });
+			type: eventType,
+			startDate: { $gte: startDate, $lte: endDate }
+		}).sort({
+			endDate: 1
+		});
 	} catch (err) {
+		console.log('err = ', err);
 		const error = new HttpError(
 			'Get event by date process failed. Please try again later',
 			500
@@ -166,6 +168,7 @@ const createEvent = async (req, res, next) => {
 	// we need to get the data from body
 	const {
 		name,
+		type,
 		startDate,
 		endDate,
 		venue,
@@ -211,11 +214,15 @@ const createEvent = async (req, res, next) => {
 	}
 
 	let imagePath = req.files.image[0].path;
-	let courseMapPath = req.files.courseMap[0].path;
+	let courseMapPath;
+	if (req.files.courseMapPath) {
+		courseMapPath = req.files.courseMap[0].path;
+	}
 	const newEvent = new Event({
 		name,
-		startDate: moment(startDate),
-		endDate: moment(endDate),
+		type,
+		startDate: startDate,
+		endDate: endDate,
 		venue,
 		address,
 		coordinate,
@@ -223,6 +230,7 @@ const createEvent = async (req, res, next) => {
 		// instead of getting the clubId from body that could be faked, we will get
 		// it from the token
 		clubId: clubId,
+		clubName: club.name,
 		image: imagePath,
 		courseMap: courseMapPath
 	});
@@ -249,6 +257,7 @@ const createEvent = async (req, res, next) => {
 		// only both tasks succeed, we commit the transaction
 		await session.commitTransaction();
 	} catch (err) {
+		console.log('err = ', err);
 		const error = new HttpError(
 			'Create event failed. Please try again later.',
 			500
@@ -279,7 +288,7 @@ const updateEvent = async (req, res, next) => {
 		);
 	}
 
-	// we allow all the data to be updated except id and clubId
+	// we allow all the data to be updated except id, clubId, and type
 	const {
 		name,
 		startDate,
@@ -326,19 +335,24 @@ const updateEvent = async (req, res, next) => {
 	let imagePath, courseMapPath;
 	if (req.files.image) {
 		imagePath = req.files.image[0].path;
-		fs.unlink(event.image, err => {
-			console.log(err);
-		});
+		if (event.image) {
+			fs.unlink(event.image, err => {
+				console.log(err);
+			});
+		}
 	}
+	console.log('courseMap = ', req.files.courseMap);
 	if (req.files.courseMap) {
 		courseMapPath = req.files.courseMap[0].path;
-		fs.unlink(event.courseMap, err => {
-			console.log(err);
-		});
+		if (event.courseMap) {
+			fs.unlink(event.courseMap, err => {
+				console.log(err);
+			});
+		}
 	}
+
 	// update event info
 	event.name = name;
-	console.log('startDate = ', startDate);
 	event.startDate = moment(startDate);
 	event.endDate = moment(endDate);
 	if (imagePath) {
@@ -358,6 +372,7 @@ const updateEvent = async (req, res, next) => {
 			.status(200)
 			.json({ event: event.toObject({ getters: true }) });
 	} catch (err) {
+		console.log('err = ', err);
 		const error = new HttpError(
 			'Updating event failed. Please try again later.',
 			500
@@ -422,12 +437,12 @@ const deleteEvent = async (req, res, next) => {
 
 	if (event.image) {
 		fs.unlink(event.image, err => {
-			console.log(err);
+			console.log('unlink event image error = ', err);
 		});
 	}
 	if (event.courseMap) {
 		fs.unlink(event.courseMap, err => {
-			console.log(err);
+			console.log('unlink course map error = ', err);
 		});
 	}
 	res.status(200).json({ message: `Event: ${event.name} deleted` });
@@ -437,7 +452,7 @@ const deleteEvent = async (req, res, next) => {
 exports.getAllEvents = getAllEvents;
 exports.getEventById = getEventById;
 exports.getEventsByClubId = getEventsByClubId;
-exports.getEventsByDate = getEventByDate;
+exports.getEventsByDate = getEventsByDate;
 exports.createEvent = createEvent;
 exports.updateEvent = updateEvent;
 exports.deleteEvent = deleteEvent;

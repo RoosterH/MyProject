@@ -8,15 +8,18 @@
 
 .avatar__event img {
 	display: block;
-	border-radius: 50%;
-	width: 100%;
-	height: 100%;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	/* width matching events-item */
+	width: 17rem;
+	/* height is mandatory to avoid portrait image going out of box*/
+	height: 13rem;
 	object-fit: cover;
 }
 
 .avatar__club {
-	width: 50%;
-	height: 50%;
+	width: 14rem;
+	height: 8rem;
 	display: flex;
 	justify-content: center;
 	align-items: center;

@@ -9,6 +9,7 @@ const Schema = mongoose.Schema;
 const eventSchema = new Schema({
 	name: { type: String, required: true },
 	image: { type: String, required: true },
+	type: { type: String, required: true },
 	startDate: { type: Date, required: true },
 	endDate: { type: Date, required: true },
 	venue: { type: String, required: true },
@@ -25,9 +26,7 @@ const eventSchema = new Schema({
 		required: true,
 		ref: 'Club'
 	},
-	// only used when deleting club that created the event. We want to keep a record for it.
-	// not working yet. need to fix it later
-	creator: { type: String }
+	clubName: { type: String, required: true }
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

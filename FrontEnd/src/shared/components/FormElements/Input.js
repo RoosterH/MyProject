@@ -70,7 +70,6 @@ const Input = props => {
 		});
 	};
 
-	console.log('class = ', props.className);
 	let className = props.className
 		? props.className
 		: `form-control ${
@@ -79,34 +78,63 @@ const Input = props => {
 				'form-control--invalid'
 		  }`;
 
-	const element =
-		props.element === 'input' ? (
-			<input
-				id={props.id}
-				type={props.type}
-				placeholder={props.placeholder}
-				onChange={changeHandler}
-				onBlur={touchHandler}
-				value={inputState.value}
-				file={props.file}
-				min={props.min}
-				max={props.max}
-				className={className}
-			/>
-		) : (
-			<textarea
-				id={props.id}
-				rows={props.rows || 3}
-				onChange={changeHandler}
-				onBlur={touchHandler}
-				value={inputState.value}
-			/>
-		);
+	const element = () => {
+		if (props.element === 'input') {
+			return (
+				<input
+					id={props.id}
+					type={props.type}
+					placeholder={props.placeholder}
+					onChange={changeHandler}
+					onBlur={touchHandler}
+					value={inputState.value}
+					file={props.file}
+					min={props.min}
+					max={props.max}
+					className={className}
+				/>
+			);
+		} else if (props.element === 'select') {
+			return (
+				<select
+					id={props.id}
+					type={props.type}
+					onChange={changeHandler}
+					onBlur={touchHandler}
+					value={inputState.value}
+					className={className}>
+					{props.placeholder && (
+						<option disabled hidden value="">
+							{props.placeholder}
+						</option>
+					)}
+					{props.options.map(option => {
+						let res = option.split(':');
+						return (
+							<option name={res[0]} key={res[0]}>
+								{res[1]}
+							</option>
+						);
+					})}
+				</select>
+			);
+		} else {
+			return (
+				<textarea
+					id={props.id}
+					rows={props.rows || 3}
+					onChange={changeHandler}
+					onBlur={touchHandler}
+					value={inputState.value}
+				/>
+			);
+		}
+	};
 
 	return (
 		<div className={className}>
 			<label htmlFor={props.id}>{props.label}</label>
-			{element}
+			{element()}
 			{!inputState.isValid && inputState.isTouched && (
 				<p>{props.errorText}</p>
 			)}

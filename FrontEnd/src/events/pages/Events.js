@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from 'react';
+import {
+	ErrorMessage,
+	Field,
+	Form,
+	Formik,
+	useFormikContext
+} from 'formik';
 import moment from 'moment';
+import * as Yup from 'yup';
 
-import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import EventsList from '../components/EventsList';
-import Input from '../../shared/components/FormElements/Input';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
-import { useForm } from '../../shared/hooks/form-hook';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 
-import {
-	VALIDATOR_REQUIRE,
-	VALIDATOR_MINLENGTH
-} from '../../shared/util/validators';
-
 import './Events.css';
+import { eventTypes } from '../../event/components/EventTypes';
 
 // Events is called in App.js where the route been defined
 // @to-do
@@ -26,164 +27,166 @@ const Events = () => {
 		clearError
 	} = useHttpClient();
 
+	const [curValues, setCurValues] = useState();
 	const [loadedEvents, setLoadedEvents] = useState();
-	useEffect(() => {
-		const fectchEvents = async () => {
-			try {
-				const responseData = await sendRequest(
-					process.env.REACT_APP_BACKEND_URL + '/events'
-				);
 
-				setLoadedEvents(responseData.events);
-			} catch (err) {}
-		};
-
-		fectchEvents();
-	}, [sendRequest]);
-
-	const [formState, inputHandler, setFormData] = useForm(
-		{
-			type: {
-				value: '',
-				isValid: false
-			},
-			startDate: {
-				value: '',
-				isValid: false
-			},
-			endDate: {
-				value: '',
-				isValid: false
-			},
-			zip: {
-				value: '',
-				isValid: false
-			},
-			distance: {
-				value: '',
-				isValid: false
+	const AutoSubmitToken = () => {
+		const { values, submitForm } = useFormikContext();
+		useEffect(() => {
+			// Submit the form imperatively as an effect as soon as form values.token are 6 digits long
+			if (values.zip.length === 5 && values !== curValues) {
+				submitForm();
+				setCurValues(values);
 			}
-		},
-		false
-	);
-
-	const eventSubmitHandler = async event => {
-		// meaning we don't want to reload the page after form submission
-		// all the input values stay intact on the form
-		event.preventDefault();
-		setFormData(
-			{
-				...formState.inputs
-			},
-			formState.inputs.type.isValid &&
-				formState.inputs.startDate.isValid &&
-				formState.inputs.endDate.isValid &&
-				formState.inputs.zip.isValid &&
-				formState.inputs.distamce.isValid
-		);
-
-		try {
-			// FormData() is a browser API. We can append text or binary data to FormData
-			const formData = new FormData();
-			formData.append('type', formState.inputs.type.value);
-			formData.append(
-				'startDate',
-				moment(formState.inputs.startDate.value)
-			);
-			formData.append(
-				'endDate',
-				moment(formState.inputs.endDate.value)
-			);
-			formData.append('zip', formState.inputs.zip.value);
-			formData.append('distance', formState.inputs.address.value);
-
-			await sendRequest(
-				process.env.REACT_APP_BACKEND_URL + '/events',
-				'POST',
-				formData
-				// {
-				// 	// adding JWT to header for authentication
-				// 	Authorization: 'Bearer ' + clubAuth.clubToken
-				// }
-			);
-			// Redirect the club to a diffrent page
-			// history.push(`/events/club/${clubAuth.clubId}`);
-		} catch (err) {}
+		}, [values, submitForm]);
+		return null;
 	};
-	const searchForm = () => {
-		return (
-			<div className="search-frame">
-				<form
-					className="search-form-inline"
-					onSubmit={eventSubmitHandler}>
-					<Input
-						id="eventType"
-						element="input"
-						type="text"
-						label="Event Type"
-						// className="search-form-inline"
-						className="search-form-inline"
-						initialValue="Autocross"
-						validators={[VALIDATOR_REQUIRE()]}
-						onInput={inputHandler}
-					/>
-					<Input
-						className="search-form-inline"
-						id="startDate"
-						element="input"
-						type="date"
-						label="Start Date"
-						initialValue={moment().format('YYYY-MM-DD')}
-						min="2020-07-01"
-						max="2020-08-31"
-						validators={[VALIDATOR_REQUIRE()]}
-						errorText="Please enter a valid date."
-						onInput={inputHandler}
-					/>
-					<Input
-						className="search-form-inline"
-						id="endDate"
-						element="input"
-						type="date"
-						label="End Date "
-						initialValue={moment().format('YYYY-MM-DD')}
-						min="2020-07-01"
-						max="2020-08-31"
-						size="15"
-						validators={[VALIDATOR_REQUIRE()]}
-						errorText="Please enter a valid date."
-						onInput={inputHandler}
-					/>
-					<Input
-						className="search-form-inline"
-						id="startDate"
-						element="input"
-						type="text"
-						label="Zip"
-						initialValue="95132"
-						validators={[VALIDATOR_REQUIRE()]}
-						onInput={inputHandler}
-					/>
-					<Input
-						className="search-form-inline"
-						id="startDate"
-						element="input"
-						type="text"
-						label="Distance"
-						initialValue="100 miles"
-						validators={[VALIDATOR_REQUIRE()]}
-						onInput={inputHandler}
-					/>
-					<Button
-						size="small"
-						type="submit"
-						disabled={!formState.isValid}>
-						Find Events
-					</Button>
-				</form>
+
+	let today = moment().format('YYYY-MM-DD');
+	let eventType = 'Autocross',
+		startDate = today,
+		endDate = today,
+		distance = 50,
+		zip = '';
+
+	const storageData = JSON.parse(localStorage.getItem('searchData'));
+	if (storageData && moment(storageData.expiration) > moment()) {
+		eventType = storageData.eventType;
+		startDate = storageData.startDate;
+		endDate = storageData.endDate;
+		distance = storageData.distance;
+		zip = storageData.zip;
+	}
+
+	const initialValues = {
+		eventType: eventType,
+		startDate: startDate,
+		endDate: endDate,
+		distance: distance,
+		zip: zip
+	};
+
+	const mainSearch = values => (
+		<div>
+			<div className="search-page-header">
+				<h4>
+					<span>Find driving events near you</span>
+				</h4>
 			</div>
-		);
-	};
+			<Formik
+				initialValues={initialValues}
+				validationSchema={Yup.object({
+					zip: Yup.string().matches(
+						/^[0-9]{5}$/,
+						'Must be exactly 5 digits'
+					)
+				})}
+				onSubmit={(values, actions) => {
+					const fetchEvents = async () => {
+						try {
+							const tokenExp = moment(
+								moment().add(7, 'days'),
+								moment.ISO_8601
+							);
+							// Save data in localStorage for page refreshing
+							// localStorage is a global js API for browser localStorage.
+							// 'searchData' is the key
+							localStorage.setItem(
+								'searchData',
+								JSON.stringify({
+									eventType: values.eventType,
+									startDate: values.startDate,
+									endDate: values.endDate,
+									distance: values.distance,
+									zip: values.zip,
+									expiration: tokenExp
+								})
+							);
+							// the request needs to match backend clubsRoutes /signup route
+							// With fromData, headers cannot be {Content-Type: application/json}
+							const responseData = await sendRequest(
+								process.env.REACT_APP_BACKEND_URL + '/events/date',
+								'POST',
+								JSON.stringify({
+									eventType: values.eventType,
+									startDate: moment(values.startDate),
+									endDate: moment(values.endDate),
+									distance: values.distance,
+									zip: values.zip
+								}),
+								{ 'Content-type': 'application/json' }
+							);
+
+							setLoadedEvents(responseData.events);
+							actions.setSubmitting(false);
+						} catch (err) {}
+					};
+					fetchEvents();
+				}}>
+				{({ values, error, touched, isSubmitting }) => (
+					<Form className="inline">
+						<Field
+							name="eventType"
+							as="select"
+							className="inline__input eventType" /* inherit from inline__input, in css "inline__input.eventType"*/
+						>
+							<option value="Event Type" disabled>
+								Event Type
+							</option>
+							{eventTypes.map(option => {
+								let res = option.split(':');
+								return (
+									<option name={res[0]} key={res[0]}>
+										{res[1]}
+									</option>
+								);
+							})}
+
+							{/* <option value="Autocross">Autocross</option>
+							<option value="Cruising">Cruising</option>
+							<option value="Track days">Track days</option> */}
+						</Field>
+						<Field
+							type="date"
+							name="startDate"
+							placeholder={today}
+							min="2020-07-01"
+							max="2020-12-31"
+							className="inline__input date"
+						/>
+						<Field
+							type="date"
+							name="endDate"
+							placeholder={today}
+							min="2020-07-01"
+							max="2020-12-31"
+							className="inline__input date"
+						/>
+						<Field
+							as="select"
+							name="distance"
+							className="inline__input distance">
+							<option value="50">50 miles</option>
+							<option value="100">100 miles</option>
+							<option value="250">250 miles</option>
+							<option value="500">500 miles</option>
+							<option value="3500">Anywhere</option>
+						</Field>
+						<Field
+							type="text"
+							name="zip"
+							placeholder="5 digit zip"
+							className="inline__input zip"
+						/>
+						<ErrorMessage name="zip">
+							{msg => <div className="inline__error_zip">{msg}</div>}
+						</ErrorMessage>
+						<AutoSubmitToken />
+					</Form>
+				)}
+			</Formik>
+		</div>
+	);
 
 	// calling EventsList from EventsList.js where it passes EVENTS to child EventsList
 	// just treat the following call as EventsList(items = EVENTS); items is the props
@@ -191,24 +194,15 @@ const Events = () => {
 	return (
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
-			<div className="search-page-header">
-				<h4>
-					<span
-						// class="search-heading"
-						data-original-title="Driving Events">
-						Find driving events near you
-					</span>
-				</h4>
-			</div>
-			{searchForm()}
-			{/* {isLoading && (
+			{mainSearch()}
+			{isLoading && (
 				<div className="center">
 					<LoadingSpinner />
 				</div>
 			)}
 			{!isLoading && loadedEvents && (
 				<EventsList items={loadedEvents} />
-			)} */}
+			)}
 		</React.Fragment>
 	);
 };

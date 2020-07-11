@@ -15,13 +15,29 @@ const router = express.Router();
 // Express will use the pointer to execute the function when it's needed
 router.get('/', eventsController.getAllEvents);
 
-router.get('/date/', eventsController.getEventsByDate);
-
 router.get('/:eid', eventsController.getEventById);
 
 router.get('/club/:cid', eventsController.getEventsByClubId);
 
 // router.get('/user/:uid', eventsController.getEventsByUserId);
+
+router.post(
+	'/date',
+	[
+		check('evevntType').not().isEmpty(),
+		check('startDate').custom(
+			value =>
+				moment(value).format('YYYY,MM,DD') >
+				moment('20200101').format('YYYY,MM,DD')
+		),
+		check('endDate').custom(
+			(value, { req }) => value >= req.body.startDate
+		),
+		check('distance').not().isEmpty(),
+		check('zip').isLength(5)
+	],
+	eventsController.getEventsByDate
+);
 
 // adding checkAuth middleware here will ensure all the requests below
 // need to be authenticated
@@ -38,6 +54,7 @@ router.post(
 	]),
 	[
 		(check('name').isLength({ min: 5 }),
+		check('type').isLength({ min: 5 }),
 		check('startDate').custom(
 			value => moment(value).format('YYYY,MM,DD') > validFormModDate
 		),

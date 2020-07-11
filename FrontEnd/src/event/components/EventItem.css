@@ -84,7 +84,7 @@
 	width: 100%;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 780px) {
 	.event-item__image {
 		height: 12.5rem;
 	}

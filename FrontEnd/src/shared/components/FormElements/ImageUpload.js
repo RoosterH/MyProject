@@ -7,7 +7,7 @@ import './ImageUpload.css';
 const ImageUpload = props => {
 	const [file, setFile] = useState();
 	const [previewUrl, setPreviewUrl] = useState(props.previewUrl);
-	const [isValid, setIsValid] = useState(false);
+	const [isValid, setIsValid] = useState(true);
 	const buttonText = props.buttonText
 		? props.buttonText
 		: 'SELECT IMAGE';
@@ -80,9 +80,10 @@ const ImageUpload = props => {
 				<div className="image-upload__preview">
 					{previewUrl && (
 						<Image
+							draggable="true"
 							src={previewUrl}
 							alt="Preview"
-							onClick={() => props.onClick()}
+							// ondrag={() => props.onDrag()}
 						/>
 					)}
 					{!previewUrl && <p>'Please pick an image.'</p>}

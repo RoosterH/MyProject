@@ -181,14 +181,16 @@ const EventItem = props => {
 					<p>{props.event.description}</p>
 				</div>
 				<div className="event-item__coursemap">
-					<Image
-						title={props.event.name}
-						alt={props.event.name + 'course map'}
-						src={
-							process.env.REACT_APP_ASSET_URL +
-							`/${props.event.courseMap}`
-						}
-						onClick={() => openCourseHandler()}></Image>
+					{props.event.courseMap && (
+						<Image
+							title={props.event.name}
+							alt={props.event.name + 'course map'}
+							src={
+								process.env.REACT_APP_ASSET_URL +
+								`/${props.event.courseMap}`
+							}
+							onClick={() => openCourseHandler()}></Image>
+					)}
 				</div>
 				<div className="event-item__actions">
 					{clubAuth.clubId === props.event.clubId && (
