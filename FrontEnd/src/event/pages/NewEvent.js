@@ -25,6 +25,14 @@ const NewEvent = () => {
 		sendRequest,
 		clearError
 	} = useHttpClient();
+
+	const history = useHistory();
+	// For make sure page refreshing reloads correctly, we need to add path="/events/new" to
+	// (!clubToken) route.  If club not logging in, re-direct to auth page
+	const storageData = JSON.parse(localStorage.getItem('userData'));
+	if (!storageData || !storageData.clubId) {
+		history.push('/clubs/auth');
+	}
 	const [formState, inputHandler, setFormData] = useForm(
 		{
 			// validity of individual input
@@ -68,7 +76,6 @@ const NewEvent = () => {
 		false
 	);
 
-	const history = useHistory();
 	const eventSubmitHandler = async event => {
 		// meaning we don't want to reload the page after form submission
 		// all the input values stay intact on the form

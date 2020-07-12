@@ -50,7 +50,7 @@ const Clubs = () => {
 					<LoadingSpinner />
 				</div>
 			)}
-			{/* we onlt want to render ClubsList if loadClubs has something; otherwise 
+			{/* we only want to render ClubsList if loadClubs has something; otherwise 
 			there will be an error */}
 			{!isLoading && loadedClubs && <ClubsList items={loadedClubs} />}
 		</React.Fragment>

@@ -32,6 +32,14 @@ const UpdateEvent = () => {
 
 	const clubAuth = useContext(ClubAuthContext);
 
+	const history = useHistory();
+	// To make sure page refreshing reloads correctly, we need to add path="/events/new" to
+	// (!clubToken) route. If club not logging in, re-direct to auth page
+	const storageData = JSON.parse(localStorage.getItem('userData'));
+	if (!storageData || !storageData.clubId) {
+		history.push('/clubs/auth');
+	}
+
 	// Modal section
 	const [showModal, setShowModal] = useState(false);
 	const openModalHandler = () => setShowModal(true);
@@ -58,8 +66,6 @@ const UpdateEvent = () => {
 		showCourse && closeCourseHandler();
 		showImage && closeImageHandler();
 	};
-
-	const history = useHistory();
 
 	// get eventId from url
 	let eventId = useParams().id;

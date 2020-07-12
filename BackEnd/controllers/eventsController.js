@@ -325,7 +325,7 @@ const updateEvent = async (req, res, next) => {
 		);
 	}
 
-	// we addded userData in check-auth after verifying jwt
+	// we added userData in check-auth after verifying jwt
 	if (event.clubId.toString() !== req.userData.clubId) {
 		const error = new HttpError('Unauthorized operation!!!', 401);
 		return next(error);

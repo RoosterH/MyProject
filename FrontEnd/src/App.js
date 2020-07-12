@@ -103,8 +103,14 @@ const App = () => {
 				<Route path="/events/club/:clubId" exact>
 					<ClubEvents />
 				</Route>
+				<Route path="/events/update/:id" exact>
+					<UpdateEvent />
+				</Route>
 				<Route path="/clubs/auth" exact>
 					<ClubAuth />
+				</Route>
+				<Route path="/clubs/events/new" exact>
+					<NewEvent />
 				</Route>
 				<Route path="/users/auth" exact>
 					<UserAuth />
