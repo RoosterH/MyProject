@@ -1,4 +1,4 @@
-import React, { Suspense, useState, useCallback } from 'react';
+import React, { Suspense } from 'react';
 import {
 	BrowserRouter as Router,
 	Route,
@@ -7,14 +7,13 @@ import {
 } from 'react-router-dom';
 
 import MainNavigation from './shared/components/Navigation/MainNavigation';
-import { useClubAuth } from './shared/hooks/clubAuth-hook';
-
 import {
 	ClubAuthContext,
 	UserAuthContext
 } from './shared/context/auth-context';
 import LoadingSpinner from './shared/components/UIElements/LoadingSpinner';
-
+import { useClubAuth } from './shared/hooks/clubAuth-hook';
+import { useUserAuth } from './shared/hooks/userAuth-hook';
 // split codes using lazy load
 // instead of import everything at once, we will split them so codes will built into
 // different chunks. When users open up the app, it will only load whatever it's needed.
@@ -25,10 +24,14 @@ const ClubEvents = React.lazy(() =>
 );
 const Error = React.lazy(() => import('./shared/util/error'));
 const Event = React.lazy(() => import('./event/pages/Event'));
+const EventForm = React.lazy(() => import('./event/pages/EventForm'));
 const Events = React.lazy(() => import('./events/pages/Events'));
 const NewEvent = React.lazy(() => import('./event/pages/NewEvent'));
 // const Users = React.lazy(() => import('./users/pages/Users'));
-const UserAuth = React.lazy(() => import('./users/pages/UsersAuth'));
+const UserAuth = React.lazy(() => import('./users/pages/UserAuth'));
+const UserEvents = React.lazy(() =>
+	import('./users/pages/UserEvents')
+);
 const UpdateEvent = React.lazy(() =>
 	import('./event/pages/UpdateEvent')
 );
@@ -42,21 +45,13 @@ const App = () => {
 		clubName
 	} = useClubAuth();
 
-	// userAuthContext state
-	const [userToken, setUserToken] = useState(null);
-	const [userId, setUserId] = useState(null);
-	const [userName, setUserName] = useState(null);
-
-	// define callbacks of userAuthContext
-	const userLogin = useCallback((uid, uname, utoken) => {
-		setUserToken(utoken);
-		setUserId(uid);
-		setUserName(uname);
-	}, []);
-	const userLogout = useCallback(() => {
-		setUserToken(null);
-		setUserId(null);
-	}, []);
+	const {
+		userToken,
+		userLogin,
+		userLogout,
+		userId,
+		userName
+	} = useUserAuth();
 
 	let routes;
 	if (clubToken) {
@@ -71,11 +66,35 @@ const App = () => {
 				<Route path="/events/:id" exact>
 					<Event />
 				</Route>
+				<Route path="/events/form/:id" exact>
+					<EventForm />
+				</Route>
 				<Route path="/clubs/events/new" exact>
 					<NewEvent />
 				</Route>
 				<Route path="/events/update/:id" exact>
 					<UpdateEvent />
+				</Route>
+				<Route path="/error" exact>
+					<Error />
+				</Route>
+				<Redirect to="/error" />
+			</Switch>
+		);
+	} else if (userToken) {
+		routes = (
+			<Switch>
+				<Route path="/" exact>
+					<Clubs />
+				</Route>
+				<Route path="/events/user/:userId" exact>
+					<UserEvents />
+				</Route>
+				<Route path="/events/:id" exact>
+					<Event />
+				</Route>
+				<Route path="/events/form/:id" exact>
+					<EventForm />
 				</Route>
 				<Route path="/error" exact>
 					<Error />

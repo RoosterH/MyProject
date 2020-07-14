@@ -194,7 +194,7 @@ const EventItem = props => {
 				</div>
 				<div className="event-item__actions">
 					{clubAuth.clubId === props.event.clubId && (
-						<Button to={`/events/${props.event.id}/form`}>
+						<Button to={`/events/form/${props.event.id}`}>
 							ENTRY FORM
 						</Button>
 					)}

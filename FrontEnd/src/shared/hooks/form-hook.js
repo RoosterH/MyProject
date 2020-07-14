@@ -7,10 +7,6 @@ import { useCallback, useReducer } from 'react';
  * form validity state.
  **/
 const formReducer = (state, action) => {
-	console.log('action.type = ', action.type);
-	console.log('action.inputId = ', action.inputId);
-	console.log('action.value = ', action.value);
-	console.log('action.isValid = ', action.isValid);
 	switch (action.type) {
 		case 'INPUT_CHANGE':
 			let formIsValid = true;

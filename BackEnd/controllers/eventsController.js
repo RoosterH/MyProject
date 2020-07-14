@@ -112,11 +112,44 @@ const getEventsByClubId = async (req, res, next) => {
 	});
 };
 
+// GET /api/events/club/:cid
+const getEventsByUserId = async (req, res, next) => {
+	console.log(' in events by userId');
+	const uId = req.params.uid;
+	console.log('uId = ', uId);
+	let user;
+	try {
+		user = await Club.findById(uId).populate({
+			path: 'events',
+			options: { sort: { startDate: -1, endDate: -1 } }
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'Get events by user ID process failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!user || user.events.length === 0) {
+		const error = new HttpError('Could not find any event.', 404);
+
+		return next(error);
+	}
+
+	res.status(200).json({
+		events: user.events.map(event =>
+			event.toObject({
+				getters: true
+			})
+		)
+	});
+};
 // POST /api/events/date/
 const getEventsByDate = async (req, res, next) => {
 	const { eventType, startDate, endDate, distance, zip } = req.body;
 	let events;
-	// index {type: 1, startDate: 1}
+	// index {type: 1, startDate: 1}, covered query {type, startDate} is indexed
 	try {
 		events = await Event.find({
 			type: eventType,
@@ -452,6 +485,7 @@ const deleteEvent = async (req, res, next) => {
 exports.getAllEvents = getAllEvents;
 exports.getEventById = getEventById;
 exports.getEventsByClubId = getEventsByClubId;
+exports.getEventsByUserId = getEventsByUserId;
 exports.getEventsByDate = getEventsByDate;
 exports.createEvent = createEvent;
 exports.updateEvent = updateEvent;

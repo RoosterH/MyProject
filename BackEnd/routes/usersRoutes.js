@@ -4,38 +4,48 @@
 const express = require('express');
 const { check } = require('express-validator');
 
-const clubsController = require('../controllers/clubsController');
+const usersController = require('../controllers/usersController');
+const fileUpload = require('../middleware/file-upload');
+const checkAuth = require('../middleware/check-auth');
 
 const router = express.Router();
 
-// /api/clubs
-router.get('/', clubsController.getAllClubs);
+// /api/users
+router.get('/', usersController.getAllUsers);
 
-router.get('/:cid', clubsController.getClubById);
+router.get('/:uid', usersController.getUserById);
 
 router.post(
 	'/signup',
+	fileUpload.single('image'),
 	[
 		check('name').not().isEmpty(),
 		check('email').normalizeEmail().isEmail(),
-		check('password').isLength({ min: 6 })
+		check('password').isLength({ min: 6 }),
+		check('passwordValidation').isLength({ min: 6 })
 	],
-	clubsController.createClub
+	usersController.createUser
 );
 
 // login, due to security reasons, we don't want to do a check for the input data
-//router.post('/login', clubsController.loginClub);
+router.post('/login', usersController.loginUser);
+
+// adding checkAuth middleware here will ensure all the requests below
+// need to be authenticated
+router.use(checkAuth);
+
+router.post('/logout', usersController.logoutUser);
 
 router.patch(
-	'/:cid',
+	'/:uid',
 	[
 		check('name').not().isEmpty(),
 		check('email').normalizeEmail().isEmail(),
 		check('password').isLength({ min: 6 })
 	],
-	clubsController.updateClub
+	usersController.updateUser
 );
 
-router.delete('/:cid', clubsController.deleteClub);
+router.delete('/:uid', usersController.deleteUser);
 
 module.exports = router;

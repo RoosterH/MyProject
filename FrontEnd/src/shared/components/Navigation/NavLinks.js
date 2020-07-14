@@ -5,27 +5,25 @@ import {
 	ClubAuthContext,
 	UserAuthContext
 } from '../../context/auth-context';
-import { useClubLogOut } from '../../hooks/clubLogout-hook';
+import { useLogOut } from '../../hooks/logout-hook';
 import ErrorModal from '../UIElements/ErrorModal';
 import LoadingSpinner from '../UIElements/LoadingSpinner';
 
 import './NavLinks.css';
 
 const NavLinks = props => {
+	/* ----- Club Section ----- */
 	const clubAuth = useContext(ClubAuthContext);
 	const clubLoggedIn = clubAuth.isClubLoggedIn;
-
-	const userAuthContext = useContext(UserAuthContext);
-	const userLoggedIn = userAuthContext.isUserLoggedIn;
-
-	const {
-		isLoading,
-		error,
-		logoutHandler,
-		clearError
-	} = useClubLogOut();
-
 	let cid = clubAuth.clubId;
+
+	/* ----- User Section ----- */
+	const userAuth = useContext(UserAuthContext);
+	const userLoggedIn = userAuth.isUserLoggedIn;
+	let uid = userAuth.userId;
+
+	const { isLoading, error, logoutHandler, clearError } = useLogOut();
+
 	return (
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
@@ -49,13 +47,6 @@ const NavLinks = props => {
 						</NavLink>
 					</li>
 				)}
-				{userLoggedIn && (
-					<li>
-						<NavLink to="/:uid/events/" exact>
-							My EVENTS
-						</NavLink>
-					</li>
-				)}
 				{!clubLoggedIn && !userLoggedIn && (
 					<li>
 						<NavLink to="/users/auth" exact>
@@ -71,6 +62,27 @@ const NavLinks = props => {
 					</li>
 				)}
 				{clubLoggedIn && (
+					<li>
+						<button onClick={logoutHandler}>LOGOUT</button>
+						{isLoading && <LoadingSpinner asOverlay />}
+					</li>
+				)}
+				{/********* user section *******/}
+				{userLoggedIn && (
+					<li>
+						<NavLink to={`/events/user/${uid}`} exact>
+							My EVENTS
+						</NavLink>
+					</li>
+				)}
+				{userLoggedIn && (
+					<li>
+						<NavLink to={`/garage/${uid}`} exact>
+							My Garage
+						</NavLink>
+					</li>
+				)}
+				{userLoggedIn && (
 					<li>
 						<button onClick={logoutHandler}>LOGOUT</button>
 						{isLoading && <LoadingSpinner asOverlay />}

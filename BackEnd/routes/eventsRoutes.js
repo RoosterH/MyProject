@@ -19,8 +19,7 @@ router.get('/:eid', eventsController.getEventById);
 
 router.get('/club/:cid', eventsController.getEventsByClubId);
 
-// router.get('/user/:uid', eventsController.getEventsByUserId);
-
+// request events between dates
 router.post(
 	'/date',
 	[
@@ -42,6 +41,9 @@ router.post(
 // adding checkAuth middleware here will ensure all the requests below
 // need to be authenticated
 router.use(checkAuth);
+
+// users needs to login to see their events
+router.get('/user/:uid', eventsController.getEventsByUserId);
 
 // last valid day to allow for event addition, modification, or deletion
 let validFormModDate = moment().add(1, 'days').format('YYYY,MM,DD');

@@ -31,21 +31,7 @@ router.post(
 
 // Login, due to security reasons, we don't want to do express-validator for the input data
 // because that will provide hints to hackers
-router.post(
-	'/login',
-	/** http://www.passportjs.org/docs/authenticate/
-	 * If this function gets called, authentication was successful.
-	 * `req.user` contains the authenticated user which is "club" in our case.
-	 * What happens is the original request was sent to LocalStrategy. LocalStrategy authenticates
-	 * the original request then sends a new request to passport.  This new request is the "req"
-	 * in this callback so "req" now contains user information.
-	 */
-	// res.status(200).json({
-	// 	message: `Club ${req.user.name} logged in.`,
-	// 	club: req.user.toObject({ getters: true })
-	// });
-	clubsController.loginClub
-);
+router.post('/login', clubsController.loginClub);
 
 // adding checkAuth middleware here will ensure all the requests below
 // need to be authenticated
