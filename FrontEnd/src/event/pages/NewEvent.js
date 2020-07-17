@@ -40,8 +40,8 @@ const NewEvent = setFieldValue => {
 	let name = '';
 	let type = 'Autocross';
 	let image = undefined;
-	let startDate = tomorrow;
-	let endDate = tomorrow;
+	const [startDate, setStartDate] = useState(tomorrow);
+	const [endDate, setEndDate] = useState(tomorrow);
 	let venue = '';
 	let address = '';
 	let description = '';
@@ -55,8 +55,8 @@ const NewEvent = setFieldValue => {
 		name = storageData.name;
 		type = storageData.type;
 		image = storageData.image;
-		startDate = storageData.startDate;
-		endDate = storageData.endDate;
+		setStartDate(storageData.startDate);
+		setEndDate(storageData.endDate);
 		venue = storageData.venue;
 		address = storageData.address;
 		description = storageData.description;
@@ -113,60 +113,95 @@ const NewEvent = setFieldValue => {
 	// 2. Save:  Check against image and courseMap sizes only
 	// 3. Submit: Check against startDate vs. endDate, text/texArea required, image required,
 	//    image/courseMap sizes
-	function validateName(value) {
+	const [startDateValid, setStartDateValid] = useState(true);
+	const [endDateValid, setEndDateValid] = useState(true);
+
+	const validateName = value => {
 		let error;
-		console.log('value = ', value);
 		if (!value) {
 			error = 'Event Name is required.';
 			console.log('validateName = ', error);
 		}
 		return error;
-	}
-	function validateVenue(value) {
+	};
+	const validateVenue = value => {
 		let error;
 		if (!value) {
 			error = 'Event Venue is required.';
 			console.log('validateName = ', error);
 		}
 		return error;
-	}
-	function validateAddress(value) {
+	};
+	const validateAddress = value => {
 		let error;
 		if (!value) {
 			error = 'Event Address is required.';
 			console.log('validateName = ', error);
 		}
 		return error;
-	}
-	function validateDescription(value) {
+	};
+	const validateStartDate = value => {
+		console.log('in startDate = ', value);
+		console.log('endDate = ', endDate);
+		setStartDate(moment(value).format('YYYY-MM-DD'));
+		let error;
+		if (
+			moment(value).format('YYYY-MM-DD') >
+			moment(endDate).format('YYYY-MM-DD')
+		) {
+			error = 'Start Date must be earlier than End Date.';
+			console.log('validateName = ', error);
+			setStartDateValid(false);
+		} else {
+			setStartDateValid(true);
+		}
+		return error;
+	};
+	const validateEndDate = value => {
+		setEndDate(moment(value).format('YYYY-MM-DD'));
+		let error;
+		if (
+			moment(value).format('YYYY-MM-DD') <
+			moment(startDate).format('YYYY-MM-DD')
+		) {
+			error = 'End Date must be later than Start Date.';
+			console.log('validateName = ', error);
+			setEndDateValid(false);
+		} else {
+			setEndDateValid(true);
+		}
+		return error;
+	};
+	const validateDescription = value => {
 		let error;
 		if (!value) {
 			error = 'Event Description is required.';
 			console.log('validateName = ', error);
 		}
 		return error;
-	}
-	function validateInstruction(value) {
+	};
+	const validateInstruction = value => {
 		let error;
 		if (!value) {
 			error = 'Event Instruction is required.';
 			console.log('validateName = ', error);
 		}
 		return error;
-	}
+	};
 
 	// To save, we only care about image sizes
 	const [imageValid, setImageValid] = useState(true);
 	const [courseMapValid, setCourseMapValid] = useState(true);
 	// for Save validation
 	const [saveIsValid, setSaveIsValid] = useState(true);
-	const [saved, setSaved] = useState(true);
-	useEffect(() => {
-		let valid = imageValid && courseMapValid;
-		setSaveIsValid(valid);
-	}, [imageValid, courseMapValid]);
 
-	function validateImageSize(value) {
+	useEffect(() => {
+		let valid =
+			imageValid && courseMapValid && startDateValid && endDateValid;
+		setSaveIsValid(valid);
+	}, [imageValid, courseMapValid, startDateValid, endDateValid]);
+
+	const validateImageSize = value => {
 		let error;
 		if (value && value.size > 1500000) {
 			error = 'File size needs to be smaller than 1.5MB';
@@ -175,8 +210,9 @@ const NewEvent = setFieldValue => {
 			setImageValid(true);
 		}
 		return error;
-	}
-	function validateCourseMapSize(value) {
+	};
+
+	const validateCourseMapSize = value => {
 		let error;
 		if (value && value.size > 1500000) {
 			error = 'File size needs to be smaller than 1.5MB';
@@ -185,8 +221,48 @@ const NewEvent = setFieldValue => {
 			setCourseMapValid(true);
 		}
 		return error;
-	}
+	};
 	/***** End of Form Validation *****/
+
+	/***** OKLeavePage Section *****/
+	const [nameOK, setNameOK] = useState(true);
+	const [typeOK, setTypeOK] = useState(true);
+	const [venueOK, setVenueOK] = useState(true);
+	const [addressOK, setAddressOK] = useState(true);
+	const [startDateOK, setStartDateOK] = useState(true);
+	const [endDateOK, setEndDateOK] = useState(true);
+	const [descriptionOK, setDescriptionOK] = useState(true);
+	const [instructionOK, setInstructionOK] = useState(true);
+	const [imageOK, setImageOK] = useState(true);
+	const [courseMapOK, setCourseMapOK] = useState(true);
+	const [OKLeavePage, setOKLeavePage] = useState(true);
+
+	useEffect(() => {
+		setOKLeavePage(
+			nameOK &&
+				typeOK &&
+				venueOK &&
+				addressOK &&
+				startDateOK &&
+				endDateOK &&
+				descriptionOK &&
+				instructionOK &&
+				imageOK &&
+				courseMapOK
+		);
+	}, [
+		nameOK,
+		typeOK,
+		venueOK,
+		addressOK,
+		startDateOK,
+		endDateOK,
+		descriptionOK,
+		instructionOK,
+		imageOK,
+		courseMapOK
+	]);
+	/***** End of OKLeavePage Section *****/
 
 	const eventForm = values => (
 		<div className="event-form">
@@ -217,9 +293,12 @@ const NewEvent = setFieldValue => {
 							className="event-form__field"
 							validate={validateName}
 							onBlur={event => {
+								// without handBlure(event) touched.name will not work
 								handleBlur(event);
 								if (event.target.value) {
-									setSaved(false);
+									setNameOK(false);
+								} else {
+									setNameOK(true);
 								}
 							}}
 						/>
@@ -232,11 +311,18 @@ const NewEvent = setFieldValue => {
 							Event Type
 						</label>
 						<Field
-							id="eventType"
-							name="eventType"
+							id="type"
+							name="type"
 							as="select"
 							className="event-form__eventtype"
-							onBlur={() => setSaved(false)}>
+							onBlur={event => {
+								handleBlur(event);
+								if (event.target.value !== 'Autocross') {
+									setTypeOK(false);
+								} else {
+									setTypeOK(true);
+								}
+							}}>
 							<option value="Event Type" disabled>
 								Event Type
 							</option>
@@ -264,22 +350,48 @@ const NewEvent = setFieldValue => {
 							id="startDate"
 							name="startDate"
 							type="date"
+							validate={validateStartDate}
 							placeholder={tomorrow}
 							min={tomorrow}
 							max="2030-12-31"
 							className="event-form__startdate"
-							onBlur={() => setSaved(false)}
+							onBlur={event => {
+								handleBlur(event);
+								if (event.target.value !== tomorrow) {
+									setStartDateOK(false);
+								} else {
+									setStartDateOK(true);
+								}
+							}}
 						/>
 						<Field
 							id="endDate"
 							name="endDate"
 							type="date"
+							validate={validateEndDate}
 							placeholder={tomorrow}
 							min={tomorrow}
 							max="2030-12-31"
 							className="event-form__enddate"
-							onBlur={() => setSaved(false)}
+							onBlur={event => {
+								handleBlur(event);
+								if (event.target.value !== tomorrow) {
+									setEndDateOK(false);
+								} else {
+									setEndDateOK(true);
+								}
+							}}
 						/>
+						{touched.startDate && errors.startDate && (
+							<div className="event-form__field-error-startDate">
+								{errors.startDate}
+							</div>
+						)}
+						{touched.endDate && errors.endDate && (
+							<div className="event-form__field-error-endDate">
+								{errors.endDate}
+							</div>
+						)}
 						<label htmlFor="venue" className="event-form__label">
 							Venue
 						</label>
@@ -289,7 +401,14 @@ const NewEvent = setFieldValue => {
 							type="text"
 							className="event-form__field"
 							validate={validateVenue}
-							onBlur={() => setSaved(false)}
+							onBlur={event => {
+								handleBlur(event);
+								if (event.target.value) {
+									setVenueOK(false);
+								} else {
+									setVenueOK(true);
+								}
+							}}
 						/>
 						{touched.venue && errors.venue && (
 							<div className="event-form__field-error">
@@ -306,7 +425,14 @@ const NewEvent = setFieldValue => {
 							placeholder="Crows Landing, CA"
 							className="event-form__field"
 							validate={validateAddress}
-							onBlur={() => setSaved(false)}
+							onBlur={event => {
+								handleBlur(event);
+								if (event.target.value) {
+									setAddressOK(false);
+								} else {
+									setAddressOK(true);
+								}
+							}}
 						/>
 						{touched.address && errors.address && (
 							<div className="event-form__field-error">
@@ -327,7 +453,14 @@ const NewEvent = setFieldValue => {
 							placeholder="Please enter event description"
 							className="event-form__field-textarea"
 							validate={validateDescription}
-							onBlur={() => setSaved(false)}
+							onBlur={event => {
+								handleBlur(event);
+								if (event.target.value) {
+									setDescriptionOK(false);
+								} else {
+									setDescriptionOK(true);
+								}
+							}}
 						/>
 						{touched.description && errors.description && (
 							<div className="event-form__field-error">
@@ -348,7 +481,14 @@ const NewEvent = setFieldValue => {
 							placeholder="Please enter event instruction"
 							className="event-form__field-textarea"
 							validate={validateInstruction}
-							onBlur={() => setSaved(false)}
+							onBlur={event => {
+								handleBlur(event);
+								if (event.target.value) {
+									setInstructionOK(false);
+								} else {
+									setInstructionOK(true);
+								}
+							}}
 						/>
 						{touched.instruction && errors.instruction && (
 							<div className="event-form__field-error">
@@ -363,7 +503,14 @@ const NewEvent = setFieldValue => {
 							validate={validateImageSize}
 							setFieldValue={setFieldValue}
 							errorMessage={errors.image ? errors.image : ''}
-							onBlur={() => setSaved(false)}
+							onBlur={event => {
+								handleBlur(event);
+								if (event.target.value) {
+									setImageOK(false);
+								} else {
+									setImageOK(true);
+								}
+							}}
 						/>
 						<Field
 							id="courseMap"
@@ -373,7 +520,14 @@ const NewEvent = setFieldValue => {
 							validate={validateCourseMapSize}
 							setFieldValue={setFieldValue}
 							errorMessage={errors.courseMap ? errors.courseMap : ''}
-							onBlur={() => setSaved(false)}
+							onBlur={event => {
+								handleBlur(event);
+								if (event.target.value) {
+									setCourseMapOK(false);
+								} else {
+									setCourseMapOK(true);
+								}
+							}}
 						/>
 						<Button
 							type="button"
@@ -399,7 +553,7 @@ const NewEvent = setFieldValue => {
 							Submit
 						</Button> */}
 						<Prompt
-							when={!saved}
+							when={!OKLeavePage}
 							message="Form has not been saved, you sure you want to leave?"
 						/>
 					</Form>

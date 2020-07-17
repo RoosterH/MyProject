@@ -134,9 +134,35 @@
 	margin: 0rem 0.1rem 0.5rem 1.5rem;
 }
 
+.event-form__field-error-startDate {
+	display: inline-block;
+	/* without solid, color does not work properly */
+	font-size: 15px;
+	font-family: 'Montserrat', sans-serif;
+	color: #b10101;
+	width: 42%;
+	height: 1.9rem;
+	margin-top: 0rem;
+	margin-right: 3.5%;
+	margin-bottom: 0.5rem;
+	margin-left: 1.5rem;
+}
+
+.event-form__field-error-endDate {
+	display: inline-block;
+	/* without solid, color does not work properly */
+	font-size: 15px;
+	font-family: 'Montserrat', sans-serif;
+	color: #b10101;
+	width: 43%;
+	height: 1.9rem;
+	margin: 0rem 0rem 0.5rem 1rem;
+}
+
 .event-form h2 {
 	font-weight: bold;
 }
+
 .event-form__coursemap {
 	display: block;
 }
