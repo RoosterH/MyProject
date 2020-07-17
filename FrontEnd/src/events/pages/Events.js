@@ -33,7 +33,7 @@ const Events = () => {
 	const AutoSubmitToken = () => {
 		const { values, submitForm } = useFormikContext();
 		useEffect(() => {
-			// Submit the form imperatively as an effect as soon as form values.token are 6 digits long
+			// Submit the form imperatively as an effect as soon as form values.token are 5 digits long
 			if (values.zip.length === 5 && values !== curValues) {
 				submitForm();
 				setCurValues(values);
@@ -43,9 +43,10 @@ const Events = () => {
 	};
 
 	let today = moment().format('YYYY-MM-DD');
+	let halfMonth = moment().add(15, 'days').format('YYYY-MM-DD');
 	let eventType = 'Autocross',
 		startDate = today,
-		endDate = today,
+		endDate = halfMonth,
 		distance = 50,
 		zip = '';
 
@@ -84,6 +85,26 @@ const Events = () => {
 				onSubmit={(values, actions) => {
 					const fetchEvents = async () => {
 						try {
+							// the request needs to match backend clubsRoutes /signup route
+							// With fromData, headers cannot be {Content-Type: application/json}
+							const responseData = await sendRequest(
+								process.env.REACT_APP_BACKEND_URL + '/events/date',
+								'POST',
+								JSON.stringify({
+									eventType: values.eventType,
+									startDate: moment(values.startDate),
+									endDate: moment(values.endDate),
+									distance: values.distance,
+									zip: values.zip
+								}),
+								{ 'Content-type': 'application/json' }
+							);
+
+							setLoadedEvents(responseData.events);
+							actions.setSubmitting(false);
+
+							// set the search criteria to localStorage so the next time
+							// user open the page, we will perform the same search
 							const tokenExp = moment(
 								moment().add(7, 'days'),
 								moment.ISO_8601
@@ -102,23 +123,6 @@ const Events = () => {
 									expiration: tokenExp
 								})
 							);
-							// the request needs to match backend clubsRoutes /signup route
-							// With fromData, headers cannot be {Content-Type: application/json}
-							const responseData = await sendRequest(
-								process.env.REACT_APP_BACKEND_URL + '/events/date',
-								'POST',
-								JSON.stringify({
-									eventType: values.eventType,
-									startDate: moment(values.startDate),
-									endDate: moment(values.endDate),
-									distance: values.distance,
-									zip: values.zip
-								}),
-								{ 'Content-type': 'application/json' }
-							);
-
-							setLoadedEvents(responseData.events);
-							actions.setSubmitting(false);
 						} catch (err) {}
 					};
 					fetchEvents();
@@ -141,10 +145,6 @@ const Events = () => {
 									</option>
 								);
 							})}
-
-							{/* <option value="Autocross">Autocross</option>
-							<option value="Cruising">Cruising</option>
-							<option value="Track days">Track days</option> */}
 						</Field>
 						<Field
 							type="date"

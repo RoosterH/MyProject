@@ -26,7 +26,8 @@ const eventSchema = new Schema({
 		required: true,
 		ref: 'Club'
 	},
-	clubName: { type: String, required: true }
+	clubName: { type: String, required: true },
+	published: { type: Boolean, required: true }
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

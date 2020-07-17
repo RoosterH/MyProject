@@ -81,6 +81,9 @@ const UpdateEvent = () => {
 			eventId = storageData.eventId;
 		}
 	} else {
+		// set eventId to localStorage for potential page refresh
+		// we will remove it when the form gets submitted
+		// @todo remove data when user leaves this page
 		localStorage.setItem(
 			'eventData',
 			JSON.stringify({

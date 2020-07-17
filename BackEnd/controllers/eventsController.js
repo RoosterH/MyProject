@@ -153,7 +153,8 @@ const getEventsByDate = async (req, res, next) => {
 	try {
 		events = await Event.find({
 			type: eventType,
-			startDate: { $gte: startDate, $lte: endDate }
+			startDate: { $gte: startDate, $lte: endDate },
+			published: true
 		}).sort({
 			endDate: 1
 		});
