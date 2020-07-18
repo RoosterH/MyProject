@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import moment from 'moment';
 import { useParams, useHistory } from 'react-router-dom';
 
+import { EventAuth } from '../../shared/hooks/eventAuth-hook';
 import Button from '../../shared/components/FormElements/Button';
 import Card from '../../shared/components/UIElements/Card';
 import { ClubAuthContext } from '../../shared/context/auth-context';
@@ -32,17 +33,10 @@ const UpdateEvent = () => {
 
 	const clubAuth = useContext(ClubAuthContext);
 
+	// authentication check
+	EventAuth();
+
 	const history = useHistory();
-	// To make sure page refreshing reloads correctly, we need to add path="/events/new" to
-	// (!clubToken) route. If club not logging in, re-direct to auth page
-	const storageData = JSON.parse(localStorage.getItem('userData'));
-	if (
-		!storageData ||
-		!storageData.clubId ||
-		storageData.clubId !== clubAuth.clubId
-	) {
-		history.push('/clubs/auth');
-	}
 
 	// Modal section
 	const [showModal, setShowModal] = useState(false);
@@ -240,8 +234,8 @@ const UpdateEvent = () => {
 		var endDate = moment(loadedEvent.endDate).format('YYYY-MM-DD');
 	}
 
-	const removeEventData = async () => {
-		await localStorage.removeItem('eventData');
+	const removeEventData = () => {
+		localStorage.removeItem('eventData');
 		history.push(`/events/${loadedEvent.id}`);
 	};
 

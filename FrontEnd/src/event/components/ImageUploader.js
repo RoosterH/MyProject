@@ -6,7 +6,6 @@ import '../pages/EventForm.css';
 
 const ImageUploader = props => {
 	const [previewUrl, setPreviewUrl] = useState();
-	// const SUPPORTED_FORMAT = IMAGE_TYPES;
 	const handleImageChange = e => {
 		e.preventDefault();
 		let fileReader = new FileReader();

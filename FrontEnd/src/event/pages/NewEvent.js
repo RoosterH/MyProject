@@ -1,13 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Prompt } from 'react-router';
 import { useHistory } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
+import NavigationPrompt from 'react-router-navigation-prompt';
 
+import { EventAuth } from '../../shared/hooks/eventAuth-hook';
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import ImageUploader from '../components/ImageUploader';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
+import PromptModal from '../../shared/components/UIElements/PromptModal';
 
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { ClubAuthContext } from '../../shared/context/auth-context';
@@ -15,6 +17,7 @@ import { ClubAuthContext } from '../../shared/context/auth-context';
 import './EventForm.css';
 import { eventTypes } from '../../event/components/EventTypes';
 
+let initialized = false;
 const NewEvent = setFieldValue => {
 	const clubAuth = useContext(ClubAuthContext);
 	const {
@@ -24,47 +27,149 @@ const NewEvent = setFieldValue => {
 		clearError
 	} = useHttpClient();
 
-	const history = useHistory();
-	// To make sure page refreshing reloads correctly, we need to add path="/events/new" to
-	// (!clubToken) route. If club not logging in, re-direct to auth page
-	let storageData = JSON.parse(localStorage.getItem('userData'));
-	if (
-		!storageData ||
-		!storageData.clubId ||
-		storageData.clubId !== clubAuth.clubId
-	) {
-		history.push('/clubs/auth');
-	}
+	// authentication check
+	EventAuth();
 
 	let tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
-	let name = '';
-	let type = 'Autocross';
-	let image = undefined;
+	const [name, setName] = useState('');
+	const [type, setType] = useState('Autocross');
 	const [startDate, setStartDate] = useState(tomorrow);
 	const [endDate, setEndDate] = useState(tomorrow);
-	let venue = '';
-	let address = '';
-	let description = '';
-	let instruction = '';
+	const [venue, setVenue] = useState('');
+	const [address, setAddress] = useState('');
+	const [description, setDescription] = useState('');
+	const [instruction, setInstruction] = useState('');
+	// todo: retrive file from Reader: const [image, setImage] = useState();
+	// todo: const [courseMap, setCourseMap] = useState('');
+	let image = undefined;
 	let courseMap = undefined;
 
+	// initialize local storage
+	// Get the existing data
+	var eventFormData = localStorage.getItem('eventFormData');
+
+	// If no existing data, create an array; otherwise retrieve it
+	eventFormData = eventFormData ? JSON.parse(eventFormData) : {};
+
+	/***** OKLeavePage Section *****/
+	const [nameOK, setNameOK] = useState(true);
+	const [typeOK, setTypeOK] = useState(true);
+	const [venueOK, setVenueOK] = useState(true);
+	const [addressOK, setAddressOK] = useState(true);
+	const [startDateOK, setStartDateOK] = useState(true);
+	const [endDateOK, setEndDateOK] = useState(true);
+	const [descriptionOK, setDescriptionOK] = useState(true);
+	const [instructionOK, setInstructionOK] = useState(true);
+	const [imageOK, setImageOK] = useState(true);
+	const [courseMapOK, setCourseMapOK] = useState(true);
+	const [OKLeavePage, setOKLeavePage] = useState(true);
+
+	useEffect(() => {
+		setOKLeavePage(
+			nameOK &&
+				typeOK &&
+				venueOK &&
+				addressOK &&
+				startDateOK &&
+				endDateOK &&
+				descriptionOK &&
+				instructionOK &&
+				imageOK &&
+				courseMapOK
+		);
+	}, [
+		nameOK,
+		typeOK,
+		venueOK,
+		addressOK,
+		startDateOK,
+		endDateOK,
+		descriptionOK,
+		instructionOK,
+		imageOK,
+		courseMapOK
+	]);
+	/***** End of OKLeavePage Section *****/
+
 	// local storage gets the higest priority
-	storageData = JSON.parse(localStorage.getItem('evenFormData'));
 	// get from localStorage
-	if (storageData && moment(storageData.expiration) > moment()) {
-		name = storageData.name;
-		type = storageData.type;
-		image = storageData.image;
-		setStartDate(storageData.startDate);
-		setEndDate(storageData.endDate);
-		venue = storageData.venue;
-		address = storageData.address;
-		description = storageData.description;
-		instruction = storageData.instruction;
-		courseMap = storageData.courseMap;
-	} else {
+	if (
+		!initialized &&
+		eventFormData &&
+		moment(eventFormData.expirationDate) > moment()
+	) {
+		initialized = true;
+		// Form data
+		if (eventFormData.name) {
+			setName(eventFormData.name);
+			setNameOK(false);
+		}
+		if (eventFormData.type) {
+			setType(eventFormData.type);
+			setTypeOK(false);
+		}
+		if (eventFormData.startDate) {
+			setStartDate(eventFormData.startDate);
+			setStartDateOK(false);
+		}
+		if (eventFormData.endDate) {
+			setEndDate(eventFormData.endDate);
+			setEndDateOK(false);
+		}
+		if (eventFormData.venue) {
+			setVenue(eventFormData.venue);
+			setVenueOK(false);
+		}
+		if (eventFormData.address) {
+			setAddress(eventFormData.address);
+			setAddressOK(false);
+		}
+		if (eventFormData.description) {
+			setDescription(eventFormData.description);
+			setDescriptionOK(false);
+		}
+		if (eventFormData.instruction) {
+			setInstruction(eventFormData.instruction);
+			setDescriptionOK(false);
+		}
+		if (eventFormData.image) {
+			//setImage(eventFormData.image);
+			setImageOK(false);
+		}
+		if (eventFormData.courseMap) {
+			// setCourseMap(eventFormData.courseMap);
+			setCourseMapOK(false);
+		}
+	} else if (!initialized) {
+		initialized = true;
+		// initialize localStorage
+		eventFormData['expirationDate'] = moment(
+			moment().add(1, 'days'),
+			moment.ISO_8601
+		);
+		eventFormData['name'] = '';
+		eventFormData['type'] = 'Autocross';
+		eventFormData['startDate'] = tomorrow;
+		eventFormData['endDate'] = tomorrow;
+		eventFormData['venue'] = '';
+		eventFormData['address'] = '';
+		eventFormData['description'] = '';
+		eventFormData['instruction'] = '';
+		eventFormData['image'] = undefined;
+		eventFormData['courseMap'] = undefined;
+		localStorage.setItem(
+			'eventFormData',
+			JSON.stringify(eventFormData)
+		);
+
 		// reach out DB to get saved data
 	}
+
+	const removeEventFormData = () => {
+		console.log('I am here');
+		localStorage.removeItem('eventFormData');
+		history.push(`/events/club/${clubAuth.clubId}`);
+	};
 
 	const initialValues = {
 		name: name,
@@ -79,6 +184,19 @@ const NewEvent = setFieldValue => {
 		courseMap: courseMap
 	};
 
+	const updateEventFormData = (key, value) => {
+		const storageData = JSON.parse(
+			localStorage.getItem('eventFormData')
+		);
+		storageData[key] = value;
+		localStorage.setItem(
+			'eventFormData',
+			JSON.stringify(storageData)
+		);
+	};
+
+	const saveHandler = (values, actions) => {};
+	const history = useHistory();
 	const submitHandler = (values, actions) => {
 		const fetchEvents = async () => {
 			const formData = new FormData();
@@ -141,8 +259,6 @@ const NewEvent = setFieldValue => {
 		return error;
 	};
 	const validateStartDate = value => {
-		console.log('in startDate = ', value);
-		console.log('endDate = ', endDate);
 		setStartDate(moment(value).format('YYYY-MM-DD'));
 		let error;
 		if (
@@ -224,46 +340,6 @@ const NewEvent = setFieldValue => {
 	};
 	/***** End of Form Validation *****/
 
-	/***** OKLeavePage Section *****/
-	const [nameOK, setNameOK] = useState(true);
-	const [typeOK, setTypeOK] = useState(true);
-	const [venueOK, setVenueOK] = useState(true);
-	const [addressOK, setAddressOK] = useState(true);
-	const [startDateOK, setStartDateOK] = useState(true);
-	const [endDateOK, setEndDateOK] = useState(true);
-	const [descriptionOK, setDescriptionOK] = useState(true);
-	const [instructionOK, setInstructionOK] = useState(true);
-	const [imageOK, setImageOK] = useState(true);
-	const [courseMapOK, setCourseMapOK] = useState(true);
-	const [OKLeavePage, setOKLeavePage] = useState(true);
-
-	useEffect(() => {
-		setOKLeavePage(
-			nameOK &&
-				typeOK &&
-				venueOK &&
-				addressOK &&
-				startDateOK &&
-				endDateOK &&
-				descriptionOK &&
-				instructionOK &&
-				imageOK &&
-				courseMapOK
-		);
-	}, [
-		nameOK,
-		typeOK,
-		venueOK,
-		addressOK,
-		startDateOK,
-		endDateOK,
-		descriptionOK,
-		instructionOK,
-		imageOK,
-		courseMapOK
-	]);
-	/***** End of OKLeavePage Section *****/
-
 	const eventForm = values => (
 		<div className="event-form">
 			<div className="event-form-header">
@@ -276,8 +352,8 @@ const NewEvent = setFieldValue => {
 					errors,
 					isSubmitting,
 					isValid,
+					isValidating,
 					setFieldValue,
-					validateForm,
 					validateField,
 					touched,
 					handleBlur
@@ -295,6 +371,7 @@ const NewEvent = setFieldValue => {
 							onBlur={event => {
 								// without handBlure(event) touched.name will not work
 								handleBlur(event);
+								updateEventFormData('name', event.target.value);
 								if (event.target.value) {
 									setNameOK(false);
 								} else {
@@ -317,6 +394,7 @@ const NewEvent = setFieldValue => {
 							className="event-form__eventtype"
 							onBlur={event => {
 								handleBlur(event);
+								updateEventFormData('type', event.target.value);
 								if (event.target.value !== 'Autocross') {
 									setTypeOK(false);
 								} else {
@@ -357,6 +435,7 @@ const NewEvent = setFieldValue => {
 							className="event-form__startdate"
 							onBlur={event => {
 								handleBlur(event);
+								updateEventFormData('startDate', event.target.value);
 								if (event.target.value !== tomorrow) {
 									setStartDateOK(false);
 								} else {
@@ -375,6 +454,7 @@ const NewEvent = setFieldValue => {
 							className="event-form__enddate"
 							onBlur={event => {
 								handleBlur(event);
+								updateEventFormData('endDate', event.target.value);
 								if (event.target.value !== tomorrow) {
 									setEndDateOK(false);
 								} else {
@@ -403,6 +483,7 @@ const NewEvent = setFieldValue => {
 							validate={validateVenue}
 							onBlur={event => {
 								handleBlur(event);
+								updateEventFormData('venue', event.target.value);
 								if (event.target.value) {
 									setVenueOK(false);
 								} else {
@@ -427,6 +508,7 @@ const NewEvent = setFieldValue => {
 							validate={validateAddress}
 							onBlur={event => {
 								handleBlur(event);
+								updateEventFormData('address', event.target.value);
 								if (event.target.value) {
 									setAddressOK(false);
 								} else {
@@ -455,6 +537,10 @@ const NewEvent = setFieldValue => {
 							validate={validateDescription}
 							onBlur={event => {
 								handleBlur(event);
+								updateEventFormData(
+									'description',
+									event.target.value
+								);
 								if (event.target.value) {
 									setDescriptionOK(false);
 								} else {
@@ -483,6 +569,10 @@ const NewEvent = setFieldValue => {
 							validate={validateInstruction}
 							onBlur={event => {
 								handleBlur(event);
+								updateEventFormData(
+									'instruction',
+									event.target.value
+								);
 								if (event.target.value) {
 									setInstructionOK(false);
 								} else {
@@ -505,6 +595,7 @@ const NewEvent = setFieldValue => {
 							errorMessage={errors.image ? errors.image : ''}
 							onBlur={event => {
 								handleBlur(event);
+								// updateEventFormData('image', event.target.value);
 								if (event.target.value) {
 									setImageOK(false);
 								} else {
@@ -522,6 +613,7 @@ const NewEvent = setFieldValue => {
 							errorMessage={errors.courseMap ? errors.courseMap : ''}
 							onBlur={event => {
 								handleBlur(event);
+								// updateEventFormData('courseMap', event.target.value);
 								if (event.target.value) {
 									setCourseMapOK(false);
 								} else {
@@ -537,10 +629,13 @@ const NewEvent = setFieldValue => {
 							onClick={() => {
 								validateField('name');
 								validateField('venue');
+								if (isValid) {
+									submitHandler();
+								}
 							}}>
-							Save & Continue
+							Save
 						</Button>
-						{/* <Button
+						<Button
 							type="button"
 							size="medium"
 							margin-left="1.5rem"
@@ -551,11 +646,39 @@ const NewEvent = setFieldValue => {
 							disabled={isSubmitting || !isValid}
 							className="file-upload-button">
 							Submit
-						</Button> */}
-						<Prompt
+						</Button>
+						{/* <Prompt
 							when={!OKLeavePage}
-							message="Form has not been saved, you sure you want to leave?"
-						/>
+							message="You sure want to leave? Unsaved data will be lost."
+							onConfirm={removeEventFormData}
+						/> */}
+						<NavigationPrompt
+							afterConfirm={() => {
+								removeEventFormData();
+							}}
+							// Confirm navigation if going to a path that does not start with current path:
+							when={!OKLeavePage}>
+							{({ isActive, onCancel, onConfirm }) => {
+								if (isActive) {
+									return (
+										<PromptModal
+											onCancel={onCancel}
+											onConfirm={onConfirm}
+											contentClass="event-item__modal-content"
+											footerClass="event-item__modal-actions"
+											error="You sure want to leave? Unsaved data will be lost.">
+											{/* render props.children */}
+										</PromptModal>
+									);
+								}
+								return (
+									<div>
+										This is probably an anti-pattern but ya know...
+									</div>
+								);
+							}}
+						</NavigationPrompt>
+						;
 					</Form>
 				)}
 			</Formik>
