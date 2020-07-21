@@ -2,20 +2,14 @@ import React, { useState, useContext } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import Button from '../../shared/components/FormElements/Button';
-import Card from '../../shared/components/UIElements/Card';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
-import Input from '../../shared/components/FormElements/Input';
+import { Field, Form, Formik } from 'formik';
+import ImageUploader from '../../shared/components/FormElements/ImageUploader';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
-import ImageUpload from '../../shared/components/FormElements/ImageUpload';
 
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import { useForm } from '../../shared/hooks/form-hook';
 import { useHttpClient } from '../../shared/hooks/http-hook';
-import {
-	VALIDATOR_REQUIRE,
-	VALIDATOR_EMAIL,
-	VALIDATOR_MINLENGTH
-} from '../../shared/util/validators';
 
 import './ClubAuth.css';
 
@@ -24,6 +18,7 @@ const ClubAuth = () => {
 	const [isLoginMode, setIsLoginMode] = useState(true);
 	const [isSignUp, setIsSignup] = useState(false);
 	const [passwordError, setPasswordError] = useState();
+	const [imageValid, setImageValid] = useState();
 	const {
 		isLoading,
 		error,
@@ -94,10 +89,10 @@ const ClubAuth = () => {
 	};
 
 	const history = useHistory();
-	const clubSubmitHandler = async event => {
+	const clubSubmitHandler = async values => {
 		// meaning we don't want to reload the page after form submission
 		// all the input values stay intact on the form
-		event.preventDefault();
+		// event.preventDefault();
 
 		if (isLoginMode) {
 			try {
@@ -106,8 +101,8 @@ const ClubAuth = () => {
 					process.env.REACT_APP_BACKEND_URL + '/clubs/login',
 					'POST',
 					JSON.stringify({
-						email: formState.inputs.email.value,
-						password: formState.inputs.password.value
+						email: values.email,
+						password: values.password
 					}),
 					{
 						'Content-Type': 'application/json'
@@ -175,6 +170,46 @@ const ClubAuth = () => {
 		clearError();
 		setPasswordError(null);
 	};
+
+	// Formik section
+	const initialValues = {
+		email: '',
+		image: undefined,
+		password: '',
+		passwordValidation: ''
+	};
+	const validateEmail = value => {
+		let error;
+		if (!value) {
+			error = 'Email is required.';
+			console.log('validateName = ', error);
+		} else {
+			const pattern = /[a-z0-9A-Z!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9A-Z!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+			if (!pattern.test(value)) {
+				error = 'Please enter a valid email';
+			}
+		}
+		return error;
+	};
+	const validatePassword = value => {
+		let error;
+		if (!value) {
+			error = 'Password is required.';
+			console.log('validateName = ', error);
+		}
+		return error;
+	};
+	const validateImage = value => {
+		let error;
+		if (value && value.size > 1500000) {
+			error = 'File size needs to be smaller than 1.5MB';
+			setImageValid(false);
+		} else {
+			setImageValid(true);
+		}
+		return error;
+	};
+
 	// set Card title
 	const cardTitle = isLoginMode
 		? isSignUp
@@ -182,89 +217,172 @@ const ClubAuth = () => {
 			: 'Club Login'
 		: 'Club Signup';
 
+	const clubAuthForm = values => (
+		<div className="auth-div">
+			<h4 className="auth-form-header">Login</h4>
+			<hr className="auth-form--hr" />
+
+			<Formik
+				initialValues={initialValues}
+				onSubmit={clubSubmitHandler}>
+				{({ errors, isValid, touched }) => (
+					<Form className="auth-from-container">
+						<div>
+							<label htmlFor="email" className="auth-form-label">
+								Email
+							</label>
+							<Field
+								id="email"
+								name="email"
+								type="text"
+								validate={validateEmail}
+								className="auth-form-input"
+							/>
+							{touched.email && errors.email && (
+								<div className="auth-form-error">{errors.email}</div>
+							)}
+						</div>
+						<div>
+							<label htmlFor="password" className="auth-form-label">
+								Password
+							</label>
+							<Field
+								id="password"
+								name="password"
+								type="text"
+								validate={validatePassword}
+								className="auth-form-input"
+							/>
+							{touched.password && errors.password && (
+								<div className="auth-form-error">
+									{errors.password}
+								</div>
+							)}
+						</div>
+						<Button disabled={!isValid} type="submit" size="small">
+							LOGIN
+						</Button>
+						<Button size="small" to="/">
+							CANCEL
+						</Button>
+					</Form>
+				)}
+			</Formik>
+		</div>
+	);
+
+	const clubSignupForm = values => (
+		<div className="auth-div">
+			<h4 className="auth-form-header">Sign up a new account</h4>
+			<hr className="auth-form--hr" />
+
+			<Formik
+				initialValues={initialValues}
+				onSubmit={clubSubmitHandler}>
+				{({
+					errors,
+					isValid,
+					touched,
+					setFieldValue,
+					handleBlur
+				}) => (
+					<Form className="auth-from-container">
+						<div>
+							<label htmlFor="email" className="auth-form-label">
+								Email
+							</label>
+							<Field
+								id="email"
+								name="email"
+								type="text"
+								validate={validateEmail}
+								className="auth-form-input"
+							/>
+							{touched.email && errors.email && (
+								<div className="auth-form-error">{errors.email}</div>
+							)}
+						</div>
+						<Field
+							id="image"
+							name="image"
+							title="Club Image"
+							component={ImageUploader}
+							validate={validateImage}
+							setFieldValue={setFieldValue}
+							errorMessage={errors.image ? errors.image : ''}
+							onBlur={event => {
+								handleBlur(event);
+							}}
+							labelStyle="auth-form-label"
+							inputStyle="auth-form-input"
+							previewStyle="auth-form-image-upload__preview"
+							errorStyle="auth-form-error"
+						/>
+
+						<div>
+							<label htmlFor="password" className="auth-form-label">
+								Password
+							</label>
+							<Field
+								id="password"
+								name="password"
+								type="text"
+								validate={validatePassword}
+								className="auth-form-input"
+							/>
+							{touched.password && errors.password && (
+								<div className="auth-form-error">
+									{errors.password}
+								</div>
+							)}
+						</div>
+						<div>
+							<label
+								htmlFor="passwordValidation"
+								className="auth-form-label">
+								Please re-enter password
+							</label>
+							<Field
+								id="passwordValidation"
+								name="passwordValidation"
+								type="text"
+								validate={validatePassword}
+								className="auth-form-input"
+							/>
+							{touched.passwordValidation &&
+								errors.passwordValidation && (
+									<div className="auth-form-error">
+										{errors.passwordValidation}
+									</div>
+								)}
+						</div>
+						<Button size="small" disabled={!isValid} type="submit">
+							Signup
+						</Button>
+						<Button to="/" size="small">
+							CANCEL
+						</Button>
+					</Form>
+				)}
+			</Formik>
+		</div>
+	);
 	return (
 		<React.Fragment>
 			{/* error coming from const [error, setError] = useState(); */}
 			<ErrorModal error={error || passwordError} onClear={clearErr} />
-			<Card className="authentication" title={cardTitle}>
-				{isLoading && <LoadingSpinner asOverlay />}
-				<form
-					title="Club Authentication"
-					onSubmit={clubSubmitHandler}>
-					{!isLoginMode && (
-						<Input
-							element="input"
-							id="name"
-							type="text"
-							label="Club Name"
-							validators={[VALIDATOR_REQUIRE()]}
-							errorText="Please enter club name."
-							onInput={inputHandler}
-						/>
-					)}
-					{!isLoginMode && (
-						<ImageUpload
-							center
-							id="image"
-							onInput={inputHandler}
-							errorText="Please provide a club image"
-						/>
-					)}
-					<Input
-						id="email"
-						element="input"
-						type="text"
-						label="Email"
-						validators={[VALIDATOR_EMAIL()]}
-						errorText="Please enter a valid email."
-						onInput={inputHandler}
-					/>
-					{!isLoginMode && (
-						<Input
-							id="password"
-							element="input"
-							type="password"
-							label="Password (min length 6 letters)"
-							validators={[VALIDATOR_MINLENGTH(6)]}
-							errorText="Please enter a valid password."
-							onInput={inputHandler}
-						/>
-					)}
-					{!isLoginMode && (
-						<Input
-							id="passwordValidation"
-							element="input"
-							type="password"
-							label="Please type password again"
-							validators={[VALIDATOR_MINLENGTH(6)]}
-							errorText="Please make sure passwords match."
-							onInput={inputHandler}
-						/>
-					)}
-					{isLoginMode && (
-						<Input
-							id="password"
-							element="input"
-							type="password"
-							label="Password"
-							validators={[]}
-							errorText="Please enter a valid password."
-							onInput={inputHandler}
-						/>
-					)}
-					<Button disabled={!formState.isValid}>
-						{isLoginMode ? 'LOGIN' : 'SIGNUP'}
-					</Button>
-					<Button to="/">CANCEL</Button>
-				</form>
+			{isLoading && <LoadingSpinner asOverlay />}
+			{isLoginMode && clubAuthForm()}
+			{!isLoginMode && clubSignupForm()}
+			<div className="auth-footer-div">
 				<p>No Account? Please sign up a new account.</p>
-				{/* <Button inverse  to="/clubs/signup">
-				SIGNUP
-			</Button> */}
-				<Button inverse onClick={switchModeHandler}>
+				{/* <Button inverse to="/clubs/signup">
+					SIGNUP
+				</Button> */}
+				<Button size="small" inverse onClick={switchModeHandler}>
 					SWITCH TO {isLoginMode ? 'SIGNUP' : 'LOGIN'}
 				</Button>
-			</Card>
+			</div>
 		</React.Fragment>
 	);
 };

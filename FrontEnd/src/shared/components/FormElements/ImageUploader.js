@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 
-import { IMAGE_TYPES } from '../../shared/config/types';
-import Image from '../../shared/components/UIElements/Image';
-import '../pages/EventForm.css';
+import { IMAGE_TYPES } from '../../config/types';
+import Image from '../UIElements/Image';
 
 const ImageUploader = props => {
 	const [previewUrl, setPreviewUrl] = useState();
@@ -25,10 +24,11 @@ const ImageUploader = props => {
 	let name = props.field.name;
 	let id = props.id;
 	let errorMessage = props.errorMessage;
+	let title = props.title;
 	return (
 		<div>
-			<label htmlFor={id} className="event-form__label">
-				{name} - jpg/png/gif
+			<label htmlFor={id} className={props.labelStyle}>
+				{title} (size &#60; 1.5 MB) - jpg/png/gif
 			</label>
 			<input
 				id={id}
@@ -36,10 +36,10 @@ const ImageUploader = props => {
 				type="file"
 				accept={[IMAGE_TYPES()]}
 				onChange={handleImageChange}
-				className="event-form__field-select"
+				className={props.inputStyle}
 			/>
 			{!errorMessage && previewUrl && (
-				<div className="image-upload__preview">
+				<div className={props.previewStyle}>
 					{previewUrl && (
 						<Image
 							draggable="true"
@@ -52,7 +52,7 @@ const ImageUploader = props => {
 			)}
 			{/* Formik ErrorMessage not working for custom components */}
 			{!!errorMessage && (
-				<div className="event-form__field-error">{errorMessage}</div>
+				<div className={props.errorStyle}>{errorMessage}</div>
 			)}
 		</div>
 	);

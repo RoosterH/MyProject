@@ -82,7 +82,7 @@ const Events = () => {
 						'Must be exactly 5 digits'
 					)
 				})}
-				onSubmit={(values, actions) => {
+				onSubmit={values => {
 					const fetchEvents = async () => {
 						try {
 							// the request needs to match backend clubsRoutes /signup route
@@ -101,7 +101,6 @@ const Events = () => {
 							);
 
 							setLoadedEvents(responseData.events);
-							actions.setSubmitting(false);
 
 							// set the search criteria to localStorage so the next time
 							// user open the page, we will perform the same search

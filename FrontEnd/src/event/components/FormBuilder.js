@@ -1,22 +1,48 @@
-// import React, { useContext, createRef, useRef } from 'react';
-// import FormBuilder from 'react-form-builder2';
+import React from 'react';
 
-// import Button from '../../shared/components/FormElements/Button';
-// import ErrorModal from '../../shared/components/UIElements/ErrorModal';
-// // import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
-// import { useHttpClient } from '../../shared/hooks/http-hook';
-// import { ClubAuthContext } from '../../shared/context/auth-context';
+import FormBuilder from 'react-form-builder2';
 
-// import './FormBuilder.css';
+import './FormBuilder.css';
+import '../../shared/scss/application.scss';
+import '../../shared/scss/form-builder-form.scss';
+import '../../shared/scss/form-builder.scss';
+// import '../../shared/scss/react-bootstrap-slider.scss';
+import '../../shared/scss/react-date-picker.scss';
+import '../../shared/scss/react-draft.scss';
+import '../../shared/scss/react-select.scss';
+import '../../shared/scss/react-star-rating.scss';
+import '../../shared/scss/variables.scss';
 
-// // React.render(<FormBuilder.ReactFormBuilder />, document.body);
+const CustomForm = () => {
+	return (
+		<div className="formbuilder-container">
+			<FormBuilder.ReactFormBuilder />
+		</div>
+	);
+};
 
-// const FormData = () => {
-// 	return (
-// 		<div>
-// 			<FormBuilder.ReactFormBuilder />;
-// 		</div>
-// 	);
-// };
+export default CustomForm;
 
-// export default FormData;
+// jquery setup
+// import $ from 'jquery';
+// import React, { createRef, Component } from 'react';
+// import ReactDOM from 'react-router-dom';
+
+// window.jQuery = $;
+// window.$ = $;
+
+// require('jquery-ui-sortable');
+// require('formBuilder');
+
+// jquery FormBuilder
+// class CustomForm extends Component {
+// 	fb = createRef();
+// 	componentDidMount() {
+// 		$(this.fb.current).formBuilder();
+// 	}
+
+// 	render() {
+// 		return <div id="fb-editor" ref={this.fb} />;
+// 	}
+// }
+// export default CustomForm;

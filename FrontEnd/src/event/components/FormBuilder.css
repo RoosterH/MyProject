@@ -6,3 +6,19 @@
 		url('https://formbuilder.online/assets/img/noise.png') repeat
 		fixed;
 } */
+
+.formbuilder-container {
+	font-size: 14px;
+	font-weight: 300;
+	color: #404d5b;
+	width: 900px;
+	margin: 0 auto;
+}
+.formbuilder-container modal {
+	background: rgba(0, 0, 0, 0.3);
+}
+.formbuilder-container modal-content {
+	padding: 30px;
+	max-height: 800px;
+	overflow-y: auto;
+}

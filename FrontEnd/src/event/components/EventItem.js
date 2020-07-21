@@ -194,19 +194,26 @@ const EventItem = props => {
 				</div>
 				<div className="event-item__actions">
 					{clubAuth.clubId === props.event.clubId && (
-						<Button to={`/events/form/${props.event.id}`}>
+						<Button
+							to={`/events/form/${props.event.id}`}
+							size="small">
 							ENTRY FORM
 						</Button>
 					)}
 					{clubAuth.clubId === props.event.clubId &&
 						formStartDate > validFormModDate && (
-							<Button to={`/events/update/${props.event.id}`}>
+							<Button
+								to={`/events/update/${props.event.id}`}
+								size="small">
 								EDIT
 							</Button>
 						)}
 					{clubAuth.clubId === props.event.clubId &&
 						formStartDate > validFormModDate && (
-							<Button danger onClick={showDeleteWarningHandler}>
+							<Button
+								danger
+								onClick={showDeleteWarningHandler}
+								size="small">
 								DELETE
 							</Button>
 						)}

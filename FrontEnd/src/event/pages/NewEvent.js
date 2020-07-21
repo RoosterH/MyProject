@@ -7,7 +7,7 @@ import NavigationPrompt from 'react-router-navigation-prompt';
 import { EventAuth } from '../../shared/hooks/eventAuth-hook';
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
-import ImageUploader from '../components/ImageUploader';
+import ImageUploader from '../../shared/components/FormElements/ImageUploader';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 
@@ -356,7 +356,8 @@ const NewEvent = setFieldValue => {
 					setFieldValue,
 					validateField,
 					touched,
-					handleBlur
+					handleBlur,
+					obBlur
 				}) => (
 					<Form className="event-form-container">
 						<label htmlFor="name" className="event-form__label">
@@ -594,7 +595,8 @@ const NewEvent = setFieldValue => {
 							setFieldValue={setFieldValue}
 							errorMessage={errors.image ? errors.image : ''}
 							onBlur={event => {
-								handleBlur(event);
+								// handleBlur(event);
+								console.log('img = ', event.target.value);
 								// updateEventFormData('image', event.target.value);
 								if (event.target.value) {
 									setImageOK(false);
@@ -602,6 +604,10 @@ const NewEvent = setFieldValue => {
 									setImageOK(true);
 								}
 							}}
+							labelStyle="event-form__label"
+							inputStyle="event-form__field-select"
+							previewStyle="image-upload__preview"
+							errorStyle="event-form__field-error"
 						/>
 						<Field
 							id="courseMap"
@@ -613,13 +619,16 @@ const NewEvent = setFieldValue => {
 							errorMessage={errors.courseMap ? errors.courseMap : ''}
 							onBlur={event => {
 								handleBlur(event);
-								// updateEventFormData('courseMap', event.target.value);
 								if (event.target.value) {
 									setCourseMapOK(false);
 								} else {
 									setCourseMapOK(true);
 								}
 							}}
+							labelStyle="event-form__label"
+							inputStyle="event-form__field-select"
+							previewStyle="image-upload__preview"
+							errorStyle="event-form__field-error"
 						/>
 						<Button
 							type="button"
@@ -638,20 +647,13 @@ const NewEvent = setFieldValue => {
 						<Button
 							type="button"
 							size="medium"
-							margin-left="1.5rem"
 							onClick={() => {
 								validateField('name');
 								validateField('venue');
 							}}
-							disabled={isSubmitting || !isValid}
-							className="file-upload-button">
+							disabled={isSubmitting || !isValid}>
 							Submit
 						</Button>
-						{/* <Prompt
-							when={!OKLeavePage}
-							message="You sure want to leave? Unsaved data will be lost."
-							onConfirm={removeEventFormData}
-						/> */}
 						<NavigationPrompt
 							afterConfirm={() => {
 								removeEventFormData();
@@ -678,14 +680,12 @@ const NewEvent = setFieldValue => {
 								);
 							}}
 						</NavigationPrompt>
-						;
 					</Form>
 				)}
 			</Formik>
 		</div>
 	);
 
-	// // the purpose of onInput is to enter back the value after been validated to NewEvent
 	return (
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />

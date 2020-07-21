@@ -42,7 +42,7 @@ const Modal = props => {
 				mountOnEnter
 				unmountOnExit
 				timeout={10}
-				classNames="modal ">
+				className="modal ">
 				{/* import all props to ModalOverlay */}
 				<ModalOverlay {...props} />
 			</CSSTransition>

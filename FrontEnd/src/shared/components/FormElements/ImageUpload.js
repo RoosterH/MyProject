@@ -27,7 +27,7 @@ const ImageUpload = props => {
 		fileReader.readAsDataURL(file);
 	}, [file]);
 
-	// create a ref of fil
+	// create a ref of file picker
 	const filePickerRef = useRef();
 	const pickImageHandler = () => {
 		// click() is a method in <input /> DOM note, once it got clicked, it will open the file selector
@@ -64,7 +64,7 @@ const ImageUpload = props => {
 			{/* The following input section is file picker, initially we want to hide it. 
 			Once Button been clicked, pickImageHandler will be called.  It calls
 			filePickerRef.current.click(); Inside <input> ref={filePickerRef}, it means 
-			we are calling click() method of file picker DOM node. That is why file picker gets 
+			we are calling click() method of filepicker DOM node. That is why file picker gets 
 			displayed after button been clicked */}
 			{/* {display: none} to hide the file picker but it is still a part of DOM*/}
 			<input

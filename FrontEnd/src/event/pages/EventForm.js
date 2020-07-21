@@ -6,7 +6,7 @@ import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import './EventForm.css';
-import FormData from '../components/FormBuilder';
+import FormBuilder from '../components/FormBuilder';
 
 const EventForm = () => {
 	const clubAuth = useContext(ClubAuthContext);
@@ -40,7 +40,7 @@ const EventForm = () => {
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
 			{isLoading && <LoadingSpinner asOverlay />}
-			{!formCreated && <FormData />}
+			{!formCreated && <FormBuilder />}
 		</React.Fragment>
 	);
 };

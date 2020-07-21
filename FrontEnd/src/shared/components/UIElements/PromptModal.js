@@ -4,7 +4,6 @@ import Modal from './Modal';
 import Button from '../FormElements/Button';
 
 const PromptModal = props => {
-	console.log('in modal');
 	return (
 		<Modal
 			{...props}

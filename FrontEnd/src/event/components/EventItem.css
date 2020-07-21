@@ -7,8 +7,17 @@
 }
 
 .event-item__content h2 {
+	font-size: larger;
 	margin-left: 1rem;
 	margin-right: 0.5rem;
+}
+
+.event-item__content h3 {
+	font-size: medium;
+}
+
+.event-item__content h4 {
+	font-size: small;
 }
 
 .event-item__info {
