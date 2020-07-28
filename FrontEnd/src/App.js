@@ -103,7 +103,7 @@ const App = () => {
 			</Switch>
 		);
 	} else {
-		// club not logged in
+		// club and user not logged in
 		routes = (
 			<Switch>
 				<Route path="/" exact>

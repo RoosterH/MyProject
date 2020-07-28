@@ -37,8 +37,10 @@ router.post('/login', clubsController.loginClub);
 // need to be authenticated
 router.use(checkAuth);
 
+// club logout
 router.post('/logout', clubsController.logoutClub);
 
+// update club info
 router.patch(
 	'/:cid',
 	[
@@ -49,6 +51,17 @@ router.patch(
 	clubsController.updateClub
 );
 
+// delete club
 router.delete('/:cid', clubsController.deleteClub);
+
+// /api/clubs/form/:eid
+router.get('/form/:eid', clubsController.getEventForm);
+
+// create event entry form
+router.post(
+	'/form/:eid',
+	[check('task_data').not().isEmpty()],
+	clubsController.createEventForm
+);
 
 module.exports = router;

@@ -26,65 +26,7 @@ const ClubAuth = () => {
 		clearError
 	} = useHttpClient();
 
-	/**
-	 * Flow of usage of useForm:
-	 * setFormData: set initial form value
-	 * inputHandler: will be called in each <Input /> and <ImageUpload />. When there is an input
-	 * 				 useForm will get the input value and put it in the formState
-	 * formState: return value that contains all the form field values (including the other fields)
-	 */
-	const [formState, inputHandler, setFormData] = useForm(
-		{
-			email: {
-				value: '',
-				isValid: false
-			},
-			password: {
-				value: '',
-				isValid: false
-			}
-		},
-		false
-	);
-
 	const switchModeHandler = () => {
-		if (isLoginMode) {
-			// login mode
-			setFormData(
-				{
-					// when we switch from signup to login
-					// name, image, and passwordValidation are gone
-					// so we need to set their value to '' and isValid: false
-					...formState.inputs,
-					name: {
-						value: '',
-						isValid: false
-					},
-					image: {
-						value: null,
-						isValid: false
-					},
-					passwordValidation: {
-						value: '',
-						isValid: false
-					}
-				},
-				false
-			);
-		} else {
-			// signup mode
-			setFormData(
-				{
-					...formState.inputs,
-					// set to undefined because the value was set in login mode
-					name: undefined,
-					image: undefined,
-					passwordValidation: undefined
-				},
-				formState.inputs.email.isValid &&
-					formState.inputs.password.isValid
-			);
-		}
 		setIsLoginMode(prevMode => !prevMode);
 	};
 
@@ -132,24 +74,21 @@ const ClubAuth = () => {
 			//club signup
 			try {
 				// matching passwords
-				if (
-					formState.inputs.password.value !==
-					formState.inputs.passwordValidation.value
-				) {
+				if (values.password !== values.passwordValidation) {
 					setPasswordError('Passwords do not match!');
 					throw new Error('password no match');
 				}
 
 				// FormData() is a browser API. We can append text or binary data to FormData
 				const formData = new FormData();
-				formData.append('email', formState.inputs.email.value);
-				formData.append('name', formState.inputs.name.value);
-				formData.append('password', formState.inputs.password.value);
+				formData.append('email', values.email);
+				formData.append('name', values.name);
+				formData.append('password', values.password);
 				formData.append(
 					'passwordValidation',
-					formState.inputs.passwordValidation.value
+					values.passwordValidation
 				);
-				formData.append('image', formState.inputs.image.value);
+				formData.append('image', values.image);
 
 				// the request needs to match backend clubsRoutes /signup route
 				// With fromData, headers cannot be {Content-Type: application/json}
@@ -195,7 +134,6 @@ const ClubAuth = () => {
 		let error;
 		if (!value) {
 			error = 'Password is required.';
-			console.log('validateName = ', error);
 		}
 		return error;
 	};

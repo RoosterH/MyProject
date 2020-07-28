@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 
 const HttpError = require('../models/httpError');
 const Club = require('../models/club');
+const Event = require('../models/event');
 
 const config = require('../Config/Config');
 const JWT_PRIVATE_KEY = config.JWT_PRIVATE_KEY;
@@ -250,7 +251,6 @@ const updateClub = async (req, res, next) => {
 
 	const { name, password, email } = req.body;
 	const clubId = req.userData.clubId; // use clubId from token instead of getting it from url to avoid hacking
-	console.log('clubId = ', clubId);
 	let club;
 	try {
 		club = await Club.findById(clubId);
@@ -375,6 +375,130 @@ const logoutClub = (req, res) => {
 	res.status(200).json({ message: `You are logged out.` });
 };
 
+const getEventForm = async (req, res, next) => {
+	// get event from db, if not available return initial db
+	const eventId = req.params.eid;
+	let event;
+	try {
+		event = await Event.findById(eventId);
+	} catch (err) {
+		// this error is displayed if the request to the DB had some issues
+		const error = new HttpError(
+			'Get EventForm for club process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'Could not complete retrieving event form with provided event id',
+			404
+		);
+		return next(error);
+	}
+
+	let formData = event.formData;
+	if (!formData) {
+		res.status(200).json({ task_data: '[]' });
+	}
+
+	res.status(200).json(formData);
+};
+
+const createEventForm = async (req, res, next) => {
+	// we need to get the form task_data from body, task_data is FormBuilder data
+	const { task_data } = req.body;
+
+	// Validate clubId exists. If not, sends back an error
+	let club;
+	let clubId = req.userData.clubId;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Create event form process failed during club validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'Create event form process faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
+	// Validate eventId belonging to the found club. If not, sends back an error
+	let event;
+	const eventId = req.params.eid;
+	// if club does not own the eventId, return error
+	if (!club.events.includes(eventId)) {
+		// Not found in clubs events
+		const error = new HttpError(
+			'Create event form process faied with unauthorized request.  Your club does not own this event.',
+			404
+		);
+		return next(error);
+	}
+
+	event = await Event.findById(eventId);
+	if (!event) {
+		const error = new HttpError(
+			'Create event form process internal failure',
+			404
+		);
+		return next(error);
+	}
+
+	/***** This commented out section is trying to figure out what to add or to delete *****/
+	// let newField;
+	// New field added
+	// if (task_data.length > event.formData.length) {
+	// 	console.log('inside adding');
+	// 	task_data.map(field => {
+	// 		console.log('f = ', field);
+	// 		if (
+	// 			!event.formData ||
+	// 			event.formData.length === 0 ||
+	// 			!event.formData.includes(field)
+	// 		) {
+	// 			newField = field;
+	// 			readyToSave = true;
+	// 		}
+	// 	});
+	// } else {
+	// 	console.log('new task lenght = ', task_data.length);
+	// 	console.log('formData lenght = ', event.formData.length);
+	// }
+	// event.formData.push(newField);
+
+	// overwrite the old formData, reason for it because to figure out what to/not to replace
+	// is tidious and error prone, we are not going to have a form with a lot of data so hopefully
+	// it won't impact performace by much.
+	if (task_data.length > 0) {
+		event.formData = [];
+		task_data.map(data => event.formData.push(data));
+	}
+
+	try {
+		await event.save();
+		res
+			.status(200)
+			.json({ event: event.toObject({ getters: true }) });
+	} catch (err) {
+		console.log('err = ', err);
+		const error = new HttpError(
+			'Create event form connecting with DB failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+};
+
 exports.getAllClubs = getAllClubs;
 exports.getClubById = getClubById;
 exports.createClub = createClub;
@@ -382,3 +506,5 @@ exports.loginClub = loginClub;
 exports.updateClub = updateClub;
 exports.deleteClub = deleteClub;
 exports.logoutClub = logoutClub;
+exports.getEventForm = getEventForm;
+exports.createEventForm = createEventForm;

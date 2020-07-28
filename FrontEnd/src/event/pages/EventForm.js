@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
@@ -17,6 +17,7 @@ const EventForm = () => {
 		clearError
 	} = useHttpClient();
 
+	let eventId = useParams().id;
 	const history = useHistory();
 	// To make sure page refreshing reloads correctly, we need to add path="/events/new" to
 	// (!clubToken) route. To avoid hacking, we want to re-direct to auth page, if club not logging
@@ -34,13 +35,11 @@ const EventForm = () => {
 	let formCreated = false;
 
 	// const eventSubmitHandler = async event => {};
-
-	// the purpose of onInput is to enter back the value after been validated to NewEvent
 	return (
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
 			{isLoading && <LoadingSpinner asOverlay />}
-			{!formCreated && <FormBuilder />}
+			{!formCreated && <FormBuilder id={eventId} />}
 		</React.Fragment>
 	);
 };

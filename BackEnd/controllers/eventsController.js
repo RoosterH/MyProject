@@ -114,9 +114,7 @@ const getEventsByClubId = async (req, res, next) => {
 
 // GET /api/events/club/:cid
 const getEventsByUserId = async (req, res, next) => {
-	console.log(' in events by userId');
 	const uId = req.params.uid;
-	console.log('uId = ', uId);
 	let user;
 	try {
 		user = await Club.findById(uId).populate({
@@ -266,7 +264,9 @@ const createEvent = async (req, res, next) => {
 		clubId: clubId,
 		clubName: club.name,
 		image: imagePath,
-		courseMap: courseMapPath
+		courseMap: courseMapPath,
+		published: false,
+		formData: []
 	});
 
 	try {
@@ -322,6 +322,27 @@ const updateEvent = async (req, res, next) => {
 		);
 	}
 
+	// Validate clubId exists. If not, sends back an error
+	let club;
+	let clubId = req.userData.clubId;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update event process failed during club validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'Update event failure. Unauthorized request.',
+			404
+		);
+		return next(error);
+	}
+
 	// we allow all the data to be updated except id, clubId, and type
 	const {
 		name,
@@ -375,7 +396,6 @@ const updateEvent = async (req, res, next) => {
 			});
 		}
 	}
-	console.log('courseMap = ', req.files.courseMap);
 	if (req.files.courseMap) {
 		courseMapPath = req.files.courseMap[0].path;
 		if (event.courseMap) {
@@ -482,6 +502,12 @@ const deleteEvent = async (req, res, next) => {
 	res.status(200).json({ message: `Event: ${event.name} deleted` });
 };
 
+// /api/events/form/:eid
+const getEventForm = (req, res) => {
+	eventId = req.params.eid;
+	console.log('In get EventForm = ', eventId);
+};
+
 // export a pointer of the function
 exports.getAllEvents = getAllEvents;
 exports.getEventById = getEventById;
@@ -491,3 +517,4 @@ exports.getEventsByDate = getEventsByDate;
 exports.createEvent = createEvent;
 exports.updateEvent = updateEvent;
 exports.deleteEvent = deleteEvent;
+exports.getEventForm = getEventForm;

@@ -166,7 +166,6 @@ const NewEvent = setFieldValue => {
 	}
 
 	const removeEventFormData = () => {
-		console.log('I am here');
 		localStorage.removeItem('eventFormData');
 		history.push(`/events/club/${clubAuth.clubId}`);
 	};
@@ -198,7 +197,8 @@ const NewEvent = setFieldValue => {
 	const saveHandler = (values, actions) => {};
 	const history = useHistory();
 	const submitHandler = (values, actions) => {
-		const fetchEvents = async () => {
+		console.log('values = ', values);
+		const createNewEvent = async () => {
 			const formData = new FormData();
 			formData.append('name', values.name);
 			formData.append('type', values.type);
@@ -220,9 +220,9 @@ const NewEvent = setFieldValue => {
 				}
 			);
 			// Redirect the club to a diffrent page
-			history.push(`/events/club/${clubAuth.clubId}`);
+			// history.push(`/events/club/${clubAuth.clubId}`);
 		};
-		fetchEvents();
+		createNewEvent();
 	};
 
 	/***** Form Validation Section  *****/
@@ -238,7 +238,6 @@ const NewEvent = setFieldValue => {
 		let error;
 		if (!value) {
 			error = 'Event Name is required.';
-			console.log('validateName = ', error);
 		}
 		return error;
 	};
@@ -246,7 +245,6 @@ const NewEvent = setFieldValue => {
 		let error;
 		if (!value) {
 			error = 'Event Venue is required.';
-			console.log('validateName = ', error);
 		}
 		return error;
 	};
@@ -254,7 +252,6 @@ const NewEvent = setFieldValue => {
 		let error;
 		if (!value) {
 			error = 'Event Address is required.';
-			console.log('validateName = ', error);
 		}
 		return error;
 	};
@@ -266,7 +263,6 @@ const NewEvent = setFieldValue => {
 			moment(endDate).format('YYYY-MM-DD')
 		) {
 			error = 'Start Date must be earlier than End Date.';
-			console.log('validateName = ', error);
 			setStartDateValid(false);
 		} else {
 			setStartDateValid(true);
@@ -281,7 +277,6 @@ const NewEvent = setFieldValue => {
 			moment(startDate).format('YYYY-MM-DD')
 		) {
 			error = 'End Date must be later than Start Date.';
-			console.log('validateName = ', error);
 			setEndDateValid(false);
 		} else {
 			setEndDateValid(true);
@@ -292,7 +287,6 @@ const NewEvent = setFieldValue => {
 		let error;
 		if (!value) {
 			error = 'Event Description is required.';
-			console.log('validateName = ', error);
 		}
 		return error;
 	};
@@ -300,7 +294,6 @@ const NewEvent = setFieldValue => {
 		let error;
 		if (!value) {
 			error = 'Event Instruction is required.';
-			console.log('validateName = ', error);
 		}
 		return error;
 	};
@@ -430,7 +423,6 @@ const NewEvent = setFieldValue => {
 							name="startDate"
 							type="date"
 							validate={validateStartDate}
-							placeholder={tomorrow}
 							min={tomorrow}
 							max="2030-12-31"
 							className="event-form__startdate"
@@ -449,7 +441,6 @@ const NewEvent = setFieldValue => {
 							name="endDate"
 							type="date"
 							validate={validateEndDate}
-							placeholder={tomorrow}
 							min={tomorrow}
 							max="2030-12-31"
 							className="event-form__enddate"
@@ -595,9 +586,7 @@ const NewEvent = setFieldValue => {
 							setFieldValue={setFieldValue}
 							errorMessage={errors.image ? errors.image : ''}
 							onBlur={event => {
-								// handleBlur(event);
-								console.log('img = ', event.target.value);
-								// updateEventFormData('image', event.target.value);
+								handleBlur(event);
 								if (event.target.value) {
 									setImageOK(false);
 								} else {
@@ -639,7 +628,7 @@ const NewEvent = setFieldValue => {
 								validateField('name');
 								validateField('venue');
 								if (isValid) {
-									submitHandler();
+									submitHandler(values);
 								}
 							}}>
 							Save
