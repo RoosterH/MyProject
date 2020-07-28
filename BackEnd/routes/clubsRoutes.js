@@ -58,10 +58,6 @@ router.delete('/:cid', clubsController.deleteClub);
 router.get('/form/:eid', clubsController.getEventForm);
 
 // create event entry form
-router.post(
-	'/form/:eid',
-	[check('task_data').not().isEmpty()],
-	clubsController.createEventForm
-);
+router.post('/form/:eid', clubsController.createEventForm);
 
 module.exports = router;
