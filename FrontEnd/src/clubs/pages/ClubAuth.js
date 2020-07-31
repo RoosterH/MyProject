@@ -8,7 +8,6 @@ import ImageUploader from '../../shared/components/FormElements/ImageUploader';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
 import { ClubAuthContext } from '../../shared/context/auth-context';
-import { useForm } from '../../shared/hooks/form-hook';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 
 import './ClubAuth.css';
@@ -147,13 +146,6 @@ const ClubAuth = () => {
 		}
 		return error;
 	};
-
-	// set Card title
-	const cardTitle = isLoginMode
-		? isSignUp
-			? 'Account created. Please login'
-			: 'Club Login'
-		: 'Club Signup';
 
 	const clubAuthForm = values => (
 		<div className="auth-div">

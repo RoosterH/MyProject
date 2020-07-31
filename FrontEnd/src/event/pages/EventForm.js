@@ -10,13 +10,6 @@ import FormBuilder from '../components/FormBuilder';
 
 const EventForm = () => {
 	const clubAuth = useContext(ClubAuthContext);
-	const {
-		isLoading,
-		error,
-		sendRequest,
-		clearError
-	} = useHttpClient();
-
 	let eventId = useParams().id;
 	const history = useHistory();
 	// To make sure page refreshing reloads correctly, we need to add path="/events/new" to
@@ -31,17 +24,7 @@ const EventForm = () => {
 		history.push('/clubs/auth');
 	}
 
-	// ask form from Backend, if it's available retrieve it.
-	let formCreated = false;
-
-	// const eventSubmitHandler = async event => {};
-	return (
-		<React.Fragment>
-			<ErrorModal error={error} onClear={clearError} />
-			{isLoading && <LoadingSpinner asOverlay />}
-			{!formCreated && <FormBuilder id={eventId} />}
-		</React.Fragment>
-	);
+	return <FormBuilder id={eventId} />;
 };
 
 export default EventForm;

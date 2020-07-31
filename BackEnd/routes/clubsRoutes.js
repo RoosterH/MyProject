@@ -60,4 +60,6 @@ router.get('/form/:eid', clubsController.getEventForm);
 // create event entry form
 router.post('/form/:eid', clubsController.createEventForm);
 
+router.patch('/publish/:eid', clubsController.publishEvent);
+
 module.exports = router;

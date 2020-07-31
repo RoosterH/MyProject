@@ -6,14 +6,15 @@ import {
 	Redirect
 } from 'react-router-dom';
 
+import LoadingSpinner from './shared/components/UIElements/LoadingSpinner';
 import MainNavigation from './shared/components/Navigation/MainNavigation';
 import {
 	ClubAuthContext,
 	UserAuthContext
 } from './shared/context/auth-context';
-import LoadingSpinner from './shared/components/UIElements/LoadingSpinner';
 import { useClubAuth } from './shared/hooks/clubAuth-hook';
 import { useUserAuth } from './shared/hooks/userAuth-hook';
+
 // split codes using lazy load
 // instead of import everything at once, we will split them so codes will built into
 // different chunks. When users open up the app, it will only load whatever it's needed.

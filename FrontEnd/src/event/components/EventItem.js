@@ -36,7 +36,8 @@ const EventItem = props => {
 
 	// modals for courseMap and delete confirmation
 	const [showMap, setShowMap] = useState(false);
-	const [showConfirmModal, setShowConfirmModal] = useState(false);
+	const [showDELModal, setShowDELModal] = useState(false);
+	const [showPublishModal, setShowSubmitModal] = useState(false);
 
 	// event handlers
 	const openMapHandler = () => {
@@ -44,16 +45,22 @@ const EventItem = props => {
 		setShowMap(true);
 	};
 	const closeMapHandler = () => setShowMap(false);
-	const showDeleteWarningHandler = () => {
-		setShowConfirmModal(true);
+	const openDELHandler = () => {
+		setShowDELModal(true);
 	};
-	const cancelDeleteHandler = () => {
-		setShowConfirmModal(false);
+	const closeDELHandler = () => {
+		setShowDELModal(false);
+	};
+	const openPublishHandler = () => {
+		setShowSubmitModal(true);
+	};
+	const closePublishHandler = () => {
+		setShowSubmitModal(false);
 	};
 
 	const history = useHistory();
 	const confirmDeleteHandler = async () => {
-		setShowConfirmModal(false);
+		setShowDELModal(false);
 		try {
 			await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
@@ -63,6 +70,25 @@ const EventItem = props => {
 				{
 					// No need for content-type since body is null,
 					// adding JWT to header for authentication
+					Authorization: 'Bearer ' + clubAuth.clubToken
+				}
+			);
+			history.push(`/events/club/${clubAuth.clubId}`);
+		} catch (err) {}
+	};
+
+	const confirmPublishHandler = async () => {
+		setShowDELModal(false);
+		try {
+			await sendRequest(
+				process.env.REACT_APP_BACKEND_URL +
+					`/clubs/publish/${props.event.id}`,
+				'PATCH',
+				JSON.stringify({ published: true }),
+				{
+					// No need for content-type since body is null,
+					// adding JWT to header for authentication
+					'Content-Type': 'application/json',
 					Authorization: 'Bearer ' + clubAuth.clubToken
 				}
 			);
@@ -143,14 +169,14 @@ const EventItem = props => {
 			{/* Modal to show delet confirmation message */}
 			<Modal
 				className="modal-delete"
-				show={showConfirmModal}
+				show={showDELModal}
 				contentClass="event-item__modal-delete"
-				onCancel={cancelDeleteHandler}
+				onCancel={closeDELHandler}
 				header="Warning!"
 				footerClass="event-item__modal-actions"
 				footer={
 					<React.Fragment>
-						<Button inverse onClick={cancelDeleteHandler}>
+						<Button inverse onClick={closeDELHandler}>
 							CANCEL
 						</Button>
 						<Button danger onClick={confirmDeleteHandler}>
@@ -161,6 +187,27 @@ const EventItem = props => {
 				<p className="modal__content">
 					Do you really want to delete {props.event.name}? It cannot
 					be recovered after deletion.
+				</p>
+			</Modal>
+			<Modal
+				className="modal-delete"
+				show={showPublishModal}
+				contentClass="event-item__modal-delete"
+				onCancel={closePublishHandler}
+				header="Warning!"
+				footerClass="event-item__modal-actions"
+				footer={
+					<React.Fragment>
+						<Button inverse onClick={closePublishHandler}>
+							No
+						</Button>
+						<Button danger onClick={confirmPublishHandler}>
+							YES
+						</Button>
+					</React.Fragment>
+				}>
+				<p className="modal__content">
+					Are you ready to submit {props.event.name}? Please confirm.
 				</p>
 			</Modal>
 			<Card className="event-item__content">
@@ -209,11 +256,20 @@ const EventItem = props => {
 							</Button>
 						)}
 					{clubAuth.clubId === props.event.clubId &&
-						formStartDate > validFormModDate && (
+						!props.event.published &&
+						formStartDate > validFormModDate &&
+						props.event.formData && (
 							<Button
-								danger
-								onClick={showDeleteWarningHandler}
+								disabele={props.event.published}
+								onClick={openPublishHandler}
 								size="small">
+								PUBLISH
+							</Button>
+						)}
+					{clubAuth.clubId === props.event.clubId &&
+						!props.event.published &&
+						formStartDate > validFormModDate && (
+							<Button danger onClick={openDELHandler} size="small">
 								DELETE
 							</Button>
 						)}

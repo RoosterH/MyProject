@@ -78,3 +78,22 @@
 	font-size: 1.5rem;
 	font-family: 'Montserrat', sans-serif;
 }
+
+.button--entryform--save {
+	display: inline-block;
+	width: 5rem;
+	font-size: 1rem;
+	font-family: 'Montserrat', sans-serif;
+	background: #e5001b;
+	color: #fff;
+	border-color: #e5001b;
+	margin-left: 2rem;
+}
+
+.button--entryform--back {
+	display: inline-block;
+	width: 5rem;
+	font-size: 1rem;
+	font-family: 'Montserrat', sans-serif;
+	color: #000;
+}

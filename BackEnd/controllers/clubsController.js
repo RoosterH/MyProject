@@ -408,8 +408,9 @@ const getEventForm = async (req, res, next) => {
 };
 
 const createEventForm = async (req, res, next) => {
+	console.log('createEventForm');
 	// we need to get the form task_data from body, task_data is FormBuilder data
-	const { task_data } = req.body;
+	const { task_data, published } = req.body;
 
 	// Validate clubId exists. If not, sends back an error
 	let club;
@@ -482,7 +483,72 @@ const createEventForm = async (req, res, next) => {
 	if (task_data.length > 0) {
 		event.formData = [];
 		task_data.map(data => event.formData.push(data));
+		event.published = published;
 	}
+
+	try {
+		await event.save();
+		res
+			.status(200)
+			.json({ event: event.toObject({ getters: true }) });
+	} catch (err) {
+		console.log('err = ', err);
+		const error = new HttpError(
+			'Create event form connecting with DB failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+};
+
+const publishEvent = async (req, res, next) => {
+	// we need to get the form task_data from body, task_data is FormBuilder data
+	const { published } = req.body;
+
+	// Validate clubId exists. If not, sends back an error
+	let club;
+	let clubId = req.userData.clubId;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Create event form process failed during club validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'Create event form process faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
+	// Validate eventId belonging to the found club. If not, sends back an error
+	let event;
+	const eventId = req.params.eid;
+	// if club does not own the eventId, return error
+	if (!club.events.includes(eventId)) {
+		// Not found in clubs events
+		const error = new HttpError(
+			'Create event form process faied with unauthorized request.  Your club does not own this event.',
+			404
+		);
+		return next(error);
+	}
+
+	event = await Event.findById(eventId);
+	if (!event) {
+		const error = new HttpError(
+			'Create event form process internal failure',
+			404
+		);
+		return next(error);
+	}
+
+	event.published = published;
 
 	try {
 		await event.save();
@@ -508,3 +574,4 @@ exports.deleteClub = deleteClub;
 exports.logoutClub = logoutClub;
 exports.getEventForm = getEventForm;
 exports.createEventForm = createEventForm;
+exports.publishEvent = publishEvent;

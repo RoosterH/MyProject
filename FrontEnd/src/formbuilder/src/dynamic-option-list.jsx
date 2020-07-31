@@ -2,31 +2,17 @@
  * <DynamicOptionList />
  */
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import ID from './UUID';
 
 export default class DynamicOptionList extends React.Component {
-	_isMounted = false;
 	constructor(props) {
 		super(props);
-		const [dirtyState, setDirtyState] = useState(false);
-		useEffect(() => {
-			if (this._isMounted) {
-				this.state = {
-					element: this.props.element,
-					data: this.props.data,
-					dirty: dirtyState
-				};
-			}
-		}, [dirtyState, this._isMounted]);
-	}
-
-	componentDidMount() {
-		this._isMounted = true;
-	}
-
-	componentWillUnmount() {
-		this._isMounted = false;
+		this.state = {
+			element: this.props.element,
+			data: this.props.data,
+			dirty: false
+		};
 	}
 
 	_setValue(text) {
@@ -103,7 +89,7 @@ export default class DynamicOptionList extends React.Component {
 
 	render() {
 		if (this.state.dirty) {
-			this.setDirtyState(true);
+			this.state.element.dirty = true;
 		}
 		return (
 			<div className="dynamic-option-list">

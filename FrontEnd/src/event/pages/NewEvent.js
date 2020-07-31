@@ -194,7 +194,6 @@ const NewEvent = setFieldValue => {
 		);
 	};
 
-	const saveHandler = (values, actions) => {};
 	const history = useHistory();
 	const submitHandler = (values, actions) => {
 		console.log('values = ', values);

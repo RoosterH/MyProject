@@ -13,7 +13,6 @@ const store = new Store({
 		// data: dropped form element
 		// saveData: true/false
 		setData(context, data, saveData) {
-			console.log('store setData = ', data);
 			// when an element been dropped. This function will be called
 			context.commit('setData', data);
 			if (saveData) this.save(data);

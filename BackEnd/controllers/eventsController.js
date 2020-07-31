@@ -467,6 +467,14 @@ const deleteEvent = async (req, res, next) => {
 		return next(error);
 	}
 
+	if (event.published) {
+		const error = new HttpError(
+			'Unauthorized operation. This event has been published!!!',
+			401
+		);
+		return next(error);
+	}
+
 	try {
 		// we need to use populate('clubId') above to be able to modify data in
 		// event.clubId.events
