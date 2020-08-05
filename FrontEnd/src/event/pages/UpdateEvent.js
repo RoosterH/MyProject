@@ -1,6 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
-import moment from 'moment';
+import { Field, Form, Formik } from 'formik';
 import { useParams, useHistory } from 'react-router-dom';
+import moment from 'moment';
+import NavigationPrompt from 'react-router-navigation-prompt';
+import * as Yup from 'yup';
 
 import { EventAuth } from '../../shared/hooks/eventAuth-hook';
 import Button from '../../shared/components/FormElements/Button';
@@ -8,18 +11,13 @@ import Card from '../../shared/components/UIElements/Card';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
-import ImageUpload from '../../shared/components/FormElements/ImageUpload';
-import Input from '../../shared/components/FormElements/Input';
+import ImageUploader from '../../shared/components/FormElements/ImageUploader';
 import Modal from '../../shared/components/UIElements/Modal';
-import { useForm } from '../../shared/hooks/form-hook';
+import PromptModal from '../../shared/components/UIElements/PromptModal';
 import { useHttpClient } from '../../shared/hooks/http-hook';
-import {
-	VALIDATOR_REQUIRE,
-	VALIDATOR_MINLENGTH,
-	VALIDATOR_STARTDATE
-} from '../../shared/util/validators';
 import './EventForm.css';
 import '../../event/components/EventItem.css';
+import { eventTypes } from '../../event/components/EventTypes';
 
 const UpdateEvent = () => {
 	const {
@@ -28,14 +26,11 @@ const UpdateEvent = () => {
 		sendRequest,
 		clearError
 	} = useHttpClient();
-	// initial state undefined
-	const [loadedEvent, setLoadedEvent] = useState();
 
 	const clubAuth = useContext(ClubAuthContext);
-
 	// authentication check
 	EventAuth();
-
+	let tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
 	const history = useHistory();
 
 	// Modal section
@@ -65,12 +60,13 @@ const UpdateEvent = () => {
 		showImage && closeImageHandler();
 	};
 
+	const [loadedEvent, setLoadedEvent] = useState();
 	// get eventId from url
 	let eventId = useParams().id;
 
 	if (!eventId || eventId === 'error') {
 		// possibly page refresh, look for localStorage
-		const storageData = JSON.parse(localStorage.getItem('eventData'));
+		const storageData = JSON.parse(localStorage.getItem('eventID'));
 		if (storageData && storageData.eventId) {
 			eventId = storageData.eventId;
 		}
@@ -79,51 +75,29 @@ const UpdateEvent = () => {
 		// we will remove it when the form gets submitted
 		// @todo remove data when user leaves this page
 		localStorage.setItem(
-			'eventData',
+			'eventID',
 			JSON.stringify({
 				eventId: eventId
 			})
 		);
 	}
 
-	// Form section
-	const [formState, inputHandler, setFormData] = useForm(
-		{
-			name: {
-				value: '',
-				isValid: false
-			},
-			image: {
-				value: '',
-				isValid: false
-			},
-			startDate: {
-				value: '',
-				isValid: false
-			},
-			endDate: {
-				value: '',
-				isValid: false
-			},
-			venue: {
-				value: '',
-				isValid: false
-			},
-			address: {
-				value: '',
-				isValid: false
-			},
-			description: {
-				value: '',
-				isValid: false
-			},
-			courseMap: {
-				value: '',
-				isValid: false
-			}
-		},
-		false
-	);
+	const [OKLeavePage, setOKLeavePage] = useState(true);
+	let initialValues = {
+		name: '',
+		type: 'Autocross',
+		image: '',
+		startDate: { tomorrow },
+		endDate: { tomorrow },
+		regStartDate: { tomorrow },
+		regEndDate: { tomorrow },
+		venue: '',
+		address: '',
+		description: '',
+		instruction: '',
+		courseMap: '',
+		isSaveButton: false
+	};
 
 	// GET event from server
 	useEffect(() => {
@@ -132,70 +106,165 @@ const UpdateEvent = () => {
 				const responseData = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`
 				);
+				if (!responseData.event) {
+					throw new Error(
+						'Request error, previous event data was not found'
+					);
+				}
 				setLoadedEvent(responseData.event);
-
-				// setFormData is to set data in memory.  In the case, there are fields that
-				// are not allowed to be udpated, we will use memeory data to update.
-				// <Input initialValue={ }> is for GUI
-				setFormData(
-					{
-						name: {
-							value: responseData.event.name,
-							isValid: true
-						},
-						image: {
-							value: responseData.event.image,
-							isValid: true
-						},
-						startDate: {
-							value: responseData.event.startDate,
-							isValid: true
-						},
-						endDate: {
-							value: responseData.event.endDate,
-							isValid: true
-						},
-						venue: {
-							value: responseData.event.venue,
-							isValid: true
-						},
-						address: {
-							value: responseData.event.address,
-							isValid: true
-						},
-						description: {
-							value: responseData.event.description,
-							isValid: true
-						},
-						courseMap: {
-							value: responseData.event.courseMap,
-							isValid: true
-						}
-					},
-					true
-				);
 			} catch (err) {}
 		};
 		fetchEvent();
-	}, [sendRequest, eventId, setFormData]);
+	}, [sendRequest, eventId]);
 
-	const eventUpdateSubmitHandler = async event => {
-		event.preventDefault();
-		localStorage.removeItem('eventData');
+	/***** Form Validation Section  *****/
+	// 1. Field level: Field validate={validateName}. This validates when Field is onBlur
+	// 2. startDate, endDate, regStartDate, and regEndDate use Yup beacuse Yup.ref makes it convenient to check peer fields
+	// 3. Save: useState to set validation function to no check.  After submitting, change state
+	// back to original validation function.  Save is only not allowed if image/course map sizes are
+	// too large.
+	// 4. Submit: use Formik isValid to enable the button.  Formik submission will validate everything.
+
+	const dateValidationSchema = Yup.object().shape({
+		startDate: Yup.date()
+			.min(tomorrow, 'Start date must be no later than end date')
+			.max(
+				Yup.ref('endDate'),
+				'Start date must be no later than end date'
+			)
+			.required(),
+		endDate: Yup.date()
+			.min(
+				Yup.ref('startDate'),
+				'End date cannot be earlier than start date'
+			)
+			.max('2021-12-31')
+			.required(),
+		regStartDate: Yup.date()
+			.min(
+				tomorrow,
+				'Registration start date cannot be earlier than tomorrow'
+			)
+			.max(
+				Yup.ref('startDate'),
+				'Registration start date must be earlier than event start date'
+			)
+			.required(),
+		regEndDate: Yup.date()
+			.min(
+				Yup.ref('regStartDate'),
+				'Registration end date cannot be earlier than registration start date'
+			)
+			.max(
+				Yup.ref('startDate'),
+				'Registration end date cannot be later than event start date'
+			)
+			.required()
+	});
+
+	const [validateName, setValidateName] = useState(() => value => {
+		let error;
+		if (!value) {
+			error = 'Event Name is required.';
+		}
+		return error;
+	});
+
+	const [validateVenue, setValidateVenue] = useState(() => value => {
+		let error;
+		if (!value) {
+			error = 'Event Venue is required.';
+		}
+		return error;
+	});
+
+	const [validateAddress, setValidateAddress] = useState(
+		() => value => {
+			let error;
+			if (!value) {
+				error = 'Event Address is required.';
+			}
+			return error;
+		}
+	);
+
+	const [validateDescription, setValidateDescription] = useState(
+		() => value => {
+			let error;
+			if (!value) {
+				error = 'Event Description is required.';
+			}
+			return error;
+		}
+	);
+
+	const [validateInstruction, setValidateInstruction] = useState(
+		() => value => {
+			let error;
+			if (!value) {
+				error = 'Event Instruction is required.';
+			}
+			return error;
+		}
+	);
+
+	// To save, we only care about image sizes
+	const [imageValid, setImageValid] = useState(true);
+	const [courseMapValid, setCourseMapValid] = useState(true);
+
+	// Save button is an intermediate stage so we will allow Save as long as
+	// image size and course map size are valid
+	const [saveButtonIsValid, setSaveButtonIsValid] = useState(true);
+	useEffect(() => {
+		let valid = imageValid && courseMapValid;
+		setSaveButtonIsValid(valid);
+	}, [imageValid, courseMapValid]);
+
+	const [validateImageSize, setValidateImageSize] = useState(
+		() => value => {
+			let error;
+			if (value && value.size > 1500000) {
+				error = 'File size needs to be smaller than 1.5MB';
+				setImageValid(false);
+			} else {
+				setImageValid(true);
+			}
+			return error;
+		}
+	);
+
+	const [validateCourseMapSize, setValidateCourseMapSize] = useState(
+		() => value => {
+			let error;
+			if (value && value.size > 1500000) {
+				error = 'File size needs to be smaller than 1.5MB';
+				setCourseMapValid(false);
+			} else {
+				setCourseMapValid(true);
+			}
+			return error;
+		}
+	);
+	/***** End of Form Validation *****/
+
+	const submitHandler = async values => {
+		console.log('in submit');
 		try {
 			const formData = new FormData();
-			formData.append('name', formState.inputs.name.value);
-			formData.append('startDate', formState.inputs.startDate.value);
-			formData.append('endDate', formState.inputs.endDate.value);
-			formData.append('venue', formState.inputs.venue.value);
-			formData.append('address', formState.inputs.address.value);
-			formData.append(
-				'description',
-				formState.inputs.description.value
-			);
-			formData.append('image', formState.inputs.image.value);
-			formData.append('courseMap', formState.inputs.courseMap.value);
-			await sendRequest(
+			formData.append('name', values.name);
+			formData.append('type', values.type);
+			formData.append('startDate', values.startDate); //format 2020-08-01
+			formData.append('endDate', values.endDate);
+			formData.append('regStartDate', values.regStartDate);
+			formData.append('regEndDate', values.regEndDate);
+			formData.append('venue', values.venue);
+			formData.append('address', values.address);
+			formData.append('description', values.description);
+			formData.append('instruction', values.instruction);
+			formData.append('image', values.image);
+			formData.append('courseMap', values.courseMap);
+
+			const responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`,
 				'PATCH',
 				formData,
@@ -204,11 +273,47 @@ const UpdateEvent = () => {
 					Authorization: 'Bearer ' + clubAuth.clubToken
 				}
 			);
-
-			history.push('/events/' + eventId);
+			// Need to set the loadedEvent so we will set initialValues again.
+			// Without it, form will keep the old initial values.
+			setLoadedEvent(responseData.event);
+			setOKLeavePage(true);
+			// history.push('/events/' + eventId);
 		} catch (err) {}
 	};
 
+	const saveHandler = async values => {
+		console.log('in saveHandler');
+		try {
+			const formData = new FormData();
+			formData.append('name', values.name);
+			formData.append('type', values.type);
+			formData.append('startDate', values.startDate); //format 2020-08-01
+			formData.append('endDate', values.endDate);
+			formData.append('regStartDate', values.regStartDate);
+			formData.append('regEndDate', values.regEndDate);
+			formData.append('venue', values.venue);
+			formData.append('address', values.address);
+			formData.append('description', values.description);
+			formData.append('instruction', values.instruction);
+			formData.append('image', values.image);
+			formData.append('courseMap', values.courseMap);
+
+			const responseData = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`,
+				'PATCH',
+				formData,
+				{
+					// adding JWT to header for authentication, JWT contains clubId
+					Authorization: 'Bearer ' + clubAuth.clubToken
+				}
+			);
+			// Need to set the loadedEvent so we will set initialValues again.
+			// Without it, form will keep the old initial values.
+			setLoadedEvent(responseData.event);
+			setOKLeavePage(true);
+			// history.push('/events/' + eventId);
+		} catch (err) {}
+	};
 	if (isLoading) {
 		return (
 			<div className="center">
@@ -224,20 +329,431 @@ const UpdateEvent = () => {
 				</Card>
 			</div>
 		);
+	} else if (loadedEvent) {
+		initialValues = {
+			name: loadedEvent.name,
+			type: loadedEvent.type,
+			image: loadedEvent.image,
+			startDate: moment(loadedEvent.startDate).format('YYYY-MM-DD'),
+			endDate: moment(loadedEvent.endDate).format('YYYY-MM-DD'),
+			regStartDate: moment(loadedEvent.regStartDate).format(
+				'YYYY-MM-DD'
+			),
+			regEndDate: moment(loadedEvent.regEndDate).format('YYYY-MM-DD'),
+			venue: loadedEvent.venue,
+			address: loadedEvent.address,
+			description: loadedEvent.description,
+			instruction: loadedEvent.instruction,
+			courseMap: loadedEvent.courseMap,
+			isSaveButton: false
+		};
 	}
 
-	// React uses YYYY-MM-DD for date
-	if (loadedEvent) {
-		var startDate = moment(loadedEvent.startDate).format(
-			'YYYY-MM-DD'
-		);
-		var endDate = moment(loadedEvent.endDate).format('YYYY-MM-DD');
-	}
-
-	const removeEventData = () => {
-		localStorage.removeItem('eventData');
-		history.push(`/events/${loadedEvent.id}`);
+	const backHandler = () => {
+		history.push(`/events/${eventId}`);
 	};
+
+	const eventForm = () => (
+		<div className="event-form">
+			<div className="event-form-header">
+				<h4>Please enter event information</h4>
+				<hr className="event-form__hr" />
+			</div>
+			<Formik
+				enableReinitialize={true}
+				initialValues={initialValues}
+				validationSchema={dateValidationSchema}
+				onSubmit={(values, actions) => {
+					values.isSaveButton
+						? saveHandler(values)
+						: submitHandler(values);
+					setTimeout(() => {
+						alert('Your form has been saved');
+						actions.setSubmitting(false);
+					}, 500);
+
+					if (!actions.isSubmitting) {
+						setValidateName(() => value => {
+							console.log('ValidateName');
+							let error;
+							if (!value) {
+								error = 'Event Name is required.';
+							}
+							return error;
+						});
+						setValidateVenue(() => value => {
+							console.log('ValidateVenue');
+							let error;
+							if (!value) {
+								error = 'Event Venue is required.';
+							}
+							return error;
+						});
+						setValidateAddress(() => value => {
+							console.log('ValidateAddress');
+							let error;
+							if (!value) {
+								error = 'Event Address is required.';
+							}
+							return error;
+						});
+						setValidateDescription(() => value => {
+							console.log('ValidateDescription');
+							let error;
+							if (!value) {
+								error = 'Event description is required.';
+							}
+							return error;
+						});
+						setValidateInstruction(() => value => {
+							console.log('ValidateInstruction');
+							let error;
+							if (!value) {
+								error = 'Event instruction is required.';
+							}
+							return error;
+						});
+					}
+				}}>
+				{({
+					errors,
+					handleBlur,
+					handleChange,
+					handleSubmit,
+					isSubmitting,
+					isValid,
+					setFieldValue,
+					touched,
+					values
+				}) => (
+					<Form className="event-form-container">
+						<label htmlFor="name" className="event-form__label">
+							Event Name
+						</label>
+						<Field
+							id="name"
+							name="name"
+							type="text"
+							className="event-form__field"
+							validate={validateName}
+							onChange={handleChange}
+							value={values.name}
+							onBlur={event => {
+								// without handBlure(event) touched.name will not work
+								// To take advantage of touched, we can pass formik.handleBlur to each input's onBlur prop.
+								handleBlur(event);
+								setOKLeavePage(false);
+							}}
+						/>
+						{touched.name && errors.name && (
+							<div className="event-form__field-error">
+								{errors.name}
+							</div>
+						)}
+						<label htmlFor="eventType" className="event-form__label">
+							Event Type
+						</label>
+						<Field
+							id="type"
+							name="type"
+							as="select"
+							className="event-form__eventtype"
+							onChange={handleChange}
+							value={values.type}
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+							}}>
+							<option value="Event Type" disabled>
+								Event Type
+							</option>
+							{eventTypes.map(option => {
+								let res = option.split(':');
+								return (
+									<option name={res[0]} key={res[0]}>
+										{res[1]}
+									</option>
+								);
+							})}
+						</Field>
+						<label
+							htmlFor="startDate"
+							className="event-form__label_startdate">
+							Start Date
+						</label>
+						<label
+							htmlFor="endDate"
+							className="event-form__label_enddate">
+							End Date
+						</label>
+						<br />
+						<Field
+							id="startDate"
+							name="startDate"
+							type="date"
+							min={tomorrow}
+							max="2030-12-31"
+							className="event-form__startdate"
+							value={values.startDate}
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+							}}
+						/>
+						<Field
+							id="endDate"
+							name="endDate"
+							type="date"
+							min={tomorrow}
+							max="2030-12-31"
+							className="event-form__enddate"
+							value={values.endDate}
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+							}}
+						/>
+						{touched.startDate && errors.startDate && (
+							<div className="event-form__field-error-startDate">
+								{errors.startDate}
+							</div>
+						)}
+						{touched.endDate && errors.endDate && (
+							<div className="event-form__field-error-endDate">
+								{errors.endDate}
+							</div>
+						)}
+						<label
+							htmlFor="regStartDate"
+							className="event-form__label_startdate">
+							Registration Start Date
+						</label>
+						<label
+							htmlFor="regEndDate"
+							className="event-form__label_enddate">
+							Registration End Date
+						</label>
+						<br />
+						<Field
+							id="regStartDate"
+							name="regStartDate"
+							type="date"
+							min={tomorrow}
+							max="2030-12-31"
+							className="event-form__startdate"
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+							}}
+						/>
+						<Field
+							id="regEndDate"
+							name="regEndDate"
+							type="date"
+							min={tomorrow}
+							max="2030-12-31"
+							className="event-form__enddate"
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+							}}
+						/>
+						{touched.regStartDate && errors.regStartDate && (
+							<div className="event-form__field-error-startDate">
+								{errors.regStartDate}
+							</div>
+						)}
+						{touched.regEndDate && errors.regEndDate && (
+							<div className="event-form__field-error-endDate">
+								{errors.regEndDate}
+							</div>
+						)}
+						<label htmlFor="venue" className="event-form__label">
+							Venue
+						</label>
+						<Field
+							id="venue"
+							name="venue"
+							type="text"
+							className="event-form__field"
+							validate={validateVenue}
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+							}}
+						/>
+						{touched.venue && errors.venue && (
+							<div className="event-form__field-error">
+								{errors.venue}
+							</div>
+						)}
+						<label htmlFor="address" className="event-form__label">
+							Venue Address
+						</label>
+						<Field
+							id="address"
+							name="address"
+							type="text"
+							placeholder="Crows Landing, CA"
+							className="event-form__field"
+							validate={validateAddress}
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+							}}
+						/>
+						{touched.address && errors.address && (
+							<div className="event-form__field-error">
+								{errors.address}
+							</div>
+						)}
+						<label
+							htmlFor="description"
+							className="event-form__label">
+							Event Description
+						</label>
+						<Field
+							id="decription"
+							name="description"
+							as="textarea"
+							rows="15"
+							cols="50"
+							placeholder="Please enter event description"
+							className="event-form__field-textarea"
+							validate={validateDescription}
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+							}}
+						/>
+						{touched.description && errors.description && (
+							<div className="event-form__field-error">
+								{errors.description}
+							</div>
+						)}
+						<label
+							htmlFor="instruction"
+							className="event-form__label">
+							Event Instruction
+						</label>
+						<Field
+							id="instruction"
+							name="instruction"
+							as="textarea"
+							rows="15"
+							cols="50"
+							placeholder="Please enter event instruction"
+							className="event-form__field-textarea"
+							validate={validateInstruction}
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+							}}
+						/>
+						{touched.instruction && errors.instruction && (
+							<div className="event-form__field-error">
+								{errors.instruction}
+							</div>
+						)}
+						<Field
+							id="image"
+							name="image"
+							title="image"
+							component={ImageUploader}
+							validate={validateImageSize}
+							setFieldValue={setFieldValue}
+							errorMessage={errors.image ? errors.image : ''}
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+							}}
+							labelStyle="event-form__label"
+							inputStyle="event-form__field-select"
+							previewStyle="image-upload__preview"
+							errorStyle="event-form__field-error"
+						/>
+						<Field
+							id="courseMap"
+							name="courseMap"
+							title="courseMap"
+							component={ImageUploader}
+							validate={validateCourseMapSize}
+							setFieldValue={setFieldValue}
+							errorMessage={errors.courseMap ? errors.courseMap : ''}
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+							}}
+							labelStyle="event-form__label"
+							inputStyle="event-form__field-select"
+							previewStyle="image-upload__preview"
+							errorStyle="event-form__field-error"
+						/>
+						<Button
+							type="submit"
+							size="medium"
+							margin-left="1.5rem"
+							disabled={isSubmitting || !saveButtonIsValid}
+							onClick={e => {
+								setFieldValue('isSaveButton', true, false);
+								setValidateName(() => () => {});
+								setValidateVenue(() => () => {});
+								setValidateAddress(() => () => {});
+								setValidateDescription(() => () => {});
+								setValidateInstruction(() => () => {});
+							}}>
+							Save
+						</Button>
+						<Button
+							type="submit"
+							size="medium"
+							margin-left="1.5rem"
+							disabled={isSubmitting || !isValid}
+							onClick={e => {
+								setFieldValue('isSaveButton', false, false);
+							}}>
+							Submit
+						</Button>
+						<Button type="button" size="medium" onClick={backHandler}>
+							Back
+						</Button>
+						<NavigationPrompt
+							afterConfirm={() => {
+								localStorage.removeItem('eventID');
+							}}
+							// Confirm navigation if going to a path that does not start with current path:
+							when={(crntLocation, nextLocation) =>
+								!OKLeavePage &&
+								(!nextLocation ||
+									!nextLocation.pathname.startsWith(
+										crntLocation.pathname
+									))
+							}>
+							{({ isActive, onCancel, onConfirm }) => {
+								if (isActive) {
+									return (
+										<PromptModal
+											onCancel={onCancel}
+											onConfirm={onConfirm}
+											contentClass="event-item__modal-content"
+											footerClass="event-item__modal-actions"
+											error="You sure want to leave? Unsaved data will be lost.">
+											{/* render props.children */}
+										</PromptModal>
+									);
+								}
+								return (
+									<div>
+										This is probably an anti-pattern but ya know...
+									</div>
+								);
+							}}
+						</NavigationPrompt>
+					</Form>
+				)}
+			</Formik>
+		</div>
+	);
 
 	return (
 		<React.Fragment>
@@ -283,116 +799,7 @@ const UpdateEvent = () => {
 				</Modal>
 			)}
 
-			{!isLoading && loadedEvent && (
-				<form
-					className="event-form"
-					onSubmit={eventUpdateSubmitHandler}>
-					<Input
-						id="name"
-						element="input"
-						type="text"
-						label="Name"
-						validators={[VALIDATOR_REQUIRE()]}
-						errorText="Please enter a valid name"
-						onInput={inputHandler}
-						initialValue={loadedEvent.name}
-						initialValid={true}
-					/>
-					<ImageUpload
-						id="image"
-						label="Event image"
-						previewUrl={
-							process.env.REACT_APP_ASSET_URL +
-							`/${loadedEvent.image}`
-						}
-						buttonText="Click to select a new image"
-						onInput={inputHandler}
-						errorText="To replace, please select a new event image."
-						onClick={openImageHandler}
-					/>
-					<div>
-						<h4>Event Type: {loadedEvent.type}</h4>
-					</div>
-					<Input
-						id="startDate"
-						element="input"
-						type="date"
-						min={moment().add(1, 'days').format('YYYY-MM-DD')}
-						label="StartDate"
-						validators={[VALIDATOR_STARTDATE()]}
-						errorText="Please enter a valid date"
-						onInput={inputHandler}
-						initialValue={startDate}
-						initialValid={true}
-					/>
-					<Input
-						id="endDate"
-						element="input"
-						type="date"
-						min={moment().add(1, 'days').format('YYYY-MM-DD')}
-						label="EndDate"
-						validators={[VALIDATOR_REQUIRE()]}
-						errorText="Please enter a valid date"
-						onInput={inputHandler}
-						initialValue={endDate}
-						initialValid={true}
-					/>
-					<Input
-						id="venue"
-						element="input"
-						type="text"
-						label="Venue"
-						validators={[VALIDATOR_REQUIRE()]}
-						errorText="Please enter a valid venue"
-						onInput={inputHandler}
-						initialValue={loadedEvent.venue}
-						initialValid={true}
-					/>
-					<Input
-						id="address"
-						element="input"
-						type="text"
-						label="Address"
-						validators={[VALIDATOR_MINLENGTH(10)]}
-						errorText="Please enter a valid address"
-						onInput={inputHandler}
-						initialValue={loadedEvent.address}
-						initialValid={true}
-					/>
-					<Input
-						id="description"
-						element="textarea"
-						label="Description"
-						validators={[VALIDATOR_MINLENGTH(10)]}
-						errorText="Please enter a valid description (min. 10 characters)"
-						onInput={inputHandler}
-						initialValue={loadedEvent.description}
-						initialValid={true}
-					/>
-					<ImageUpload
-						id="courseMap"
-						label="Course Map - Optional"
-						previewUrl={
-							loadedEvent.courseMap
-								? process.env.REACT_APP_ASSET_URL +
-								  `/${loadedEvent.courseMap}`
-								: ''
-						}
-						buttonText="Click to slect a new course map"
-						onInput={inputHandler}
-						errorText="To replace, please select a new course map."
-						onClick={openCourseHandler}
-					/>
-					<Button
-						type="submit"
-						disabled={!formState.isValid}
-						children="Update Event"></Button>
-					<Button
-						// to={`/events/${loadedEvent.id}`}
-						onClick={removeEventData}
-						children="Cancel"></Button>
-				</form>
-			)}
+			{!isLoading && loadedEvent && eventForm()}
 		</React.Fragment>
 	);
 };

@@ -117,7 +117,6 @@ const EventItem = props => {
 		'YYYY-MM-DD'
 	);
 	let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');
-
 	const eventImageElement =
 		props.event.image !== '' ? (
 			<div className="event-item__image">
@@ -131,6 +130,59 @@ const EventItem = props => {
 		) : (
 			<div></div>
 		);
+
+	console.log('diff = ', moment().add(7, 'days') - moment());
+	const RegistrationMSG = () => {
+		if (moment(props.event.regStartDate) > moment()) {
+			// registration not yet started
+			return (
+				<h4 className="alert alert-primary" role="alert">
+					Registration starts on{' '}
+					{moment(props.event.regStartDate).format('YYYY/MM/DD')} 12
+					am PCT.
+				</h4>
+			);
+		} else {
+			if (moment(props.event.regEndDate) - moment() > 604800000) {
+				// registration closed in more than 7 days
+				return (
+					<h4 className="alert alert-success" role="alert">
+						Registration ends on{' '}
+						{moment(props.event.regEndDate).format('YYYY/MM/DD')}{' '}
+						11:59 pm
+					</h4>
+				);
+			} else if (
+				moment(props.event.regEndDate) - moment() >
+				259200000
+			) {
+				// registration closed in more than 3 days
+				return (
+					<h4 className="alert alert-warning" role="alert">
+						Registration ends on{' '}
+						{moment(props.event.regEndDate).format('YYYY/MM/DD')}{' '}
+						11:59 pm
+					</h4>
+				);
+			} else if (moment(props.event.regEndDate) - moment() > 0) {
+				// registration closed in less than 3 days
+				return (
+					<h4 className="alert alert-danger" role="alert">
+						Registration ends on{' '}
+						{moment(props.event.regEndDate).format('YYYY/MM/DD')}{' '}
+						11:59 pm
+					</h4>
+				);
+			} else {
+				// registration closed
+				return (
+					<h4 className="alert alert-dark" role="alert">
+						Registration is now closed
+					</h4>
+				);
+			}
+		}
+	};
 
 	return (
 		// React.Frgment connect multiple components
@@ -213,19 +265,32 @@ const EventItem = props => {
 			<Card className="event-item__content">
 				{isLoading && <LoadingSpinner asOverlay />}
 				<div>
-					<h2>{props.event.name}</h2>
+					<h2 className="alert alert-secondary" role="alert">
+						{props.event.name}
+					</h2>
 				</div>
 				{eventImageElement}
 				<div className="event-item__info">
+					<RegistrationMSG />
 					<h3>
 						{startDate} — {endDate}
 					</h3>
 					<h3>{props.event.venue}</h3>
 					<h4>{props.event.address}</h4>
-					<Button size="small" onClick={() => openMapHandler()}>
+					<Button
+						size="small-googlemap"
+						onClick={() => openMapHandler()}>
 						Google Map
 					</Button>
-					<p>{props.event.description}</p>
+					<div className="event-item__description">
+						<p>{props.event.description}</p>
+					</div>
+					<div className="event-item__description">
+						<h3>Special Instructions:</h3>
+						<p className="event-item__description">
+							{props.event.instruction}
+						</p>
+					</div>
 				</div>
 				<div className="event-item__coursemap">
 					{props.event.courseMap && (

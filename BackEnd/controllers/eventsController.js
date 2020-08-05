@@ -203,9 +203,12 @@ const createEvent = async (req, res, next) => {
 		type,
 		startDate,
 		endDate,
+		regStartDate,
+		regEndDate,
 		venue,
 		address,
-		description
+		description,
+		instruction
 	} = req.body;
 
 	// Validate clubId exists. If not, sends back an error
@@ -230,13 +233,13 @@ const createEvent = async (req, res, next) => {
 		);
 		return next(error);
 	}
-	if (dupEvent) {
-		const error = new HttpError(
-			'Create event failure. Event name was taken. Please use a different name.',
-			400
-		);
-		return next(error);
-	}
+	// if (dupEvent) {
+	// 	const error = new HttpError(
+	// 		'Create event failure. Event name was taken. Please use a different name.',
+	// 		400
+	// 	);
+	// 	return next(error);
+	// }
 
 	let coordinate;
 	try {
@@ -255,10 +258,13 @@ const createEvent = async (req, res, next) => {
 		type,
 		startDate: startDate,
 		endDate: endDate,
+		regStartDate,
+		regEndDate,
 		venue,
 		address,
 		coordinate,
 		description,
+		instruction,
 		// instead of getting the clubId from body that could be faked, we will get
 		// it from the token
 		clubId: clubId,
@@ -343,14 +349,18 @@ const updateEvent = async (req, res, next) => {
 		return next(error);
 	}
 
-	// we allow all the data to be updated except id, clubId, and type
+	// we allow all the data to be updated except id, and clubId
 	const {
 		name,
+		type,
 		startDate,
 		endDate,
+		regStartDate,
+		regEndDate,
 		venue,
 		address,
-		description
+		description,
+		instruction
 	} = req.body;
 
 	// for async error handling, we need to use try catch if the function returns error
@@ -407,15 +417,20 @@ const updateEvent = async (req, res, next) => {
 
 	// update event info
 	event.name = name;
+	event.type = type;
 	event.startDate = moment(startDate);
 	event.endDate = moment(endDate);
+	event.regStartDate = moment(regStartDate);
+	event.regEndDate = moment(regEndDate);
 	if (imagePath) {
 		event.image = imagePath;
 	}
 	event.venue = venue;
 	event.address = address;
 	event.description = description;
+	event.instruction = instruction;
 	event.coordinate = coordinate;
+	event.published = false;
 	if (courseMapPath) {
 		event.courseMap = courseMapPath;
 	}

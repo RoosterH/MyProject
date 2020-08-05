@@ -14,7 +14,7 @@ import { useHttpClient } from '../../shared/hooks/http-hook';
 import './FormBuilder.css';
 import '../../shared/scss/application.scss';
 
-const CustomForm = props => {
+const FormBuilder = props => {
 	const clubAuth = useContext(ClubAuthContext);
 	const {
 		isLoading,
@@ -25,13 +25,39 @@ const CustomForm = props => {
 	const history = useHistory();
 	const [published, setPublished] = useState(true);
 	const [unsavedData, setUnsavedData] = useState();
+
 	let eventId = props.id;
+	if (!eventId || eventId === 'error') {
+		// possibly page refresh, look for localStorage
+		const storageData = JSON.parse(localStorage.getItem('eventData'));
+		if (storageData && storageData.eventId) {
+			eventId = storageData.eventId;
+			// Correct URL on browser, without it URL is showing '/events/form/error'
+			// history.pushState(state object, title, url) 'title' is ignored in most browsers
+			// https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
+			window.history.pushState(
+				props.state,
+				'',
+				`/events/form/${eventId}`
+			);
+		}
+	} else {
+		// set eventId to localStorage for potential page refresh
+		// we will remove it when the form gets submitted
+		// @todo remove data when user leaves this page
+		localStorage.setItem(
+			'eventData',
+			JSON.stringify({
+				eventId: eventId
+			})
+		);
+	}
+
 	const saveHandler = async () => {
 		// var eventEntryForm = localStorage.getItem('eventEntryForm');
 
 		// If no existing data, create an array; otherwise retrieve it
 		// eventEntryForm = eventEntryForm ? JSON.parse(unsavedData) : {};
-		console.log('unsavedData = ', unsavedData.task_data);
 		try {
 			const responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + `/clubs/form/${eventId}`,
@@ -132,8 +158,9 @@ const CustomForm = props => {
 		return setData();
 	};
 
-	const eraseEventEntryForm = () => {
+	const cleanUp = () => {
 		setUnsavedData(undefined);
+		localStorage.removeItem('eventData');
 	};
 
 	return (
@@ -166,10 +193,14 @@ const CustomForm = props => {
 			</div>
 			<NavigationPrompt
 				afterConfirm={() => {
-					eraseEventEntryForm();
+					cleanUp();
 				}}
 				// Confirm navigation if going to a path that does not start with current path:
-				when={!!unsavedData}>
+				//when={!!unsavedData}
+				when={(crntLocation, nextLocation) =>
+					!nextLocation ||
+					!nextLocation.pathname.startsWith(crntLocation.pathname)
+				}>
 				{({ isActive, onCancel, onConfirm }) => {
 					if (isActive) {
 						return (
@@ -183,13 +214,11 @@ const CustomForm = props => {
 							</PromptModal>
 						);
 					}
-					return (
-						<div>This is probably an anti-pattern but ya know...</div>
-					);
+					return history.push('/error');
 				}}
 			</NavigationPrompt>
 		</React.Fragment>
 	);
 };
 
-export default CustomForm;
+export default FormBuilder;

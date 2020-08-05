@@ -1,8 +1,13 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
+import * as Yup from 'yup';
+
+// import { EditorState } from 'draft-js';
+// import { RichEditorExample } from '../components/RichEditor';
+import 'draft-js/dist/Draft.css';
 
 import { EventAuth } from '../../shared/hooks/eventAuth-hook';
 import Button from '../../shared/components/FormElements/Button';
@@ -35,6 +40,8 @@ const NewEvent = setFieldValue => {
 	const [type, setType] = useState('Autocross');
 	const [startDate, setStartDate] = useState(tomorrow);
 	const [endDate, setEndDate] = useState(tomorrow);
+	const [regStartDate, setRegStartDate] = useState(tomorrow);
+	const [regEndDate, setRegEndDate] = useState(tomorrow);
 	const [venue, setVenue] = useState('');
 	const [address, setAddress] = useState('');
 	const [description, setDescription] = useState('');
@@ -52,43 +59,50 @@ const NewEvent = setFieldValue => {
 	eventFormData = eventFormData ? JSON.parse(eventFormData) : {};
 
 	/***** OKLeavePage Section *****/
-	const [nameOK, setNameOK] = useState(true);
-	const [typeOK, setTypeOK] = useState(true);
-	const [venueOK, setVenueOK] = useState(true);
-	const [addressOK, setAddressOK] = useState(true);
-	const [startDateOK, setStartDateOK] = useState(true);
-	const [endDateOK, setEndDateOK] = useState(true);
-	const [descriptionOK, setDescriptionOK] = useState(true);
-	const [instructionOK, setInstructionOK] = useState(true);
-	const [imageOK, setImageOK] = useState(true);
-	const [courseMapOK, setCourseMapOK] = useState(true);
-	const [OKLeavePage, setOKLeavePage] = useState(true);
+	// const [nameOK, setNameOK] = useState(true);
+	// const [typeOK, setTypeOK] = useState(true);
+	// const [venueOK, setVenueOK] = useState(true);
+	// const [addressOK, setAddressOK] = useState(true);
+	// const [startDateOK, setStartDateOK] = useState(true);
+	// const [endDateOK, setEndDateOK] = useState(true);
+	// const [regStartDateOK, setRegStartDateOK] = useState(true);
+	// const [regEndDateOK, setRegEndDateOK] = useState(true);
+	// const [descriptionOK, setDescriptionOK] = useState(true);
+	// const [instructionOK, setInstructionOK] = useState(true);
+	// const [imageOK, setImageOK] = useState(true);
+	// const [courseMapOK, setCourseMapOK] = useState(true);
+	// OKLeavePage not used in NewEvent for now, remove SAVE button for simplicity due to commplex backend API
+	// const [OKLeavePage, setOKLeavePage] = useState(true);
 
-	useEffect(() => {
-		setOKLeavePage(
-			nameOK &&
-				typeOK &&
-				venueOK &&
-				addressOK &&
-				startDateOK &&
-				endDateOK &&
-				descriptionOK &&
-				instructionOK &&
-				imageOK &&
-				courseMapOK
-		);
-	}, [
-		nameOK,
-		typeOK,
-		venueOK,
-		addressOK,
-		startDateOK,
-		endDateOK,
-		descriptionOK,
-		instructionOK,
-		imageOK,
-		courseMapOK
-	]);
+	// useEffect(() => {
+	// 	setOKLeavePage(
+	// 		nameOK &&
+	// 			typeOK &&
+	// 			venueOK &&
+	// 			addressOK &&
+	// 			startDateOK &&
+	// 			endDateOK &&
+	// 			regStartDateOK &&
+	// 			regEndDateOK &&
+	// 			descriptionOK &&
+	// 			instructionOK &&
+	// 			imageOK &&
+	// 			courseMapOK
+	// 	);
+	// }, [
+	// 	nameOK,
+	// 	typeOK,
+	// 	venueOK,
+	// 	addressOK,
+	// 	startDateOK,
+	// 	endDateOK,
+	// 	regStartDateOK,
+	// 	regEndDateOK,
+	// 	descriptionOK,
+	// 	instructionOK,
+	// 	imageOK,
+	// 	courseMapOK
+	// ]);
 	/***** End of OKLeavePage Section *****/
 
 	// local storage gets the higest priority
@@ -102,43 +116,51 @@ const NewEvent = setFieldValue => {
 		// Form data
 		if (eventFormData.name) {
 			setName(eventFormData.name);
-			setNameOK(false);
+			// setNameOK(false);
 		}
 		if (eventFormData.type) {
 			setType(eventFormData.type);
-			setTypeOK(false);
+			// setTypeOK(false);
 		}
 		if (eventFormData.startDate) {
 			setStartDate(eventFormData.startDate);
-			setStartDateOK(false);
+			// setStartDateOK(false);
 		}
 		if (eventFormData.endDate) {
 			setEndDate(eventFormData.endDate);
-			setEndDateOK(false);
+			// setEndDateOK(false);
+		}
+		if (eventFormData.regStartDate) {
+			setRegStartDate(eventFormData.regStartDate);
+			// setRegStartDateOK(false);
+		}
+		if (eventFormData.regEndDate) {
+			setRegEndDate(eventFormData.regEndDate);
+			// setRegEndDateOK(false);
 		}
 		if (eventFormData.venue) {
 			setVenue(eventFormData.venue);
-			setVenueOK(false);
+			// setVenueOK(false);
 		}
 		if (eventFormData.address) {
 			setAddress(eventFormData.address);
-			setAddressOK(false);
+			// setAddressOK(false);
 		}
 		if (eventFormData.description) {
 			setDescription(eventFormData.description);
-			setDescriptionOK(false);
+			// setDescriptionOK(false);
 		}
 		if (eventFormData.instruction) {
 			setInstruction(eventFormData.instruction);
-			setDescriptionOK(false);
+			// setDescriptionOK(false);
 		}
 		if (eventFormData.image) {
 			//setImage(eventFormData.image);
-			setImageOK(false);
+			// setImageOK(false);
 		}
 		if (eventFormData.courseMap) {
 			// setCourseMap(eventFormData.courseMap);
-			setCourseMapOK(false);
+			// setCourseMapOK(false);
 		}
 	} else if (!initialized) {
 		initialized = true;
@@ -151,6 +173,8 @@ const NewEvent = setFieldValue => {
 		eventFormData['type'] = 'Autocross';
 		eventFormData['startDate'] = tomorrow;
 		eventFormData['endDate'] = tomorrow;
+		eventFormData['regStartDate'] = tomorrow;
+		eventFormData['regEndDate'] = tomorrow;
 		eventFormData['venue'] = '';
 		eventFormData['address'] = '';
 		eventFormData['description'] = '';
@@ -161,8 +185,6 @@ const NewEvent = setFieldValue => {
 			'eventFormData',
 			JSON.stringify(eventFormData)
 		);
-
-		// reach out DB to get saved data
 	}
 
 	const removeEventFormData = () => {
@@ -171,11 +193,14 @@ const NewEvent = setFieldValue => {
 	};
 
 	const initialValues = {
+		// editorState: new EditorState.createEmpty(),
 		name: name,
 		type: type,
 		image: image,
 		startDate: startDate,
 		endDate: endDate,
+		regStartDate: regStartDate,
+		regEndDate: regEndDate,
 		venue: venue,
 		address: address,
 		description: description,
@@ -195,17 +220,20 @@ const NewEvent = setFieldValue => {
 	};
 
 	const history = useHistory();
-	const submitHandler = (values, actions) => {
+	const submitHandler = async (values, actions) => {
 		console.log('values = ', values);
-		const createNewEvent = async () => {
+		try {
 			const formData = new FormData();
 			formData.append('name', values.name);
 			formData.append('type', values.type);
 			formData.append('startDate', moment(values.startDate));
 			formData.append('endDate', moment(values.endDate));
+			formData.append('regStartDate', moment(values.regStartDate));
+			formData.append('regEndDate', moment(values.regEndDate));
 			formData.append('venue', values.venue);
 			formData.append('address', values.address);
 			formData.append('description', values.description);
+			formData.append('instruction', values.instruction);
 			formData.append('image', values.image);
 			formData.append('courseMap', values.courseMap);
 
@@ -220,102 +248,100 @@ const NewEvent = setFieldValue => {
 			);
 			// Redirect the club to a diffrent page
 			// history.push(`/events/club/${clubAuth.clubId}`);
-		};
-		createNewEvent();
+		} catch (err) {}
 	};
 
 	/***** Form Validation Section  *****/
-	// 3 levels of validation here.
 	// 1. Field level: Field validate={validateName}. This validates when Field is onBlur
-	// 2. Save:  Check against image and courseMap sizes only
-	// 3. Submit: Check against startDate vs. endDate, text/texArea required, image required,
-	//    image/courseMap sizes
-	const [startDateValid, setStartDateValid] = useState(true);
-	const [endDateValid, setEndDateValid] = useState(true);
+	// 2. startDate, endDate, regStartDate, and regEndDate use Yup beacuse Yup.ref makes it convenient to check peer fields
+	// 3. Submit: use Formik isValid to enable the button.  Formik submission will validate everything.
+	const dateValidationSchema = Yup.object().shape({
+		startDate: Yup.date()
+			.min(tomorrow, 'Start date must be no later than end date')
+			.max(
+				Yup.ref('endDate'),
+				'Start date must be no later than end date'
+			)
+			.required(),
+		endDate: Yup.date()
+			.min(
+				Yup.ref('startDate'),
+				'End date cannot be earlier than start date'
+			)
+			.max('2021-12-31')
+			.required(),
+		regStartDate: Yup.date()
+			.min(
+				tomorrow,
+				'Registration start date cannot be earlier than tomorrow'
+			)
+			.max(
+				Yup.ref('startDate'),
+				'Registration start date must be earlier than event start date'
+			)
+			.required(),
+		regEndDate: Yup.date()
+			.min(
+				Yup.ref('regStartDate'),
+				'Registration end date cannot be earlier than registration start date'
+			)
+			.max(
+				Yup.ref('startDate'),
+				'Registration end date cannot be later than event start date'
+			)
+			.required()
+	});
 
-	const validateName = value => {
+	const [validateName, setValidateName] = useState(() => value => {
 		let error;
 		if (!value) {
 			error = 'Event Name is required.';
 		}
 		return error;
-	};
-	const validateVenue = value => {
+	});
+
+	const [validateVenue, setValidateVenue] = useState(() => value => {
 		let error;
 		if (!value) {
 			error = 'Event Venue is required.';
 		}
 		return error;
-	};
-	const validateAddress = value => {
-		let error;
-		if (!value) {
-			error = 'Event Address is required.';
-		}
-		return error;
-	};
-	const validateStartDate = value => {
-		setStartDate(moment(value).format('YYYY-MM-DD'));
-		let error;
-		if (
-			moment(value).format('YYYY-MM-DD') >
-			moment(endDate).format('YYYY-MM-DD')
-		) {
-			error = 'Start Date must be earlier than End Date.';
-			setStartDateValid(false);
-		} else {
-			setStartDateValid(true);
-		}
-		return error;
-	};
-	const validateEndDate = value => {
-		setEndDate(moment(value).format('YYYY-MM-DD'));
-		let error;
-		if (
-			moment(value).format('YYYY-MM-DD') <
-			moment(startDate).format('YYYY-MM-DD')
-		) {
-			error = 'End Date must be later than Start Date.';
-			setEndDateValid(false);
-		} else {
-			setEndDateValid(true);
-		}
-		return error;
-	};
-	const validateDescription = value => {
-		let error;
-		if (!value) {
-			error = 'Event Description is required.';
-		}
-		return error;
-	};
-	const validateInstruction = value => {
-		let error;
-		if (!value) {
-			error = 'Event Instruction is required.';
-		}
-		return error;
-	};
+	});
 
-	// To save, we only care about image sizes
-	const [imageValid, setImageValid] = useState(true);
-	const [courseMapValid, setCourseMapValid] = useState(true);
-	// for Save validation
-	const [saveIsValid, setSaveIsValid] = useState(true);
+	const [validateAddress, setValidateAddress] = useState(
+		() => value => {
+			let error;
+			if (!value) {
+				error = 'Event Address is required.';
+			}
+			return error;
+		}
+	);
 
-	useEffect(() => {
-		let valid =
-			imageValid && courseMapValid && startDateValid && endDateValid;
-		setSaveIsValid(valid);
-	}, [imageValid, courseMapValid, startDateValid, endDateValid]);
+	const [validateDescription, setValidateDescription] = useState(
+		() => value => {
+			let error;
+			if (!value) {
+				error = 'Event Description is required.';
+			}
+			return error;
+		}
+	);
+
+	const [validateInstruction, setValidateInstruction] = useState(
+		() => value => {
+			let error;
+			if (!value) {
+				error = 'Event Instruction is required.';
+			}
+			return error;
+		}
+	);
 
 	const validateImageSize = value => {
 		let error;
 		if (value && value.size > 1500000) {
 			error = 'File size needs to be smaller than 1.5MB';
-			setImageValid(false);
-		} else {
-			setImageValid(true);
 		}
 		return error;
 	};
@@ -324,9 +350,6 @@ const NewEvent = setFieldValue => {
 		let error;
 		if (value && value.size > 1500000) {
 			error = 'File size needs to be smaller than 1.5MB';
-			setCourseMapValid(false);
-		} else {
-			setCourseMapValid(true);
 		}
 		return error;
 	};
@@ -338,18 +361,68 @@ const NewEvent = setFieldValue => {
 				<h4>Please enter event information</h4>
 				<hr className="event-form__hr" />
 			</div>
-			<Formik initialValues={initialValues}>
+			<Formik
+				enableReinitialize={true}
+				initialValues={initialValues}
+				validationSchema={dateValidationSchema}
+				onSubmit={(values, actions) => {
+					submitHandler(values);
+					setTimeout(() => {
+						alert('Your form has been saved');
+						actions.setSubmitting(false);
+					}, 500);
+
+					if (!actions.isSubmitting) {
+						setValidateName(() => value => {
+							console.log('ValidateName');
+							let error;
+							if (!value) {
+								error = 'Event Name is required.';
+							}
+							return error;
+						});
+						setValidateVenue(() => value => {
+							console.log('ValidateVenue');
+							let error;
+							if (!value) {
+								error = 'Event Venue is required.';
+							}
+							return error;
+						});
+						setValidateAddress(() => value => {
+							console.log('ValidateAddress');
+							let error;
+							if (!value) {
+								error = 'Event Address is required.';
+							}
+							return error;
+						});
+						setValidateDescription(() => value => {
+							console.log('ValidateDescription');
+							let error;
+							if (!value) {
+								error = 'Event description is required.';
+							}
+							return error;
+						});
+						setValidateInstruction(() => value => {
+							console.log('ValidateInstruction');
+							let error;
+							if (!value) {
+								error = 'Event instruction is required.';
+							}
+							return error;
+						});
+					}
+				}}>
 				{({
 					values,
 					errors,
 					isSubmitting,
 					isValid,
-					isValidating,
 					setFieldValue,
-					validateField,
 					touched,
-					handleBlur,
-					obBlur
+					handleBlur
 				}) => (
 					<Form className="event-form-container">
 						<label htmlFor="name" className="event-form__label">
@@ -365,11 +438,11 @@ const NewEvent = setFieldValue => {
 								// without handBlure(event) touched.name will not work
 								handleBlur(event);
 								updateEventFormData('name', event.target.value);
-								if (event.target.value) {
-									setNameOK(false);
-								} else {
-									setNameOK(true);
-								}
+								// if (event.target.value) {
+								// 	setNameOK(false);
+								// } else {
+								// 	setNameOK(true);
+								// }
 							}}
 						/>
 						{touched.name && errors.name && (
@@ -388,11 +461,11 @@ const NewEvent = setFieldValue => {
 							onBlur={event => {
 								handleBlur(event);
 								updateEventFormData('type', event.target.value);
-								if (event.target.value !== 'Autocross') {
-									setTypeOK(false);
-								} else {
-									setTypeOK(true);
-								}
+								// if (event.target.value !== 'Autocross') {
+								// 	setTypeOK(false);
+								// } else {
+								// 	setTypeOK(true);
+								// }
 							}}>
 							<option value="Event Type" disabled>
 								Event Type
@@ -421,36 +494,34 @@ const NewEvent = setFieldValue => {
 							id="startDate"
 							name="startDate"
 							type="date"
-							validate={validateStartDate}
 							min={tomorrow}
 							max="2030-12-31"
 							className="event-form__startdate"
 							onBlur={event => {
 								handleBlur(event);
 								updateEventFormData('startDate', event.target.value);
-								if (event.target.value !== tomorrow) {
-									setStartDateOK(false);
-								} else {
-									setStartDateOK(true);
-								}
+								// if (event.target.value !== tomorrow) {
+								// 	setStartDateOK(false);
+								// } else {
+								// 	setStartDateOK(true);
+								// }
 							}}
 						/>
 						<Field
 							id="endDate"
 							name="endDate"
 							type="date"
-							validate={validateEndDate}
 							min={tomorrow}
 							max="2030-12-31"
 							className="event-form__enddate"
 							onBlur={event => {
 								handleBlur(event);
 								updateEventFormData('endDate', event.target.value);
-								if (event.target.value !== tomorrow) {
-									setEndDateOK(false);
-								} else {
-									setEndDateOK(true);
-								}
+								// if (event.target.value !== tomorrow) {
+								// 	setEndDateOK(false);
+								// } else {
+								// 	setEndDateOK(true);
+								// }
 							}}
 						/>
 						{touched.startDate && errors.startDate && (
@@ -461,6 +532,65 @@ const NewEvent = setFieldValue => {
 						{touched.endDate && errors.endDate && (
 							<div className="event-form__field-error-endDate">
 								{errors.endDate}
+							</div>
+						)}
+
+						<label
+							htmlFor="regStartDate"
+							className="event-form__label_startdate">
+							Registration Start Date
+						</label>
+						<label
+							htmlFor="regEndDate"
+							className="event-form__label_enddate">
+							Registration End Date
+						</label>
+						<br />
+						<Field
+							id="regStartDate"
+							name="regStartDate"
+							type="date"
+							min={tomorrow}
+							max="2030-12-31"
+							className="event-form__startdate"
+							onBlur={event => {
+								handleBlur(event);
+								updateEventFormData(
+									'regStartDate',
+									event.target.value
+								);
+								// if (event.target.value !== tomorrow) {
+								// 	setRegStartDateOK(false);
+								// } else {
+								// 	setRegStartDateOK(true);
+								// }
+							}}
+						/>
+						<Field
+							id="regEndDate"
+							name="regEndDate"
+							type="date"
+							min={tomorrow}
+							max="2030-12-31"
+							className="event-form__enddate"
+							onBlur={event => {
+								handleBlur(event);
+								updateEventFormData('regEndDate', event.target.value);
+								// if (event.target.value !== tomorrow) {
+								// 	setRegEndDateOK(false);
+								// } else {
+								// 	setRegEndDateOK(true);
+								// }
+							}}
+						/>
+						{touched.regStartDate && errors.regStartDate && (
+							<div className="event-form__field-error-startDate">
+								{errors.regStartDate}
+							</div>
+						)}
+						{touched.regEndDate && errors.regEndDate && (
+							<div className="event-form__field-error-endDate">
+								{errors.regEndDate}
 							</div>
 						)}
 						<label htmlFor="venue" className="event-form__label">
@@ -475,11 +605,11 @@ const NewEvent = setFieldValue => {
 							onBlur={event => {
 								handleBlur(event);
 								updateEventFormData('venue', event.target.value);
-								if (event.target.value) {
-									setVenueOK(false);
-								} else {
-									setVenueOK(true);
-								}
+								// if (event.target.value) {
+								// 	setVenueOK(false);
+								// } else {
+								// 	setVenueOK(true);
+								// }
 							}}
 						/>
 						{touched.venue && errors.venue && (
@@ -500,11 +630,11 @@ const NewEvent = setFieldValue => {
 							onBlur={event => {
 								handleBlur(event);
 								updateEventFormData('address', event.target.value);
-								if (event.target.value) {
-									setAddressOK(false);
-								} else {
-									setAddressOK(true);
-								}
+								// if (event.target.value) {
+								// 	setAddressOK(false);
+								// } else {
+								// 	setAddressOK(true);
+								// }
 							}}
 						/>
 						{touched.address && errors.address && (
@@ -512,6 +642,28 @@ const NewEvent = setFieldValue => {
 								{errors.address}
 							</div>
 						)}
+						{/* <label
+							htmlFor="description"
+							className="event-form__label">
+							Event Description
+						</label>
+						<RichEditorExample
+							editorState={values.editorState}
+							onChange={setFieldValue}
+							validate={validateDescription}
+							onBlur={event => {
+								handleBlur(event);
+								updateEventFormData(
+									'description',
+									event.target.value
+								);
+								if (event.target.value) {
+									setDescriptionOK(false);
+								} else {
+									setDescriptionOK(true);
+								}
+							}}
+						/> */}
 						<label
 							htmlFor="description"
 							className="event-form__label">
@@ -532,11 +684,11 @@ const NewEvent = setFieldValue => {
 									'description',
 									event.target.value
 								);
-								if (event.target.value) {
-									setDescriptionOK(false);
-								} else {
-									setDescriptionOK(true);
-								}
+								// if (event.target.value) {
+								// 	setDescriptionOK(false);
+								// } else {
+								// 	setDescriptionOK(true);
+								// }
 							}}
 						/>
 						{touched.description && errors.description && (
@@ -564,11 +716,11 @@ const NewEvent = setFieldValue => {
 									'instruction',
 									event.target.value
 								);
-								if (event.target.value) {
-									setInstructionOK(false);
-								} else {
-									setInstructionOK(true);
-								}
+								// if (event.target.value) {
+								// 	setInstructionOK(false);
+								// } else {
+								// 	setInstructionOK(true);
+								// }
 							}}
 						/>
 						{touched.instruction && errors.instruction && (
@@ -586,11 +738,11 @@ const NewEvent = setFieldValue => {
 							errorMessage={errors.image ? errors.image : ''}
 							onBlur={event => {
 								handleBlur(event);
-								if (event.target.value) {
-									setImageOK(false);
-								} else {
-									setImageOK(true);
-								}
+								// if (event.target.value) {
+								// 	setImageOK(false);
+								// } else {
+								// 	setImageOK(true);
+								// }
 							}}
 							labelStyle="event-form__label"
 							inputStyle="event-form__field-select"
@@ -607,11 +759,11 @@ const NewEvent = setFieldValue => {
 							errorMessage={errors.courseMap ? errors.courseMap : ''}
 							onBlur={event => {
 								handleBlur(event);
-								if (event.target.value) {
-									setCourseMapOK(false);
-								} else {
-									setCourseMapOK(true);
-								}
+								// if (event.target.value) {
+								// 	setCourseMapOK(false);
+								// } else {
+								// 	setCourseMapOK(true);
+								// }
 							}}
 							labelStyle="event-form__label"
 							inputStyle="event-form__field-select"
@@ -619,26 +771,9 @@ const NewEvent = setFieldValue => {
 							errorStyle="event-form__field-error"
 						/>
 						<Button
-							type="button"
+							type="submit"
 							size="medium"
 							margin-left="1.5rem"
-							disabled={isSubmitting || !saveIsValid}
-							onClick={() => {
-								validateField('name');
-								validateField('venue');
-								if (isValid) {
-									submitHandler(values);
-								}
-							}}>
-							Save
-						</Button>
-						<Button
-							type="button"
-							size="medium"
-							onClick={() => {
-								validateField('name');
-								validateField('venue');
-							}}
 							disabled={isSubmitting || !isValid}>
 							Submit
 						</Button>
@@ -647,7 +782,14 @@ const NewEvent = setFieldValue => {
 								removeEventFormData();
 							}}
 							// Confirm navigation if going to a path that does not start with current path:
-							when={!OKLeavePage}>
+							when={(crntLocation, nextLocation) =>
+								// always gives the warning, because we want to be able to
+								// clear localStorage after confirm
+								!nextLocation ||
+								!nextLocation.pathname.startsWith(
+									crntLocation.pathname
+								)
+							}>
 							{({ isActive, onCancel, onConfirm }) => {
 								if (isActive) {
 									return (

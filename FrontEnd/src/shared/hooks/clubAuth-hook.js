@@ -17,10 +17,11 @@ export const useClubAuth = () => {
 			setClubToken(ctoken);
 			setClubId(cid);
 			setClubName(cname);
-			// jwt token expires in 1 day
+			// jwt token expires in 7 day
+			// max setTimeout is (2147483647 ms) or 24.855 days.
 			const tokenExp =
 				expirationDate ||
-				moment(moment().add(1, 'days'), moment.ISO_8601);
+				moment(moment().add(7, 'days'), moment.ISO_8601);
 			// updating token expiration date
 			setClubTokenExpDate(tokenExp);
 			// localStorage is a global js API for browser localStorage.

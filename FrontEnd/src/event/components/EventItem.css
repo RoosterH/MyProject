@@ -25,6 +25,11 @@
 	text-align: center;
 }
 
+.event-item__description {
+	white-space: pre-wrap;
+	text-align: left;
+	margin: 1rem 1rem 1rem 1rem;
+}
 .event-item__image {
 	width: 100%;
 	height: 6.5rem;

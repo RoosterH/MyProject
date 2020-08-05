@@ -64,6 +64,15 @@
 	color: #106daf;
 }
 
+.button--small-googlemap {
+	margin: 0 8px 8px 0;
+	padding: 0.2rem 0.2rem 0.2rem 0.2rem;
+	font-size: small;
+	font-family: 'Montserrat', sans-serif;
+	background: transparent;
+	color: #106daf;
+}
+
 .button--medium {
 	padding: 0.2rem 0.2rem 0.2rem 0.2rem;
 	font-size: medium;

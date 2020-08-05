@@ -47,7 +47,7 @@ router.use(checkAuth);
 router.get('/user/:uid', eventsController.getEventsByUserId);
 
 // last valid day to allow for event addition, modification, or deletion
-let validFormModDate = moment().add(1, 'days').format('YYYY,MM,DD');
+let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');
 // only clubs are able to create an event
 router.post(
 	'/',
@@ -64,9 +64,16 @@ router.post(
 		check('endDate').custom(
 			(value, { req }) => value >= req.body.startDate
 		),
+		check('regStartDate').custom(
+			(value, { req }) => value < req.body.startDate
+		),
+		check('regEndDate').custom((value, { req }) => {
+			value < req.body.startDate && value >= reg.body.regStartDate;
+		}),
 		check('venue').not().isEmpty(),
 		check('address').isLength({ min: 10 }),
-		check('description').isLength({ min: 10 }))
+		check('description').isLength({ min: 10 }),
+		check('instruction').isLength({ min: 10 }))
 	],
 	eventsController.createEvent
 );
@@ -79,15 +86,20 @@ router.patch(
 	]),
 	[
 		check('name').isLength({ min: 5 }),
-		check('startDate').custom(
-			value => moment(value).format('YYYY,MM,DD') > validFormModDate
-		),
+		check('type').isLength({ min: 5 }),
+		check('startDate').custom(value => value > validFormModDate),
 		check('endDate').custom(
 			(value, { req }) => value >= req.body.startDate
 		),
+		check('regStartDate').custom(value => value < req.body.startDate),
+		check('regEndDate').custom(
+			(value, { req }) =>
+				value < req.body.startDate && value >= req.body.regStartDate
+		),
 		check('venue').not().isEmpty(),
 		check('address').isLength({ min: 10 }),
-		check('description').isLength({ min: 10 })
+		check('description').isLength({ min: 10 }),
+		check('instruction').isLength({ min: 10 })
 	],
 	eventsController.updateEvent
 );

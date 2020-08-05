@@ -1,9 +1,6 @@
 import React, { useContext } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 
-import ErrorModal from '../../shared/components/UIElements/ErrorModal';
-import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
-import { useHttpClient } from '../../shared/hooks/http-hook';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import './EventForm.css';
 import FormBuilder from '../components/FormBuilder';

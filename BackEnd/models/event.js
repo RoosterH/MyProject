@@ -12,6 +12,8 @@ const eventSchema = new Schema({
 	type: { type: String, required: true },
 	startDate: { type: Date, required: true },
 	endDate: { type: Date, required: true },
+	regStartDate: { type: Date, required: true },
+	regEndDate: { type: Date, required: true },
 	venue: { type: String, required: true },
 	address: { type: String, require: true },
 	coordinate: {
@@ -19,6 +21,7 @@ const eventSchema = new Schema({
 		lng: { type: Number, required: true }
 	},
 	description: { type: String, requried: true },
+	instruction: { type: String, requried: true },
 	courseMap: { type: String },
 	// using ref as foreign key pointing to Club
 	clubId: {
@@ -28,6 +31,7 @@ const eventSchema = new Schema({
 	},
 	clubName: { type: String, required: true },
 	published: { type: Boolean, required: true },
+	// event entry form
 	formData: { type: Array, required: true }
 });
 
