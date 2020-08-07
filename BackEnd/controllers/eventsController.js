@@ -253,13 +253,17 @@ const createEvent = async (req, res, next) => {
 	if (req.files.courseMapPath) {
 		courseMapPath = req.files.courseMap[0].path;
 	}
+
 	const newEvent = new Event({
 		name,
 		type,
-		startDate: startDate,
-		endDate: endDate,
+		startDate,
+		endDate,
 		regStartDate,
-		regEndDate,
+		regEndDate: moment(regEndDate)
+			.add(23, 'h')
+			.add(59, 'm')
+			.add(59, 's'),
 		venue,
 		address,
 		coordinate,

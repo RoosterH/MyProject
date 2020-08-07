@@ -34,6 +34,7 @@ const EventList = props => {
 					startDate={event.startDate}
 					endDate={event.endDate}
 					venue={event.venue}
+					published={props.displayPublished ? event.published : false}
 				/>
 			))}
 		</ul>

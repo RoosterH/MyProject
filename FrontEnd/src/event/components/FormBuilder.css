@@ -11,6 +11,10 @@
 	display: inline-block;
 }
 
+.formbuilder-header h6 {
+	display: inline-block;
+}
+
 .formbuilder-container {
 	position: relative;
 	font-size: 14px;
@@ -26,4 +30,8 @@
 	padding: 30px;
 	max-height: 800px;
 	overflow-y: auto;
+}
+
+.formbuilder-label {
+	font-weight: 400;
 }

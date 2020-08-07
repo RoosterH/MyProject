@@ -18,6 +18,7 @@ const EventsItem = props => {
 							image={props.image}
 							alt={props.name}
 							className="avatar__event"
+							published={props.published}
 						/>
 					</div>
 					<div className="events-item__info">

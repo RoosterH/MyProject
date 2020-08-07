@@ -1,6 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import moment from 'moment';
+import countdown from 'moment-countdown'; // moment plugin for moment().countdown
 
 import Button from '../../shared/components/FormElements/Button';
 import Card from '../../shared/components/UIElements/Card';
@@ -78,7 +79,7 @@ const EventItem = props => {
 	};
 
 	const confirmPublishHandler = async () => {
-		setShowDELModal(false);
+		setShowSubmitModal(false);
 		try {
 			await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
@@ -131,15 +132,46 @@ const EventItem = props => {
 			<div></div>
 		);
 
-	console.log('diff = ', moment().add(7, 'days') - moment());
+	const [regDuration, setRegDuration] = useState('');
+
+	useEffect(() => {
+		let mounted = true;
+		let runSetInterval;
+		const countInterval = () => {
+			// setInterval runs setRegStartDuration every 1 sec
+			if (moment(props.event.regStartDate) > moment()) {
+				runSetInterval = setInterval(
+					() =>
+						setRegDuration(
+							moment().countdown(props.event.regStartDate).toString()
+						),
+					1000
+				);
+			} else if (moment(props.event.regEndDate) > moment()) {
+				runSetInterval = setInterval(
+					() =>
+						setRegDuration(
+							moment().countdown(props.event.regEndDate).toString()
+						),
+					1000
+				);
+			}
+		};
+		if (mounted) {
+			countInterval();
+		}
+		return () => {
+			mounted = false;
+			clearInterval(runSetInterval);
+		};
+	}, [props.event.regStartDate, props.event.regEndDate]);
+
 	const RegistrationMSG = () => {
 		if (moment(props.event.regStartDate) > moment()) {
 			// registration not yet started
 			return (
 				<h4 className="alert alert-primary" role="alert">
-					Registration starts on{' '}
-					{moment(props.event.regStartDate).format('YYYY/MM/DD')} 12
-					am PCT.
+					Registration starts in {regDuration}
 				</h4>
 			);
 		} else {
@@ -147,9 +179,7 @@ const EventItem = props => {
 				// registration closed in more than 7 days
 				return (
 					<h4 className="alert alert-success" role="alert">
-						Registration ends on{' '}
-						{moment(props.event.regEndDate).format('YYYY/MM/DD')}{' '}
-						11:59 pm
+						Registration ends in {regDuration}
 					</h4>
 				);
 			} else if (
@@ -159,18 +189,14 @@ const EventItem = props => {
 				// registration closed in more than 3 days
 				return (
 					<h4 className="alert alert-warning" role="alert">
-						Registration ends on{' '}
-						{moment(props.event.regEndDate).format('YYYY/MM/DD')}{' '}
-						11:59 pm
+						Registration ends in {regDuration}
 					</h4>
 				);
 			} else if (moment(props.event.regEndDate) - moment() > 0) {
 				// registration closed in less than 3 days
 				return (
 					<h4 className="alert alert-danger" role="alert">
-						Registration ends on{' '}
-						{moment(props.event.regEndDate).format('YYYY/MM/DD')}{' '}
-						11:59 pm
+						Registration ends in {regDuration}
 					</h4>
 				);
 			} else {
@@ -265,7 +291,7 @@ const EventItem = props => {
 			<Card className="event-item__content">
 				{isLoading && <LoadingSpinner asOverlay />}
 				<div>
-					<h2 className="alert alert-secondary" role="alert">
+					<h2 className="alert alert-primary" role="alert">
 						{props.event.name}
 					</h2>
 				</div>
@@ -323,7 +349,7 @@ const EventItem = props => {
 					{clubAuth.clubId === props.event.clubId &&
 						!props.event.published &&
 						formStartDate > validFormModDate &&
-						props.event.formData && (
+						props.event.entryFormData && (
 							<Button
 								disabele={props.event.published}
 								onClick={openPublishHandler}

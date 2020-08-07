@@ -32,7 +32,7 @@ const eventSchema = new Schema({
 	clubName: { type: String, required: true },
 	published: { type: Boolean, required: true },
 	// event entry form
-	formData: { type: Array, required: true }
+	entryFormData: { type: Array, required: true }
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

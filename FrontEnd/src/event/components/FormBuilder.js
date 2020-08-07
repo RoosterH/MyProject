@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import Button from '../../shared/components/FormElements/Button';
@@ -25,6 +25,23 @@ const FormBuilder = props => {
 	const history = useHistory();
 	const [published, setPublished] = useState(true);
 	const [unsavedData, setUnsavedData] = useState();
+	const [saveTemplateClicked, setSaveTemplateClicked] = useState(
+		false
+	);
+
+	const toggleSaveTemplate = event => {
+		setSaveTemplateClicked(event.target.checked);
+		// after SAVE to backend, user click checkbox "Save as entry form template", enable SAVE button
+		// if checkbox value is true
+		if (event.target.checked && !unsavedData) {
+			const storageData = JSON.parse(
+				localStorage.getItem('eventEntryForm')
+			);
+			if (storageData) {
+				setUnsavedData(storageData);
+			}
+		}
+	};
 
 	let eventId = props.id;
 	if (!eventId || eventId === 'error') {
@@ -54,7 +71,13 @@ const FormBuilder = props => {
 	}
 
 	const saveHandler = async () => {
-		// var eventEntryForm = localStorage.getItem('eventEntryForm');
+		// use existing localStorage data instead of querying from backend
+		const storageData = JSON.parse(
+			localStorage.getItem('eventEntryForm')
+		);
+		if (storageData) {
+			setUnsavedData(storageData);
+		}
 
 		// If no existing data, create an array; otherwise retrieve it
 		// eventEntryForm = eventEntryForm ? JSON.parse(unsavedData) : {};
@@ -63,7 +86,8 @@ const FormBuilder = props => {
 				process.env.REACT_APP_BACKEND_URL + `/clubs/form/${eventId}`,
 				'POST',
 				JSON.stringify({
-					task_data: unsavedData.task_data,
+					entryFormData: unsavedData,
+					saveTemplate: saveTemplateClicked,
 					published: false
 				}),
 				{
@@ -73,13 +97,17 @@ const FormBuilder = props => {
 				}
 			);
 			if (responseData) {
-				console.log('responseData = ', responseData);
 				setUnsavedData(undefined);
+				// disable SAVE button
+				if (saveTemplateClicked) {
+					// checkboxHandler();
+				}
 			}
 		} catch (err) {
 			console.log('err = ', err);
 		}
 	};
+
 	const backHandler = () => {
 		history.push(`/events/${eventId}`);
 	};
@@ -101,9 +129,8 @@ const FormBuilder = props => {
 	// 	}
 	// ];
 
-	// fn is a callback function that returns responseData to its caller
+	// getResponseData is a callback function that returns responseData to its caller
 	const onLoad = getResponseData => {
-		console.log('I am in onLoad');
 		// GET event form from server
 		let responseData;
 		const fetchForm = async () => {
@@ -118,16 +145,16 @@ const FormBuilder = props => {
 						Authorization: 'Bearer ' + clubAuth.clubToken
 					}
 				);
-				console.log('responseData = ', responseData);
 				if (responseData) {
 					getResponseData(responseData);
 					setPublished(responseData.published);
-					setUnsavedData(responseData.task_data);
+					setUnsavedData(responseData);
+					// save the from data got from backend to localstorage
+					localStorage.setItem(
+						'eventEntryForm',
+						JSON.stringify(responseData)
+					);
 				}
-				// localStorage.setItem(
-				// 	'eventEntryForm',
-				// 	JSON.stringify(responseData)
-				// );
 			} catch (err) {
 				console.log('err = ', err);
 			}
@@ -140,27 +167,23 @@ const FormBuilder = props => {
 	}
 
 	const onPost = data => {
-		console.log('on Post');
 		// we want to save the data to localStorage for the best performance
 		data = fixFormData(data);
 
 		const setData = () => {
 			setUnsavedData(data);
 			setPublished(false);
+			// update the new data to localStorage
+			localStorage.setItem('eventEntryForm', JSON.stringify(data));
 		};
-		// const saveToLocalStorage = async () => {
-		// 	localStorage.setItem(
-		// 		'eventEntryForm',
-		// 		JSON.stringify(data.task_data)
-		// 	);
-		// };
-		// return saveToLocalStorage();
+
 		return setData();
 	};
 
 	const cleanUp = () => {
 		setUnsavedData(undefined);
 		localStorage.removeItem('eventData');
+		localStorage.removeItem('eventEntryForm');
 	};
 
 	return (
@@ -182,6 +205,15 @@ const FormBuilder = props => {
 				<Button size="entryform--back" onClick={backHandler}>
 					Back
 				</Button>
+				<label className="formbuilder-label">
+					<input
+						type="checkbox"
+						id="saveTemplate"
+						name="saveTemplate"
+						onChange={toggleSaveTemplate}
+					/>{' '}
+					&nbsp; Save as entry form template
+				</label>
 			</div>
 			<div className="formbuilder-container">
 				<ReactFormBuilder

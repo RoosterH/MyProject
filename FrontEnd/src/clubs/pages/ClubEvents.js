@@ -41,7 +41,7 @@ const ClubEvents = () => {
 				</div>
 			)}
 			{!isLoading && loadedEvents && (
-				<EventsList items={loadedEvents} />
+				<EventsList items={loadedEvents} displayPublished={true} />
 			)}
 		</React.Fragment>
 	);

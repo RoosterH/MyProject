@@ -97,6 +97,7 @@
 	color: #fff;
 	border-color: #e5001b;
 	margin-left: 2rem;
+	font-weight: 400;
 }
 
 .button--entryform--back {
@@ -105,4 +106,5 @@
 	font-size: 1rem;
 	font-family: 'Montserrat', sans-serif;
 	color: #000;
+	font-weight: 400;
 }

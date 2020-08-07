@@ -23,7 +23,8 @@ const clubSchema = new Schema({
 			required: true,
 			ref: 'Event'
 		}
-	]
+	],
+	entryFormTemplate: { type: Array }
 });
 
 // uniqueValidator is to make sure the email is unique in MongoDB

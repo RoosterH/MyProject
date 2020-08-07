@@ -91,7 +91,9 @@ router.patch(
 		check('endDate').custom(
 			(value, { req }) => value >= req.body.startDate
 		),
-		check('regStartDate').custom(value => value < req.body.startDate),
+		check('regStartDate').custom(
+			(value, { req }) => value < req.body.startDate
+		),
 		check('regEndDate').custom(
 			(value, { req }) =>
 				value < req.body.startDate && value >= req.body.regStartDate

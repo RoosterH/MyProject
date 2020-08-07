@@ -72,7 +72,7 @@ const NewEvent = setFieldValue => {
 	// const [imageOK, setImageOK] = useState(true);
 	// const [courseMapOK, setCourseMapOK] = useState(true);
 	// OKLeavePage not used in NewEvent for now, remove SAVE button for simplicity due to commplex backend API
-	// const [OKLeavePage, setOKLeavePage] = useState(true);
+	const [OKLeavePage, setOKLeavePage] = useState(false);
 
 	// useEffect(() => {
 	// 	setOKLeavePage(
@@ -226,10 +226,22 @@ const NewEvent = setFieldValue => {
 			const formData = new FormData();
 			formData.append('name', values.name);
 			formData.append('type', values.type);
-			formData.append('startDate', moment(values.startDate));
-			formData.append('endDate', moment(values.endDate));
-			formData.append('regStartDate', moment(values.regStartDate));
-			formData.append('regEndDate', moment(values.regEndDate));
+			formData.append(
+				'startDate',
+				moment(values.startDate, moment.ISO_8601)
+			);
+			formData.append(
+				'endDate',
+				moment(values.endDate, moment.ISO_8601)
+			);
+			formData.append(
+				'regStartDate',
+				moment(values.regStartDate, moment.ISO_8601)
+			);
+			formData.append(
+				'regEndDate',
+				moment(values.regEndDate, moment.ISO_8601)
+			);
 			formData.append('venue', values.venue);
 			formData.append('address', values.address);
 			formData.append('description', values.description);
@@ -246,8 +258,9 @@ const NewEvent = setFieldValue => {
 					Authorization: 'Bearer ' + clubAuth.clubToken
 				}
 			);
+			setOKLeavePage(true);
 			// Redirect the club to a diffrent page
-			// history.push(`/events/club/${clubAuth.clubId}`);
+			history.push(`/events/club/${clubAuth.clubId}`);
 		} catch (err) {}
 	};
 
@@ -275,20 +288,30 @@ const NewEvent = setFieldValue => {
 				tomorrow,
 				'Registration start date cannot be earlier than tomorrow'
 			)
-			.max(
-				Yup.ref('startDate'),
-				'Registration start date must be earlier than event start date'
-			)
+			.when('startDate', (startDate, schema) => {
+				let dayBefore = moment(startDate)
+					.add(-1, 'days')
+					.format('YYYY-MM-DD');
+				return schema.max(
+					dayBefore,
+					'Registration start date needs to be earlier event start date'
+				);
+			})
 			.required(),
 		regEndDate: Yup.date()
 			.min(
 				Yup.ref('regStartDate'),
 				'Registration end date cannot be earlier than registration start date'
 			)
-			.max(
-				Yup.ref('startDate'),
-				'Registration end date cannot be later than event start date'
-			)
+			.when('startDate', (startDate, schema) => {
+				let dayBefore = moment(startDate)
+					.add(-1, 'days')
+					.format('YYYY-MM-DD');
+				return schema.max(
+					dayBefore,
+					'Registration end date needs to be earlier event start date'
+				);
+			})
 			.required()
 	});
 
@@ -367,11 +390,6 @@ const NewEvent = setFieldValue => {
 				validationSchema={dateValidationSchema}
 				onSubmit={(values, actions) => {
 					submitHandler(values);
-					setTimeout(() => {
-						alert('Your form has been saved');
-						actions.setSubmitting(false);
-					}, 500);
-
 					if (!actions.isSubmitting) {
 						setValidateName(() => value => {
 							console.log('ValidateName');
@@ -524,17 +542,17 @@ const NewEvent = setFieldValue => {
 								// }
 							}}
 						/>
-						{touched.startDate && errors.startDate && (
-							<div className="event-form__field-error-startDate">
-								{errors.startDate}
-							</div>
-						)}
-						{touched.endDate && errors.endDate && (
-							<div className="event-form__field-error-endDate">
-								{errors.endDate}
-							</div>
-						)}
-
+						{(touched.startDate || touched.endDate) &&
+							(errors.sartDate || errors.endDate) && (
+								<React.Fragment>
+									<div className="event-form__field-error-startDate">
+										{errors.startDate}
+									</div>
+									<div className="event-form__field-error-endDate">
+										{errors.endDate}
+									</div>
+								</React.Fragment>
+							)}
 						<label
 							htmlFor="regStartDate"
 							className="event-form__label_startdate">
@@ -545,7 +563,6 @@ const NewEvent = setFieldValue => {
 							className="event-form__label_enddate">
 							Registration End Date
 						</label>
-						<br />
 						<Field
 							id="regStartDate"
 							name="regStartDate"
@@ -583,16 +600,17 @@ const NewEvent = setFieldValue => {
 								// }
 							}}
 						/>
-						{touched.regStartDate && errors.regStartDate && (
-							<div className="event-form__field-error-startDate">
-								{errors.regStartDate}
-							</div>
-						)}
-						{touched.regEndDate && errors.regEndDate && (
-							<div className="event-form__field-error-endDate">
-								{errors.regEndDate}
-							</div>
-						)}
+						{(touched.regStartDate || touched.regEndDate) &&
+							(errors.regStartDate || errors.regEndDate) && (
+								<React.Fragment>
+									<div className="event-form__field-error-startDate">
+										{errors.regStartDate}
+									</div>
+									<div className="event-form__field-error-endDate">
+										{errors.regEndDate}
+									</div>
+								</React.Fragment>
+							)}
 						<label htmlFor="venue" className="event-form__label">
 							Venue
 						</label>
@@ -783,12 +801,13 @@ const NewEvent = setFieldValue => {
 							}}
 							// Confirm navigation if going to a path that does not start with current path:
 							when={(crntLocation, nextLocation) =>
+								!OKLeavePage &&
 								// always gives the warning, because we want to be able to
 								// clear localStorage after confirm
-								!nextLocation ||
-								!nextLocation.pathname.startsWith(
-									crntLocation.pathname
-								)
+								(!nextLocation ||
+									!nextLocation.pathname.startsWith(
+										crntLocation.pathname
+									))
 							}>
 							{({ isActive, onCancel, onConfirm }) => {
 								if (isActive) {

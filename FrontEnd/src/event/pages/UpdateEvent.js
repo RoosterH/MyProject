@@ -248,7 +248,6 @@ const UpdateEvent = () => {
 	/***** End of Form Validation *****/
 
 	const submitHandler = async values => {
-		console.log('in submit');
 		try {
 			const formData = new FormData();
 			formData.append('name', values.name);
@@ -277,13 +276,14 @@ const UpdateEvent = () => {
 			// Without it, form will keep the old initial values.
 			setLoadedEvent(responseData.event);
 			setOKLeavePage(true);
-			// history.push('/events/' + eventId);
+			history.push('/events/' + eventId);
 		} catch (err) {}
 	};
 
 	const saveHandler = async values => {
 		console.log('in saveHandler');
 		try {
+			console.log('regStartDate  = ', values.regStartDate);
 			const formData = new FormData();
 			formData.append('name', values.name);
 			formData.append('type', values.type);
@@ -311,6 +311,7 @@ const UpdateEvent = () => {
 			// Without it, form will keep the old initial values.
 			setLoadedEvent(responseData.event);
 			setOKLeavePage(true);
+
 			// history.push('/events/' + eventId);
 		} catch (err) {}
 	};
@@ -367,11 +368,12 @@ const UpdateEvent = () => {
 					values.isSaveButton
 						? saveHandler(values)
 						: submitHandler(values);
-					setTimeout(() => {
-						alert('Your form has been saved');
+					if (values.isSaveButton) {
+						alert('Your form is saved.');
+					}
+					if (actions.isSubmitting) {
 						actions.setSubmitting(false);
-					}, 500);
-
+					}
 					if (!actions.isSubmitting) {
 						setValidateName(() => value => {
 							console.log('ValidateName');
@@ -513,16 +515,17 @@ const UpdateEvent = () => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.startDate && errors.startDate && (
-							<div className="event-form__field-error-startDate">
-								{errors.startDate}
-							</div>
-						)}
-						{touched.endDate && errors.endDate && (
-							<div className="event-form__field-error-endDate">
-								{errors.endDate}
-							</div>
-						)}
+						{(touched.startDate || touched.endDate) &&
+							(errors.sartDate || errors.endDate) && (
+								<React.Fragment>
+									<div className="event-form__field-error-startDate">
+										{errors.startDate}
+									</div>
+									<div className="event-form__field-error-endDate">
+										{errors.endDate}
+									</div>
+								</React.Fragment>
+							)}
 						<label
 							htmlFor="regStartDate"
 							className="event-form__label_startdate">
@@ -558,16 +561,17 @@ const UpdateEvent = () => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.regStartDate && errors.regStartDate && (
-							<div className="event-form__field-error-startDate">
-								{errors.regStartDate}
-							</div>
-						)}
-						{touched.regEndDate && errors.regEndDate && (
-							<div className="event-form__field-error-endDate">
-								{errors.regEndDate}
-							</div>
-						)}
+						{(touched.regStartDate || touched.regEndDate) &&
+							(errors.regStartDate || errors.regEndDate) && (
+								<React.Fragment>
+									<div className="event-form__field-error-startDate">
+										{errors.regStartDate}
+									</div>
+									<div className="event-form__field-error-endDate">
+										{errors.regEndDate}
+									</div>
+								</React.Fragment>
+							)}
 						<label htmlFor="venue" className="event-form__label">
 							Venue
 						</label>
@@ -723,11 +727,11 @@ const UpdateEvent = () => {
 							}}
 							// Confirm navigation if going to a path that does not start with current path:
 							when={(crntLocation, nextLocation) =>
-								!OKLeavePage &&
-								(!nextLocation ||
-									!nextLocation.pathname.startsWith(
-										crntLocation.pathname
-									))
+								/*!OKLeavePage && */
+								!nextLocation ||
+								!nextLocation.pathname.startsWith(
+									crntLocation.pathname
+								)
 							}>
 							{({ isActive, onCancel, onConfirm }) => {
 								if (isActive) {
