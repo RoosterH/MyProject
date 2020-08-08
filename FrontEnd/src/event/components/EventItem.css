@@ -16,6 +16,11 @@
 	font-size: medium;
 }
 
+.event-item__content__h3heavy {
+	font-size: medium;
+	font-weight: 800;
+}
+
 .event-item__content h4 {
 	font-size: small;
 }
@@ -44,7 +49,7 @@
 
 .event-item__coursemap {
 	display: block;
-	margin-left: auto;
+	margin-left: 2rem;
 	margin-right: auto;
 }
 

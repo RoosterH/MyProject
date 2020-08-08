@@ -14,6 +14,7 @@ import {
 } from './shared/context/auth-context';
 import { useClubAuth } from './shared/hooks/clubAuth-hook';
 import { useUserAuth } from './shared/hooks/userAuth-hook';
+import './shared/css/Auth.css';
 
 // split codes using lazy load
 // instead of import everything at once, we will split them so codes will built into
@@ -86,7 +87,7 @@ const App = () => {
 		routes = (
 			<Switch>
 				<Route path="/" exact>
-					<Clubs />
+					<Events />
 				</Route>
 				<Route path="/events/user/:userId" exact>
 					<UserEvents />

@@ -5,7 +5,7 @@
 FrontEnd/node_modules
 BackEnd/node_modules
 BackEnd/uploads
-
+BackEnd/.git_ori
 
 # testing
 /coverage

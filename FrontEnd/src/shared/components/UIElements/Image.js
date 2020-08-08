@@ -8,7 +8,8 @@ const Image = props => {
 			src={props.src}
 			alt={props.alt}
 			type={props.type}
-			onClick={props.onClick}></img>
+			onClick={props.onClick}
+			className="image"></img>
 	);
 };
 

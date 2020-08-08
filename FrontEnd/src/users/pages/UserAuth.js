@@ -2,27 +2,17 @@ import React, { useState, useContext } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import Button from '../../shared/components/FormElements/Button';
-import Card from '../../shared/components/UIElements/Card';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
-import Input from '../../shared/components/FormElements/Input';
+import { Field, Form, Formik } from 'formik';
+import ImageUploader from '../../shared/components/FormElements/ImageUploader';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
-import ImageUpload from '../../shared/components/FormElements/ImageUpload';
 
 import { UserAuthContext } from '../../shared/context/auth-context';
-import { useForm } from '../../shared/hooks/form-hook';
 import { useHttpClient } from '../../shared/hooks/http-hook';
-import {
-	VALIDATOR_REQUIRE,
-	VALIDATOR_EMAIL,
-	VALIDATOR_MINLENGTH
-} from '../../shared/util/validators';
-
-import './UserAuth.css';
 
 const UserAuth = () => {
 	const userAuthContext = useContext(UserAuthContext);
 	const [isLoginMode, setIsLoginMode] = useState(true);
-	const [isSignUp, setIsSignup] = useState(false);
 	const [passwordError, setPasswordError] = useState();
 	const {
 		isLoading,
@@ -31,73 +21,15 @@ const UserAuth = () => {
 		clearError
 	} = useHttpClient();
 
-	/**
-	 * Flow of usage of useForm:
-	 * setFormData: set initial form value
-	 * inputHandler: will be called in each <Input /> and <ImageUpload />. When there is an input
-	 * 				 useForm will get the input value and put it in the formState
-	 * formState: return value that contains all the form field values (including the other fields)
-	 */
-	const [formState, inputHandler, setFormData] = useForm(
-		{
-			email: {
-				value: '',
-				isValid: false
-			},
-			password: {
-				value: '',
-				isValid: false
-			}
-		},
-		false
-	);
-
 	const switchModeHandler = () => {
-		if (isLoginMode) {
-			// login mode
-			setFormData(
-				{
-					// when we switch from signup to login
-					// name, image, and passwordValidation are gone
-					// so we need to set their value to '' and isValid: false
-					...formState.inputs,
-					name: {
-						value: '',
-						isValid: false
-					},
-					image: {
-						value: null,
-						isValid: false
-					},
-					passwordValidation: {
-						value: '',
-						isValid: false
-					}
-				},
-				false
-			);
-		} else {
-			// signup mode
-			setFormData(
-				{
-					...formState.inputs,
-					// set to undefined because the value was set in login mode
-					name: undefined,
-					image: undefined,
-					passwordValidation: undefined
-				},
-				formState.inputs.email.isValid &&
-					formState.inputs.password.isValid
-			);
-		}
 		setIsLoginMode(prevMode => !prevMode);
 	};
 
 	const history = useHistory();
-	const userSubmitHandler = async event => {
+	const userSubmitHandler = async values => {
 		// meaning we don't want to reload the page after form submission
 		// all the input values stay intact on the form
-		event.preventDefault();
+		// event.preventDefault();
 
 		if (isLoginMode) {
 			try {
@@ -106,24 +38,29 @@ const UserAuth = () => {
 					process.env.REACT_APP_BACKEND_URL + '/users/login',
 					'POST',
 					JSON.stringify({
-						email: formState.inputs.email.value,
-						password: formState.inputs.password.value
+						email: values.email,
+						password: values.password
 					}),
 					{
 						'Content-Type': 'application/json'
 					}
 				);
 				/**
-				 * Unlike ClubAuth, here we need to call userAuthContext.userLogin first;
-				 * otherwise responseData.userId is not yet available
+				 * Need to put redirect before calling userAuthContext.userLogin(responseData.user.id).
+				 * Otherwise App.js has UserAuthContext.provider will re-render App and go to
+				 * <Redirect to="/"> If we have components that send http request in that Route
+				 * the http request will be aborted and got a warning:
+				 * Warning: Can't perform a React state update on an unmounted component. when
+				 * trying to redirect page after logging
 				 */
+				history.push(`/events/user/${responseData.userId}`);
+				// user.id is coming from usersController loginUser
+				// id is from {getters: true}
 				userAuthContext.userLogin(
 					responseData.userId,
 					responseData.name,
 					responseData.token
 				);
-
-				history.push(`/events/user/${responseData.userId}`);
 			} catch (err) {
 				// empty. Custom hook takes care of it already
 				console.log('UserAuth err= ', err);
@@ -132,24 +69,21 @@ const UserAuth = () => {
 			//user signup
 			try {
 				// matching passwords
-				if (
-					formState.inputs.password.value !==
-					formState.inputs.passwordValidation.value
-				) {
+				if (values.password !== values.passwordValidation) {
 					setPasswordError('Passwords do not match!');
 					throw new Error('password no match');
 				}
 
 				// FormData() is a browser API. We can append text or binary data to FormData
 				const formData = new FormData();
-				formData.append('email', formState.inputs.email.value);
-				formData.append('name', formState.inputs.name.value);
-				formData.append('password', formState.inputs.password.value);
+				formData.append('email', values.email);
+				formData.append('name', values.name);
+				formData.append('password', values.password);
 				formData.append(
 					'passwordValidation',
-					formState.inputs.passwordValidation.value
+					values.passwordValidation
 				);
-				formData.append('image', formState.inputs.image.value);
+				formData.append('image', values.image);
 
 				// the request needs to match backend usersRoutes /signup route
 				// With fromData, headers cannot be {Content-Type: application/json}
@@ -158,9 +92,8 @@ const UserAuth = () => {
 					'POST',
 					formData
 				);
-				// set isLoginMode and isSignUp to true to render login page
+				// set isLoginMode to true to render login page
 				setIsLoginMode(true);
-				setIsSignup(true);
 			} catch (err) {
 				console.log('err2 = ', err);
 			}
@@ -170,96 +103,209 @@ const UserAuth = () => {
 		clearError();
 		setPasswordError(null);
 	};
-	// set Card title
-	const cardTitle = isLoginMode
-		? isSignUp
-			? 'Account created. Please login'
-			: 'User Login'
-		: 'User Signup';
 
+	// Formik section
+	const initialValues = {
+		email: '',
+		image: undefined,
+		password: '',
+		passwordValidation: ''
+	};
+	const validateEmail = value => {
+		let error;
+		if (!value) {
+			error = 'Email is required.';
+			console.log('validateName = ', error);
+		} else {
+			const pattern = /[a-z0-9A-Z!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9A-Z!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+			if (!pattern.test(value)) {
+				error = 'Please enter a valid email';
+			}
+		}
+		return error;
+	};
+	const validatePassword = value => {
+		let error;
+		if (!value) {
+			error = 'Password is required.';
+		}
+		return error;
+	};
+	const validateImage = value => {
+		let error;
+		if (value && value.size > 1500000) {
+			error = 'File size needs to be smaller than 1.5MB';
+		} else {
+		}
+		return error;
+	};
+
+	const userAuthForm = values => (
+		<div className="auth-div">
+			<h4 className="auth-form-header">Login</h4>
+			<hr className="auth-form--hr" />
+
+			<Formik
+				initialValues={initialValues}
+				onSubmit={userSubmitHandler}>
+				{({ errors, isValid, touched }) => (
+					<Form className="auth-from-container">
+						<div>
+							<label htmlFor="email" className="auth-form-label">
+								Email
+							</label>
+							<Field
+								id="email"
+								name="email"
+								type="text"
+								validate={validateEmail}
+								className="auth-form-input"
+							/>
+							{touched.email && errors.email && (
+								<div className="auth-form-error">{errors.email}</div>
+							)}
+						</div>
+						<div>
+							<label htmlFor="password" className="auth-form-label">
+								Password
+							</label>
+							<Field
+								id="password"
+								name="password"
+								type="text"
+								validate={validatePassword}
+								className="auth-form-input"
+							/>
+							{touched.password && errors.password && (
+								<div className="auth-form-error">
+									{errors.password}
+								</div>
+							)}
+						</div>
+						<Button disabled={!isValid} type="submit" size="small">
+							LOGIN
+						</Button>
+						<Button size="small" to="/">
+							CANCEL
+						</Button>
+					</Form>
+				)}
+			</Formik>
+		</div>
+	);
+
+	const userSignupForm = values => (
+		<div className="auth-div">
+			<h4 className="auth-form-header">Sign up a new account</h4>
+			<hr className="auth-form--hr" />
+
+			<Formik
+				initialValues={initialValues}
+				onSubmit={userSubmitHandler}>
+				{({
+					errors,
+					isValid,
+					touched,
+					setFieldValue,
+					handleBlur
+				}) => (
+					<Form className="auth-from-container">
+						<div>
+							<label htmlFor="email" className="auth-form-label">
+								Email
+							</label>
+							<Field
+								id="email"
+								name="email"
+								type="text"
+								validate={validateEmail}
+								className="auth-form-input"
+							/>
+							{touched.email && errors.email && (
+								<div className="auth-form-error">{errors.email}</div>
+							)}
+						</div>
+						<Field
+							id="image"
+							name="image"
+							title="Club Image"
+							component={ImageUploader}
+							validate={validateImage}
+							setFieldValue={setFieldValue}
+							errorMessage={errors.image ? errors.image : ''}
+							onBlur={event => {
+								handleBlur(event);
+							}}
+							labelStyle="auth-form-label"
+							inputStyle="auth-form-input"
+							previewStyle="auth-form-image-upload__preview"
+							errorStyle="auth-form-error"
+						/>
+
+						<div>
+							<label htmlFor="password" className="auth-form-label">
+								Password
+							</label>
+							<Field
+								id="password"
+								name="password"
+								type="text"
+								validate={validatePassword}
+								className="auth-form-input"
+							/>
+							{touched.password && errors.password && (
+								<div className="auth-form-error">
+									{errors.password}
+								</div>
+							)}
+						</div>
+						<div>
+							<label
+								htmlFor="passwordValidation"
+								className="auth-form-label">
+								Please re-enter password
+							</label>
+							<Field
+								id="passwordValidation"
+								name="passwordValidation"
+								type="text"
+								validate={validatePassword}
+								className="auth-form-input"
+							/>
+							{touched.passwordValidation &&
+								errors.passwordValidation && (
+									<div className="auth-form-error">
+										{errors.passwordValidation}
+									</div>
+								)}
+						</div>
+						<Button size="small" disabled={!isValid} type="submit">
+							Signup
+						</Button>
+						<Button to="/" size="small">
+							CANCEL
+						</Button>
+					</Form>
+				)}
+			</Formik>
+		</div>
+	);
 	return (
 		<React.Fragment>
 			{/* error coming from const [error, setError] = useState(); */}
 			<ErrorModal error={error || passwordError} onClear={clearErr} />
-			<Card className="authentication" title={cardTitle}>
-				{isLoading && <LoadingSpinner asOverlay />}
-				<form
-					title="User Authentication"
-					onSubmit={userSubmitHandler}>
-					{!isLoginMode && (
-						<Input
-							element="input"
-							id="name"
-							type="text"
-							label="User Name"
-							validators={[VALIDATOR_REQUIRE()]}
-							errorText="Please enter user name."
-							onInput={inputHandler}
-						/>
-					)}
-					{!isLoginMode && (
-						<ImageUpload
-							center
-							id="image"
-							onInput={inputHandler}
-							errorText="Please provide a user image"
-						/>
-					)}
-					<Input
-						id="email"
-						element="input"
-						type="text"
-						label="Email"
-						validators={[VALIDATOR_EMAIL()]}
-						errorText="Please enter a valid email."
-						onInput={inputHandler}
-					/>
-					{!isLoginMode && (
-						<Input
-							id="password"
-							element="input"
-							type="password"
-							label="Password (min length 6 letters)"
-							validators={[VALIDATOR_MINLENGTH(6)]}
-							errorText="Please enter a valid password."
-							onInput={inputHandler}
-						/>
-					)}
-					{!isLoginMode && (
-						<Input
-							id="passwordValidation"
-							element="input"
-							type="password"
-							label="Please type password again"
-							validators={[VALIDATOR_MINLENGTH(6)]}
-							errorText="Please make sure passwords match."
-							onInput={inputHandler}
-						/>
-					)}
-					{isLoginMode && (
-						<Input
-							id="password"
-							element="input"
-							type="password"
-							label="Password"
-							validators={[]}
-							errorText="Please enter a valid password."
-							onInput={inputHandler}
-						/>
-					)}
-					<Button disabled={!formState.isValid}>
-						{isLoginMode ? 'LOGIN' : 'SIGNUP'}
-					</Button>
-					<Button to="/">CANCEL</Button>
-				</form>
+			{isLoading && <LoadingSpinner />}
+			{isLoginMode && userAuthForm()}
+			{!isLoginMode && userSignupForm()}
+			<div className="auth-footer-div">
 				<p>No Account? Please sign up a new account.</p>
-				{/* <Button inverse  to="/users/signup">
-				SIGNUP
-			</Button> */}
-				<Button inverse onClick={switchModeHandler}>
+				{/* <Button inverse to="/users/signup">
+					SIGNUP
+				</Button> */}
+				<Button size="small" inverse onClick={switchModeHandler}>
 					SWITCH TO {isLoginMode ? 'SIGNUP' : 'LOGIN'}
 				</Button>
-			</Card>
+			</div>
 		</React.Fragment>
 	);
 };

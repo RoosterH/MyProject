@@ -281,9 +281,7 @@ const UpdateEvent = () => {
 	};
 
 	const saveHandler = async values => {
-		console.log('in saveHandler');
 		try {
-			console.log('regStartDate  = ', values.regStartDate);
 			const formData = new FormData();
 			formData.append('name', values.name);
 			formData.append('type', values.type);

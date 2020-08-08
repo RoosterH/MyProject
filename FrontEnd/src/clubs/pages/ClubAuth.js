@@ -10,12 +10,9 @@ import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 
-import './ClubAuth.css';
-
 const ClubAuth = () => {
 	const clubAuthContext = useContext(ClubAuthContext);
 	const [isLoginMode, setIsLoginMode] = useState(true);
-	const [isSignUp, setIsSignup] = useState(false);
 	const [passwordError, setPasswordError] = useState();
 	const [imageValid, setImageValid] = useState();
 	const {
@@ -96,9 +93,8 @@ const ClubAuth = () => {
 					'POST',
 					formData
 				);
-				// set isLoginMode and isSignUp to true to render login page
+				// set isLoginMode  to true to render login page
 				setIsLoginMode(true);
-				setIsSignup(true);
 			} catch (err) {
 				console.log('err2 = ', err);
 			}

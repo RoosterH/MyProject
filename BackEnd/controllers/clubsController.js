@@ -450,7 +450,7 @@ const getEventForm = async (req, res, next) => {
 
 const createEventForm = async (req, res, next) => {
 	// we need to get entryFormData from body
-	const { entryFormData, saveTemplate, published } = req.body;
+	const { entryFormData, saveTemplate } = req.body;
 
 	// Validate clubId exists. If not, sends back an error
 	let club;
@@ -523,7 +523,8 @@ const createEventForm = async (req, res, next) => {
 	if (entryFormData && entryFormData.length > 0) {
 		event.entryFormData = [];
 		entryFormData.map(data => event.entryFormData.push(data));
-		event.published = published;
+		// whenever entry form gets changed, always set published to false
+		event.published = false;
 		if (saveTemplate) {
 			club.entryFormTemplate = [];
 			entryFormData.map(data => club.entryFormTemplate.push(data));

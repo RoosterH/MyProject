@@ -312,7 +312,9 @@ const EventItem = props => {
 						<p>{props.event.description}</p>
 					</div>
 					<div className="event-item__description">
-						<h3>Special Instructions:</h3>
+						<h3 className="event-item__content__h3heavy">
+							Special Instructions:
+						</h3>
 						<p className="event-item__description">
 							{props.event.instruction}
 						</p>
@@ -320,14 +322,18 @@ const EventItem = props => {
 				</div>
 				<div className="event-item__coursemap">
 					{props.event.courseMap && (
-						<Image
-							title={props.event.name}
-							alt={props.event.name + 'course map'}
-							src={
-								process.env.REACT_APP_ASSET_URL +
-								`/${props.event.courseMap}`
-							}
-							onClick={() => openCourseHandler()}></Image>
+						<React.Fragment>
+							<h3>Course Map </h3>
+							<Image
+								title={props.event.name}
+								alt={props.event.name + 'course map'}
+								src={
+									process.env.REACT_APP_ASSET_URL +
+									`/${props.event.courseMap}`
+								}
+								onClick={() => openCourseHandler()}
+							/>
+						</React.Fragment>
 					)}
 				</div>
 				<div className="event-item__actions">

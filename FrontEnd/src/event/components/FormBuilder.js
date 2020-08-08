@@ -10,7 +10,6 @@ import PromptModal from '../../shared/components/UIElements/PromptModal';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import { ReactFormBuilder } from '../../formbuilder/src/index';
 import { useHttpClient } from '../../shared/hooks/http-hook';
-
 import './FormBuilder.css';
 import '../../shared/scss/application.scss';
 
@@ -87,8 +86,7 @@ const FormBuilder = props => {
 				'POST',
 				JSON.stringify({
 					entryFormData: unsavedData,
-					saveTemplate: saveTemplateClicked,
-					published: false
+					saveTemplate: saveTemplateClicked
 				}),
 				{
 					'Content-type': 'application/json',
@@ -98,10 +96,6 @@ const FormBuilder = props => {
 			);
 			if (responseData) {
 				setUnsavedData(undefined);
-				// disable SAVE button
-				if (saveTemplateClicked) {
-					// checkboxHandler();
-				}
 			}
 		} catch (err) {
 			console.log('err = ', err);
