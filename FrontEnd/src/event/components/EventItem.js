@@ -332,6 +332,7 @@ const EventItem = props => {
 									`/${props.event.courseMap}`
 								}
 								onClick={() => openCourseHandler()}
+								onHoover
 							/>
 						</React.Fragment>
 					)}
@@ -339,7 +340,7 @@ const EventItem = props => {
 				<div className="event-item__actions">
 					{clubAuth.clubId === props.event.clubId && (
 						<Button
-							to={`/events/form/${props.event.id}`}
+							to={`/events/formbuilder/${props.event.id}`}
 							size="small">
 							ENTRY FORM
 						</Button>
@@ -370,6 +371,13 @@ const EventItem = props => {
 								DELETE
 							</Button>
 						)}
+					{
+						<Button
+							to={`/events/form/${props.event.id}`}
+							size="small">
+							REGISTER EVENT
+						</Button>
+					}
 				</div>
 			</Card>
 		</React.Fragment>

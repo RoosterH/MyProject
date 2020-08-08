@@ -9,7 +9,7 @@ import * as Yup from 'yup';
 // import { RichEditorExample } from '../components/RichEditor';
 import 'draft-js/dist/Draft.css';
 
-import { EventAuth } from '../../shared/hooks/eventAuth-hook';
+import { ClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import ImageUploader from '../../shared/components/FormElements/ImageUploader';
@@ -33,7 +33,7 @@ const NewEvent = setFieldValue => {
 	} = useHttpClient();
 
 	// authentication check
-	EventAuth();
+	ClubLoginValidation();
 
 	let tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
 	const [name, setName] = useState('');

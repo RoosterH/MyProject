@@ -27,6 +27,9 @@ const ClubEvents = React.lazy(() =>
 const Error = React.lazy(() => import('./shared/util/error'));
 const Event = React.lazy(() => import('./event/pages/Event'));
 const EventForm = React.lazy(() => import('./event/pages/EventForm'));
+const EventFormBuilder = React.lazy(() =>
+	import('./event/pages/EventFormBuilder')
+);
 const Events = React.lazy(() => import('./events/pages/Events'));
 const NewEvent = React.lazy(() => import('./event/pages/NewEvent'));
 // const Users = React.lazy(() => import('./users/pages/Users'));
@@ -68,8 +71,8 @@ const App = () => {
 				<Route path="/events/:id" exact>
 					<Event />
 				</Route>
-				<Route path="/events/form/:id" exact>
-					<EventForm />
+				<Route path="/events/formbuilder/:id" exact>
+					<EventFormBuilder />
 				</Route>
 				<Route path="/clubs/events/new" exact>
 					<NewEvent />
@@ -108,6 +111,15 @@ const App = () => {
 		// club and user not logged in
 		routes = (
 			<Switch>
+				{/* if Routes failed authentication redirect to auth pages */}
+				<Redirect strict from="/clubs/events/new" to="/clubs/auth" />
+				<Redirect
+					strict
+					from="/events/formbuilder/:id"
+					to="/clubs/auth"
+				/>
+				<Redirect strict from="/events/update/:id" to="/clubs/auth" />
+				<Redirect strict from="/events/form/:id" to="/users/auth" />
 				<Route path="/" exact>
 					<Events />
 				</Route>
@@ -130,16 +142,13 @@ const App = () => {
 				<Route path="/clubs/auth" exact>
 					<ClubAuth />
 				</Route>
-				<Route path="/clubs/events/new" exact>
-					<NewEvent />
-				</Route>
 				<Route path="/users/auth" exact>
 					<UserAuth />
 				</Route>
 				<Route path="/error" exact>
 					<Error />
 				</Route>
-				<Redirect to="error" />
+				<Redirect to="/error" />
 			</Switch>
 		);
 	}

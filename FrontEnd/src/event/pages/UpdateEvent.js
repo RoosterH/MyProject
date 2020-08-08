@@ -5,7 +5,7 @@ import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
 import * as Yup from 'yup';
 
-import { EventAuth } from '../../shared/hooks/eventAuth-hook';
+import { ClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
 import Card from '../../shared/components/UIElements/Card';
 import { ClubAuthContext } from '../../shared/context/auth-context';
@@ -29,7 +29,7 @@ const UpdateEvent = () => {
 
 	const clubAuth = useContext(ClubAuthContext);
 	// authentication check
-	EventAuth();
+	ClubLoginValidation();
 	let tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
 	const history = useHistory();
 

@@ -95,7 +95,7 @@ const UserAuth = () => {
 				// set isLoginMode to true to render login page
 				setIsLoginMode(true);
 			} catch (err) {
-				console.log('err2 = ', err);
+				console.log('UserAuth error = ', err);
 			}
 		}
 	};
@@ -115,7 +115,6 @@ const UserAuth = () => {
 		let error;
 		if (!value) {
 			error = 'Email is required.';
-			console.log('validateName = ', error);
 		} else {
 			const pattern = /[a-z0-9A-Z!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9A-Z!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
 			if (!pattern.test(value)) {
@@ -142,7 +141,7 @@ const UserAuth = () => {
 
 	const userAuthForm = values => (
 		<div className="auth-div">
-			<h4 className="auth-form-header">Login</h4>
+			<h4 className="auth-form-header">Driver Login</h4>
 			<hr className="auth-form--hr" />
 
 			<Formik
