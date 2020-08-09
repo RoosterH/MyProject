@@ -20,9 +20,6 @@ export const useLogOut = () => {
 	} = useHttpClient();
 	const history = useHistory();
 	const logoutHandler = async event => {
-		// meaning we don't want to reload the page after form submission
-		// all the input values stay intact on the form
-		event.preventDefault();
 		// get userId/clubId from localStorage
 		const storageData = JSON.parse(localStorage.getItem('userData'));
 		let api, token, logoutCallback;

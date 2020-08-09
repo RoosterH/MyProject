@@ -11,6 +11,9 @@ import { createContext } from 'react';
  * const clubAuth = useContext(ClubAuthContext);
  * We then will be able to get clubId by using
  * clubId: clubAuthContext.clubId
+ * insideForm: is used to indicate current page is inside a form (new form or form builder).
+ *     We want to disable "logout" if we are inside of a form to avoid conflict between
+ *     leaving page promop and logging out race condition
  */
 //
 export const ClubAuthContext = createContext({
@@ -18,8 +21,10 @@ export const ClubAuthContext = createContext({
 	clubToken: null,
 	clubId: null,
 	clubName: null,
+	insideForm: false,
 	clubLogin: () => {},
-	clubLogout: () => {}
+	clubLogout: () => {},
+	setIsInsideForm: () => {}
 });
 
 export const UserAuthContext = createContext({

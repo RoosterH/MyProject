@@ -5,6 +5,7 @@ import {
 	ClubAuthContext,
 	UserAuthContext
 } from '../../context/auth-context';
+import { FormContext } from '../../context/form-context';
 import { useLogOut } from '../../hooks/logout-hook';
 import ErrorModal from '../UIElements/ErrorModal';
 import LoadingSpinner from '../UIElements/LoadingSpinner';
@@ -16,6 +17,12 @@ const NavLinks = props => {
 	const clubAuth = useContext(ClubAuthContext);
 	const clubLoggedIn = clubAuth.isClubLoggedIn;
 	let cid = clubAuth.clubId;
+
+	// check if we are inside a form page, we want to disable LOGOUT button
+	// to avoid race condition between existing form page and logout handler
+	const formContext = useContext(FormContext);
+	const isInsideForm = formContext.isInsideForm;
+	console.log('isInsideForm = ', isInsideForm);
 
 	/* ----- User Section ----- */
 	const userAuth = useContext(UserAuthContext);
@@ -61,7 +68,7 @@ const NavLinks = props => {
 						</NavLink>
 					</li>
 				)}
-				{clubLoggedIn && (
+				{clubLoggedIn && !isInsideForm && (
 					<li>
 						<button onClick={logoutHandler}>LOGOUT</button>
 						{isLoading && <LoadingSpinner asOverlay />}

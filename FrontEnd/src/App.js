@@ -14,6 +14,10 @@ import {
 } from './shared/context/auth-context';
 import { useClubAuth } from './shared/hooks/clubAuth-hook';
 import { useUserAuth } from './shared/hooks/userAuth-hook';
+
+import { FormContext } from './shared/context/form-context';
+import { useFormHook } from './shared/hooks/form-hook';
+
 import './shared/css/Auth.css';
 
 // split codes using lazy load
@@ -57,6 +61,8 @@ const App = () => {
 		userId,
 		userName
 	} = useUserAuth();
+
+	const { isInsideForm, setIsInsideForm } = useFormHook();
 
 	let routes;
 	if (clubToken) {
@@ -112,12 +118,6 @@ const App = () => {
 		routes = (
 			<Switch>
 				{/* if Routes failed authentication redirect to auth pages */}
-				<Redirect strict from="/clubs/events/new" to="/clubs/auth" />
-				<Redirect
-					strict
-					from="/events/formbuilder/:id"
-					to="/clubs/auth"
-				/>
 				<Redirect strict from="/events/update/:id" to="/clubs/auth" />
 				<Redirect strict from="/events/form/:id" to="/users/auth" />
 				<Route path="/" exact>
@@ -145,6 +145,30 @@ const App = () => {
 				<Route path="/users/auth" exact>
 					<UserAuth />
 				</Route>
+
+				{/* Very import to keep sequence of the following 2 routes. Change the sequence will cause
+				    page refreshing not working properly.
+					1. Route is for refreshing page
+					2. Redirect is for club not logged in
+				*/}
+				<Route path="/clubs/events/new" exact>
+					<NewEvent />
+				</Route>
+				<Redirect strict from="/clubs/events/new" to="/clubs/auth" />
+
+				{/* Very import to keep sequence of the following 2 routes. Change the sequence will cause
+				    page refreshing not working properly.
+					1. Route is for refreshing page
+					2. Redirect is for club not logged in
+				*/}
+				<Route path="/events/formbuilder/:id" exact>
+					<EventFormBuilder />
+				</Route>
+				<Redirect
+					strict
+					from="/events/formbuilder/:id"
+					to="/clubs/auth"
+				/>
 				<Route path="/error" exact>
 					<Error />
 				</Route>
@@ -171,21 +195,27 @@ const App = () => {
 					userLogin: userLogin,
 					userLogout: userLogout
 				}}>
-				<Router>
-					<MainNavigation />
-					{/* main is defiend in /shared/components/Navigation/MainHeader.css */}
-					<main>
-						{/* Suspense is for splitting codes */}
-						<Suspense
-							fallback={
-								<div className="center">
-									<LoadingSpinner />
-								</div>
-							}>
-							{routes}
-						</Suspense>
-					</main>
-				</Router>
+				<FormContext.Provider
+					value={{
+						isInsideForm: isInsideForm,
+						setIsInsideForm: setIsInsideForm
+					}}>
+					<Router>
+						<MainNavigation />
+						{/* main is defiend in /shared/components/Navigation/MainHeader.css */}
+						<main>
+							{/* Suspense is for splitting codes */}
+							<Suspense
+								fallback={
+									<div className="center">
+										<LoadingSpinner />
+									</div>
+								}>
+								{routes}
+							</Suspense>
+						</main>
+					</Router>
+				</FormContext.Provider>
 			</UserAuthContext.Provider>
 		</ClubAuthContext.Provider>
 	);

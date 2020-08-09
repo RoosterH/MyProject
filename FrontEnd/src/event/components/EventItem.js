@@ -371,13 +371,13 @@ const EventItem = props => {
 								DELETE
 							</Button>
 						)}
-					{
+					{!clubAuth.clubId === props.event.clubId && (
 						<Button
 							to={`/events/form/${props.event.id}`}
 							size="small">
 							REGISTER EVENT
 						</Button>
-					}
+					)}
 				</div>
 			</Card>
 		</React.Fragment>

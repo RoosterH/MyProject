@@ -6,6 +6,7 @@ import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 
+// This code is NOT USED
 const EntryFormBar = (eid, isSaved) => {
 	const clubAuth = useContext(ClubAuthContext);
 	const {
@@ -16,17 +17,18 @@ const EntryFormBar = (eid, isSaved) => {
 	} = useHttpClient();
 
 	const saveHandler = async () => {
-		var eventEntryForm = localStorage.getItem('eventEntryForm');
+		var eventEntryForm = localStorage.getItem('entryFormData');
 
 		// If no existing data, create an array; otherwise retrieve it
 		eventEntryForm = eventEntryForm ? JSON.parse(eventEntryForm) : {};
 
 		try {
+			console.log('in bar');
 			let responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + `/clubs/form/${eid}`,
 				'POST',
 				JSON.stringify({
-					task_data: eventEntryForm
+					entryFormData: eventEntryForm
 				}),
 				{
 					// adding JWT to header for authentication, JWT contains clubId

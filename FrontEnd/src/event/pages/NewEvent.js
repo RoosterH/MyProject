@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
@@ -18,6 +18,7 @@ import PromptModal from '../../shared/components/UIElements/PromptModal';
 
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { ClubAuthContext } from '../../shared/context/auth-context';
+import { FormContext } from '../../shared/context/form-context';
 
 import './EventForm.css';
 import { eventTypes } from '../../event/components/EventTypes';
@@ -25,6 +26,18 @@ import { eventTypes } from '../../event/components/EventTypes';
 let initialized = false;
 const NewEvent = setFieldValue => {
 	const clubAuth = useContext(ClubAuthContext);
+	const formContext = useContext(FormContext);
+
+	let mounted = true;
+	useEffect(() => {
+		if (mounted) {
+			formContext.setIsInsideForm(true);
+		}
+		return () => {
+			mounted = false;
+		};
+	}, [mounted]);
+
 	const {
 		isLoading,
 		error,
@@ -797,6 +810,7 @@ const NewEvent = setFieldValue => {
 						</Button>
 						<NavigationPrompt
 							afterConfirm={() => {
+								formContext.setIsInsideForm(false);
 								removeEventFormData();
 							}}
 							// Confirm navigation if going to a path that does not start with current path:

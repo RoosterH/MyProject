@@ -8,6 +8,7 @@ export const useClubAuth = () => {
 	const [clubTokenExpDate, setClubTokenExpDate] = useState();
 	const [clubId, setClubId] = useState(null);
 	const [clubName, setClubName] = useState(null);
+	const [isInsideForm, setInForm] = useState(false);
 
 	// define callbacks of ClubAuthContext, useCallBack will never be re-created
 	// so there won't be any infinite loop; otherwise when the page renders, the function
@@ -49,6 +50,10 @@ export const useClubAuth = () => {
 		setClubTokenExpDate(null);
 	}, []);
 
+	const setIsInsideForm = useCallback(val => {
+		setInForm(val);
+	}, []);
+
 	// Auto login
 	useEffect(() => {
 		const storageData = JSON.parse(localStorage.getItem('userData'));
@@ -78,5 +83,13 @@ export const useClubAuth = () => {
 		}
 	}, [clubToken, clubLogout, clubTokenExpDate]);
 
-	return { clubToken, clubLogin, clubLogout, clubId, clubName };
+	return {
+		clubToken,
+		clubLogin,
+		clubLogout,
+		clubId,
+		clubName,
+		isInsideForm,
+		setIsInsideForm
+	};
 };

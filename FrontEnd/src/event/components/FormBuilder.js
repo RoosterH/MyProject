@@ -1,4 +1,4 @@
-import React, { useContext, useState, useRef } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import Button from '../../shared/components/FormElements/Button';
@@ -8,6 +8,7 @@ import NavigationPrompt from 'react-router-navigation-prompt';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 
 import { ClubAuthContext } from '../../shared/context/auth-context';
+import { FormContext } from '../../shared/context/form-context';
 import { ReactFormBuilder } from '../../formbuilder/src/index';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import './FormBuilder.css';
@@ -15,6 +16,18 @@ import '../../shared/scss/application.scss';
 
 const FormBuilder = props => {
 	const clubAuth = useContext(ClubAuthContext);
+	const formContext = useContext(FormContext);
+
+	useEffect(() => {
+		let mounted = true;
+		if (mounted) {
+			formContext.setIsInsideForm(true);
+		}
+		return () => {
+			mounted = false;
+		};
+	}, []);
+
 	const {
 		isLoading,
 		error,
@@ -33,6 +46,7 @@ const FormBuilder = props => {
 		// after SAVE to backend, user click checkbox "Save as entry form template", enable SAVE button
 		// if checkbox value is true
 		if (event.target.checked && !unsavedData) {
+			console.log('get 1');
 			const storageData = JSON.parse(
 				localStorage.getItem('eventEntryForm')
 			);
@@ -45,6 +59,7 @@ const FormBuilder = props => {
 	let eventId = props.id;
 	if (!eventId || eventId === 'error') {
 		// possibly page refresh, look for localStorage
+		console.log('get 2');
 		const storageData = JSON.parse(localStorage.getItem('eventData'));
 		if (storageData && storageData.eventId) {
 			eventId = storageData.eventId;
@@ -78,9 +93,8 @@ const FormBuilder = props => {
 			setUnsavedData(storageData);
 		}
 
-		// If no existing data, create an array; otherwise retrieve it
-		// eventEntryForm = eventEntryForm ? JSON.parse(unsavedData) : {};
 		try {
+			console.log('unsavedData = ', unsavedData);
 			const responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + `/clubs/form/${eventId}`,
 				'POST',
@@ -165,10 +179,16 @@ const FormBuilder = props => {
 		data = fixFormData(data);
 
 		const setData = () => {
-			setUnsavedData(data);
+			console.log('data = ', data);
+			// save the array to unsavedData and backend
+			// format of data: {task_data: Array(6)}
+			setUnsavedData(data.task_data);
 			setPublished(false);
 			// update the new data to localStorage
-			localStorage.setItem('eventEntryForm', JSON.stringify(data));
+			localStorage.setItem(
+				'eventEntryForm',
+				JSON.stringify(data.task_data)
+			);
 		};
 
 		return setData();
@@ -220,6 +240,7 @@ const FormBuilder = props => {
 			<NavigationPrompt
 				afterConfirm={() => {
 					cleanUp();
+					formContext.setIsInsideForm(false);
 				}}
 				// Confirm navigation if going to a path that does not start with current path:
 				//when={!!unsavedData}
