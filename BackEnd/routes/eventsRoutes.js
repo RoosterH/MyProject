@@ -46,6 +46,9 @@ router.use(checkAuth);
 // users needs to login to see their events
 router.get('/user/:uid', eventsController.getEventsByUserId);
 
+// get event entry form
+router.get('/form/:eid', eventsController.getEventEntryForm);
+
 // last valid day to allow for event addition, modification, or deletion
 let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');
 // only clubs are able to create an event

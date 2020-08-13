@@ -30,6 +30,7 @@ const eventSchema = new Schema({
 		ref: 'Club'
 	},
 	clubName: { type: String, required: true },
+	clubImage: { type: String, required: true },
 	published: { type: Boolean, required: true },
 	// event entry form
 	entryFormData: { type: Array, required: true }

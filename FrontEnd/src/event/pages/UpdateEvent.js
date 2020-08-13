@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams, useHistory, useLocation } from 'react-router-dom';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
 import * as Yup from 'yup';
 
-import { ClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
+import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
 import Card from '../../shared/components/UIElements/Card';
 import { ClubAuthContext } from '../../shared/context/auth-context';
@@ -27,9 +27,25 @@ const UpdateEvent = () => {
 		clearError
 	} = useHttpClient();
 
-	const clubAuth = useContext(ClubAuthContext);
+	const clubAuthContext = useContext(ClubAuthContext);
+
+	// get eventId from url
+	let eventId = useParams().id;
 	// authentication check
-	ClubLoginValidation();
+	useClubLoginValidation(`/events/form/${eventId}`);
+
+	// If we are re-directing to this page, we want to clear up clubRedirectURL
+	let location = useLocation();
+	let path;
+	React.useEffect(() => {
+		path = location.pathname;
+		let clubRedirectURL = clubAuthContext.clubRedirectURL;
+		if (path === clubRedirectURL) {
+			// re-init redirectURL after re-direction route
+			clubAuthContext.setClubRedirectURL(null);
+		}
+	}, [location]);
+
 	let tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
 	const history = useHistory();
 
@@ -61,8 +77,6 @@ const UpdateEvent = () => {
 	};
 
 	const [loadedEvent, setLoadedEvent] = useState();
-	// get eventId from url
-	let eventId = useParams().id;
 
 	if (!eventId || eventId === 'error') {
 		// possibly page refresh, look for localStorage
@@ -269,7 +283,7 @@ const UpdateEvent = () => {
 				formData,
 				{
 					// adding JWT to header for authentication, JWT contains clubId
-					Authorization: 'Bearer ' + clubAuth.clubToken
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
 			// Need to set the loadedEvent so we will set initialValues again.
@@ -302,7 +316,7 @@ const UpdateEvent = () => {
 				formData,
 				{
 					// adding JWT to header for authentication, JWT contains clubId
-					Authorization: 'Bearer ' + clubAuth.clubToken
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
 			// Need to set the loadedEvent so we will set initialValues again.
@@ -724,13 +738,22 @@ const UpdateEvent = () => {
 								localStorage.removeItem('eventID');
 							}}
 							// Confirm navigation if going to a path that does not start with current path:
-							when={(crntLocation, nextLocation) =>
-								/*!OKLeavePage && */
-								!nextLocation ||
-								!nextLocation.pathname.startsWith(
-									crntLocation.pathname
-								)
-							}>
+							when={(crntLocation, nextLocation) => {
+								if (
+									OKLeavePage ||
+									nextLocation.pathname === '/clubs/auth'
+								) {
+									localStorage.removeItem('eventID');
+									return false;
+								} else {
+									return (
+										!nextLocation ||
+										!nextLocation.pathname.startsWith(
+											crntLocation.pathname
+										)
+									);
+								}
+							}}>
 							{({ isActive, onCancel, onConfirm }) => {
 								if (isActive) {
 									return (

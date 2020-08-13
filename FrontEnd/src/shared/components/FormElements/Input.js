@@ -1,6 +1,6 @@
 import React, { useReducer, useEffect } from 'react';
 
-import { validate } from '../../util/validators';
+import { validate } from '../../utils/validators';
 import './Input.css';
 
 // this function is to validate action whenever there is a state change

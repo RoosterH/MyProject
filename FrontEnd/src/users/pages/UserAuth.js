@@ -45,22 +45,33 @@ const UserAuth = () => {
 						'Content-Type': 'application/json'
 					}
 				);
-				/**
-				 * Need to put redirect before calling userAuthContext.userLogin(responseData.user.id).
-				 * Otherwise App.js has UserAuthContext.provider will re-render App and go to
-				 * <Redirect to="/"> If we have components that send http request in that Route
-				 * the http request will be aborted and got a warning:
-				 * Warning: Can't perform a React state update on an unmounted component. when
-				 * trying to redirect page after logging
-				 */
-				history.push(`/events/user/${responseData.userId}`);
-				// user.id is coming from usersController loginUser
-				// id is from {getters: true}
-				userAuthContext.userLogin(
-					responseData.userId,
-					responseData.name,
-					responseData.token
-				);
+
+				if (userAuthContext.redirectURL) {
+					// for re-direction, we need to set login information to be able to send request to backend
+					userAuthContext.userLogin(
+						responseData.userId,
+						responseData.name,
+						responseData.token
+					);
+					history.push(userAuthContext.redirectURL);
+				} else {
+					/**
+					 * Need to put redirect before calling userAuthContext.userLogin(responseData.user.id).
+					 * Otherwise App.js has UserAuthContext.provider will re-render App and go to
+					 * <Redirect to="/"> If we have components that send http request in that Route
+					 * the http request will be aborted and got a warning:
+					 * Warning: Can't perform a React state update on an unmounted component. when
+					 * trying to redirect page after logging
+					 */
+					history.push(`/events/user/${responseData.userId}`);
+					// user.id is coming from usersController loginUser
+					// id is from {getters: true}
+					userAuthContext.userLogin(
+						responseData.userId,
+						responseData.name,
+						responseData.token
+					);
+				}
 			} catch (err) {
 				// empty. Custom hook takes care of it already
 				console.log('UserAuth err= ', err);

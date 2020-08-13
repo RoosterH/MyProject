@@ -214,10 +214,8 @@ const createEvent = async (req, res, next) => {
 	// Validate clubId exists. If not, sends back an error
 	let club;
 	let clubId = req.userData.clubId;
-	let dupEvent;
 	try {
 		club = await Club.findById(clubId);
-		dupEvent = await Event.findOne({ name: name });
 	} catch (err) {
 		const error = new HttpError(
 			'Create event process failed. Please try again later.',
@@ -233,13 +231,6 @@ const createEvent = async (req, res, next) => {
 		);
 		return next(error);
 	}
-	// if (dupEvent) {
-	// 	const error = new HttpError(
-	// 		'Create event failure. Event name was taken. Please use a different name.',
-	// 		400
-	// 	);
-	// 	return next(error);
-	// }
 
 	let coordinate;
 	try {
@@ -273,6 +264,7 @@ const createEvent = async (req, res, next) => {
 		// it from the token
 		clubId: clubId,
 		clubName: club.name,
+		clubImage: club.image,
 		image: imagePath,
 		courseMap: courseMapPath,
 		published: false,
@@ -530,9 +522,37 @@ const deleteEvent = async (req, res, next) => {
 };
 
 // /api/events/form/:eid
-const getEventForm = (req, res) => {
-	eventId = req.params.eid;
-	console.log('In get EventForm = ', eventId);
+const getEventEntryForm = async (req, res) => {
+	// Validate eventId belonging to the found club. If not, sends back an error
+	const eventId = req.params.eid;
+	console.log('eventID = ', eventId);
+	let event;
+	try {
+		event = await Event.findById(eventId);
+	} catch (err) {
+		// this error is displayed if the request to the DB had some issues
+		const error = new HttpError(
+			'Get EventForm for club process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'Could not complete retrieving event form with provided event id',
+			404
+		);
+		return next(error);
+	}
+
+	let entryFormData = event.entryFormData;
+	if (!entryFormData || entryFormData.length === 0) {
+		res.status(200).json({ entryFormData: '[]' });
+	}
+
+	res.status(200).json(entryFormData);
 };
 
 // export a pointer of the function
@@ -544,4 +564,4 @@ exports.getEventsByDate = getEventsByDate;
 exports.createEvent = createEvent;
 exports.updateEvent = updateEvent;
 exports.deleteEvent = deleteEvent;
-exports.getEventForm = getEventForm;
+exports.getEventEntryForm = getEventEntryForm;

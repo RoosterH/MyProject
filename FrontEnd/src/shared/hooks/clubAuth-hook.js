@@ -9,6 +9,7 @@ export const useClubAuth = () => {
 	const [clubId, setClubId] = useState(null);
 	const [clubName, setClubName] = useState(null);
 	const [isInsideForm, setInForm] = useState(false);
+	const [clubRedirectURL, setURL] = useState(null);
 
 	// define callbacks of ClubAuthContext, useCallBack will never be re-created
 	// so there won't be any infinite loop; otherwise when the page renders, the function
@@ -83,6 +84,10 @@ export const useClubAuth = () => {
 		}
 	}, [clubToken, clubLogout, clubTokenExpDate]);
 
+	const setClubRedirectURL = useCallback(url => {
+		setURL(url);
+	}, []);
+
 	return {
 		clubToken,
 		clubLogin,
@@ -90,6 +95,8 @@ export const useClubAuth = () => {
 		clubId,
 		clubName,
 		isInsideForm,
-		setIsInsideForm
+		setIsInsideForm,
+		clubRedirectURL,
+		setClubRedirectURL
 	};
 };

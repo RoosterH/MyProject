@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom';
 import { EventEmitter } from 'fbemitter';
 import FormValidator from './form-validator';
 import FormElements from './form-elements';
+import '../../shared/scss/form-builder-form.scss';
 
 const {
 	Image,
@@ -403,7 +404,11 @@ export default class ReactForm extends React.Component {
 			: 'Cancel';
 
 		return (
-			<div>
+			<div
+				style={{
+					'border-style': 'double',
+					'border-color': '#a3aeae'
+				}}>
 				<FormValidator emitter={this.emitter} />
 				<div className="react-form-builder-form">
 					<form

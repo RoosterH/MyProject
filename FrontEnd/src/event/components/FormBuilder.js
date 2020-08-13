@@ -26,7 +26,7 @@ const FormBuilder = props => {
 		return () => {
 			mounted = false;
 		};
-	}, []);
+	}, [formContext]);
 
 	const {
 		isLoading,
@@ -59,7 +59,6 @@ const FormBuilder = props => {
 	let eventId = props.id;
 	if (!eventId || eventId === 'error') {
 		// possibly page refresh, look for localStorage
-		console.log('get 2');
 		const storageData = JSON.parse(localStorage.getItem('eventData'));
 		if (storageData && storageData.eventId) {
 			eventId = storageData.eventId;

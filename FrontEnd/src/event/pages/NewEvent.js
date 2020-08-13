@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
@@ -9,7 +9,7 @@ import * as Yup from 'yup';
 // import { RichEditorExample } from '../components/RichEditor';
 import 'draft-js/dist/Draft.css';
 
-import { ClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
+import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import ImageUploader from '../../shared/components/FormElements/ImageUploader';
@@ -23,20 +23,20 @@ import { FormContext } from '../../shared/context/form-context';
 import './EventForm.css';
 import { eventTypes } from '../../event/components/EventTypes';
 
-let initialized = false;
 const NewEvent = setFieldValue => {
-	const clubAuth = useContext(ClubAuthContext);
+	const [initialized, setInitialized] = useState(false);
+	const clubAuthContext = useContext(ClubAuthContext);
 	const formContext = useContext(FormContext);
 
-	let mounted = true;
 	useEffect(() => {
+		let mounted = true;
 		if (mounted) {
 			formContext.setIsInsideForm(true);
 		}
 		return () => {
 			mounted = false;
 		};
-	}, [mounted]);
+	}, [formContext]);
 
 	const {
 		isLoading,
@@ -46,7 +46,19 @@ const NewEvent = setFieldValue => {
 	} = useHttpClient();
 
 	// authentication check
-	ClubLoginValidation();
+	useClubLoginValidation('/clubs/events/new');
+
+	// If we are re-directing to this page, we want to clear up clubRedirectURL
+	let location = useLocation();
+	let path;
+	React.useEffect(() => {
+		path = location.pathname;
+		let clubRedirectURL = clubAuthContext.clubRedirectURL;
+		if (path === clubRedirectURL) {
+			// re-init redirectURL after re-direction route
+			clubAuthContext.setClubRedirectURL(null);
+		}
+	}, [location]);
 
 	let tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
 	const [name, setName] = useState('');
@@ -59,7 +71,7 @@ const NewEvent = setFieldValue => {
 	const [address, setAddress] = useState('');
 	const [description, setDescription] = useState('');
 	const [instruction, setInstruction] = useState('');
-	// todo: retrive file from Reader: const [image, setImage] = useState();
+	// todo: retrieve file from Reader: const [image, setImage] = useState();
 	// todo: const [courseMap, setCourseMap] = useState('');
 	let image = undefined;
 	let courseMap = undefined;
@@ -71,53 +83,7 @@ const NewEvent = setFieldValue => {
 	// If no existing data, create an array; otherwise retrieve it
 	eventFormData = eventFormData ? JSON.parse(eventFormData) : {};
 
-	/***** OKLeavePage Section *****/
-	// const [nameOK, setNameOK] = useState(true);
-	// const [typeOK, setTypeOK] = useState(true);
-	// const [venueOK, setVenueOK] = useState(true);
-	// const [addressOK, setAddressOK] = useState(true);
-	// const [startDateOK, setStartDateOK] = useState(true);
-	// const [endDateOK, setEndDateOK] = useState(true);
-	// const [regStartDateOK, setRegStartDateOK] = useState(true);
-	// const [regEndDateOK, setRegEndDateOK] = useState(true);
-	// const [descriptionOK, setDescriptionOK] = useState(true);
-	// const [instructionOK, setInstructionOK] = useState(true);
-	// const [imageOK, setImageOK] = useState(true);
-	// const [courseMapOK, setCourseMapOK] = useState(true);
-	// OKLeavePage not used in NewEvent for now, remove SAVE button for simplicity due to commplex backend API
-	const [OKLeavePage, setOKLeavePage] = useState(false);
-
-	// useEffect(() => {
-	// 	setOKLeavePage(
-	// 		nameOK &&
-	// 			typeOK &&
-	// 			venueOK &&
-	// 			addressOK &&
-	// 			startDateOK &&
-	// 			endDateOK &&
-	// 			regStartDateOK &&
-	// 			regEndDateOK &&
-	// 			descriptionOK &&
-	// 			instructionOK &&
-	// 			imageOK &&
-	// 			courseMapOK
-	// 	);
-	// }, [
-	// 	nameOK,
-	// 	typeOK,
-	// 	venueOK,
-	// 	addressOK,
-	// 	startDateOK,
-	// 	endDateOK,
-	// 	regStartDateOK,
-	// 	regEndDateOK,
-	// 	descriptionOK,
-	// 	instructionOK,
-	// 	imageOK,
-	// 	courseMapOK
-	// ]);
-	/***** End of OKLeavePage Section *****/
-
+	const [OKLeavePage, setOKLeavePage] = useState(true);
 	// local storage gets the higest priority
 	// get from localStorage
 	if (
@@ -125,7 +91,7 @@ const NewEvent = setFieldValue => {
 		eventFormData &&
 		moment(eventFormData.expirationDate) > moment()
 	) {
-		initialized = true;
+		setInitialized(true);
 		// Form data
 		if (eventFormData.name) {
 			setName(eventFormData.name);
@@ -176,7 +142,7 @@ const NewEvent = setFieldValue => {
 			// setCourseMapOK(false);
 		}
 	} else if (!initialized) {
-		initialized = true;
+		setInitialized(true);
 		// initialize localStorage
 		eventFormData['expirationDate'] = moment(
 			moment().add(1, 'days'),
@@ -202,7 +168,7 @@ const NewEvent = setFieldValue => {
 
 	const removeEventFormData = () => {
 		localStorage.removeItem('eventFormData');
-		history.push(`/events/club/${clubAuth.clubId}`);
+		// history.push(`/events/club/${clubAuthContext.clubId}`);
 	};
 
 	const initialValues = {
@@ -234,7 +200,6 @@ const NewEvent = setFieldValue => {
 
 	const history = useHistory();
 	const submitHandler = async (values, actions) => {
-		console.log('values = ', values);
 		try {
 			const formData = new FormData();
 			formData.append('name', values.name);
@@ -268,12 +233,12 @@ const NewEvent = setFieldValue => {
 				formData,
 				{
 					// adding JWT to header for authentication
-					Authorization: 'Bearer ' + clubAuth.clubToken
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
 			setOKLeavePage(true);
 			// Redirect the club to a diffrent page
-			history.push(`/events/club/${clubAuth.clubId}`);
+			history.push(`/events/club/${clubAuthContext.clubId}`);
 		} catch (err) {}
 	};
 
@@ -405,7 +370,6 @@ const NewEvent = setFieldValue => {
 					submitHandler(values);
 					if (!actions.isSubmitting) {
 						setValidateName(() => value => {
-							console.log('ValidateName');
 							let error;
 							if (!value) {
 								error = 'Event Name is required.';
@@ -413,7 +377,6 @@ const NewEvent = setFieldValue => {
 							return error;
 						});
 						setValidateVenue(() => value => {
-							console.log('ValidateVenue');
 							let error;
 							if (!value) {
 								error = 'Event Venue is required.';
@@ -421,7 +384,6 @@ const NewEvent = setFieldValue => {
 							return error;
 						});
 						setValidateAddress(() => value => {
-							console.log('ValidateAddress');
 							let error;
 							if (!value) {
 								error = 'Event Address is required.';
@@ -429,7 +391,6 @@ const NewEvent = setFieldValue => {
 							return error;
 						});
 						setValidateDescription(() => value => {
-							console.log('ValidateDescription');
 							let error;
 							if (!value) {
 								error = 'Event description is required.';
@@ -437,7 +398,6 @@ const NewEvent = setFieldValue => {
 							return error;
 						});
 						setValidateInstruction(() => value => {
-							console.log('ValidateInstruction');
 							let error;
 							if (!value) {
 								error = 'Event instruction is required.';
@@ -469,6 +429,7 @@ const NewEvent = setFieldValue => {
 								// without handBlure(event) touched.name will not work
 								handleBlur(event);
 								updateEventFormData('name', event.target.value);
+								setOKLeavePage(false);
 								// if (event.target.value) {
 								// 	setNameOK(false);
 								// } else {
@@ -492,6 +453,7 @@ const NewEvent = setFieldValue => {
 							onBlur={event => {
 								handleBlur(event);
 								updateEventFormData('type', event.target.value);
+								setOKLeavePage(false);
 								// if (event.target.value !== 'Autocross') {
 								// 	setTypeOK(false);
 								// } else {
@@ -531,6 +493,7 @@ const NewEvent = setFieldValue => {
 							onBlur={event => {
 								handleBlur(event);
 								updateEventFormData('startDate', event.target.value);
+								setOKLeavePage(false);
 								// if (event.target.value !== tomorrow) {
 								// 	setStartDateOK(false);
 								// } else {
@@ -548,6 +511,7 @@ const NewEvent = setFieldValue => {
 							onBlur={event => {
 								handleBlur(event);
 								updateEventFormData('endDate', event.target.value);
+								setOKLeavePage(false);
 								// if (event.target.value !== tomorrow) {
 								// 	setEndDateOK(false);
 								// } else {
@@ -589,6 +553,7 @@ const NewEvent = setFieldValue => {
 									'regStartDate',
 									event.target.value
 								);
+								setOKLeavePage(false);
 								// if (event.target.value !== tomorrow) {
 								// 	setRegStartDateOK(false);
 								// } else {
@@ -606,6 +571,7 @@ const NewEvent = setFieldValue => {
 							onBlur={event => {
 								handleBlur(event);
 								updateEventFormData('regEndDate', event.target.value);
+								setOKLeavePage(false);
 								// if (event.target.value !== tomorrow) {
 								// 	setRegEndDateOK(false);
 								// } else {
@@ -636,6 +602,7 @@ const NewEvent = setFieldValue => {
 							onBlur={event => {
 								handleBlur(event);
 								updateEventFormData('venue', event.target.value);
+								setOKLeavePage(false);
 								// if (event.target.value) {
 								// 	setVenueOK(false);
 								// } else {
@@ -661,6 +628,7 @@ const NewEvent = setFieldValue => {
 							onBlur={event => {
 								handleBlur(event);
 								updateEventFormData('address', event.target.value);
+								setOKLeavePage(false);
 								// if (event.target.value) {
 								// 	setAddressOK(false);
 								// } else {
@@ -715,6 +683,7 @@ const NewEvent = setFieldValue => {
 									'description',
 									event.target.value
 								);
+								setOKLeavePage(false);
 								// if (event.target.value) {
 								// 	setDescriptionOK(false);
 								// } else {
@@ -747,6 +716,7 @@ const NewEvent = setFieldValue => {
 									'instruction',
 									event.target.value
 								);
+								setOKLeavePage(false);
 								// if (event.target.value) {
 								// 	setInstructionOK(false);
 								// } else {
@@ -769,6 +739,7 @@ const NewEvent = setFieldValue => {
 							errorMessage={errors.image ? errors.image : ''}
 							onBlur={event => {
 								handleBlur(event);
+								setOKLeavePage(false);
 								// if (event.target.value) {
 								// 	setImageOK(false);
 								// } else {
@@ -790,6 +761,7 @@ const NewEvent = setFieldValue => {
 							errorMessage={errors.courseMap ? errors.courseMap : ''}
 							onBlur={event => {
 								handleBlur(event);
+								setOKLeavePage(false);
 								// if (event.target.value) {
 								// 	setCourseMapOK(false);
 								// } else {
@@ -813,16 +785,27 @@ const NewEvent = setFieldValue => {
 								formContext.setIsInsideForm(false);
 								removeEventFormData();
 							}}
-							// Confirm navigation if going to a path that does not start with current path:
-							when={(crntLocation, nextLocation) =>
-								!OKLeavePage &&
-								// always gives the warning, because we want to be able to
-								// clear localStorage after confirm
-								(!nextLocation ||
-									!nextLocation.pathname.startsWith(
-										crntLocation.pathname
-									))
-							}>
+							// Confirm navigation if going to a path that does not start with current path.
+							// We don't want to confirm navigation when OKLeavePage === true and redirect to '/clubs/auth' due to
+							// authentication issue
+							when={(crntLocation, nextLocation) => {
+								if (OKLeavePage) {
+									formContext.setIsInsideForm(false);
+									removeEventFormData();
+									return false;
+								} else {
+									// nextLocation.pathname !== '/clubs/auth' &&  --- adding this line causing state update on an
+									// unmounted component issue.  Without it, confirmation modal will pop up
+									// always gives the warning, because we want to be able to
+									// clear localStorage after confirm
+									return (
+										!nextLocation ||
+										!nextLocation.pathname.startsWith(
+											crntLocation.pathname
+										)
+									);
+								}
+							}}>
 							{({ isActive, onCancel, onConfirm }) => {
 								if (isActive) {
 									return (

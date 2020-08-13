@@ -6,6 +6,26 @@
 	padding: 0;
 }
 
+.event-item__content.title {
+	color: #4a4a4a;
+	font-size: 30px;
+	font-weight: 600;
+	line-height: 1.5;
+	max-width: 100%;
+}
+
+.registration-container h3 {
+	font-size: 14px;
+	font-weight: 500;
+	display: inline;
+	margin-right: 0.5rem;
+}
+
+.registration-container h4 {
+	font-size: 12px;
+	font-weight: 400;
+	color: #82888a;
+}
 .event-item__content h2 {
 	font-size: larger;
 	margin-left: 1rem;
@@ -21,7 +41,7 @@
 	font-weight: 800;
 }
 
-.event-item__content h4 {
+.event-item__info h4 {
 	font-size: small;
 }
 
@@ -103,7 +123,186 @@
 	width: 100%;
 }
 
+.event-pages {
+	margin: 0rem;
+}
+
+.event-pages.eventitme-page {
+	line-height: 1.5;
+}
+
+.eventitem-page #header {
+	background-color: #fff;
+	margin-bottom: 0;
+}
+
+.header-title {
+	color: #4a4a4a;
+	font-size: 30px;
+	font-weight: 600;
+	line-height: 1.5;
+	max-width: 100%;
+	margin-bottom: 0;
+}
+
+.section-container {
+	margin: 0 auto;
+	max-width: 1125px;
+	padding: 0 15px;
+}
+
+.logo-container {
+	float: left;
+}
+
+.logo-container img {
+	margin-top: 5px;
+	width: 70px;
+	height: 70px;
+}
+
+.primary-info {
+	overflow: hidden;
+}
+
+.clubname-container {
+	display: inline-block;
+	font-size: 14px;
+}
+
+.provider-clubname {
+	color: #197dc2;
+}
+.eventitem-eventtype {
+	display: inline-block;
+	line-height: 21px;
+	padding-top: 8px;
+	font-size: 14px;
+}
+
+.eventtype {
+	color: #197dc2;
+}
+
+.eventtype-container {
+	font-size: 14px;
+	padding: 10px;
+	position: relative;
+	min-height: 290px;
+}
+
+.page-basic-container {
+	display: inline-block;
+	padding-right: 18px;
+	position: relative;
+	width: 57%;
+}
+
+.eventimage-container {
+	background-color: #f5f5f5;
+	background-position: center top;
+	background-size: cover;
+	display: block;
+	position: relative;
+	min-width: 8rem;
+}
+
+.eventimage-container-img {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+.registration-container {
+	display: inline-block;
+	border: 1px;
+	border-style: ridge;
+	width: 43%;
+	position: absolute;
+	font-size: 14px;
+	padding: 0.5rem;
+}
+
+.activity-type {
+	color: #82888a;
+	display: inline-block;
+	margin-bottom: 5px;
+	text-transform: uppercase;
+}
+.col-xs-12 {
+	width: 100%;
+}
+
+strong {
+	font-weight: 500;
+}
+
+.about-description {
+	line-height: 21px;
+	margin-bottom: 0;
+	font-size: 14px;
+}
+
+.toggle-section .sub-heading {
+	cursor: pointer;
+	font-size: 16px;
+	font-weight: 600;
+	margin: 16px 0;
+}
+
+.toggle-section {
+	border-bottom: 1px solid #d8d8d8;
+}
+btn {
+	outline: none;
+}
+
+.collapsible {
+	line-height: 0.6;
+}
+
+.toggle-section .sub-heading .toggle-btn,
+toggle-section .sub-heading .toggle-btn {
+	background-color: inherit;
+	color: #4a4a4a;
+	float: right;
+	font-size: 30px;
+	font-weight: 400;
+	margin: 3px 0 0;
+	padding: 0;
+	text-shadow: none;
+}
+
+.minus-sign::before {
+	content: '\2212';
+}
+
+.plus-sign::before {
+	content: '\002B';
+}
+
+.description {
+	margin-bottom: 10px;
+}
+
+.description {
+	text-align: left-align;
+}
+
+.page-footer {
+	line-height: 21px;
+	margin-bottom: 10rem;
+	font-size: 14px;
+}
+
 @media (min-width: 780px) {
+	.event-pages {
+		/* margin-top: -20px; */
+		margin-top: 0px;
+	}
+	.logo-container {
+		margin-right: 10px;
+	}
 	.event-item__image {
 		height: 12.5rem;
 	}
@@ -114,5 +313,8 @@
 	.event-item__modal {
 		width: 45%;
 		height: 20%;
+	}
+	.description {
+		text-align: justify;
 	}
 }

@@ -46,22 +46,33 @@ const ClubAuth = () => {
 						'Content-Type': 'application/json'
 					}
 				);
-				/**
-				 * Need to put redirect before calling clubAuthContext.clubLogin(responseData.club.id).
-				 * Otherwise App.js has ClubAuthContext.provider will re-render App and go to
-				 * <Redirect to="/"> If we have components that send http request in that Route
-				 * the http request will be aborted and got a warning:
-				 * Warning: Can't perform a React state update on an unmounted component. when
-				 * trying to redirect page after logging
-				 */
-				history.push(`/events/club/${responseData.clubId}`);
-				// club.id is coming from clubsController loginClub
-				// id is from {getters: true}
-				clubAuthContext.clubLogin(
-					responseData.clubId,
-					responseData.name,
-					responseData.token
-				);
+
+				if (clubAuthContext.clubRedirectURL) {
+					clubAuthContext.clubLogin(
+						responseData.clubId,
+						responseData.name,
+						responseData.token
+					);
+					history.push(clubAuthContext.clubRedirectURL);
+				} else {
+					/**
+					 * Need to put redirect before calling clubAuthContext.clubLogin(responseData.club.id).
+					 * Otherwise App.js has ClubAuthContext.provider will re-render App and go to
+					 * <Redirect to="/"> If we have components that send http request in that Route
+					 * the http request will be aborted and got a warning:
+					 * Warning: Can't perform a React state update on an unmounted component. when
+					 * trying to redirect page after logging
+					 */
+
+					history.push(`/events/club/${responseData.clubId}`);
+					// club.id is coming from clubsController loginClub
+					// id is from {getters: true}
+					clubAuthContext.clubLogin(
+						responseData.clubId,
+						responseData.name,
+						responseData.token
+					);
+				}
 			} catch (err) {
 				// empty. Custom hook takes care of it already
 				console.log('ClubAuth err= ', err);

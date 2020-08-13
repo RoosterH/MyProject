@@ -1,18 +1,14 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useParams } from 'react-router-dom';
 
-import { ClubAuthContext } from '../../shared/context/auth-context';
-import { ClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
-import './EventForm.css';
+import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import FormBuilder from '../components/FormBuilder';
 
+import './EventForm.css';
+
 const EventFormBuilder = () => {
-	const clubAuth = useContext(ClubAuthContext);
 	let eventId = useParams().id;
-	// To make sure page refreshing reloads correctly, we need to add path="/events/new" to
-	// (!clubToken) route. To avoid hacking, we want to re-direct to auth page, if club not logging
-	// in or clubId doesn't match
-	ClubLoginValidation();
+	useClubLoginValidation();
 
 	return <FormBuilder id={eventId} />;
 };

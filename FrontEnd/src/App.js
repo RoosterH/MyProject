@@ -28,7 +28,7 @@ const ClubAuth = React.lazy(() => import('./clubs/pages/ClubAuth'));
 const ClubEvents = React.lazy(() =>
 	import('./clubs/pages/ClubEvents')
 );
-const Error = React.lazy(() => import('./shared/util/error'));
+const Error = React.lazy(() => import('./shared/utils/error'));
 const Event = React.lazy(() => import('./event/pages/Event'));
 const EventForm = React.lazy(() => import('./event/pages/EventForm'));
 const EventFormBuilder = React.lazy(() =>
@@ -51,7 +51,9 @@ const App = () => {
 		clubLogin,
 		clubLogout,
 		clubId,
-		clubName
+		clubName,
+		clubRedirectURL,
+		setClubRedirectURL
 	} = useClubAuth();
 
 	const {
@@ -59,7 +61,9 @@ const App = () => {
 		userLogin,
 		userLogout,
 		userId,
-		userName
+		userName,
+		redirectURL,
+		setRedirectURL
 	} = useUserAuth();
 
 	const { isInsideForm, setIsInsideForm } = useFormHook();
@@ -118,8 +122,8 @@ const App = () => {
 		routes = (
 			<Switch>
 				{/* if Routes failed authentication redirect to auth pages */}
-				<Redirect strict from="/events/update/:id" to="/clubs/auth" />
-				<Redirect strict from="/events/form/:id" to="/users/auth" />
+				{/* <Redirect strict from="/events/update/:id" to="/clubs/auth" /> */}
+
 				<Route path="/" exact>
 					<Events />
 				</Route>
@@ -154,7 +158,7 @@ const App = () => {
 				<Route path="/clubs/events/new" exact>
 					<NewEvent />
 				</Route>
-				<Redirect strict from="/clubs/events/new" to="/clubs/auth" />
+				{/* <Redirect strict from="/clubs/events/new" to="/clubs/auth" /> */}
 
 				{/* Very import to keep sequence of the following 2 routes. Change the sequence will cause
 				    page refreshing not working properly.
@@ -164,11 +168,16 @@ const App = () => {
 				<Route path="/events/formbuilder/:id" exact>
 					<EventFormBuilder />
 				</Route>
-				<Redirect
+				{/* <Redirect
 					strict
 					from="/events/formbuilder/:id"
 					to="/clubs/auth"
-				/>
+				/> */}
+
+				<Route path="/events/form/:id" exact>
+					<EventForm />
+				</Route>
+
 				<Route path="/error" exact>
 					<Error />
 				</Route>
@@ -184,7 +193,9 @@ const App = () => {
 				clubId: clubId,
 				clubName: clubName,
 				clubLogin: clubLogin,
-				clubLogout: clubLogout
+				clubLogout: clubLogout,
+				clubRedirectURL: clubRedirectURL,
+				setClubRedirectURL: setClubRedirectURL
 			}}>
 			<UserAuthContext.Provider
 				value={{
@@ -192,8 +203,10 @@ const App = () => {
 					userToken: userToken,
 					userId: userId,
 					userName: userName,
+					redirectURL: redirectURL,
 					userLogin: userLogin,
-					userLogout: userLogout
+					userLogout: userLogout,
+					setRedirectURL: setRedirectURL
 				}}>
 				<FormContext.Provider
 					value={{

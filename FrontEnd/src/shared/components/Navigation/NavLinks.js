@@ -22,7 +22,6 @@ const NavLinks = props => {
 	// to avoid race condition between existing form page and logout handler
 	const formContext = useContext(FormContext);
 	const isInsideForm = formContext.isInsideForm;
-	console.log('isInsideForm = ', isInsideForm);
 
 	/* ----- User Section ----- */
 	const userAuth = useContext(UserAuthContext);
