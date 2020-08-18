@@ -304,7 +304,7 @@ const UserAuth = () => {
 		<React.Fragment>
 			{/* error coming from const [error, setError] = useState(); */}
 			<ErrorModal error={error || passwordError} onClear={clearErr} />
-			{isLoading && <LoadingSpinner />}
+			{isLoading && <LoadingSpinner asOverlay />}
 			{isLoginMode && userAuthForm()}
 			{!isLoginMode && userSignupForm()}
 			<div className="auth-footer-div">

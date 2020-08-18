@@ -10,6 +10,8 @@ import ReactDatePicker from 'react-datepicker';
 import StarRating from './star-rating';
 import HeaderBar from './header-bar';
 
+import './form-elements.css';
+
 const FormElements = {};
 const myxss = new xss.FilterXSS({
 	whiteList: {
@@ -39,6 +41,7 @@ const ComponentLabel = props => {
 	return (
 		<label className={props.className || ''}>
 			<span
+				className={props.spanClassName || ''}
 				dangerouslySetInnerHTML={{
 					__html: myxss.process(props.data.label)
 				}}
@@ -1083,6 +1086,93 @@ class Range extends React.Component {
 	}
 }
 
+class ParagraphCheckbox extends React.Component {
+	constructor(props) {
+		super(props);
+		this.options = {};
+	}
+
+	render() {
+		// Start of Header and Paragaph section
+		let classNames = 'static';
+		if (this.props.data.bold) {
+			classNames += ' bold';
+		}
+		if (this.props.data.italic) {
+			classNames += ' italic';
+		}
+		// End of Header and Paragaph section
+
+		// Start of Checkbox section
+		const self = this;
+		let checkboxClassNames = 'custom-control custom-checkbox';
+		if (this.props.data.inline) {
+			checkboxClassNames += ' option-inline';
+		}
+
+		let baseClasses = 'SortableItem rfb-item';
+		if (this.props.data.pageBreakBefore) {
+			baseClasses += ' alwaysbreak';
+		}
+		// End of Checkbox section
+
+		return (
+			<React.Fragment>
+				<div className={baseClasses}>
+					<ComponentHeader {...this.props} />
+					<ComponentLabel
+						spanClassName="paragraphcheckbox_lable"
+						{...this.props}
+					/>
+					<p
+						className="paragraphcheckbox_content"
+						dangerouslySetInnerHTML={{
+							__html: myxss.process(this.props.data.content)
+						}}
+					/>
+					<div className="form-group">
+						{this.props.data.options.map(option => {
+							const this_key = `preview_${option.key}`;
+							const props = {};
+							props.name = `option_${option.key}`;
+
+							props.type = 'checkbox';
+							props.value = option.value;
+							if (self.props.mutable) {
+								props.defaultChecked =
+									self.props.defaultValue !== undefined &&
+									self.props.defaultValue.indexOf(option.key) > -1;
+							}
+							if (this.props.read_only) {
+								props.disabled = 'disabled';
+							}
+							return (
+								<div className={checkboxClassNames} key={this_key}>
+									<input
+										id={'fid_' + this_key}
+										className="custom-control-input"
+										ref={c => {
+											if (c && self.props.mutable) {
+												self.options[`child_ref_${option.key}`] = c;
+											}
+										}}
+										{...props}
+									/>
+									<label
+										className="custom-control-label"
+										htmlFor={'fid_' + this_key}>
+										{option.text}
+									</label>
+								</div>
+							);
+						})}
+					</div>
+				</div>
+			</React.Fragment>
+		);
+	}
+}
+
 FormElements.Header = Header;
 FormElements.Paragraph = Paragraph;
 FormElements.Label = Label;
@@ -1102,5 +1192,6 @@ FormElements.HyperLink = HyperLink;
 FormElements.Download = Download;
 FormElements.Camera = Camera;
 FormElements.Range = Range;
+FormElements.ParagraphCheckbox = ParagraphCheckbox;
 
 export default FormElements;

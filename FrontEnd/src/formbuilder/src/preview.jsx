@@ -152,6 +152,7 @@ export default class Preview extends React.Component {
 				]
 			}
 		});
+		console.log('newData = ', newData);
 		this.setState(newData);
 		store.dispatch('updateOrder', newData.data);
 	}

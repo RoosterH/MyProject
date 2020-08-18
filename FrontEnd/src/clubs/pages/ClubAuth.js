@@ -307,7 +307,7 @@ const ClubAuth = () => {
 		<React.Fragment>
 			{/* error coming from const [error, setError] = useState(); */}
 			<ErrorModal error={error || passwordError} onClear={clearErr} />
-			{isLoading && <LoadingSpinner />}
+			{isLoading && <LoadingSpinner asOverlay />}
 			{isLoginMode && clubAuthForm()}
 			{!isLoginMode && clubSignupForm()}
 			<div className="auth-footer-div">

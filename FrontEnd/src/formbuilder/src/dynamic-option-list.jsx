@@ -72,16 +72,27 @@ export default class DynamicOptionList extends React.Component {
 	}
 
 	addOption(index) {
+		console.log('index = ', index);
+		console.log('element = ', this.state.element.options[0].key);
+		let optionsLength = this.state.element.options.length;
+		let key;
+		if (this.state.element.options[0].key.split('_').length > 0) {
+			let optionKey = this.state.element.options[0].key;
+			let optionName = optionKey.split('_')[0];
+			key = optionName + '_' + ID.uuid();
+		}
+
 		const this_element = this.state.element;
 		this_element.options.splice(index + 1, 0, {
 			value: '',
 			text: '',
-			key: ID.uuid()
+			key: key ? key : ID.uuid()
 		});
 		this.props.updateElement.call(this.props.preview, this_element);
 	}
 
 	removeOption(index) {
+		console.log('remove index = ', index);
 		const this_element = this.state.element;
 		this_element.options.splice(index, 1);
 		this.props.updateElement.call(this.props.preview, this_element);
@@ -104,12 +115,12 @@ export default class DynamicOptionList extends React.Component {
 									<b>Value</b>
 								</div>
 							)}
-							{this.props.canHaveOptionValue &&
+							{/* {this.props.canHaveOptionValue &&
 								this.props.canHaveOptionCorrect && (
 									<div className="col-sm-4">
 										<b>Correct</b>
 									</div>
-								)}
+								)} */}
 						</div>
 					</li>
 					{this.props.element.options.map((option, index) => {
@@ -145,7 +156,7 @@ export default class DynamicOptionList extends React.Component {
 											/>
 										</div>
 									)}
-									{this.props.canHaveOptionValue &&
+									{/* {this.props.canHaveOptionValue &&
 										this.props.canHaveOptionCorrect && (
 											<div className="col-sm-1">
 												<input
@@ -159,7 +170,7 @@ export default class DynamicOptionList extends React.Component {
 													checked={option.hasOwnProperty('correct')}
 												/>
 											</div>
-										)}
+										)} */}
 									<div className="col-sm-3">
 										<div className="dynamic-options-actions-buttons">
 											<button

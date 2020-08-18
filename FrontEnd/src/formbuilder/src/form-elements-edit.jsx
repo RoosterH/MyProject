@@ -109,27 +109,28 @@ export default class FormElementsEdit extends React.Component {
 		return EditorState.createWithContent(contentState);
 	}
 
-	addOptions() {
-		const optionsApiUrl = document.getElementById('optionsApiUrl')
-			.value;
-		console.log('optionsApiUrl = ', optionsApiUrl);
-		if (optionsApiUrl) {
-			get(optionsApiUrl).then(data => {
-				this.props.element.options = [];
-				const { options } = this.props.element;
-				data.forEach(x => {
-					// eslint-disable-next-line no-param-reassign
-					x.key = ID.uuid();
-					options.push(x);
-				});
-				const this_element = this.state.element;
-				this.setState({
-					element: this_element,
-					dirty: true
-				});
-			});
-		}
-	}
+	// this is for option canPopulateFromApi
+	// addOptions() {
+	// 	const optionsApiUrl = document.getElementById('optionsApiUrl')
+	// 		.value;
+	// 	console.log('optionsApiUrl = ', optionsApiUrl);
+	// 	if (optionsApiUrl) {
+	// 		get(optionsApiUrl).then(data => {
+	// 			this.props.element.options = [];
+	// 			const { options } = this.props.element;
+	// 			data.forEach(x => {
+	// 				// eslint-disable-next-line no-param-reassign
+	// 				x.key = ID.uuid();
+	// 				options.push(x);
+	// 			});
+	// 			const this_element = this.state.element;
+	// 			this.setState({
+	// 				element: this_element,
+	// 				dirty: true
+	// 			});
+	// 		});
+	// 	}
+	// }
 
 	render() {
 		if (this.state.dirty) {
@@ -209,6 +210,9 @@ export default class FormElementsEdit extends React.Component {
 		}
 
 		let editorState;
+		if (this.props.element.hasOwnProperty('name')) {
+			editorState = this.convertFromHTML(this.props.element.name);
+		}
 		if (this.props.element.hasOwnProperty('content')) {
 			editorState = this.convertFromHTML(this.props.element.content);
 		}
@@ -224,23 +228,106 @@ export default class FormElementsEdit extends React.Component {
 						className="float-right fas fa-times dismiss-edit"
 						onClick={this.props.manualEditModeOff}></i>
 				</div>
-				{this.props.element.hasOwnProperty('content') && (
-					<div className="form-group">
-						<label className="control-label">Text to display:</label>
-
-						<Editor
-							toolbar={toolbar}
-							defaultEditorState={editorState}
-							onBlur={this.updateElement.bind(this)}
-							onEditorStateChange={this.onEditorStateChange.bind(
-								this,
-								0,
-								'content'
-							)}
-							stripPastedStyles={true}
-						/>
-					</div>
-				)}
+				{/* this section is for ParagraphCheckbox */}
+				{this.props.element.hasOwnProperty('content') &&
+					this.props.element.hasOwnProperty('label') && (
+						<div className="form-group">
+							<label>Display Label</label>
+							<Editor
+								toolbar={toolbar}
+								defaultEditorState={editorState}
+								onBlur={this.updateElement.bind(this)}
+								onEditorStateChange={this.onEditorStateChange.bind(
+									this,
+									0,
+									'label'
+								)}
+								stripPastedStyles={true}
+								placeholder="Please enter label"
+								editorClassName="rdw-editor-label"
+							/>
+							<br />
+							<label className="control-label">Content:</label>
+							<Editor
+								toolbar={toolbar}
+								defaultEditorState={this.convertFromHTML(
+									this.props.element.content
+								)}
+								onBlur={this.updateElement.bind(this)}
+								onEditorStateChange={this.onEditorStateChange.bind(
+									this,
+									0,
+									'content'
+								)}
+								stripPastedStyles={true}
+								editorClassName="rdw-editor-content"
+							/>
+							<br />
+							<div className="custom-control custom-checkbox">
+								<input
+									id="is-required"
+									className="custom-control-input"
+									type="checkbox"
+									checked={this_checked}
+									value={true}
+									onChange={this.editElementProp.bind(
+										this,
+										'required',
+										'checked'
+									)}
+								/>
+								<label
+									className="custom-control-label"
+									htmlFor="is-required">
+									Required
+								</label>
+							</div>
+							{(this.state.element.element === 'RadioButtons' ||
+								this.state.element.element === 'Checkboxes') &&
+								canHaveDisplayHorizontal && (
+									<div className="custom-control custom-checkbox">
+										<input
+											id="display-horizontal"
+											className="custom-control-input"
+											type="checkbox"
+											checked={this_checked_inline}
+											value={true}
+											onChange={this.editElementProp.bind(
+												this,
+												'inline',
+												'checked'
+											)}
+										/>
+										<label
+											className="custom-control-label"
+											htmlFor="display-horizontal">
+											Display horizontally
+										</label>
+									</div>
+								)}
+						</div>
+					)}
+				{/* this section is for Paragraph */}
+				{this.props.element.hasOwnProperty('content') &&
+					!this.props.element.hasOwnProperty('label') && (
+						<div className="form-group">
+							<label className="control-label">
+								Text to display:
+							</label>
+							<Editor
+								toolbar={toolbar}
+								defaultEditorState={editorState}
+								onBlur={this.updateElement.bind(this)}
+								onEditorStateChange={this.onEditorStateChange.bind(
+									this,
+									0,
+									'content'
+								)}
+								stripPastedStyles={true}
+								editorClassName="rdw-editor-content"
+							/>
+						</div>
+					)}
 				{this.props.element.hasOwnProperty('file_path') && (
 					<div className="form-group">
 						<label className="control-label" htmlFor="fileSelect">
@@ -364,154 +451,157 @@ export default class FormElementsEdit extends React.Component {
 						</div>
 					</div>
 				)}
-				{this.props.element.hasOwnProperty('label') && (
-					<div className="form-group">
-						<label>Display Label</label>
-						<Editor
-							toolbar={toolbar}
-							defaultEditorState={editorState}
-							onBlur={this.updateElement.bind(this)}
-							onEditorStateChange={this.onEditorStateChange.bind(
-								this,
-								0,
-								'label'
-							)}
-							stripPastedStyles={true}
-							placeholder="This is a test"
-						/>
-						<br />
-						<div className="custom-control custom-checkbox">
-							<input
-								id="is-required"
-								className="custom-control-input"
-								type="checkbox"
-								checked={this_checked}
-								value={true}
-								onChange={this.editElementProp.bind(
+				{/* this section is for Radioboxes or Checkboxes */}
+				{this.props.element.hasOwnProperty('label') &&
+					!this.props.element.hasOwnProperty('content') && (
+						<div className="form-group">
+							<label>Display Label</label>
+							<Editor
+								toolbar={toolbar}
+								defaultEditorState={editorState}
+								onBlur={this.updateElement.bind(this)}
+								onEditorStateChange={this.onEditorStateChange.bind(
 									this,
-									'required',
-									'checked'
+									0,
+									'label'
 								)}
+								stripPastedStyles={true}
+								placeholder="Please enter label"
 							/>
-							<label
-								className="custom-control-label"
-								htmlFor="is-required">
-								Required
-							</label>
-						</div>
-						{this.props.element.hasOwnProperty('readOnly') && (
+							<br />
 							<div className="custom-control custom-checkbox">
 								<input
-									id="is-read-only"
+									id="is-required"
 									className="custom-control-input"
 									type="checkbox"
-									checked={this_read_only}
+									checked={this_checked}
 									value={true}
 									onChange={this.editElementProp.bind(
 										this,
-										'readOnly',
+										'required',
 										'checked'
 									)}
 								/>
 								<label
 									className="custom-control-label"
-									htmlFor="is-read-only">
-									Read only
+									htmlFor="is-required">
+									Required
 								</label>
 							</div>
-						)}
-						{this.props.element.hasOwnProperty('defaultToday') && (
-							<div className="custom-control custom-checkbox">
-								<input
-									id="is-default-to-today"
-									className="custom-control-input"
-									type="checkbox"
-									checked={this_default_today}
-									value={true}
-									onChange={this.editElementProp.bind(
-										this,
-										'defaultToday',
-										'checked'
-									)}
-								/>
-								<label
-									className="custom-control-label"
-									htmlFor="is-default-to-today">
-									Default to Today?
-								</label>
-							</div>
-						)}
-						{this.props.element.hasOwnProperty('showTimeSelect') && (
-							<div className="custom-control custom-checkbox">
-								<input
-									id="show-time-select"
-									className="custom-control-input"
-									type="checkbox"
-									checked={this_show_time_select}
-									value={true}
-									onChange={this.editElementProp.bind(
-										this,
-										'showTimeSelect',
-										'checked'
-									)}
-								/>
-								<label
-									className="custom-control-label"
-									htmlFor="show-time-select">
-									Show Time Select?
-								</label>
-							</div>
-						)}
-						{this_show_time_select &&
-							this.props.element.hasOwnProperty(
-								'showTimeSelectOnly'
+							{this.props.element.hasOwnProperty('readOnly') && (
+								<div className="custom-control custom-checkbox">
+									<input
+										id="is-read-only"
+										className="custom-control-input"
+										type="checkbox"
+										checked={this_read_only}
+										value={true}
+										onChange={this.editElementProp.bind(
+											this,
+											'readOnly',
+											'checked'
+										)}
+									/>
+									<label
+										className="custom-control-label"
+										htmlFor="is-read-only">
+										Read only
+									</label>
+								</div>
+							)}
+							{this.props.element.hasOwnProperty('defaultToday') && (
+								<div className="custom-control custom-checkbox">
+									<input
+										id="is-default-to-today"
+										className="custom-control-input"
+										type="checkbox"
+										checked={this_default_today}
+										value={true}
+										onChange={this.editElementProp.bind(
+											this,
+											'defaultToday',
+											'checked'
+										)}
+									/>
+									<label
+										className="custom-control-label"
+										htmlFor="is-default-to-today">
+										Default to Today?
+									</label>
+								</div>
+							)}
+							{this.props.element.hasOwnProperty(
+								'showTimeSelect'
 							) && (
 								<div className="custom-control custom-checkbox">
 									<input
-										id="show-time-select-only"
+										id="show-time-select"
 										className="custom-control-input"
 										type="checkbox"
-										checked={this_show_time_select_only}
+										checked={this_show_time_select}
 										value={true}
 										onChange={this.editElementProp.bind(
 											this,
-											'showTimeSelectOnly',
+											'showTimeSelect',
 											'checked'
 										)}
 									/>
 									<label
 										className="custom-control-label"
-										htmlFor="show-time-select-only">
-										Show Time Select Only?
+										htmlFor="show-time-select">
+										Show Time Select?
 									</label>
 								</div>
 							)}
-						{(this.state.element.element === 'RadioButtons' ||
-							this.state.element.element === 'Checkboxes') &&
-							canHaveDisplayHorizontal && (
-								<div className="custom-control custom-checkbox">
-									<input
-										id="display-horizontal"
-										className="custom-control-input"
-										type="checkbox"
-										checked={this_checked_inline}
-										value={true}
-										onChange={this.editElementProp.bind(
-											this,
-											'inline',
-											'checked'
-										)}
-									/>
-									<label
-										className="custom-control-label"
-										htmlFor="display-horizontal">
-										Display horizontally
-									</label>
-								</div>
-							)}
-					</div>
-				)}
-
+							{this_show_time_select &&
+								this.props.element.hasOwnProperty(
+									'showTimeSelectOnly'
+								) && (
+									<div className="custom-control custom-checkbox">
+										<input
+											id="show-time-select-only"
+											className="custom-control-input"
+											type="checkbox"
+											checked={this_show_time_select_only}
+											value={true}
+											onChange={this.editElementProp.bind(
+												this,
+												'showTimeSelectOnly',
+												'checked'
+											)}
+										/>
+										<label
+											className="custom-control-label"
+											htmlFor="show-time-select-only">
+											Show Time Select Only?
+										</label>
+									</div>
+								)}
+							{(this.state.element.element === 'RadioButtons' ||
+								this.state.element.element === 'Checkboxes') &&
+								canHaveDisplayHorizontal && (
+									<div className="custom-control custom-checkbox">
+										<input
+											id="display-horizontal"
+											className="custom-control-input"
+											type="checkbox"
+											checked={this_checked_inline}
+											value={true}
+											onChange={this.editElementProp.bind(
+												this,
+												'inline',
+												'checked'
+											)}
+										/>
+										<label
+											className="custom-control-label"
+											htmlFor="display-horizontal">
+											Display horizontally
+										</label>
+									</div>
+								)}
+						</div>
+					)}
 				{this.state.element.element === 'Signature' &&
 				this.props.element.readOnly ? (
 					<div className="form-group">
@@ -538,8 +628,7 @@ export default class FormElementsEdit extends React.Component {
 				) : (
 					<div />
 				)}
-
-				{canHavePageBreakBefore && (
+				{/* {canHavePageBreakBefore && (
 					<div className="form-group">
 						<label className="control-label">Print Options</label>
 						<div className="custom-control custom-checkbox">
@@ -562,9 +651,8 @@ export default class FormElementsEdit extends React.Component {
 							</label>
 						</div>
 					</div>
-				)}
-
-				{canHaveAlternateForm && (
+				)} */}
+				{/* {canHaveAlternateForm && (
 					<div className="form-group">
 						<label className="control-label">
 							Alternate/Signature Page
@@ -589,8 +677,7 @@ export default class FormElementsEdit extends React.Component {
 							</label>
 						</div>
 					</div>
-				)}
-
+				)} */}
 				{this.props.element.hasOwnProperty('step') && (
 					<div className="form-group">
 						<div className="form-group-range">
@@ -787,7 +874,7 @@ export default class FormElementsEdit extends React.Component {
 							/>
 						</div>
 					)}
-				{this.props.element.canPopulateFromApi &&
+				{/* {this.props.element.canPopulateFromApi &&
 					this.props.element.hasOwnProperty('options') && (
 						<div className="form-group">
 							<label
@@ -814,7 +901,7 @@ export default class FormElementsEdit extends React.Component {
 								</div>
 							</div>
 						</div>
-					)}
+					)} */}
 				{this.props.element.hasOwnProperty('options') && (
 					<DynamicOptionList
 						showCorrectColumn={this.props.showCorrectColumn}

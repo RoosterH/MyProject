@@ -15,7 +15,7 @@ const userSchema = new Schema({
 	password: { type: String, required: true, minlength: 6 },
 	passwordValidation: { type: String, minlength: 6 },
 	image: { type: String, require: true },
-	// because a user could have multiple events so we need to use array
+	// because a user could have multiple events so we need to use array. [] means array
 	// using ref as a foreing key referring to Event
 	events: [
 		{

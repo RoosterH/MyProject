@@ -33,7 +33,10 @@ const eventSchema = new Schema({
 	clubImage: { type: String, required: true },
 	published: { type: Boolean, required: true },
 	// event entry form
-	entryFormData: { type: Array, required: true }
+	entryFormData: { type: Array, required: true },
+	entries: [
+		{ type: mongoose.Types.ObjectId, required: true, ref: 'Entries' }
+	]
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

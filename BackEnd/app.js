@@ -11,6 +11,7 @@ const MongoStore = require('connect-mongo')(session);
 const clubsRoutes = require('./routes/clubsRoutes');
 const eventsRoutes = require('./routes/eventsRoutes');
 const usersRoutes = require('./routes/usersRoutes');
+const entriesRoutes = require('./routes/entriesRoutes');
 const HttpError = require('./models/httpError');
 
 const app = express();
@@ -47,6 +48,7 @@ app.use((req, res, next) => {
 app.use('/api/events/', eventsRoutes);
 app.use('/api/clubs/', clubsRoutes);
 app.use('/api/users/', usersRoutes);
+app.use('/api/entries/', entriesRoutes);
 
 // this route is for the requests that are not in any of the routes
 app.use((req, res, next) => {

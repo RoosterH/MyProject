@@ -225,10 +225,13 @@ export default class ReactForm extends React.Component {
 			this.emitter.emit('formValidation', errors);
 		}
 
+		console.log('props = ', this.props);
+		console.log('props = ', this.props.data);
 		// Only submit if there are no errors.
 		if (errors.length < 1) {
 			console.log('form handleSubmit 2');
-			const { onSubmit } = this.props;
+			const onSubmit = this.props;
+			console.log('onSubmit = ', onSubmit);
 			if (onSubmit) {
 				console.log('form handleSubmit 3');
 				const data = this._collectFormData(this.props.data);
@@ -406,8 +409,8 @@ export default class ReactForm extends React.Component {
 		return (
 			<div
 				style={{
-					'border-style': 'double',
-					'border-color': '#a3aeae'
+					borderStyle: 'double',
+					borderColor: '#a3aeae'
 				}}>
 				<FormValidator emitter={this.emitter} />
 				<div className="react-form-builder-form">

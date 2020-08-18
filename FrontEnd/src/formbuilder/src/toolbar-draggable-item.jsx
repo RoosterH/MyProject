@@ -25,7 +25,7 @@ class ToolbarItem extends React.Component {
 		return connectDragSource(
 			<li onClick={onClick}>
 				<i className={data.icon}></i>
-				{data.name}
+				<strong>{data.name}</strong>
 			</li>
 		);
 	}

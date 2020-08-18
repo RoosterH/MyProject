@@ -3,8 +3,26 @@ import PlaceHolder from './form-place-holder';
 import BaseFormElements from './form-elements';
 
 const {
-  Header, Paragraph, Label, LineBreak, TextInput, NumberInput, TextArea, Dropdown, Checkboxes,
-  DatePicker, RadioButtons, Image, Rating, Tags, Signature, HyperLink, Download, Camera, Range,
+	Header,
+	Paragraph,
+	Label,
+	LineBreak,
+	TextInput,
+	NumberInput,
+	TextArea,
+	Dropdown,
+	Checkboxes,
+	DatePicker,
+	RadioButtons,
+	Image,
+	Rating,
+	Tags,
+	Signature,
+	HyperLink,
+	Download,
+	Camera,
+	Range,
+	ParagraphCheckbox
 } = BaseFormElements;
 
 const FormElements = {};
@@ -29,5 +47,6 @@ FormElements.Download = SortableElement(Download);
 FormElements.Camera = SortableElement(Camera);
 FormElements.Range = SortableElement(Range);
 FormElements.PlaceHolder = SortableElement(PlaceHolder);
+FormElements.ParagraphCheckbox = SortableElement(ParagraphCheckbox);
 
 export default FormElements;

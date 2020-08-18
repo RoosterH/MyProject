@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 const getCoordinatesForAddress = require('../util/location');
 const Event = require('../models/event');
 const Club = require('../models/club');
-const mongooseUniqueValidator = require('mongoose-unique-validator');
+// const mongooseUniqueValidator = require('mongoose-unique-validator');
 const fileUpload = require('../middleware/file-upload');
 const { min } = require('moment');
 
@@ -143,6 +143,7 @@ const getEventsByUserId = async (req, res, next) => {
 		)
 	});
 };
+
 // POST /api/events/date/
 const getEventsByDate = async (req, res, next) => {
 	const { eventType, startDate, endDate, distance, zip } = req.body;

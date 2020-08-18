@@ -33,6 +33,7 @@ export default class Toolbar extends React.Component {
 	}
 
 	static _defaultItemOptions(element) {
+		console.log('element = ', element);
 		switch (element) {
 			case 'Dropdown':
 				return [
@@ -104,6 +105,14 @@ export default class Toolbar extends React.Component {
 						value: 'place_holder_option_3',
 						text: 'Place holder option 3',
 						key: `radiobuttons_option_${ID.uuid()}`
+					}
+				];
+			case 'ParagraphCheckbox':
+				return [
+					{
+						value: 'place_holder_option_1',
+						text: 'Place holder option 1',
+						key: `checkboxes_option_${ID.uuid()}`
 					}
 				];
 			default:
@@ -274,6 +283,17 @@ export default class Toolbar extends React.Component {
 				icon: 'fas fa-camera',
 				label: 'Placeholder Label',
 				field_name: 'camera_'
+			},
+			{
+				key: 'ParagraphCheckbox',
+				canHaveAnswer: true,
+				name: 'ParagraphCheckbox',
+				static: true,
+				icon: 'far fa-check-square',
+				content: 'Placeholder text...',
+				label: 'Placeholder Label',
+				field_name: 'paragraphcheckbox_',
+				options: []
 			}
 		];
 	}
@@ -284,7 +304,7 @@ export default class Toolbar extends React.Component {
 			element: item.element || item.key,
 			text: item.name,
 			static: item.static,
-			required: false,
+			required: item.required ? item.required : false,
 			showDescription: item.showDescription
 		};
 
@@ -367,12 +387,16 @@ export default class Toolbar extends React.Component {
 			elementOptions.label = item.label;
 		}
 
+		// we only want to use default item option if it's not defined
 		if (item.options) {
-			elementOptions.options = Toolbar._defaultItemOptions(
-				elementOptions.element
-			);
+			if (item.options.length === 0) {
+				elementOptions.options = Toolbar._defaultItemOptions(
+					elementOptions.element
+				);
+			} else {
+				elementOptions.options = item.options;
+			}
 		}
-
 		return elementOptions;
 	}
 
@@ -389,7 +413,8 @@ export default class Toolbar extends React.Component {
 					{this.state.items.map(item => (
 						<ToolbarItem
 							data={item}
-							key={item.key}
+							// key={item.key}
+							key={item.name}
 							onClick={this._onClick.bind(this, item)}
 							onCreate={this.create}
 						/>

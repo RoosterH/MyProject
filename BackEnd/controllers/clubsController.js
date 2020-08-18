@@ -141,7 +141,7 @@ const createClub = async (req, res, next) => {
 		token = jwt.sign(
 			{ clubId: newClub.id, email: newClub.email },
 			JWT_PRIVATE_KEY,
-			{ expiresIn: '1h' }
+			{ expiresIn: '168h' }
 		);
 	} catch (err) {
 		const error = new HttpError(
@@ -214,7 +214,7 @@ const loginClub = async (req, res, next) => {
 		token = jwt.sign(
 			{ clubId: existingClub.id, email: existingClub.email },
 			JWT_PRIVATE_KEY,
-			{ expiresIn: '24h' }
+			{ expiresIn: '168h' }
 		);
 	} catch (err) {
 		const error = new HttpError(
@@ -435,10 +435,6 @@ const getEventForm = async (req, res, next) => {
 	let entryFormData = event.entryFormData;
 	if (!entryFormData || entryFormData.length === 0) {
 		if (club.entryFormTemplate.length > 0) {
-			console.log(
-				'club.entryFormTemplate 2 = ',
-				club.entryFormTemplate
-			);
 			entryFormData = club.entryFormTemplate;
 		} else {
 			res.status(200).json({ entryFormData: '[]' });
@@ -494,28 +490,6 @@ const createEventForm = async (req, res, next) => {
 		);
 		return next(error);
 	}
-
-	/***** This commented out section is trying to figure out what to add or to delete *****/
-	// let newField;
-	// New field added
-	// if (entryFormData.length > event.formData.length) {
-	// 	console.log('inside adding');
-	// 	entryFormData.map(field => {
-	// 		console.log('f = ', field);
-	// 		if (
-	// 			!event.formData ||
-	// 			event.formData.length === 0 ||
-	// 			!event.formData.includes(field)
-	// 		) {
-	// 			newField = field;
-	// 			readyToSave = true;
-	// 		}
-	// 	});
-	// } else {
-	// 	console.log('new task lenght = ', entryFormData.length);
-	// 	console.log('formData lenght = ', event.formData.length);
-	// }
-	// event.formData.push(newField);
 
 	// overwrite the old formData, reason for it because to figure out what to/not to replace
 	// is tidious and error prone, we are not going to have a form with a lot of data so hopefully

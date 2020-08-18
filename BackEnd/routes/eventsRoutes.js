@@ -8,7 +8,6 @@ const moment = require('moment');
 const eventsController = require('../controllers/eventsController');
 const fileUpload = require('../middleware/file-upload');
 const checkAuth = require('../middleware/check-auth');
-const { route } = require('./clubsRoutes');
 
 const router = express.Router();
 
@@ -48,6 +47,9 @@ router.get('/user/:uid', eventsController.getEventsByUserId);
 
 // get event entry form
 router.get('/form/:eid', eventsController.getEventEntryForm);
+
+// get event entry form
+router.get('/form/submit/:eid', eventsController.getEventEntryForm);
 
 // last valid day to allow for event addition, modification, or deletion
 let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');
