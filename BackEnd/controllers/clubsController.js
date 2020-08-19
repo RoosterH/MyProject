@@ -141,7 +141,7 @@ const createClub = async (req, res, next) => {
 		token = jwt.sign(
 			{ clubId: newClub.id, email: newClub.email },
 			JWT_PRIVATE_KEY,
-			{ expiresIn: '168h' }
+			{ expiresIn: '1h' }
 		);
 	} catch (err) {
 		const error = new HttpError(

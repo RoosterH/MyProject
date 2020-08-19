@@ -430,7 +430,6 @@ const EventItem = props => {
 											Event Description {'   '}
 											<button
 												type="button"
-												// className="btn collapsible minus-sign toggle-btn"
 												className={showDescription}
 												onClick={toggleDescriptionButton}></button>
 										</a>
@@ -462,7 +461,6 @@ const EventItem = props => {
 											Instruction {'   '}
 											<button
 												type="button"
-												// className="btn collapsible minus-sign toggle-btn"
 												className={showInstruction}
 												onClick={toggleInstructionButton}></button>
 										</a>

@@ -2,6 +2,9 @@ const jwt = require('jsonwebtoken');
 
 const HttpError = require('../models/httpError');
 
+const config = require('../Config/Config');
+const JWT_PRIVATE_KEY = config.JWT_PRIVATE_KEY;
+
 // export a middleware function
 // this funtion takes the request from client and verify its token.
 // Once verified, we add clubId to req.userData so clubId will be available
