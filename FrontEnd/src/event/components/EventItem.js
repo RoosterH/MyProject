@@ -371,19 +371,6 @@ const EventItem = props => {
 						<div className="col-xs-12">
 							<div className="clearfix">
 								<RegistrationMSG />
-								{/* <div class="section">
-								<a
-									href="javascript:void(0);"
-									class="btn btn-default btn-xs share-btn">
-									<span class="share-btn-icon"></span>
-								</a>
-								<div class="sharethis hidden">
-									<div
-										class="sharethis-inline-share-buttons sharethis-buttons"
-										data-title="Fit4Dance NYC | Dance Fitness Party - All Ages | ActivityHero"
-										data-url="https://www.activityhero.com/biz/fit4dance-nyc/dance-fitness-party-all-ages?location_id=126306&amp;schedule_id=537478&amp;utm_source=share-this&amp;utm_campaign=2019-12-18&amp;utm_medium=share_schedule"></div>
-								</div>
-							</div> */}
 							</div>
 							<div className="section">
 								<strong>

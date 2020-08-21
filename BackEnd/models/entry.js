@@ -24,6 +24,7 @@ const entrySchema = new Schema({
 		required: true,
 		ref: 'Event'
 	},
+	eventName: { type: String, required: true },
 	// event entry answer
 	answer: { type: Array, required: true },
 	time: { type: Date, required: true },
@@ -33,4 +34,4 @@ const entrySchema = new Schema({
 // 1st argument is the name will be used as the collection name in MongoDB,
 // 'Event' will be converted to 'events' in MongoDB
 // 2nd argument is the schema that will be used to create the object
-module.exports = mongoose.model('Event', entrySchema);
+module.exports = mongoose.model('Entry', entrySchema);

@@ -27,9 +27,8 @@ const EventForm = () => {
 	useUserLoginValidation(`/events/form/${eId}`);
 
 	let location = useLocation();
-	let path;
 	React.useEffect(() => {
-		path = location.pathname;
+		let path = location.pathname;
 		let redirectURL = userAuthContext.redirectURL;
 		if (path === redirectURL) {
 			// re-init redirectURL after re-direction route
@@ -105,12 +104,8 @@ const EventForm = () => {
 				<div className="event-formgenerator-container">
 					<div className="modal-content">
 						<ReactFormGenerator
-							// back_action="/"
-							// back_name="Back"
 							answer_data={{}}
-							action_name=""
-							form_action="/"
-							form_method="POST"
+							action_name="Register"
 							data={formData}
 						/>
 

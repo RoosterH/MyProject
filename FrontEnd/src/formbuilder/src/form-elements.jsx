@@ -1090,6 +1090,7 @@ class ParagraphCheckbox extends React.Component {
 	constructor(props) {
 		super(props);
 		this.options = {};
+		this.inputField = React.createRef();
 	}
 
 	render() {

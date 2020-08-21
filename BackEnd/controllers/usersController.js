@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
+const Entry = require('../models/entry');
+const Event = require('../models/event');
 const HttpError = require('../models/httpError');
 const User = require('../models/user');
 
@@ -375,6 +377,68 @@ const logoutUser = (req, res) => {
 	res.status(200).json({ message: `You are logged out.` });
 };
 
+// GET /api/events/club/:cid
+const getEvents = async (req, res, next) => {
+	const uId = req.params.uid;
+
+	let entries;
+	try {
+		// populate allows us to access a document in another collection
+		// and to work with data in that existing document
+		entries = await Entry.find({ userId: uId }).populate({
+			path: 'events',
+			options: { sort: { startDate: -1, endDate: -1 } }
+		}); //({ endDate: 1 });
+	} catch (err) {
+		const error = new HttpError(
+			'Get user events process failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!entries || entries.length === 0) {
+		const error = new HttpError('Could not find any event.', 404);
+		return next(error);
+	}
+
+	let events;
+	try {
+		// If you use await in a map, map will always return an array of promises.
+		// This is because asynchronous functions always return promises.
+		const promises = entries.map(async entry => {
+			let eventId = entry.eventId;
+			const event = await Event.findById(eventId);
+			return event;
+		});
+		// Since map always return promises (if you use await), you have to wait for the array of promises to get resolved.
+		// You can do this with await Promise.all(arrayOfPromises).
+		events = await Promise.all(promises);
+	} catch {
+		const error = new HttpError(
+			'Retrieving user events process failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!events || events.length === 0) {
+		const error = new HttpError(
+			'Retrieving events from DB failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		events: events.map(event =>
+			event.toObject({
+				getters: true
+			})
+		)
+	});
+};
+
 exports.getAllUsers = getAllUsers;
 exports.getUserById = getUserById;
 exports.createUser = createUser;
@@ -382,3 +446,4 @@ exports.loginUser = loginUser;
 exports.updateUser = updateUser;
 exports.deleteUser = deleteUser;
 exports.logoutUser = logoutUser;
+exports.getEvents = getEvents;

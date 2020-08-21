@@ -42,9 +42,6 @@ router.post(
 // need to be authenticated
 router.use(checkAuth);
 
-// users needs to login to see their events
-router.get('/user/:uid', eventsController.getEventsByUserId);
-
 // get event entry form
 router.get('/form/:eid', eventsController.getEventEntryForm);
 

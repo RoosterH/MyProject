@@ -1,28 +1,67 @@
-/**
- * <Form />
- */
-
-import React from 'react';
+import React, { useContext } from 'react';
 import ReactDOM from 'react-dom';
+import { useParams } from 'react-router-dom';
+
 import { EventEmitter } from 'fbemitter';
 import FormValidator from './form-validator';
 import FormElements from './form-elements';
+import ErrorModal from '../../shared/components/UIElements/ErrorModal';
+import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
+
 import '../../shared/scss/form-builder-form.scss';
+
+import { UserAuthContext } from '../../shared/context/auth-context';
+import { useHttpClient } from '../../shared/hooks/http-hook';
+/**
+ * <Form /> component. We will call it FormBuilderGenerator
+ */
 
 const {
 	Image,
 	Checkboxes,
 	Signature,
 	Download,
-	Camera
+	Camera,
+	ParagraphCheckbox
 } = FormElements;
 
+// This is the technique used to call hook in the class using Render Props.
+// https://hellocode.dev/using-hooks-with-classes#render-props
+// Make a wrapper function to wrap useHttpClient returns the logics from useHttpClient()
+// Later, in render code, we create <HookWrapper /> component and call its props function.
+function HookWrapper({ children }) {
+	const {
+		isLoading,
+		error,
+		sendRequest,
+		clearError
+	} = useHttpClient();
+
+	const userAuthContext = useContext(UserAuthContext);
+	const userToken = userAuthContext.userToken;
+	const eventId = useParams().id;
+	return children({
+		isLoading,
+		error,
+		sendRequest,
+		clearError,
+		userToken,
+		eventId
+	});
+}
+
 export default class ReactForm extends React.Component {
+	// class form extends React.Component {
 	form;
 
+	// private variable section
 	inputs = {};
-
 	answerData;
+	// we will assign sendRequest() to sendRQ
+	sendRQ;
+	userToken;
+	eventId;
+	// end of private variable section
 
 	constructor(props) {
 		super(props);
@@ -30,6 +69,7 @@ export default class ReactForm extends React.Component {
 		this.emitter = new EventEmitter();
 	}
 
+	// convert provided answers
 	_convert(answers) {
 		if (Array.isArray(answers)) {
 			const result = {};
@@ -46,7 +86,7 @@ export default class ReactForm extends React.Component {
 	}
 
 	_getDefaultValue(item) {
-		return this.answerData[item.field_name];
+		return this.answerData[item.RadioButtons];
 	}
 
 	_optionsDefaultValue(item) {
@@ -94,7 +134,8 @@ export default class ReactForm extends React.Component {
 			const ref = this.inputs[item.field_name];
 			if (
 				item.element === 'Checkboxes' ||
-				item.element === 'RadioButtons'
+				item.element === 'RadioButtons' ||
+				item.element === 'ParagraphCheckbox'
 			) {
 				item.options.forEach(option => {
 					const $option = ReactDOM.findDOMNode(
@@ -130,7 +171,8 @@ export default class ReactForm extends React.Component {
 			const ref = this.inputs[item.field_name];
 			if (
 				item.element === 'Checkboxes' ||
-				item.element === 'RadioButtons'
+				item.element === 'RadioButtons' ||
+				item.element === 'ParagraphCheckbox'
 			) {
 				let checked_options = 0;
 				item.options.forEach(option => {
@@ -167,7 +209,8 @@ export default class ReactForm extends React.Component {
 		const ref = this.inputs[item.field_name];
 		if (
 			item.element === 'Checkboxes' ||
-			item.element === 'RadioButtons'
+			item.element === 'RadioButtons' ||
+			item.element === 'ParagraphCheckbox'
 		) {
 			const checked_options = [];
 			item.options.forEach(option => {
@@ -214,8 +257,7 @@ export default class ReactForm extends React.Component {
 		}
 	}
 
-	handleSubmit(e) {
-		console.log('form handleSubmit 1');
+	async handleSubmit(e) {
 		e.preventDefault();
 
 		let errors = [];
@@ -225,22 +267,37 @@ export default class ReactForm extends React.Component {
 			this.emitter.emit('formValidation', errors);
 		}
 
-		console.log('props = ', this.props);
-		console.log('props = ', this.props.data);
 		// Only submit if there are no errors.
 		if (errors.length < 1) {
-			console.log('form handleSubmit 2');
-			const onSubmit = this.props;
-			console.log('onSubmit = ', onSubmit);
-			if (onSubmit) {
-				console.log('form handleSubmit 3');
-				const data = this._collectFormData(this.props.data);
-				console.log('data = ', data);
-				onSubmit(data);
+			const answer_data = this.props;
+			if (answer_data) {
+				try {
+					const answer = this._collectFormData(this.props.data);
+
+					// let eventId = '5f2c86bbecd136a29ed14fa8';
+					// we need to use JSON.stringify to send array objects.
+					// FormData with JSON.stringify not working
+					let responseData = await this.sendRQ(
+						process.env.REACT_APP_BACKEND_URL +
+							`/entries/submit/${this.eventId}`,
+						'POST',
+						JSON.stringify({
+							answer: answer
+						}),
+						{
+							'Content-type': 'application/json',
+							// adding JWT to header for authentication
+							// Authorization: 'Bearer ' + storageData.userToken
+							Authorization: 'Bearer ' + this.userToken
+						}
+					);
+
+					if (responseData) {
+						console.log('responseData = ', responseData);
+					}
+				} catch (err) {}
 			} else {
-				console.log('form handleSubmit 4');
-				const $form = ReactDOM.findDOMNode(this.form);
-				$form.submit();
+				throw new Error('Submit failed. Please select answers.');
 			}
 		}
 	}
@@ -248,7 +305,6 @@ export default class ReactForm extends React.Component {
 	validateForm() {
 		const errors = [];
 		let data_items = this.props.data;
-
 		if (this.props.display_short) {
 			data_items = this.props.data.filter(
 				i => i.alternateForm === true
@@ -359,6 +415,18 @@ export default class ReactForm extends React.Component {
 							defaultValue={this._optionsDefaultValue(item)}
 						/>
 					);
+				case 'ParagraphCheckbox':
+					return (
+						<ParagraphCheckbox
+							ref={c => (this.inputs[item.field_name] = c)}
+							read_only={this.props.read_only}
+							handleChange={this.handleChange}
+							mutable={true}
+							key={`form_${item.id}`}
+							data={item}
+							defaultValue={this._optionsDefaultValue(item)}
+						/>
+					);
 				case 'Image':
 					return (
 						<Image
@@ -407,54 +475,89 @@ export default class ReactForm extends React.Component {
 			: 'Cancel';
 
 		return (
-			<div
-				style={{
-					borderStyle: 'double',
-					borderColor: '#a3aeae'
-				}}>
-				<FormValidator emitter={this.emitter} />
-				<div className="react-form-builder-form">
-					<form
-						encType="multipart/form-data"
-						ref={c => (this.form = c)}
-						action={this.props.form_action}
-						onSubmit={this.handleSubmit.bind(this)}
-						method={this.props.form_method}>
-						{this.props.authenticity_token && (
-							<div style={formTokenStyle}>
-								<input name="utf8" type="hidden" value="&#x2713;" />
-								<input
-									name="authenticity_token"
-									type="hidden"
-									value={this.props.authenticity_token}
-								/>
-								<input
-									name="task_id"
-									type="hidden"
-									value={this.props.task_id}
-								/>
+			<React.Fragment>
+				<div
+					style={{
+						borderStyle: 'double',
+						borderColor: '#a3aeae'
+					}}>
+					<HookWrapper>
+						{({
+							isLoading,
+							error,
+							sendRequest,
+							clearError,
+							userToken,
+							eventId
+						}) => {
+							// assignments
+							this.sendRQ = sendRequest;
+							this.userToken = userToken;
+							this.eventId = eventId;
+
+							// reason to have this condition is we need to return something meaningful at the end of the
+							// React component
+							if (!isLoading) {
+								return <div></div>;
+							}
+
+							if (error) {
+								return (
+									<ErrorModal error={error} onClear={clearError} />
+								);
+							}
+
+							return (
+								<div className="center">
+									<LoadingSpinner />
+								</div>
+							);
+						}}
+					</HookWrapper>
+					<FormValidator emitter={this.emitter} />
+					<div className="react-form-builder-form">
+						<form
+							encType="multipart/form-data"
+							ref={c => (this.form = c)}
+							action={this.props.form_action}
+							onSubmit={this.handleSubmit.bind(this)}
+							method={this.props.form_method}>
+							{this.props.authenticity_token && (
+								<div style={formTokenStyle}>
+									<input name="utf8" type="hidden" value="&#x2713;" />
+									<input
+										name="authenticity_token"
+										type="hidden"
+										value={this.props.authenticity_token}
+									/>
+									<input
+										name="task_id"
+										type="hidden"
+										value={this.props.task_id}
+									/>
+								</div>
+							)}
+							{items}
+							<div className="btn-toolbar">
+								{!this.props.hide_actions && (
+									<input
+										type="submit"
+										className="btn btn-school btn-big"
+										value={actionName}
+									/>
+								)}
+								{!this.props.hide_actions && this.props.back_action && (
+									<a
+										href={this.props.back_action}
+										className="btn btn-default btn-cancel btn-big">
+										{backName}
+									</a>
+								)}
 							</div>
-						)}
-						{items}
-						<div className="btn-toolbar">
-							{!this.props.hide_actions && (
-								<input
-									type="submit"
-									className="btn btn-school btn-big"
-									value={actionName}
-								/>
-							)}
-							{!this.props.hide_actions && this.props.back_action && (
-								<a
-									href={this.props.back_action}
-									className="btn btn-default btn-cancel btn-big">
-									{backName}
-								</a>
-							)}
-						</div>
-					</form>
+						</form>
+					</div>
 				</div>
-			</div>
+			</React.Fragment>
 		);
 	}
 }

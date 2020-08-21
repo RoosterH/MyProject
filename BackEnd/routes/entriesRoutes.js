@@ -3,7 +3,6 @@
  */
 const express = require('express');
 const { check } = require('express-validator');
-const moment = require('moment');
 
 const entriesController = require('../controllers/entriesController');
 const checkAuth = require('../middleware/check-auth');
@@ -31,8 +30,6 @@ router.use(checkAuth);
 // get event entry form
 // router.get('/form/submit/:eid', eventsController.getEventEntryForm);
 
-// last valid day to allow for event addition, modification, or deletion
-let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');
 // only clubs are able to create an event
 router.post(
 	'/submit/:eid',

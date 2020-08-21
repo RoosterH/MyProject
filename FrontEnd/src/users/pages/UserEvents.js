@@ -25,12 +25,12 @@ const UserEvents = () => {
 		const fetechEvents = async () => {
 			try {
 				const responseData = await sendRequest(
-					process.env.REACT_APP_BACKEND_URL + `/events/user/${uId}`,
+					process.env.REACT_APP_BACKEND_URL + `/users/events/${uId}`,
 					'GET',
 					null,
 					{ Authorization: 'Bearer ' + userAuth.userToken }
 				);
-				setLoadedEvents(responseData.event);
+				setLoadedEvents(responseData);
 			} catch (err) {
 				console.log('err = ', err);
 			}

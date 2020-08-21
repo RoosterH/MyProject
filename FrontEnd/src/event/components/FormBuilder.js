@@ -119,7 +119,7 @@ const FormBuilder = props => {
 		history.push(`/events/${eventId}`);
 	};
 
-	// define tool bar items
+	// define tool bar items, full definitions are in toolbar.jsx
 	let items = [
 		{
 			key: 'RadioButtons',
@@ -359,6 +359,15 @@ const FormBuilder = props => {
 			static: true,
 			icon: 'fas fa-paragraph',
 			content: 'Placeholder text...'
+		},
+		{
+			key: 'Checkboxes',
+			canHaveAnswer: true,
+			name: 'Checkboxes',
+			icon: 'far fa-check-square',
+			label: 'Placeholder Label',
+			field_name: 'checkboxes_',
+			options: []
 		}
 	];
 

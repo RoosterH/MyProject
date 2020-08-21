@@ -3,15 +3,11 @@ const fs = require('fs'); // file system, a nodejs module
 const { validationResult } = require('express-validator');
 const HttpError = require('../models/httpError');
 const moment = require('moment');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
 const Event = require('../models/event');
-const Club = require('../models/club');
-
-const config = require('../Config/Config');
-const JWT_PRIVATE_KEY = config.JWT_PRIVATE_KEY;
+const Entry = require('../models/entry');
+const User = require('../models/user');
 
 const errMsg = errors => {
 	var msg;
@@ -24,6 +20,13 @@ const errMsg = errors => {
 const createEntry = async (req, res, next) => {
 	// we need to get answer from body
 	const { answer } = req.body;
+	if (!answer || answer.length === 0) {
+		const error = new HttpError(
+			'Entry submission failed with empty answer.',
+			400
+		);
+		return next(error);
+	}
 
 	// Validate clubId exists. If not, sends back an error
 	let user;
@@ -59,43 +62,62 @@ const createEntry = async (req, res, next) => {
 		return next(error);
 	}
 
-	// overwrite the old formData, reason for it because to figure out what to/not to replace
-	// is tidious and error prone, we are not going to have a form with a lot of data so hopefully
-	// it won't impact performace by much.
-	if (answer && answer.length > 0) {
-		entries.answer = [];
-		answer.map(data => entries.answer.push(data));
-		// whenever entry form gets changed, always set published to false
-		entries.published = true;
-	}
+	let entry = await Entry.findOne(
+		{ eventId: eventId },
+		{ userId: userId }
+	);
 
-	const newEntry = new Entry({
-		userId,
-		userName,
-		clubId,
-		clubName,
-		eventId,
-		eventName,
-		answer,
-		time,
-		published
-	});
+	if (entry) {
+		// if entry found, we only need to override the answer
+		entry.answer = [];
+		answer.map(data => entry.answer.push(data));
+		try {
+			await entry.save();
+		} catch (err) {
+			const error = new HttpError(
+				'Event registration connecting with DB failed. Please try again later.',
+				500
+			);
+			return next(error);
+		}
+	} else {
+		// entry not found, create a new entry and store the entryId to event and user
+		entry = new Entry({
+			userId,
+			userName: user.name,
+			clubId: event.clubId,
+			clubName: event.clubName,
+			eventId,
+			eventName: event.name,
+			answer,
+			time: moment(),
+			published: true
+		});
 
-	try {
-		await newEntry.save();
-		await event.save();
-		await user.save();
-		res
-			.status(200)
-			.json({ event: event.toObject({ getters: true }) });
-	} catch (err) {
-		console.log('err = ', err);
-		const error = new HttpError(
-			'Create event form connecting with DB failed. Please try again later.',
-			500
-		);
-		return next(error);
+		try {
+			const session = await mongoose.startSession();
+			session.startTransaction();
+			await entry.save({ session: session });
+
+			// store newEntry to event.entries array
+			event.entries.push(entry);
+			await event.save({ session: session });
+
+			// store newEntry to user.envents array
+			user.events.push(entry);
+			await user.save({ session: session });
+
+			// only all tasks succeed, we commit the transaction
+			await session.commitTransaction();
+		} catch (err) {
+			const error = new HttpError(
+				'Event registration process failed due to technical issue. Please try again later.',
+				500
+			);
+			return next(error);
+		}
 	}
+	res.status(200).json({ entry: entry.toObject({ getters: true }) });
 };
 
 exports.createEntry = createEntry;

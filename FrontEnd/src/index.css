@@ -37,8 +37,14 @@ body {
 }
 
 .center {
-	text-align: center;
+	/* to display loading spinner in the middle of the screen */
+	/* use position: fixed to ignore screen scrolling */
 	display: flex;
-	justify-content: center;
-	align-items: center;
+	position: fixed;
+	left: 50%;
+	top: 35%;
+
+	/* text-align: center; */
+	/* justify-content: center; */
+	/* align-items: center; */
 }

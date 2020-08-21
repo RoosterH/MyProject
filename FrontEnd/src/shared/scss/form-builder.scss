@@ -228,7 +228,8 @@
 	}
 
 	.react-form-builder-toolbar {
-		width: 250px;
+		// width: 250px;
+		width: 25%;
 		background: #fff;
 		margin-top: 0rem;
 
@@ -289,7 +290,7 @@
 		position: relative;
 
 		.react-form-builder-preview {
-			width: 100%;
+			width: 75%;
 
 			.edit-form {
 				width: 100%;
@@ -319,15 +320,16 @@
 		.react-form-builder-toolbar {
 			h4 {
 				padding: 10px;
-				background: #7a0019;
-				color: #fff;
+				background: #ffffff;
+				color: #000000;
+				font-size: medium;
 			}
 
-			width: 100%;
-			position: fixed;
+			width: 25%;
+			// position: fixed;
 			z-index: 900;
 			bottom: -320px;
-
+			margin-top: -1rem;
 			-webkit-transition: transform 0.5s;
 			transition: transform 0.5s;
 
@@ -335,11 +337,14 @@
 			transform: translate(0, 0);
 
 			right: 0;
-			border-top: 2px solid #ccc;
+			// border-top: 2px solid #ccc;
 
 			ul {
-				height: 300px;
+				height: 500px;
 				overflow-x: scroll;
+			}
+			strong {
+				font-size: 10px;
 			}
 		}
 
