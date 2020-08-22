@@ -1,5 +1,4 @@
-import React, { useContext, useEffect } from 'react';
-import { Redirect } from 'react-router';
+import { useContext, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { UserAuthContext } from '../context/auth-context';
 
@@ -28,5 +27,5 @@ export const useUserLoginValidation = url => {
 		return () => {
 			mounted = false;
 		};
-	}, [storageData, userAuthContext.userId, history]);
+	}, [storageData, history, userAuthContext, url]);
 };

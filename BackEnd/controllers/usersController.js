@@ -377,7 +377,7 @@ const logoutUser = (req, res) => {
 	res.status(200).json({ message: `You are logged out.` });
 };
 
-// GET /api/events/club/:cid
+// GET /api/users/events/:uid
 const getEvents = async (req, res, next) => {
 	const uId = req.params.uid;
 

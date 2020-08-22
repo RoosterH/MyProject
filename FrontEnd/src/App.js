@@ -102,7 +102,7 @@ const App = () => {
 				<Route path="/" exact>
 					<Events />
 				</Route>
-				<Route path="/events/user/:userId" exact>
+				<Route path="/users/events/:userId" exact>
 					<UserEvents />
 				</Route>
 				<Route path="/events/:id" exact>
@@ -150,6 +150,7 @@ const App = () => {
 					<UserAuth />
 				</Route>
 
+				{/* The following section is for page refresh. Without it, refresh will not happen */}
 				{/* Very import to keep sequence of the following 2 routes. Change the sequence will cause
 				    page refreshing not working properly.
 					1. Route is for refreshing page
@@ -177,6 +178,11 @@ const App = () => {
 				<Route path="/events/form/:id" exact>
 					<EventForm />
 				</Route>
+
+				<Route path="/users/events/:userId" exact>
+					<UserEvents />
+				</Route>
+				{/* End of page refresh section */}
 
 				<Route path="/error" exact>
 					<Error />

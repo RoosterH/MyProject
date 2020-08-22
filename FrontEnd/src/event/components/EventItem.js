@@ -135,7 +135,6 @@ const EventItem = props => {
 		);
 
 	const [regDuration, setRegDuration] = useState('');
-
 	useEffect(() => {
 		let mounted = true;
 		let runSetInterval;
@@ -168,8 +167,40 @@ const EventItem = props => {
 		};
 	}, [props.event.regStartDate, props.event.regEndDate]);
 
+	// Reason to use useEffect is because we cannot set state in render()
+	// For example, if calling setOpenRegistration durning rendering RegistrationMSG, there will be a warning msg.
+	// '0': registration not open yet
+	// '1': registration closes in more than 7 days
+	// '2': registration closes in more than 3 days
+	// '3': registration closes in less than 3 days
+	// '4': registration closed
+	const [openRegistration, setOpenRegistration] = useState(false);
+	const [regTimeline, setRegTimeline] = useState('0');
+	let regStartDate = props.event.regStartDate;
+	let regEndDate = props.event.regEndDate;
+	let now = moment();
+	useEffect(() => {
+		if (moment(regStartDate) > now) {
+			setRegTimeline('0');
+		} else {
+			if (moment(regEndDate) - now > 604800000) {
+				setRegTimeline('1');
+				setOpenRegistration(true);
+			} else if (moment(regEndDate) - now > 259200000) {
+				setOpenRegistration(true);
+				setRegTimeline('2');
+			} else if (moment(regEndDate) - now > 0) {
+				setRegTimeline('3');
+				setOpenRegistration(true);
+			} else {
+				setOpenRegistration(false);
+				setRegTimeline('4');
+			}
+		}
+	}, [now, regStartDate, regEndDate]);
+
 	const RegistrationMSG = () => {
-		if (moment(props.event.regStartDate) > moment()) {
+		if (regTimeline === '0') {
 			// registration not yet started
 			return (
 				<h4 className="alert alert-primary" role="alert">
@@ -177,24 +208,21 @@ const EventItem = props => {
 				</h4>
 			);
 		} else {
-			if (moment(props.event.regEndDate) - moment() > 604800000) {
+			if (regTimeline === '1') {
 				// registration closed in more than 7 days
 				return (
 					<h4 className="alert alert-success" role="alert">
 						Registration ends in {regDuration}
 					</h4>
 				);
-			} else if (
-				moment(props.event.regEndDate) - moment() >
-				259200000
-			) {
+			} else if (regTimeline === '2') {
 				// registration closed in more than 3 days
 				return (
 					<h4 className="alert alert-warning" role="alert">
 						Registration ends in {regDuration}
 					</h4>
 				);
-			} else if (moment(props.event.regEndDate) - moment() > 0) {
+			} else if (regTimeline === '3') {
 				// registration closed in less than 3 days
 				return (
 					<h4 className="alert alert-danger" role="alert">
@@ -202,7 +230,7 @@ const EventItem = props => {
 					</h4>
 				);
 			} else {
-				// registration closed
+				// registration closed regTimeline === '4'
 				return (
 					<h4 className="alert alert-dark" role="alert">
 						Registration is now closed
@@ -233,6 +261,7 @@ const EventItem = props => {
 			setShowInstruction('btn collapsible minus-sign toggle-btn');
 		}
 	};
+
 	return (
 		// React.Frgment connect multiple components
 		<React.Fragment>
@@ -393,6 +422,7 @@ const EventItem = props => {
 						<div className="col-xs-12">
 							{!clubAuth.clubId && (
 								<Button
+									inverse={!openRegistration}
 									to={`/events/form/${props.event.id}`}
 									size="small-orange">
 									REGISTER EVENT

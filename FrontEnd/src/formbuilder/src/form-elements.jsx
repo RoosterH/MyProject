@@ -1095,6 +1095,7 @@ class ParagraphCheckbox extends React.Component {
 
 	render() {
 		// Start of Header and Paragaph section
+		// Discard the warning message saying classNames is never used.  It is used in {...this.props}
 		let classNames = 'static';
 		if (this.props.data.bold) {
 			classNames += ' bold';

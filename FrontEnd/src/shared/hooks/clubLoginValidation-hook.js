@@ -30,5 +30,5 @@ export const useClubLoginValidation = url => {
 		return () => {
 			mounted = false;
 		};
-	}, [storageData, clubAuthContext.clubId, history]);
+	}, [storageData, clubAuthContext, history, url]);
 };

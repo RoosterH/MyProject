@@ -26,7 +26,8 @@
 
 .button--inverse {
 	background: transparent;
-	color: #106daf;
+	/* color: #106daf; */
+	color: #acb2b6;
 }
 
 .button--inverse:hover,
@@ -77,6 +78,13 @@
 	background: #ad610a;
 	border-color: #ad610a;
 	color: #ffffff;
+}
+
+.button--small-orange--inverse {
+	background: #bebcba;
+	border-color: #bebcba;
+	color: #ffffff;
+	pointer-events: none;
 }
 
 .button--small-googlemap {

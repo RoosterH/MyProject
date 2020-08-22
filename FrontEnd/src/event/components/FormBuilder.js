@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
@@ -11,13 +11,14 @@ import { ClubAuthContext } from '../../shared/context/auth-context';
 import { FormContext } from '../../shared/context/form-context';
 import { ReactFormBuilder } from '../../formbuilder/src/index';
 import { useHttpClient } from '../../shared/hooks/http-hook';
+import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
+
 import './FormBuilder.css';
 import '../../shared/scss/application.scss';
 
 const FormBuilder = props => {
-	const clubAuth = useContext(ClubAuthContext);
+	const clubAuthContext = useContext(ClubAuthContext);
 	const formContext = useContext(FormContext);
-
 	useEffect(() => {
 		let mounted = true;
 		if (mounted) {
@@ -46,7 +47,6 @@ const FormBuilder = props => {
 		// after SAVE to backend, user click checkbox "Save as entry form template", enable SAVE button
 		// if checkbox value is true
 		if (event.target.checked && !unsavedData) {
-			console.log('get 1');
 			const storageData = JSON.parse(
 				localStorage.getItem('eventEntryForm')
 			);
@@ -104,7 +104,7 @@ const FormBuilder = props => {
 				{
 					'Content-type': 'application/json',
 					// adding JWT to header for authentication, JWT contains clubId
-					Authorization: 'Bearer ' + clubAuth.clubToken
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
 			if (responseData) {
@@ -384,7 +384,7 @@ const FormBuilder = props => {
 					null,
 					{
 						// adding JWT to header for authentication, JWT contains clubId
-						Authorization: 'Bearer ' + clubAuth.clubToken
+						Authorization: 'Bearer ' + clubAuthContext.clubToken
 					}
 				);
 				if (responseData) {

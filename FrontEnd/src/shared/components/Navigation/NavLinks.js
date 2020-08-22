@@ -14,9 +14,9 @@ import './NavLinks.css';
 
 const NavLinks = props => {
 	/* ----- Club Section ----- */
-	const clubAuth = useContext(ClubAuthContext);
-	const clubLoggedIn = clubAuth.isClubLoggedIn;
-	let cid = clubAuth.clubId;
+	const clubAuthContext = useContext(ClubAuthContext);
+	const clubLoggedIn = clubAuthContext.isClubLoggedIn;
+	let cid = clubAuthContext.clubId;
 
 	// check if we are inside a form page, we want to disable LOGOUT button
 	// to avoid race condition between existing form page and logout handler
@@ -24,9 +24,9 @@ const NavLinks = props => {
 	const isInsideForm = formContext.isInsideForm;
 
 	/* ----- User Section ----- */
-	const userAuth = useContext(UserAuthContext);
-	const userLoggedIn = userAuth.isUserLoggedIn;
-	let uid = userAuth.userId;
+	const userAuthContext = useContext(UserAuthContext);
+	const userLoggedIn = userAuthContext.isUserLoggedIn;
+	let uId = userAuthContext.userId;
 
 	const { isLoading, error, logoutHandler, clearError } = useLogOut();
 
@@ -76,14 +76,14 @@ const NavLinks = props => {
 				{/********* user section *******/}
 				{userLoggedIn && (
 					<li>
-						<NavLink to={`/events/user/${uid}`} exact>
+						<NavLink to={`/users/events/${uId}`} exact>
 							My EVENTS
 						</NavLink>
 					</li>
 				)}
 				{userLoggedIn && (
 					<li>
-						<NavLink to={`/garage/${uid}`} exact>
+						<NavLink to={`/garage/${uId}`} exact>
 							My Garage
 						</NavLink>
 					</li>

@@ -63,7 +63,6 @@ const UserAuth = () => {
 					 * Warning: Can't perform a React state update on an unmounted component. when
 					 * trying to redirect page after logging
 					 */
-					history.push(`/events/user/${responseData.userId}`);
 					// user.id is coming from usersController loginUser
 					// id is from {getters: true}
 					userAuthContext.userLogin(
@@ -71,6 +70,9 @@ const UserAuth = () => {
 						responseData.name,
 						responseData.token
 					);
+					// forward page needs to be after userAuthContext.userLoging() because <Route> is designed
+					// only if (userToken), we are able to access the route
+					history.push(`/users/events/${responseData.userId}`);
 				}
 			} catch (err) {
 				// empty. Custom hook takes care of it already

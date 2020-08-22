@@ -34,7 +34,7 @@ const EventForm = () => {
 			// re-init redirectURL after re-direction route
 			userAuthContext.setRedirectURL(null);
 		}
-	}, [location]);
+	}, [location, userAuthContext]);
 
 	if (!eId || eId === 'error') {
 		// possibly page refresh, look for localStorage
