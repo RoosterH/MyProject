@@ -86,6 +86,7 @@ export default class ReactForm extends React.Component {
 	}
 
 	_getDefaultValue(item) {
+		//return this.answerData[item.field_name];
 		return this.answerData[item.RadioButtons];
 	}
 
