@@ -44,7 +44,6 @@ export const useUserAuth = () => {
 	);
 
 	const userLogout = useCallback(() => {
-		console.log('I am in userLogout');
 		setUserToken(null);
 		setUserId(null);
 		setUserName(null);
@@ -58,7 +57,6 @@ export const useUserAuth = () => {
 
 	// Auto login
 	useEffect(() => {
-		console.log('I am in auto login');
 		const storageData = JSON.parse(localStorage.getItem('userData'));
 		if (
 			storageData &&

@@ -85,18 +85,16 @@ const EventForm = () => {
 						Authorization: 'Bearer ' + userAuthContext.userToken
 					}
 				);
-				console.log('responseData = ', responseData);
-				if (mounted) {
-					setFormData(responseData.entryFormData);
-					setFormAnswer(responseData.entryFormAnswer);
-				}
+				setFormAnswer(responseData.entryFormAnswer);
+				setFormData(responseData.entryFormData);
+
+				console.log('I am in mounted');
 			} catch (err) {
 				console.log('err = ', err);
 			}
 		};
-		if (mounted) {
-			fetchForm();
-		}
+
+		fetchForm();
 		return () => {
 			mounted = false;
 		};
@@ -122,7 +120,7 @@ const EventForm = () => {
 				<div className="event-formgenerator-container">
 					<div className="modal-content">
 						<ReactFormGenerator
-							answer_data={{ formAnswer }}
+							answer_data={formAnswer}
 							action_name="Register"
 							data={formData}
 						/>

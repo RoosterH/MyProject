@@ -237,7 +237,8 @@ const createEvent = async (req, res, next) => {
 		image: imagePath,
 		courseMap: courseMapPath,
 		published: false,
-		formData: []
+		formData: [],
+		entries: []
 	});
 
 	try {
@@ -490,13 +491,15 @@ const deleteEvent = async (req, res, next) => {
 	res.status(200).json({ message: `Event: ${event.name} deleted` });
 };
 
-// /api/events/form/:eid
-const getEventEntryForm = async (req, res) => {
+// /api/events/form/:eid/:uid
+const getEventEntryFormAnswer = async (req, res, next) => {
 	// Validate eventId belonging to the found club. If not, sends back an error
 	const eventId = req.params.eid;
+
+	const userId = req.params.uid;
 	let event;
 	try {
-		event = await Event.findById(eventId);
+		event = await Event.findById(eventId).populate('entries');
 	} catch (err) {
 		// this error is displayed if the request to the DB had some issues
 		const error = new HttpError(
@@ -517,10 +520,24 @@ const getEventEntryForm = async (req, res) => {
 
 	let entryFormData = event.entryFormData;
 	if (!entryFormData || entryFormData.length === 0) {
-		res.status(200).json({ entryFormData: '[]' });
+		const error = new HttpError(
+			'Could not find the entry form. Please report to club.',
+			404
+		);
+		return next(error);
 	}
 
-	res.status(200).json(entryFormData);
+	// look for user's entries
+	let answer = null;
+	for (let i = 0; i < event.entries.length; ++i) {
+		if (event.entries[i].userId.toString() === userId) {
+			answer = event.entries[i].answer;
+		}
+	}
+
+	res
+		.status(200)
+		.json({ entryFormData: entryFormData, entryFormAnswer: answer });
 };
 
 // export a pointer of the function
@@ -531,4 +548,4 @@ exports.getEventsByDate = getEventsByDate;
 exports.createEvent = createEvent;
 exports.updateEvent = updateEvent;
 exports.deleteEvent = deleteEvent;
-exports.getEventEntryForm = getEventEntryForm;
+exports.getEventEntryFormAnswer = getEventEntryFormAnswer;

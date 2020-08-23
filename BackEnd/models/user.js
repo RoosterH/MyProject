@@ -17,11 +17,11 @@ const userSchema = new Schema({
 	image: { type: String, require: true },
 	// because a user could have multiple events so we need to use array. [] means array
 	// using ref as a foreing key referring to Event
-	events: [
+	entries: [
 		{
 			type: mongoose.Types.ObjectId,
 			required: true,
-			ref: 'Event'
+			ref: 'Entry'
 		}
 	]
 });

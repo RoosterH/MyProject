@@ -119,7 +119,7 @@ const createUser = async (req, res, next) => {
 		email,
 		image: req.file.path,
 		password: hashedPassword,
-		events: []
+		entries: []
 	});
 
 	try {
@@ -156,7 +156,8 @@ const createUser = async (req, res, next) => {
 		userId: newUser.id,
 		name: newUser.name,
 		email: newUser.email,
-		token: token
+		token: token,
+		entries: []
 	});
 };
 
@@ -167,7 +168,9 @@ const loginUser = async (req, res, next) => {
 	// validation to make sure email does not exist in our DB
 	let existingUser;
 	try {
-		existingUser = await User.findOne({ email: email.toLowerCase() });
+		existingUser = await User.findOne({
+			email: email.toLowerCase()
+		}).populate('entries');
 	} catch (err) {
 		const error = new HttpError(
 			'Login user process failed. Please try again later',
@@ -215,7 +218,7 @@ const loginUser = async (req, res, next) => {
 		token = jwt.sign(
 			{ userId: existingUser.id, email: existingUser.email },
 			JWT_PRIVATE_KEY,
-			{ expiresIn: '24h' }
+			{ expiresIn: '168h' }
 		);
 	} catch (err) {
 		const error = new HttpError(
@@ -229,7 +232,8 @@ const loginUser = async (req, res, next) => {
 		userId: existingUser.id,
 		name: existingUser.name,
 		email: existingUser.email,
-		token: token
+		token: token,
+		entries: existingUser.entries
 	});
 };
 

@@ -286,7 +286,12 @@ const EventItem = props => {
 				}
 			}
 		}
-	}, [eventId, setUserRegisteredEvent, setButtonName]);
+	}, [
+		userAuthContext.userId,
+		eventId,
+		setUserRegisteredEvent,
+		setButtonName
+	]);
 
 	return (
 		// React.Frgment connect multiple components

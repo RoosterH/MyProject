@@ -35,7 +35,7 @@ const eventSchema = new Schema({
 	// event entry form
 	entryFormData: { type: Array, required: true },
 	entries: [
-		{ type: mongoose.Types.ObjectId, required: true, ref: 'Entries' }
+		{ type: mongoose.Types.ObjectId, required: true, ref: 'Entry' }
 	]
 });
 

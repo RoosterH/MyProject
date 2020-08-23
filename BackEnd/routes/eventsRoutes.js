@@ -42,11 +42,11 @@ router.post(
 // need to be authenticated
 router.use(checkAuth);
 
-// get event entry form
-router.get('/form/:eid', eventsController.getEventEntryForm);
-
-// get event entry form
-router.get('/form/submit/:eid', eventsController.getEventEntryForm);
+// get event entry form and answer
+router.get(
+	'/form/:eid/:uid',
+	eventsController.getEventEntryFormAnswer
+);
 
 // last valid day to allow for event addition, modification, or deletion
 let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');

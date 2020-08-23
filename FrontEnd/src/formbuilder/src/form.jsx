@@ -71,7 +71,6 @@ export default class ReactForm extends React.Component {
 
 	// convert provided answers
 	_convert(answers) {
-		console.log('answers = ', answers);
 		if (Array.isArray(answers)) {
 			const result = {};
 			answers.forEach(x => {
@@ -87,9 +86,10 @@ export default class ReactForm extends React.Component {
 	}
 
 	_getDefaultValue(item) {
-		console.log('item = ', item);
-		return this.answerData[item.field_name];
-		// return this.answerData[item.RadioButtons];
+		if (item.field_name) {
+			return this.answerData[item.field_name];
+		}
+		return null;
 	}
 
 	_optionsDefaultValue(item) {
@@ -294,10 +294,6 @@ export default class ReactForm extends React.Component {
 							Authorization: 'Bearer ' + this.userToken
 						}
 					);
-
-					if (responseData) {
-						console.log('responseData = ', responseData);
-					}
 				} catch (err) {}
 			} else {
 				throw new Error('Submit failed. Please select answers.');
