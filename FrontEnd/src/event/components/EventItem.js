@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import moment from 'moment';
 
 // DO NOT REMOVE IT, this is a plugin of moment() for moment().countdown
@@ -15,6 +15,7 @@ import Map from '../../shared/components/UIElements/Map';
 import Modal from '../../shared/components/UIElements/Modal';
 
 import { ClubAuthContext } from '../../shared/context/auth-context';
+import { UserAuthContext } from '../../shared/context/auth-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import './EventItem.css';
 
@@ -27,7 +28,8 @@ const EventItem = props => {
 	} = useHttpClient();
 
 	// useContext is listening to "ClubAuthContext"
-	const clubAuth = useContext(ClubAuthContext);
+	const clubAuthContext = useContext(ClubAuthContext);
+	const userAuthContext = useContext(UserAuthContext);
 
 	// modal section
 	const [showModal, setShowModal] = useState(false);
@@ -73,10 +75,10 @@ const EventItem = props => {
 				{
 					// No need for content-type since body is null,
 					// adding JWT to header for authentication
-					Authorization: 'Bearer ' + clubAuth.clubToken
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
-			history.push(`/events/club/${clubAuth.clubId}`);
+			history.push(`/events/club/${clubAuthContext.clubId}`);
 		} catch (err) {}
 	};
 
@@ -92,10 +94,10 @@ const EventItem = props => {
 					// No need for content-type since body is null,
 					// adding JWT to header for authentication
 					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + clubAuth.clubToken
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
-			history.push(`/events/club/${clubAuth.clubId}`);
+			history.push(`/events/club/${clubAuthContext.clubId}`);
 		} catch (err) {}
 	};
 
@@ -262,6 +264,30 @@ const EventItem = props => {
 		}
 	};
 
+	// Determine this is a user registered event
+	const [userRegisteredEvent, setUserRegisteredEvent] = useState(
+		false
+	);
+	const [buttonName, setButtonName] = useState('REGISTER EVENT');
+	let eventId = useParams().id;
+	useEffect(() => {
+		if (userAuthContext.userId) {
+			let storageData = JSON.parse(localStorage.getItem('userData'));
+			if (storageData.userId === userAuthContext.userId) {
+				let userEntries = storageData.userEntries;
+				if (userEntries) {
+					for (let i = 0; i < userEntries.length; ++i) {
+						if (userEntries[i].eventId === eventId) {
+							setUserRegisteredEvent(true);
+							setButtonName('MODIFY ENTRY');
+							break;
+						}
+					}
+				}
+			}
+		}
+	}, [eventId, setUserRegisteredEvent, setButtonName]);
+
 	return (
 		// React.Frgment connect multiple components
 		<React.Fragment>
@@ -340,7 +366,7 @@ const EventItem = props => {
 				</p>
 			</Modal>
 			{/* This section is for club logo/club name/event type */}
-			{!clubAuth.clubId && (
+			{!clubAuthContext.clubId && (
 				<div className="event-pages eventtype-page">
 					<section id="header" title="">
 						<div className="section-container">
@@ -381,7 +407,7 @@ const EventItem = props => {
 			)}
 			{/* this section is for event image */}
 			{/* Regitration container */}
-			{!clubAuth.clubId && (
+			{!clubAuthContext.clubId && (
 				<div className="section-container">
 					<div className="page-basic-container">
 						<div className="eventimage-container">
@@ -420,12 +446,12 @@ const EventItem = props => {
 							</div>
 						</div>
 						<div className="col-xs-12">
-							{!clubAuth.clubId && (
+							{!clubAuthContext.clubId && (
 								<Button
 									inverse={!openRegistration}
 									to={`/events/form/${props.event.id}`}
 									size="small-orange">
-									REGISTER EVENT
+									{buttonName}
 								</Button>
 							)}
 						</div>
@@ -433,7 +459,7 @@ const EventItem = props => {
 				</div>
 			)}
 
-			{!clubAuth.clubId && (
+			{!clubAuthContext.clubId && (
 				<div className="section-container">
 					<div className="page-basic-container">
 						<div className="about-description">
@@ -464,7 +490,7 @@ const EventItem = props => {
 				</div>
 			)}
 
-			{!clubAuth.clubId && (
+			{!clubAuthContext.clubId && (
 				<div className="section-container">
 					<div className="page-basic-container">
 						<div className="about-description">
@@ -495,7 +521,7 @@ const EventItem = props => {
 				</div>
 			)}
 
-			{!clubAuth.clubId && (
+			{!clubAuthContext.clubId && (
 				<div className="section-container">
 					<div className="page-basic-container">
 						<div className="page-footer"></div>
@@ -504,7 +530,7 @@ const EventItem = props => {
 			)}
 
 			{/* for Clubs */}
-			{clubAuth.clubId === props.event.clubId && (
+			{clubAuthContext.clubId === props.event.clubId && (
 				<Card className="event-item__content">
 					{isLoading && <LoadingSpinner asOverlay />}
 					<div>
@@ -555,14 +581,14 @@ const EventItem = props => {
 						)}
 					</div>
 					<div className="event-item__actions">
-						{clubAuth.clubId === props.event.clubId && (
+						{clubAuthContext.clubId === props.event.clubId && (
 							<Button
 								to={`/events/formbuilder/${props.event.id}`}
 								size="small">
 								ENTRY FORM
 							</Button>
 						)}
-						{clubAuth.clubId === props.event.clubId &&
+						{clubAuthContext.clubId === props.event.clubId &&
 							formStartDate > validFormModDate && (
 								<Button
 									to={`/events/update/${props.event.id}`}
@@ -570,7 +596,7 @@ const EventItem = props => {
 									EDIT
 								</Button>
 							)}
-						{clubAuth.clubId === props.event.clubId &&
+						{clubAuthContext.clubId === props.event.clubId &&
 							!props.event.published &&
 							formStartDate > validFormModDate &&
 							props.event.entryFormData && (
@@ -581,7 +607,7 @@ const EventItem = props => {
 									PUBLISH
 								</Button>
 							)}
-						{clubAuth.clubId === props.event.clubId &&
+						{clubAuthContext.clubId === props.event.clubId &&
 							!props.event.published &&
 							formStartDate > validFormModDate && (
 								<Button danger onClick={openDELHandler} size="small">

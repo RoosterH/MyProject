@@ -8,20 +8,23 @@ export const useUserAuth = () => {
 	const [userTokenExpDate, setUserTokenExpDate] = useState();
 	const [userId, setUserId] = useState(null);
 	const [userName, setUserName] = useState(null);
+	const [userEntries, setUserEntries] = useState(null);
 	const [redirectURL, setURL] = useState(null);
 
 	// define callbacks of UserAuthContext, useCallBack will never be re-created
 	// so there won't be any infinite loop; otherwise when the page renders, the function
 	// will be re-created each render cause infinite loop.
 	const userLogin = useCallback(
-		(uid, uname, utoken, expirationDate) => {
+		(uid, uname, utoken, expirationDate, uentries) => {
 			setUserToken(utoken);
 			setUserId(uid);
 			setUserName(uname);
-			// jwt token expires in 1 day
+			setUserEntries(uentries);
+
+			// jwt token expires in 7 day
 			const tokenExp =
 				expirationDate ||
-				moment(moment().add(1, 'days'), moment.ISO_8601);
+				moment(moment().add(7, 'days'), moment.ISO_8601);
 			// updating token expiration date
 			setUserTokenExpDate(tokenExp);
 			// localStorage is a global js API for browser localStorage.
@@ -30,8 +33,10 @@ export const useUserAuth = () => {
 				'userData',
 				JSON.stringify({
 					userId: uid,
+					userName: uname,
 					userToken: utoken,
-					expiration: tokenExp
+					expiration: tokenExp,
+					userEntries: uentries
 				})
 			);
 		},
@@ -39,9 +44,11 @@ export const useUserAuth = () => {
 	);
 
 	const userLogout = useCallback(() => {
+		console.log('I am in userLogout');
 		setUserToken(null);
 		setUserId(null);
 		setUserName(null);
+		setUserEntries(null);
 		// remove token from storage
 		localStorage.removeItem('userData');
 		// reset userTokenExpDate; otherwise won't be able to login after
@@ -51,17 +58,20 @@ export const useUserAuth = () => {
 
 	// Auto login
 	useEffect(() => {
+		console.log('I am in auto login');
 		const storageData = JSON.parse(localStorage.getItem('userData'));
 		if (
 			storageData &&
 			storageData.userToken &&
 			moment(storageData.expiration) > moment()
 		) {
+			// write back data to localStorage
 			userLogin(
 				storageData.userId,
-				null,
+				storageData.userName,
 				storageData.userToken,
-				moment(storageData.expiration)
+				moment(storageData.expiration),
+				storageData.userEntries
 			);
 		}
 	}, [userLogin]);
@@ -71,7 +81,7 @@ export const useUserAuth = () => {
 	useEffect(() => {
 		if (userToken && userTokenExpDate) {
 			const remainingTime = moment(userTokenExpDate) - moment();
-			// if timeout gets triggered meaing userToken expires, userLogout will be called
+			// if timeout gets triggered meaing userToken expires, userLogout will e called
 			logoutTimer = setTimeout(userLogout, remainingTime);
 		} else {
 			clearTimeout(logoutTimer);
@@ -88,6 +98,7 @@ export const useUserAuth = () => {
 		userLogout,
 		userId,
 		userName,
+		userEntries,
 		redirectURL,
 		setRedirectURL
 	};

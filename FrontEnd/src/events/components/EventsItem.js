@@ -6,6 +6,7 @@ import Avatar from '../../shared/components/UIElements/Avatar';
 import Card from '../../shared/components/UIElements/Card';
 import './EventsItem.css';
 
+// EventsItem renders a card for each event
 const EventsItem = props => {
 	let startDate = moment(props.startDate).format('MM/DD/YY, ddd');
 	let endDate = moment(props.endDate).format('MM/DD/YY, ddd');

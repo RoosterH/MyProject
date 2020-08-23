@@ -51,7 +51,9 @@ const UserAuth = () => {
 					userAuthContext.userLogin(
 						responseData.userId,
 						responseData.name,
-						responseData.token
+						responseData.token,
+						'',
+						responseData.entries
 					);
 					history.push(userAuthContext.redirectURL);
 				} else {
@@ -68,7 +70,9 @@ const UserAuth = () => {
 					userAuthContext.userLogin(
 						responseData.userId,
 						responseData.name,
-						responseData.token
+						responseData.token,
+						'', //expirationDate will be defined in userAuth-hook
+						responseData.entries
 					);
 					// forward page needs to be after userAuthContext.userLoging() because <Route> is designed
 					// only if (userToken), we are able to access the route

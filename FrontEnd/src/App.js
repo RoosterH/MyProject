@@ -62,6 +62,7 @@ const App = () => {
 		userLogout,
 		userId,
 		userName,
+		userEntries,
 		redirectURL,
 		setRedirectURL
 	} = useUserAuth();
@@ -209,6 +210,7 @@ const App = () => {
 					userToken: userToken,
 					userId: userId,
 					userName: userName,
+					userEntries: userEntries,
 					redirectURL: redirectURL,
 					userLogin: userLogin,
 					userLogout: userLogout,

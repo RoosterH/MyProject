@@ -12,7 +12,8 @@ import { UserAuthContext } from '../../shared/context/auth-context';
 import './EventForm.css';
 const EventForm = () => {
 	const userAuthContext = useContext(UserAuthContext);
-	const [formData, setFormData] = useState(false);
+	const [formData, setFormData] = useState();
+	const [formAnswer, setFormAnswer] = useState();
 	const {
 		isLoading,
 		error,
@@ -62,12 +63,21 @@ const EventForm = () => {
 		);
 	}
 
+	// combine eId and uId to send to backend,
+	// url is /events/form/:eId/:uId
+	let url = '/events/form/' + eId;
+	const storageData = JSON.parse(localStorage.getItem('userData'));
+	if (storageData.userId) {
+		url += '/' + storageData.userId;
+	}
+
 	useEffect(() => {
 		let mounted = true;
 		const fetchForm = async () => {
 			try {
 				const responseData = await sendRequest(
-					process.env.REACT_APP_BACKEND_URL + `/events/form/${eId}`,
+					// process.env.REACT_APP_BACKEND_URL + `/events/form/${eId}`,
+					process.env.REACT_APP_BACKEND_URL + url,
 					'GET',
 					null,
 					{
@@ -75,8 +85,10 @@ const EventForm = () => {
 						Authorization: 'Bearer ' + userAuthContext.userToken
 					}
 				);
+				console.log('responseData = ', responseData);
 				if (mounted) {
-					setFormData(responseData);
+					setFormData(responseData.entryFormData);
+					setFormAnswer(responseData.entryFormAnswer);
 				}
 			} catch (err) {
 				console.log('err = ', err);
@@ -88,7 +100,13 @@ const EventForm = () => {
 		return () => {
 			mounted = false;
 		};
-	}, [sendRequest, eId, userAuthContext.userToken, setFormData]);
+	}, [
+		sendRequest,
+		eId,
+		userAuthContext.userToken,
+		setFormData,
+		setFormAnswer
+	]);
 
 	return (
 		<React.Fragment>
@@ -104,7 +122,7 @@ const EventForm = () => {
 				<div className="event-formgenerator-container">
 					<div className="modal-content">
 						<ReactFormGenerator
-							answer_data={{}}
+							answer_data={{ formAnswer }}
 							action_name="Register"
 							data={formData}
 						/>
