@@ -104,7 +104,7 @@ const createEntry = async (req, res, next) => {
 			await event.save({ session: session });
 
 			// store newEntry to user.envents array
-			user.events.push(entry);
+			user.entries.push(entry);
 			await user.save({ session: session });
 
 			// only all tasks succeed, we commit the transaction
