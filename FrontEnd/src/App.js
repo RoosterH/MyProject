@@ -23,12 +23,14 @@ import './shared/css/Auth.css';
 // split codes using lazy load
 // instead of import everything at once, we will split them so codes will built into
 // different chunks. When users open up the app, it will only load whatever it's needed.
+// club section
 const Clubs = React.lazy(() => import('./clubs/pages/Clubs'));
 const ClubAuth = React.lazy(() => import('./clubs/pages/ClubAuth'));
 const ClubEvents = React.lazy(() =>
 	import('./clubs/pages/ClubEvents')
 );
 const Error = React.lazy(() => import('./shared/utils/error'));
+// event section
 const Event = React.lazy(() => import('./event/pages/Event'));
 const EventForm = React.lazy(() => import('./event/pages/EventForm'));
 const EventFormBuilder = React.lazy(() =>
@@ -36,14 +38,21 @@ const EventFormBuilder = React.lazy(() =>
 );
 const Events = React.lazy(() => import('./events/pages/Events'));
 const NewEvent = React.lazy(() => import('./event/pages/NewEvent'));
+const UpdateEvent = React.lazy(() =>
+	import('./event/pages/UpdateEvent')
+);
+
+// user section
 // const Users = React.lazy(() => import('./users/pages/Users'));
 const UserAuth = React.lazy(() => import('./users/pages/UserAuth'));
 const UserEvents = React.lazy(() =>
 	import('./users/pages/UserEvents')
 );
-const UpdateEvent = React.lazy(() =>
-	import('./event/pages/UpdateEvent')
+const UserGarage = React.lazy(() =>
+	import('./users/pages/UserGarage')
 );
+const NewCar = React.lazy(() => import('./cars/pages/NewCar'));
+// const CarItem = React.lazy(() => import('./cars/components/CarItem'));
 
 const App = () => {
 	const {
@@ -63,8 +72,8 @@ const App = () => {
 		userId,
 		userName,
 		userEntries,
-		redirectURL,
-		setRedirectURL
+		userRedirectURL,
+		setUserRedirectURL
 	} = useUserAuth();
 
 	const { isInsideForm, setIsInsideForm } = useFormHook();
@@ -105,6 +114,15 @@ const App = () => {
 				</Route>
 				<Route path="/users/events/:userId" exact>
 					<UserEvents />
+				</Route>
+				<Route path="/users/garage/:userId" exact>
+					<UserGarage />
+				</Route>
+				<Route path="/users/cars/new" exact>
+					<NewCar />
+				</Route>
+				<Route path="/users/cars/:carId" exact>
+					{/* <CarItem /> */}
 				</Route>
 				<Route path="/events/:id" exact>
 					<Event />
@@ -183,6 +201,13 @@ const App = () => {
 				<Route path="/users/events/:userId" exact>
 					<UserEvents />
 				</Route>
+
+				<Route path="/users/garage/:userId" exact>
+					<UserGarage />
+				</Route>
+				<Route path="/users/cars/new" exact>
+					<NewCar />
+				</Route>
 				{/* End of page refresh section */}
 
 				<Route path="/error" exact>
@@ -211,10 +236,10 @@ const App = () => {
 					userId: userId,
 					userName: userName,
 					userEntries: userEntries,
-					redirectURL: redirectURL,
+					userRedirectURL: userRedirectURL,
 					userLogin: userLogin,
 					userLogout: userLogout,
-					setRedirectURL: setRedirectURL
+					setUserRedirectURL: setUserRedirectURL
 				}}>
 				<FormContext.Provider
 					value={{

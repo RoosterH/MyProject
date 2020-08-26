@@ -5,7 +5,7 @@ import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-h
 import FormBuilder from '../components/FormBuilder';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 
-import './EventForm.css';
+import '../../shared/css/EventForm.css';
 
 const EventFormBuilder = () => {
 	const clubAuthContext = useContext(ClubAuthContext);

@@ -2,24 +2,18 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import moment from 'moment';
 
-// DO NOT REMOVE IT, this is a plugin of moment() for moment().countdown
-// eslint-disable-next-line
-import countdown from 'moment-countdown';
-
 import Button from '../../shared/components/FormElements/Button';
 import Card from '../../shared/components/UIElements/Card';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import Image from '../../shared/components/UIElements/Image';
-import Map from '../../shared/components/UIElements/Map';
 import Modal from '../../shared/components/UIElements/Modal';
 
-import { ClubAuthContext } from '../../shared/context/auth-context';
 import { UserAuthContext } from '../../shared/context/auth-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';
-import './EventItem.css';
+import '../../shared/css/EventItem.css';
 
-const EventItem = props => {
+const CarItem = props => {
 	const {
 		isLoading,
 		error,
@@ -27,8 +21,7 @@ const EventItem = props => {
 		clearError
 	} = useHttpClient();
 
-	// useContext is listening to "ClubAuthContext"
-	const clubAuthContext = useContext(ClubAuthContext);
+	// useContext is listening to "UserAuthContext"
 	const userAuthContext = useContext(UserAuthContext);
 
 	// modal section
@@ -75,7 +68,7 @@ const EventItem = props => {
 				{
 					// No need for content-type since body is null,
 					// adding JWT to header for authentication
-					Authorization: 'Bearer ' + clubAuthContext.clubToken
+					Authorization: 'Bearer ' + userAuthContext.userToken
 				}
 			);
 			history.push(`/events/club/${clubAuthContext.clubId}`);
@@ -168,79 +161,6 @@ const EventItem = props => {
 			clearInterval(runSetInterval);
 		};
 	}, [props.event.regStartDate, props.event.regEndDate]);
-
-	// Reason to use useEffect is because we cannot set state in render()
-	// For example, if calling setOpenRegistration durning rendering RegistrationMSG, there will be a warning msg.
-	// '0': registration not open yet
-	// '1': registration closes in more than 7 days
-	// '2': registration closes in more than 3 days
-	// '3': registration closes in less than 3 days
-	// '4': registration closed
-	const [openRegistration, setOpenRegistration] = useState(false);
-	const [regTimeline, setRegTimeline] = useState('0');
-	let regStartDate = props.event.regStartDate;
-	let regEndDate = props.event.regEndDate;
-	let now = moment();
-	useEffect(() => {
-		if (moment(regStartDate) > now) {
-			setRegTimeline('0');
-		} else {
-			if (moment(regEndDate) - now > 604800000) {
-				setRegTimeline('1');
-				setOpenRegistration(true);
-			} else if (moment(regEndDate) - now > 259200000) {
-				setOpenRegistration(true);
-				setRegTimeline('2');
-			} else if (moment(regEndDate) - now > 0) {
-				setRegTimeline('3');
-				setOpenRegistration(true);
-			} else {
-				setOpenRegistration(false);
-				setRegTimeline('4');
-			}
-		}
-	}, [now, regStartDate, regEndDate]);
-
-	const RegistrationMSG = () => {
-		if (regTimeline === '0') {
-			// registration not yet started
-			return (
-				<h4 className="alert alert-primary" role="alert">
-					Registration starts in {regDuration}
-				</h4>
-			);
-		} else {
-			if (regTimeline === '1') {
-				// registration closed in more than 7 days
-				return (
-					<h4 className="alert alert-success" role="alert">
-						Registration ends in {regDuration}
-					</h4>
-				);
-			} else if (regTimeline === '2') {
-				// registration closed in more than 3 days
-				return (
-					<h4 className="alert alert-warning" role="alert">
-						Registration ends in {regDuration}
-					</h4>
-				);
-			} else if (regTimeline === '3') {
-				// registration closed in less than 3 days
-				return (
-					<h4 className="alert alert-danger" role="alert">
-						Registration ends in {regDuration}
-					</h4>
-				);
-			} else {
-				// registration closed regTimeline === '4'
-				return (
-					<h4 className="alert alert-dark" role="alert">
-						Registration is now closed
-					</h4>
-				);
-			}
-		}
-	};
 
 	const [showDescription, setShowDescription] = useState(
 		'btn collapsible minus-sign toggle-btn'
@@ -370,8 +290,6 @@ const EventItem = props => {
 					Are you ready to submit {props.event.name}? Please confirm.
 				</p>
 			</Modal>
-			{/* This section is for User club */}
-			{/* render logo/club name/event type  */}
 			{isLoading && <LoadingSpinner asOverlay />}
 			{!clubAuthContext.clubId && (
 				<div className="event-pages eventtype-page">
@@ -432,7 +350,7 @@ const EventItem = props => {
 					<div className="registration-container">
 						<div className="col-xs-12">
 							<div className="clearfix">
-								<RegistrationMSG />
+								{/* <RegistrationMSG /> */}
 							</div>
 							<div className="section">
 								<strong>
@@ -535,97 +453,8 @@ const EventItem = props => {
 					</div>
 				</div>
 			)}
-
-			{/* for Clubs */}
-			{clubAuthContext.clubId === props.event.clubId && (
-				<Card className="event-item__content">
-					{isLoading && <LoadingSpinner asOverlay />}
-					<div>
-						<h2 className="alert alert-primary" role="alert">
-							{props.event.name}
-						</h2>
-					</div>
-					{eventImageElement}
-					<div className="event-item__info">
-						<RegistrationMSG />
-						<h3>
-							{startDate} — {endDate}
-						</h3>
-						<h3>{props.event.venue}</h3>
-						<h4>{props.event.address}</h4>
-						<Button
-							size="small-googlemap"
-							onClick={() => openMapHandler()}>
-							Google Map
-						</Button>
-						<div className="event-item__description">
-							<p>{props.event.description}</p>
-						</div>
-						<div className="event-item__description">
-							<h3 className="event-item__content__h3heavy">
-								Special Instructions:
-							</h3>
-							<p className="event-item__description">
-								{props.event.instruction}
-							</p>
-						</div>
-					</div>
-					<div className="event-item__coursemap">
-						{props.event.courseMap && (
-							<React.Fragment>
-								<h3>Course Map </h3>
-								<Image
-									title={props.event.name}
-									alt={props.event.name + 'course map'}
-									src={
-										process.env.REACT_APP_ASSET_URL +
-										`/${props.event.courseMap}`
-									}
-									onClick={() => openCourseHandler()}
-									onHoover
-								/>
-							</React.Fragment>
-						)}
-					</div>
-					<div className="event-item__actions">
-						{clubAuthContext.clubId === props.event.clubId && (
-							<Button
-								to={`/events/formbuilder/${props.event.id}`}
-								size="small">
-								ENTRY FORM
-							</Button>
-						)}
-						{clubAuthContext.clubId === props.event.clubId &&
-							formStartDate > validFormModDate && (
-								<Button
-									to={`/events/update/${props.event.id}`}
-									size="small">
-									EDIT
-								</Button>
-							)}
-						{clubAuthContext.clubId === props.event.clubId &&
-							!props.event.published &&
-							formStartDate > validFormModDate &&
-							props.event.entryFormData && (
-								<Button
-									disabele={props.event.published}
-									onClick={openPublishHandler}
-									size="small">
-									PUBLISH
-								</Button>
-							)}
-						{clubAuthContext.clubId === props.event.clubId &&
-							!props.event.published &&
-							formStartDate > validFormModDate && (
-								<Button danger onClick={openDELHandler} size="small">
-									DELETE
-								</Button>
-							)}
-					</div>
-				</Card>
-			)}
 		</React.Fragment>
 	);
 };
 
-export default EventItem;
+export default CarItem;

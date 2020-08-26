@@ -48,3 +48,22 @@ body {
 	/* justify-content: center; */
 	/* align-items: center; */
 }
+
+.center_error {
+	/* to display loading spinner in the middle of the screen */
+	/* use position: fixed to ignore screen scrolling */
+	display: flex;
+	position: fixed;
+	left: 15%;
+	top: 15%;
+
+	/* text-align: center; */
+	/* justify-content: center; */
+	/* align-items: center; */
+}
+
+@media (max-width: 780px) {
+	.error_img {
+		width: calc(50%);
+	}
+}

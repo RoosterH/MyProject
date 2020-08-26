@@ -3,7 +3,7 @@ import React from 'react';
 import Button from '../../shared/components/FormElements/Button';
 import Card from '../../shared/components/UIElements/Card';
 import EventsItem from './EventsItem';
-import './EventsList.css';
+import '../../shared/css/EventsList.css';
 
 // treat this as a function looks like
 // EventList(props.items), caller will call as <EventList items=(value to be passed in) \>

@@ -9,7 +9,7 @@ import { useUserLoginValidation } from '../../shared/hooks/userLoginValidation-h
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { UserAuthContext } from '../../shared/context/auth-context';
 
-import './EventForm.css';
+import '../../shared/css/EventForm.css';
 const EventForm = () => {
 	const userAuthContext = useContext(UserAuthContext);
 	const [formData, setFormData] = useState();

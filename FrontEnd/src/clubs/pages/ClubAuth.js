@@ -155,7 +155,9 @@ const ClubAuth = () => {
 
 	const clubAuthForm = values => (
 		<div className="auth-div">
-			<h4 className="auth-form-header">Club Login</h4>
+			<h4 className="auth-form-header">
+				<i class="fas fa-car"></i>&nbsp;Club Login
+			</h4>
 			<hr className="auth-form--hr" />
 
 			<Formik
@@ -209,7 +211,10 @@ const ClubAuth = () => {
 
 	const clubSignupForm = values => (
 		<div className="auth-div">
-			<h4 className="auth-form-header">Sign up a new account</h4>
+			<h4 className="auth-form-header">
+				<i class="fas fa-flag-checkered" />
+				&nbsp;Sign up a new account
+			</h4>
 			<hr className="auth-form--hr" />
 
 			<Formik

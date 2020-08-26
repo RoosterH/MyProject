@@ -46,7 +46,7 @@ const UserAuth = () => {
 					}
 				);
 
-				if (userAuthContext.redirectURL) {
+				if (userAuthContext.userRedirectURL) {
 					// for re-direction, we need to set login information to be able to send request to backend
 					userAuthContext.userLogin(
 						responseData.userId,
@@ -55,7 +55,7 @@ const UserAuth = () => {
 						'',
 						responseData.entries
 					);
-					history.push(userAuthContext.redirectURL);
+					history.push(userAuthContext.userRedirectURL);
 				} else {
 					/**
 					 * Need to put redirect before calling userAuthContext.userLogin(responseData.user.id).
@@ -158,7 +158,10 @@ const UserAuth = () => {
 
 	const userAuthForm = values => (
 		<div className="auth-div">
-			<h4 className="auth-form-header">Driver Login</h4>
+			<h4 className="auth-form-header">
+				<i class="far fa-user" />
+				&nbsp;Driver Login
+			</h4>
 			<hr className="auth-form--hr" />
 
 			<Formik
@@ -212,7 +215,10 @@ const UserAuth = () => {
 
 	const userSignupForm = values => (
 		<div className="auth-div">
-			<h4 className="auth-form-header">Sign up a new account</h4>
+			<h4 className="auth-form-header">
+				<i class="fas fa-user-plus" />
+				&nbsp;Sign up a new account
+			</h4>
 			<hr className="auth-form--hr" />
 
 			<Formik

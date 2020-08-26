@@ -6,8 +6,8 @@ import OFFCOURSE from './OffCourse.jpg';
 
 const Error = () => {
 	return (
-		<div className="center">
-			<Card>
+		<div className="center_error">
+			<Card className="error_img">
 				<h2>Oops, the page you requested was not found!</h2>
 				<h2>Please go back to the course.</h2>
 				<a href="/">

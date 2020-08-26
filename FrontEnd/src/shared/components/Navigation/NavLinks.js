@@ -83,11 +83,41 @@ const NavLinks = props => {
 				)}
 				{userLoggedIn && (
 					<li>
-						<NavLink to={`/garage/${uId}`} exact>
+						<NavLink to={`/users/garage/${uId}`} exact>
 							My Garage
 						</NavLink>
 					</li>
 				)}
+				{userLoggedIn && (
+					<li>
+						<NavLink to={'/users/cars/new'} exact>
+							Add Car
+						</NavLink>
+					</li>
+				)}
+				{/* {userLoggedIn && (
+					<div class="btn-group">
+						<button
+							type="button"
+							class="btn btn-info dropdown-toggle"
+							data-toggle="dropdown"
+							aria-haspopup="true"
+							aria-expanded="false">
+							My Garage
+						</button>
+						<div
+							class="dropdown-menu"
+							aria-labelledby="dropdownMenuLink">
+							<a class="dropdown-item" href="#">
+								View
+							</a>
+							<a class="dropdown-item" href="#">
+								Add Car
+							</a>
+						</div>
+					</div>
+				)} */}
+
 				{userLoggedIn && (
 					<li>
 						<button onClick={logoutHandler}>LOGOUT</button>

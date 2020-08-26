@@ -9,7 +9,7 @@ export const useUserAuth = () => {
 	const [userId, setUserId] = useState(null);
 	const [userName, setUserName] = useState(null);
 	const [userEntries, setUserEntries] = useState(null);
-	const [redirectURL, setURL] = useState(null);
+	const [userRedirectURL, setURL] = useState(null);
 
 	// define callbacks of UserAuthContext, useCallBack will never be re-created
 	// so there won't be any infinite loop; otherwise when the page renders, the function
@@ -86,7 +86,7 @@ export const useUserAuth = () => {
 		}
 	}, [userToken, userLogout, userTokenExpDate]);
 
-	const setRedirectURL = useCallback(url => {
+	const setUserRedirectURL = useCallback(url => {
 		setURL(url);
 	}, []);
 
@@ -97,7 +97,7 @@ export const useUserAuth = () => {
 		userId,
 		userName,
 		userEntries,
-		redirectURL,
-		setRedirectURL
+		userRedirectURL,
+		setUserRedirectURL
 	};
 };

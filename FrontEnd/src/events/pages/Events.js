@@ -13,9 +13,9 @@ import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import EventsList from '../components/EventsList';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import { useHttpClient } from '../../shared/hooks/http-hook';
-
-import './Events.css';
 import { eventTypes } from '../../event/components/EventTypes';
+
+import '../../shared/css/Events.css';
 
 // Events is called in App.js where the route been defined
 // @to-do

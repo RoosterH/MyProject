@@ -28,7 +28,8 @@ const ImageUploader = props => {
 	return (
 		<div>
 			<label htmlFor={id} className={props.labelStyle}>
-				{title} (size &#60; 1.5 MB) - jpg/png/gif
+				<i class="fal fa-image" />
+				&nbsp; {title} (size &#60; 1.5 MB) - jpg/png/gif
 			</label>
 			<input
 				id={id}

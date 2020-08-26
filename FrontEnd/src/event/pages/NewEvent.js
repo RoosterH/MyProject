@@ -20,7 +20,7 @@ import { useHttpClient } from '../../shared/hooks/http-hook';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import { FormContext } from '../../shared/context/form-context';
 
-import './EventForm.css';
+import '../../shared/css/EventForm.css';
 import { eventTypes } from '../../event/components/EventTypes';
 
 const NewEvent = setFieldValue => {
@@ -50,9 +50,8 @@ const NewEvent = setFieldValue => {
 
 	// If we are re-directing to this page, we want to clear up clubRedirectURL
 	let location = useLocation();
-	let path;
 	React.useEffect(() => {
-		path = location.pathname;
+		let path = location.pathname;
 		let clubRedirectURL = clubAuthContext.clubRedirectURL;
 		if (path === clubRedirectURL) {
 			// re-init redirectURL after re-direction route
@@ -227,7 +226,7 @@ const NewEvent = setFieldValue => {
 			formData.append('image', values.image);
 			formData.append('courseMap', values.courseMap);
 
-			await sendRequest(
+			const responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + '/events',
 				'POST',
 				formData,
@@ -237,6 +236,7 @@ const NewEvent = setFieldValue => {
 				}
 			);
 			setOKLeavePage(true);
+			console.log('responseData = ', responseData);
 			// Redirect the club to a diffrent page
 			history.push(`/events/club/${clubAuthContext.clubId}`);
 		} catch (err) {}
@@ -417,7 +417,8 @@ const NewEvent = setFieldValue => {
 				}) => (
 					<Form className="event-form-container">
 						<label htmlFor="name" className="event-form__label">
-							Event Name
+							<i class="fal fa-file-alt" />
+							&nbsp; Event Name
 						</label>
 						<Field
 							id="name"
@@ -443,7 +444,8 @@ const NewEvent = setFieldValue => {
 							</div>
 						)}
 						<label htmlFor="eventType" className="event-form__label">
-							Event Type
+							<i class="fal fa-flag-checkered" />
+							&nbsp; Event Type
 						</label>
 						<Field
 							id="type"
@@ -475,12 +477,14 @@ const NewEvent = setFieldValue => {
 						<label
 							htmlFor="startDate"
 							className="event-form__label_startdate">
-							Start Date
+							<i class="fal fa-calendar-alt" />
+							&nbsp; Start Date
 						</label>
 						<label
 							htmlFor="endDate"
 							className="event-form__label_enddate">
-							End Date
+							<i class="fal fa-calendar-alt" />
+							&nbsp; End Date
 						</label>
 						<br />
 						<Field
@@ -533,12 +537,14 @@ const NewEvent = setFieldValue => {
 						<label
 							htmlFor="regStartDate"
 							className="event-form__label_startdate">
-							Registration Start Date
+							<i class="fal fa-calendar-alt" />
+							&nbsp; Registration Start Date
 						</label>
 						<label
 							htmlFor="regEndDate"
 							className="event-form__label_enddate">
-							Registration End Date
+							<i class="fal fa-calendar-alt" />
+							&nbsp; Registration End Date
 						</label>
 						<Field
 							id="regStartDate"
@@ -591,7 +597,8 @@ const NewEvent = setFieldValue => {
 								</React.Fragment>
 							)}
 						<label htmlFor="venue" className="event-form__label">
-							Venue
+							<i class="fal fa-plane-alt"></i>
+							&nbsp; Venue
 						</label>
 						<Field
 							id="venue"
@@ -616,7 +623,8 @@ const NewEvent = setFieldValue => {
 							</div>
 						)}
 						<label htmlFor="address" className="event-form__label">
-							Venue Address
+							<i class="far fa-map-marker-alt" />
+							&nbsp; Venue Address
 						</label>
 						<Field
 							id="address"
@@ -666,7 +674,8 @@ const NewEvent = setFieldValue => {
 						<label
 							htmlFor="description"
 							className="event-form__label">
-							Event Description
+							<i class="fal fa-edit" />
+							&nbsp; Event Description
 						</label>
 						<Field
 							id="decription"
@@ -699,7 +708,8 @@ const NewEvent = setFieldValue => {
 						<label
 							htmlFor="instruction"
 							className="event-form__label">
-							Event Instruction
+							<i class="fal fa-list-alt" />
+							&nbsp; Event Instruction
 						</label>
 						<Field
 							id="instruction"

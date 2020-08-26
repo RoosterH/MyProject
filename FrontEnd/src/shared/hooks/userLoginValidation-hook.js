@@ -11,7 +11,7 @@ export const useUserLoginValidation = url => {
 	useEffect(() => {
 		let mounted = true;
 
-		// skip validation if userAuthContext.redirectURL === url meaning we are in redirection loop
+		// skip validation if userAuthContext.userRedirectURL === url meaning we are in redirection loop
 		if (
 			userAuthContext.redirectURL !== url &&
 			(!storageData ||
@@ -19,8 +19,9 @@ export const useUserLoginValidation = url => {
 				storageData.userId !== userAuthContext.userId)
 		) {
 			if (mounted) {
-				userAuthContext.setRedirectURL(url);
-				// inside of userAuth will check if userAuthContext.redirectURL exisits for redirection
+				console.log('url = ', url);
+				userAuthContext.setUserRedirectURL(url);
+				// inside of userAuth will check if userAuthContext.userRedirectURL exisits for redirection
 				history.push('/users/auth');
 			}
 		}
