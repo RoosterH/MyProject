@@ -146,6 +146,7 @@ const CarItem = props => {
 			<p>Toe : {props.car.LFToe} in</p>
 			<p>Camber : {props.car.LFCamber}&#x00B0;</p>
 			<p>Caster : {props.car.LFCaster}&#x00B0;</p>
+			<p>Sway Bar: {props.car.FBar}</p>
 		</div>
 	);
 
@@ -170,6 +171,7 @@ const CarItem = props => {
 		<div>
 			<p>Toe : {props.car.LRToe} in</p>
 			<p>Camber : {props.car.LRCamber}&#x00B0;</p>
+			<p>Sway Bar: {props.car.RBar}</p>
 		</div>
 	);
 
@@ -290,66 +292,77 @@ const CarItem = props => {
 									{props.car.tireRearDiameter}
 								</h4>
 							</div>
-							<div className="section">
-								<br /> <br />
+							<div className="eventimage-basic-container">
+								<div className="eventimage-container">
+									<img
+										src={
+											process.env.REACT_APP_ASSET_URL +
+											`/${props.car.image}`
+										}
+										alt={props.car.model}
+										className="eventimage-container-img"
+									/>
+								</div>
 							</div>
-							<div></div>
-						</div>
-						<div className="col-xs-12">
-							<Button
-								// inverse={}
-								to={`/events/form/${props.car.id}`}
-								size="small-orange">
-								MODIFY
-							</Button>
+							<div className="modifybutton-container">
+								<Button
+									// inverse={}
+									to={`/events/form/${props.car.id}`}
+									size="small-orange">
+									MODIFY
+								</Button>
+							</div>
+							<div className="deletebutton-container">
+								<Button
+									// inverse={}
+									to={`/events/form/${props.car.id}`}
+									size="small-orange">
+									DELETE&nbsp;
+								</Button>
+							</div>
 						</div>
 					</div>
-					<div className="eventimage-basic-container">
-						<div className="eventimage-container">
-							<img
-								src={
-									process.env.REACT_APP_ASSET_URL +
-									`/${props.car.image}`
-								}
-								alt={props.car.model}
-								className="eventimage-container-img"
-							/>
-						</div>
+					<div className="note-container">
+						<h3>Note: </h3>
+						<p>{props.car.note}</p>
 					</div>
 				</div>
-
 				{/* <div className="section-container theme"> */}
 				<div className="theme">
 					<table className="table table-color">
-						{/* <tr>
+						<tbody>
+							{/* <tr>
 							<th>Heading A</th>
 							<th>Heading B</th>
 							<th>Heading C</th>
 						</tr> */}
-						<tr className="table-tr">
-							<td className="table-corner-td">&nbsp;</td>
-							<td className="table-center-toptd">{centerFront()}</td>
-							<td className="table-corner-td">&nbsp;</td>
-						</tr>
-						<tr>
-							<td className="table-side-td">{leftFront()}</td>
-							<td className="table-center-td">&nbsp;</td>
-							<td className="table-side-td">{rightFront()}</td>
-						</tr>
-						<tr>
-							<td className="table-side-td">{leftRear()}</td>
-							<td className="table-center-td">&nbsp;</td>
-							<td className="table-side-td">{rightRear()}</td>
-						</tr>
-						<tr>
-							<td className="table-corner-td">&nbsp;</td>
-							<td className="table-center-td">{centerRear()}</td>
-							<td className="table-corner-td">&nbsp;</td>
-						</tr>
+							<tr className="table-tr">
+								<td className="table-corner-td">&nbsp;</td>
+								<td className="table-center-toptd">
+									{centerFront()}
+								</td>
+								<td className="table-corner-td">&nbsp;</td>
+							</tr>
+							<tr>
+								<td className="table-side-td">{leftFront()}</td>
+								<td className="table-center-td">&nbsp;</td>
+								<td className="table-side-td">{rightFront()}</td>
+							</tr>
+							<tr>
+								<td className="table-side-td">{leftRear()}</td>
+								<td className="table-center-td">&nbsp;</td>
+								<td className="table-side-td">{rightRear()}</td>
+							</tr>
+							<tr>
+								<td className="table-corner-td">&nbsp;</td>
+								<td className="table-center-td">{centerRear()}</td>
+								<td className="table-corner-td">&nbsp;</td>
+							</tr>
+						</tbody>
 					</table>
-					{/* <div className="page-basic-container">
+					<div className="page-basic-container">
 						<div className="page-footer"></div>
-					</div> */}
+					</div>
 				</div>
 			</div>
 		</React.Fragment>

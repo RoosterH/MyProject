@@ -1,7 +1,6 @@
 .carItem {
 	background-color: #252222;
 	margin-top: -1rem;
-	/* height: 100rem; */
 	position: absolute;
 	top: 0;
 	bottom: 0;
@@ -12,15 +11,6 @@
 .event-pages {
 	margin: 0rem;
 }
-
-/* .header-title {
-	color: #4a4a4a;
-	font-size: 30px;
-	font-weight: 600;
-	line-height: 1.5;
-	max-width: 100%;
-	margin-bottom: 0;
-} */
 
 .section-container {
 	display: block;
@@ -100,10 +90,10 @@
 	padding-right: 18px;
 	position: relative;
 	/* margin-left: 10rem; */
-	left: 150px;
+	left: 200px;
 	/* width: 40%; */
-	width: 17rem;
-	bottom: 4.8rem;
+	width: 15rem;
+	bottom: 3.8rem;
 }
 
 .eventimage-container-img {
@@ -114,12 +104,11 @@
 
 .carinfo-container {
 	display: inline-block;
-	/* position: absolute; */
 	top: 0;
 	border: 1px;
 	border-style: ridge;
 	width: 43%;
-	/* position: absolute; */
+	height: 13.5rem;
 	position: relative;
 	font-size: 14px;
 	padding: 0.5rem;
@@ -130,13 +119,33 @@
 	font-weight: 500;
 	display: inline;
 	margin-right: 0.5rem;
+	color: wheat;
 }
 
 .carinfo-container h4 {
 	font-size: 12px;
 	font-weight: 400;
-	color: #ccdf76;
+	color: rgb(221, 219, 219);
 	font-weight: 300;
+}
+
+.note-container {
+	display: inline-block;
+	top: -8.7rem;
+	/* border: 1px; */
+	/* border-style: ridge; */
+	width: 43%;
+	/* height: 13.5rem; */
+	position: relative;
+	font-size: 14px;
+	padding: 0.5rem;
+}
+.note-container h3 {
+	font-size: 14px;
+	font-weight: 500;
+	display: inline;
+	margin-right: 0.5rem;
+	color: wheat;
 }
 
 .theme-table,
@@ -150,8 +159,9 @@
 	background: url('../utils/png/RaceCar.png');
 	background-repeat: no-repeat;
 	background-position: center;
-	background-position-y: 7rem;
+	background-position-y: 6rem;
 	left: 9rem;
+	top: 3rem;
 	position: relative;
 }
 
@@ -196,6 +206,15 @@
 	text-align: center;
 }
 
+.modifybutton-container {
+	position: absolute;
+	top: 7rem;
+}
+.deletebutton-container {
+	position: absolute;
+	top: 10rem;
+}
+
 .page-footer {
 	line-height: 21px;
 	margin-bottom: 10rem;
@@ -203,6 +222,17 @@
 }
 
 @media (max-width: 780px) {
+	.carItem {
+		background-color: #252222;
+		margin-top: -1rem;
+		position: absolute;
+		height: 80rem;
+		top: 0;
+		bottom: 0;
+		right: 0;
+		left: 0;
+	}
+
 	.theme-table,
 	.theme {
 		height: 400px;
@@ -247,17 +277,22 @@
 		text-align: center;
 	}
 
+	/* hide car image for small screen */
 	.eventimage-basic-container {
-		display: inline-block;
-		padding-right: 18px;
-		position: relative;
-		/* margin-left: 10rem; */
-		left: 50px;
-		/* width: 40%; */
-		width: 10rem;
-		bottom: 4.8rem;
+		width: 0rem;
 	}
 
+	.note-container {
+		display: inline-block;
+		top: -5.6rem;
+		/* border: 1px; */
+		/* border-style: ridge; */
+		width: 43%;
+		/* height: 13.5rem; */
+		position: relative;
+		font-size: 14px;
+		padding: 0.5rem;
+	}
 	.event-pages {
 		/* margin-top: -20px; */
 		margin-top: 0px;

@@ -348,6 +348,7 @@ const NewCar = setFieldValue => {
 			formData.append('RRebound', values.RRebound);
 			formData.append('FCompression', values.FCompression);
 			formData.append('RCompression', values.RCompression);
+			formData.append('note', values.note);
 			formData.append('image', values.image);
 
 			await sendRequest(
