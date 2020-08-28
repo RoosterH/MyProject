@@ -10,16 +10,19 @@ export const useUserAuth = () => {
 	const [userName, setUserName] = useState(null);
 	const [userEntries, setUserEntries] = useState(null);
 	const [userRedirectURL, setURL] = useState(null);
+	const [userImage, setUserImage] = useState(null);
 
 	// define callbacks of UserAuthContext, useCallBack will never be re-created
 	// so there won't be any infinite loop; otherwise when the page renders, the function
 	// will be re-created each render cause infinite loop.
 	const userLogin = useCallback(
-		(uid, uname, utoken, expirationDate, uentries) => {
+		(uid, uname, utoken, expirationDate, uentries, uimage) => {
 			setUserToken(utoken);
 			setUserId(uid);
 			setUserName(uname);
 			setUserEntries(uentries);
+			setUserImage(uimage);
+			console.log('uimage = ', uimage);
 
 			// jwt token expires in 7 day
 			const tokenExp =
@@ -36,7 +39,8 @@ export const useUserAuth = () => {
 					userName: uname,
 					userToken: utoken,
 					expiration: tokenExp,
-					userEntries: uentries
+					userEntries: uentries,
+					userImage: uimage
 				})
 			);
 		},
@@ -48,6 +52,7 @@ export const useUserAuth = () => {
 		setUserId(null);
 		setUserName(null);
 		setUserEntries(null);
+		setUserImage(null);
 		// remove token from storage
 		localStorage.removeItem('userData');
 		// reset userTokenExpDate; otherwise won't be able to login after
@@ -69,7 +74,8 @@ export const useUserAuth = () => {
 				storageData.userName,
 				storageData.userToken,
 				moment(storageData.expiration),
-				storageData.userEntries
+				storageData.userEntries,
+				storageData.userImage
 			);
 		}
 	}, [userLogin]);
@@ -97,6 +103,7 @@ export const useUserAuth = () => {
 		userId,
 		userName,
 		userEntries,
+		userImage,
 		userRedirectURL,
 		setUserRedirectURL
 	};

@@ -46,9 +46,7 @@ module.exports = (req, res, next) => {
 		const decodedToken = jwt.verify(token, JWT_PRIVATE_KEY);
 
 		// add data to the request
-		req.userData = decodedToken.clubId
-			? { clubId: decodedToken.clubId }
-			: { userId: decodedToken.userId };
+		req.userData = decodedToken.clubId;
 		next();
 	} catch (err) {
 		const error = new HttpError(

@@ -7,7 +7,7 @@ const moment = require('moment');
 
 const eventsController = require('../controllers/eventsController');
 const fileUpload = require('../middleware/file-upload');
-const checkAuth = require('../middleware/check-auth');
+const checkClubAuth = require('../middleware/check-clubAuth');
 
 const router = express.Router();
 
@@ -38,9 +38,9 @@ router.post(
 	eventsController.getEventsByDate
 );
 
-// adding checkAuth middleware here will ensure all the requests below
+// adding checkClubAuth middleware here will ensure all the requests below
 // need to be authenticated
-router.use(checkAuth);
+router.use(checkClubAuth);
 
 // get event entry form and answer
 router.get(

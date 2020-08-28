@@ -9,6 +9,8 @@ import { isPropertyAssignment } from 'typescript';
 
 // UserCarItem renders a card for each event
 const UserCarsItem = props => {
+	console.log('props = ', props);
+	console.log('props.id = ', props.id);
 	return (
 		<li className="events-item">
 			<Card className="events-item__content">

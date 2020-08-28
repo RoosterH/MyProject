@@ -386,7 +386,6 @@ const EventItem = props => {
 									alt={props.event.clubName}
 								/>
 							</div>
-
 							<div className="primary-info">
 								<h3 className="header-title">{props.event.name}</h3>
 							</div>
@@ -428,7 +427,6 @@ const EventItem = props => {
 							/>
 						</div>
 					</div>
-
 					<div className="registration-container">
 						<div className="col-xs-12">
 							<div className="clearfix">

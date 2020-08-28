@@ -156,7 +156,7 @@ const ClubAuth = () => {
 	const clubAuthForm = values => (
 		<div className="auth-div">
 			<h4 className="auth-form-header">
-				<i class="fas fa-car"></i>&nbsp;Club Login
+				<i className="fas fa-car"></i>&nbsp;Club Login
 			</h4>
 			<hr className="auth-form--hr" />
 

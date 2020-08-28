@@ -1,5 +1,5 @@
 /**
- * This file defines Mongoose schema for "Entry" (event entry)
+ * This file defines Mongoose schema for "entry" (event entry)
  */
 const mongoose = require('mongoose');
 

@@ -12,6 +12,7 @@ const clubsRoutes = require('./routes/clubsRoutes');
 const eventsRoutes = require('./routes/eventsRoutes');
 const usersRoutes = require('./routes/usersRoutes');
 const entriesRoutes = require('./routes/entriesRoutes');
+const carsRoutes = require('./routes/carRoutes');
 const HttpError = require('./models/httpError');
 
 const app = express();
@@ -45,10 +46,11 @@ app.use((req, res, next) => {
 	next();
 });
 
-app.use('/api/events/', eventsRoutes);
+app.use('/api/cars/', carsRoutes);
 app.use('/api/clubs/', clubsRoutes);
-app.use('/api/users/', usersRoutes);
 app.use('/api/entries/', entriesRoutes);
+app.use('/api/events/', eventsRoutes);
+app.use('/api/users/', usersRoutes);
 
 // this route is for the requests that are not in any of the routes
 app.use((req, res, next) => {

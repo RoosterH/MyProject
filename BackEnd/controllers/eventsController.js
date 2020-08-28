@@ -97,9 +97,13 @@ const getEventsByClubId = async (req, res, next) => {
 		return next(error);
 	}
 
-	if (!club || club.events.length === 0) {
-		const error = new HttpError('Could not find any event.', 404);
+	if (!club) {
+		const error = new HttpError('Could not find the club.', 404);
+		return next(error);
+	}
 
+	if (!club.events || club.events.length === 0) {
+		const error = new HttpError('Could not find any event.', 404);
 		return next(error);
 	}
 
@@ -196,7 +200,7 @@ const createEvent = async (req, res, next) => {
 	if (!club) {
 		const error = new HttpError(
 			'Create event failure. Unauthorized request.',
-			404
+			401
 		);
 		return next(error);
 	}

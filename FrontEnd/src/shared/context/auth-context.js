@@ -33,6 +33,7 @@ export const UserAuthContext = createContext({
 	userId: null,
 	userName: null,
 	userEntries: null,
+	userImage: null,
 	url: null,
 	userLogin: () => {},
 	userLogout: () => {},

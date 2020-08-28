@@ -8,6 +8,7 @@ export const useClubAuth = () => {
 	const [clubTokenExpDate, setClubTokenExpDate] = useState();
 	const [clubId, setClubId] = useState(null);
 	const [clubName, setClubName] = useState(null);
+	const [clubImage, setClubImage] = useState(null);
 	const [isInsideForm, setInForm] = useState(false);
 	const [clubRedirectURL, setURL] = useState(null);
 
@@ -15,10 +16,11 @@ export const useClubAuth = () => {
 	// so there won't be any infinite loop; otherwise when the page renders, the function
 	// will be re-created each render cause infinite loop.
 	const clubLogin = useCallback(
-		(cid, cname, ctoken, expirationDate) => {
+		(cid, cname, ctoken, cimage, expirationDate) => {
 			setClubToken(ctoken);
 			setClubId(cid);
 			setClubName(cname);
+			setClubImage(cimage);
 			// jwt token expires in 7 day
 			// max setTimeout is (2147483647 ms) or 24.855 days.
 			const tokenExp =
@@ -94,6 +96,7 @@ export const useClubAuth = () => {
 		clubLogout,
 		clubId,
 		clubName,
+		clubImage,
 		isInsideForm,
 		setIsInsideForm,
 		clubRedirectURL,

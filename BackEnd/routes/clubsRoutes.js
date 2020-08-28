@@ -6,7 +6,7 @@ const { check } = require('express-validator');
 
 const clubsController = require('../controllers/clubsController');
 const fileUpload = require('../middleware/file-upload');
-const checkAuth = require('../middleware/check-auth');
+const checkClubAuth = require('../middleware/check-clubAuth');
 
 const router = express.Router();
 
@@ -35,7 +35,7 @@ router.post('/login', clubsController.loginClub);
 
 // adding checkAuth middleware here will ensure all the requests below
 // need to be authenticated
-router.use(checkAuth);
+router.use(checkClubAuth);
 
 // club logout
 router.post('/logout', clubsController.logoutClub);

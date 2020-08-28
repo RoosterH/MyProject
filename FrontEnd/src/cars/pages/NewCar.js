@@ -54,7 +54,7 @@ const NewCar = setFieldValue => {
 			// re-init redirectURL after re-direction route
 			userAuthContext.setUserRedirectURL(null);
 		}
-	}, [location]);
+	}, [location, userAuthContext]);
 
 	const [year, setYear] = useState('');
 	const [make, setMake] = useState('');
@@ -78,8 +78,10 @@ const NewCar = setFieldValue => {
 	const [RFCaster, setRFCaster] = useState('');
 	const [LFToe, setLFToe] = useState('');
 	const [RFToe, setRFToe] = useState('');
+	const [FrontToe, setFrontToe] = useState('');
 	const [LRToe, setLRToe] = useState('');
 	const [RRToe, setRRToe] = useState('');
+	const [RearToe, setRearToe] = useState('');
 	const [FBar, setFBar] = useState('');
 	const [RBar, setRBar] = useState('');
 	const [FRebound, setFRebound] = useState('');
@@ -175,11 +177,17 @@ const NewCar = setFieldValue => {
 		if (carFormData.RFToe) {
 			setRFToe(carFormData.RFToe);
 		}
-		if (carFormData.LRtoe) {
-			setLRToe(carFormData.LRtoe);
+		if (carFormData.FrontToe) {
+			setLRToe(carFormData.FrontToe);
 		}
-		if (carFormData.RRtoe) {
-			setRRToe(carFormData.RRtoe);
+		if (carFormData.LRToe) {
+			setLRToe(carFormData.LRToe);
+		}
+		if (carFormData.RRToe) {
+			setRRToe(carFormData.RRToe);
+		}
+		if (carFormData.RearToe) {
+			setLRToe(carFormData.RearToe);
 		}
 		if (carFormData.FBar) {
 			setFBar(carFormData.FBar);
@@ -235,8 +243,10 @@ const NewCar = setFieldValue => {
 		carFormData['RFCaster'] = '';
 		carFormData['LFToe'] = '';
 		carFormData['RFToe'] = '';
-		carFormData['LRtoe'] = '';
-		carFormData['RRtoe'] = '';
+		carFormData['FrontToe'] = '';
+		carFormData['LRToe'] = '';
+		carFormData['RRToe'] = '';
+		carFormData['RearToe'] = '';
 		carFormData['FBar'] = '';
 		carFormData['RBar'] = '';
 		carFormData['FRebound'] = '';
@@ -277,8 +287,10 @@ const NewCar = setFieldValue => {
 		RFCaster: RFCaster,
 		LFToe: LFToe,
 		RFToe: RFToe,
-		LRtoe: LRToe,
-		RRtoe: RRToe,
+		FrontToe: FrontToe,
+		LRToe: LRToe,
+		RRToe: RRToe,
+		RearToe: RearToe,
 		FBar: FBar,
 		RBar: RBar,
 		FRebound: FRebound,
@@ -325,9 +337,10 @@ const NewCar = setFieldValue => {
 			formData.append('RFCaster', values.RFCaster);
 			formData.append('LFToe', values.LFToe);
 			formData.append('RFToe', values.RFToe);
-			formData.append('LRtoe', values.LRToe);
+			formData.append('FrontToe', values.FrontToe);
+			formData.append('LRToe', values.LRToe);
 			formData.append('RRToe', values.RRToe);
-
+			formData.append('RearToe', values.RearToe);
 			formData.append('FBar', values.FBar);
 			formData.append('RBar', values.RBar);
 
@@ -1060,14 +1073,9 @@ const NewCar = setFieldValue => {
 							Right Front Toe &#x2033;
 						</label>
 						<label
-							htmlFor="LRtoe"
+							htmlFor="FrontToe"
 							className="event-form__label_inline_quarter">
-							Left Rear Toe &#x2033;
-						</label>
-						<label
-							htmlFor="RRtoe"
-							className="event-form__label_inline_quarter">
-							Right Rear Toe &#x2033;
+							Front Toe &#x2033;
 						</label>
 						<Field
 							id="LFToe"
@@ -1081,11 +1089,6 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.LFToe && errors.LFToe && (
-							<div className="event-form__field-error">
-								{errors.LFToe}
-							</div>
-						)}
 						<Field
 							id="RFToe"
 							name="RFToe"
@@ -1098,43 +1101,97 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
+						<Field
+							id="FrontToe"
+							name="FrontToe"
+							type="text"
+							className="event-form__field_quarter"
+							onBlur={event => {
+								// without handBlure(event) touched.RFToe will not work
+								handleBlur(event);
+								updateCarFormData('Front', event.target.value);
+								setOKLeavePage(false);
+							}}
+						/>
+						{touched.LFToe && errors.LFToe && (
+							<div className="event-form__field-error">
+								{errors.LFToe}
+							</div>
+						)}
 						{touched.RFToe && errors.RFToe && (
 							<div className="event-form__field-error">
 								{errors.RFToe}
 							</div>
 						)}
-						<Field
-							id="LRtoe"
-							name="LRtoe"
-							type="text"
-							className="event-form__field_quarter"
-							onBlur={event => {
-								// without handBlure(event) touched.LRtoe will not work
-								handleBlur(event);
-								updateCarFormData('LRtoe', event.target.value);
-								setOKLeavePage(false);
-							}}
-						/>
-						{touched.LRtoe && errors.LRtoe && (
+						{touched.FrontToe && errors.FrontToe && (
 							<div className="event-form__field-error">
-								{errors.LRtoe}
+								{errors.FrontToe}
 							</div>
 						)}
+						<label
+							htmlFor="LRToe"
+							className="event-form__label_inline_third">
+							Left Rear Toe &#x2033;
+						</label>
+						<label
+							htmlFor="RRToe"
+							className="event-form__label_inline_third">
+							Right Rear Toe &#x2033;
+						</label>
+						<label
+							htmlFor="RearToe"
+							className="event-form__label_inline_third">
+							Rear Toe &#x2033;
+						</label>
 						<Field
-							id="RRtoe"
-							name="RRtoe"
+							id="LRToe"
+							name="LRToe"
 							type="text"
-							className="event-form__field_quarter"
+							className="event-form__field_third"
 							onBlur={event => {
-								// without handBlure(event) touched.RRtoe will not work
+								// without handBlure(event) touched.LRToe will not work
 								handleBlur(event);
-								updateCarFormData('RRtoe', event.target.value);
+								updateCarFormData('LRToe', event.target.value);
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.RRtoe && errors.RRtoe && (
+						<Field
+							id="RRToe"
+							name="RRToe"
+							type="text"
+							className="event-form__field_third"
+							onBlur={event => {
+								// without handBlure(event) touched.RRToe will not work
+								handleBlur(event);
+								updateCarFormData('RRToe', event.target.value);
+								setOKLeavePage(false);
+							}}
+						/>
+						<Field
+							id="RearToe"
+							name="RearToe"
+							type="text"
+							className="event-form__field_third"
+							onBlur={event => {
+								// without handBlure(event) touched.RearToe will not work
+								handleBlur(event);
+								updateCarFormData('RearToe', event.target.value);
+								setOKLeavePage(false);
+							}}
+						/>
+						{touched.LRToe && errors.LRToe && (
 							<div className="event-form__field-error">
-								{errors.RRtoe}
+								{errors.LRToe}
+							</div>
+						)}
+						{touched.RRToe && errors.RRToe && (
+							<div className="event-form__field-error">
+								{errors.RRToe}
+							</div>
+						)}
+						{touched.RearToe && errors.RearToe && (
+							<div className="event-form__field-error">
+								{errors.RearToe}
 							</div>
 						)}
 						<label

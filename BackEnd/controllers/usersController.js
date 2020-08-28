@@ -157,7 +157,8 @@ const createUser = async (req, res, next) => {
 		name: newUser.name,
 		email: newUser.email,
 		token: token,
-		entries: []
+		entries: [],
+		garage: []
 	});
 };
 
@@ -233,7 +234,8 @@ const loginUser = async (req, res, next) => {
 		name: existingUser.name,
 		email: existingUser.email,
 		token: token,
-		entries: existingUser.entries
+		entries: existingUser.entries,
+		image: existingUser.image
 	});
 };
 
@@ -256,7 +258,7 @@ const updateUser = async (req, res, next) => {
 
 	const { name, password, email } = req.body;
 	const userId = req.userData.userId; // use userId from token instead of getting it from url to avoid hacking
-	console.log('userId = ', userId);
+
 	let user;
 	try {
 		user = await User.findById(userId);

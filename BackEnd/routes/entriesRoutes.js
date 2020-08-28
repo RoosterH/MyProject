@@ -5,7 +5,7 @@ const express = require('express');
 const { check } = require('express-validator');
 
 const entriesController = require('../controllers/entriesController');
-const checkAuth = require('../middleware/check-auth');
+const checkUserAuth = require('../middleware/check-userAuth');
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ const router = express.Router();
 
 // adding checkAuth middleware here will ensure all the requests below
 // need to be authenticated
-router.use(checkAuth);
+router.use(checkUserAuth);
 
 // users needs to login to see their events
 // router.get('/user/:uid', eventsController.getEventsByUserId);

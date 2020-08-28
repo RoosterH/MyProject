@@ -23,6 +23,13 @@ const userSchema = new Schema({
 			required: true,
 			ref: 'Entry'
 		}
+	],
+	garage: [
+		{
+			type: mongoose.Types.ObjectId,
+			required: true,
+			ref: 'Car'
+		}
 	]
 });
 

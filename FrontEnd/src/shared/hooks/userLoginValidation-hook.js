@@ -19,7 +19,6 @@ export const useUserLoginValidation = url => {
 				storageData.userId !== userAuthContext.userId)
 		) {
 			if (mounted) {
-				console.log('url = ', url);
 				userAuthContext.setUserRedirectURL(url);
 				// inside of userAuth will check if userAuthContext.userRedirectURL exisits for redirection
 				history.push('/users/auth');

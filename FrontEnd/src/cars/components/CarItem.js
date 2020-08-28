@@ -11,7 +11,7 @@ import Modal from '../../shared/components/UIElements/Modal';
 
 import { UserAuthContext } from '../../shared/context/auth-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';
-import '../../shared/css/EventItem.css';
+import '../../shared/css/CarItem.css';
 
 const CarItem = props => {
 	const {
@@ -61,8 +61,7 @@ const CarItem = props => {
 		setShowDELModal(false);
 		try {
 			await sendRequest(
-				process.env.REACT_APP_BACKEND_URL +
-					`/events/${props.event.id}`,
+				process.env.REACT_APP_BACKEND_URL + `/cars/${props.car.id}`,
 				'DELETE',
 				null,
 				{
@@ -71,7 +70,7 @@ const CarItem = props => {
 					Authorization: 'Bearer ' + userAuthContext.userToken
 				}
 			);
-			history.push(`/events/club/${clubAuthContext.clubId}`);
+			history.push(`/users/garage/${userAuthContext.userId}`);
 		} catch (err) {}
 	};
 
@@ -80,17 +79,17 @@ const CarItem = props => {
 		try {
 			await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
-					`/clubs/publish/${props.event.id}`,
+					`/cars/publish/${props.car.id}`,
 				'PATCH',
 				JSON.stringify({ published: true }),
 				{
 					// No need for content-type since body is null,
 					// adding JWT to header for authentication
 					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + clubAuthContext.clubToken
+					Authorization: 'Bearer ' + userAuthContext.userToken
 				}
 			);
-			history.push(`/events/club/${clubAuthContext.clubId}`);
+			history.push(`/users/garage/${userAuthContext.userId}`);
 		} catch (err) {}
 	};
 
@@ -106,61 +105,19 @@ const CarItem = props => {
 		showCourse && closeCourseHandler();
 	};
 
-	// date related section
-	let startDate = moment(props.event.startDate).format(
-		'MM/DD/YYYY, ddd'
-	);
-	let endDate = moment(props.event.endDate).format('MM/DD/YYYY, ddd');
-	let formStartDate = moment(props.event.startDate).format(
-		'YYYY-MM-DD'
-	);
-	let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');
-	const eventImageElement =
-		props.event.image !== '' ? (
+	const carImageElement =
+		props.car.image !== '' ? (
 			<div className="event-item__image">
 				<img
 					src={
-						process.env.REACT_APP_ASSET_URL + `/${props.event.image}`
+						process.env.REACT_APP_ASSET_URL + `/${props.car.image}`
 					}
-					alt={props.name}
+					alt={props.car.name}
 				/>
 			</div>
 		) : (
 			<div></div>
 		);
-
-	const [regDuration, setRegDuration] = useState('');
-	useEffect(() => {
-		let mounted = true;
-		let runSetInterval;
-		const countInterval = () => {
-			// setInterval runs setRegStartDuration every 1 sec
-			if (moment(props.event.regStartDate) > moment()) {
-				runSetInterval = setInterval(
-					() =>
-						setRegDuration(
-							moment().countdown(props.event.regStartDate).toString()
-						),
-					1000
-				);
-			} else if (moment(props.event.regEndDate) > moment()) {
-				runSetInterval = setInterval(
-					() =>
-						setRegDuration(
-							moment().countdown(props.event.regEndDate).toString()
-						),
-					1000
-				);
-			}
-		};
-		if (mounted) {
-			countInterval();
-		}
-		return () => {
-			mounted = false;
-			clearInterval(runSetInterval);
-		};
-	}, [props.event.regStartDate, props.event.regEndDate]);
 
 	const [showDescription, setShowDescription] = useState(
 		'btn collapsible minus-sign toggle-btn'
@@ -184,68 +141,57 @@ const CarItem = props => {
 		}
 	};
 
-	// Determine this is a user registered event
-	const [userRegisteredEvent, setUserRegisteredEvent] = useState(
-		false
+	const leftFront = () => (
+		<div>
+			<p>Toe : {props.car.LFToe} in</p>
+			<p>Camber : {props.car.LFCamber}&#x00B0;</p>
+			<p>Caster : {props.car.LFCaster}&#x00B0;</p>
+		</div>
 	);
-	const [buttonName, setButtonName] = useState('REGISTER EVENT');
-	let eventId = useParams().id;
-	useEffect(() => {
-		if (userAuthContext.userId) {
-			let storageData = JSON.parse(localStorage.getItem('userData'));
-			if (storageData.userId === userAuthContext.userId) {
-				let userEntries = storageData.userEntries;
-				if (userEntries) {
-					for (let i = 0; i < userEntries.length; ++i) {
-						if (userEntries[i].eventId === eventId) {
-							setUserRegisteredEvent(true);
-							setButtonName('MODIFY ENTRY');
-							break;
-						}
-					}
-				}
-			}
-		}
-	}, [
-		userAuthContext.userId,
-		eventId,
-		setUserRegisteredEvent,
-		setButtonName
-	]);
 
+	const centerFront = () => (
+		<div>
+			<p>Tire Pressure : {props.car.FrontPressure}psi</p>
+			<p>Total Toe: {props.car.FrontToe}in</p>
+			<p>Rebound: {props.car.FRebound}</p>
+			<p>Compression: {props.car.FCompression}</p>
+		</div>
+	);
+
+	const rightFront = () => (
+		<div>
+			<p>Toe : {props.car.RFToe} in</p>
+			<p>Camber : {props.car.RFCamber}&#x00B0;</p>
+			<p>Caster : {props.car.RFCaster}&#x00B0;</p>
+		</div>
+	);
+
+	const leftRear = () => (
+		<div>
+			<p>Toe : {props.car.LRToe} in</p>
+			<p>Camber : {props.car.LRCamber}&#x00B0;</p>
+		</div>
+	);
+
+	const centerRear = () => (
+		<div>
+			<p>Tire Pressure : {props.car.RearPressure}psi</p>
+			<p>Total Toe: {props.car.RearToe}in</p>
+			<p>Rebound: {props.car.RRebound}</p>
+			<p>Compression: {props.car.RCompression}</p>
+		</div>
+	);
+
+	const rightRear = () => (
+		<div>
+			<p>Toe : {props.car.RRToe} in</p>
+			<p>Camber : {props.car.RRCamber}&#x00B0;</p>
+		</div>
+	);
 	return (
 		// React.Frgment connect multiple components
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
-			{/* Modal to show google map and course map */}
-			<Modal
-				show={showModal}
-				onCancel={() => closeModalHandler()}
-				header={props.event.name}
-				contentClass="event-item__modal-content"
-				footerClass="event-item__modal-actions"
-				footer={
-					<Button onClick={() => closeModalHandler()}>CLOSE</Button>
-				}>
-				{/* render props.children */}
-				<div className="map-container">
-					{showCourse && (
-						<React.Fragment>
-							<h3>Right click on map for more actions.</h3>
-							<img
-								src={
-									process.env.REACT_APP_ASSET_URL +
-									`/${props.event.courseMap}`
-								}
-								alt={props.event.alt}
-								className="map-container"></img>
-						</React.Fragment>
-					)}
-					{showMap && (
-						<Map center={props.event.coordinate} zoom={10} />
-					)}
-				</div>
-			</Modal>
 			{/* Modal to show delet confirmation message */}
 			<Modal
 				className="modal-delete"
@@ -265,8 +211,8 @@ const CarItem = props => {
 					</React.Fragment>
 				}>
 				<p className="modal__content">
-					Do you really want to delete {props.event.name}? It cannot
-					be recovered after deletion.
+					Do you really want to delete {props.car.model}? It cannot be
+					recovered after deletion.
 				</p>
 			</Modal>
 			<Modal
@@ -287,172 +233,125 @@ const CarItem = props => {
 					</React.Fragment>
 				}>
 				<p className="modal__content">
-					Are you ready to submit {props.event.name}? Please confirm.
+					Are you ready to submit {props.car.model}? Please confirm.
 				</p>
 			</Modal>
 			{isLoading && <LoadingSpinner asOverlay />}
-			{!clubAuthContext.clubId && (
+			{/* User image and car model*/}
+			<div className="carItem">
 				<div className="event-pages eventtype-page">
 					<section id="header" title="">
 						<div className="section-container">
 							<div className="logo-container ">
-								<img
-									src={
-										process.env.REACT_APP_ASSET_URL +
-										`/${props.event.clubImage}`
-									}
-									alt={props.event.clubName}
-								/>
-							</div>
-
-							<div className="primary-info">
-								<h3 className="header-title">{props.event.name}</h3>
+								{userAuthContext.userImage && (
+									<img
+										src={
+											process.env.REACT_APP_ASSET_URL +
+											`/${userAuthContext.userImage}`
+										}
+										alt={props.car.model}
+									/>
+								)}
+								{!userAuthContext.userImage && (
+									<div className="gingerman">
+										<i className="fad fa-gingerbread-man fa-4x" />
+									</div>
+								)}
 							</div>
 							<div className="clubname-container">
-								From{' '}
-								<a
-									href="/"
-									target="_blank"
-									className="provider-clubname">
-									{props.event.clubName}
-								</a>
-							</div>
-							<div className="clearfix">
-								<div>
-									<div className="eventitem-eventtype">
-										<a href="/" className="eventtype">
-											{props.event.type}
-										</a>
-									</div>
-								</div>
+								{`${userAuthContext.userName}\'s`} &nbsp;
+								{props.car.model}
 							</div>
 						</div>
 					</section>
 				</div>
-			)}
-			{/* this section is for event image */}
-			{/* Regitration container */}
-			{!clubAuthContext.clubId && (
+				<br />
+				{/* Car info container */}
 				<div className="section-container">
-					<div className="page-basic-container">
+					<div className="carinfo-container">
+						<div className="col-xs-12">
+							<div className="clearfix">
+								<h3>{props.car.year}</h3>
+								<h3>
+									{props.car.make}&nbsp;{props.car.model}&nbsp;
+									{props.car.trimLevel}
+								</h3>
+								<h4>
+									{props.car.tireBrand}&nbsp;{props.car.tireName}
+								</h4>
+								<h4>
+									Front:&nbsp;{props.car.tireFrontWidth}/
+									{props.car.tireFrontRatio}-
+									{props.car.tireFrontDiameter}
+								</h4>
+								<h4>
+									Rear:&nbsp;{props.car.tireRearWidth}/
+									{props.car.tireRearRatio}-
+									{props.car.tireRearDiameter}
+								</h4>
+							</div>
+							<div className="section">
+								<br /> <br />
+							</div>
+							<div></div>
+						</div>
+						<div className="col-xs-12">
+							<Button
+								// inverse={}
+								to={`/events/form/${props.car.id}`}
+								size="small-orange">
+								MODIFY
+							</Button>
+						</div>
+					</div>
+					<div className="eventimage-basic-container">
 						<div className="eventimage-container">
 							<img
 								src={
 									process.env.REACT_APP_ASSET_URL +
-									`/${props.event.image}`
+									`/${props.car.image}`
 								}
-								alt={props.event.name}
+								alt={props.car.model}
 								className="eventimage-container-img"
 							/>
 						</div>
 					</div>
-
-					<div className="registration-container">
-						<div className="col-xs-12">
-							<div className="clearfix">
-								{/* <RegistrationMSG /> */}
-							</div>
-							<div className="section">
-								<strong>
-									{startDate} — {endDate}
-								</strong>
-								<br /> <br />
-							</div>
-							<div>
-								<h3>{props.event.venue}</h3>
-								<Image
-									title={props.event.venue}
-									alt={props.event.venue}
-									src={require('../../shared/utils/png/GMapSmall.png')}
-									onClick={() => openMapHandler()}
-									onHoover
-								/>
-								<h4>{props.event.address}</h4>
-							</div>
-						</div>
-						<div className="col-xs-12">
-							{!clubAuthContext.clubId && (
-								<Button
-									inverse={!openRegistration}
-									to={`/events/form/${props.event.id}`}
-									size="small-orange">
-									{buttonName}
-								</Button>
-							)}
-						</div>
-					</div>
 				</div>
-			)}
 
-			{!clubAuthContext.clubId && (
-				<div className="section-container">
-					<div className="page-basic-container">
-						<div className="about-description">
-							<div className="toggle-section description">
-								<div className="short-description">
-									<div className="sub-heading">
-										<a
-											href="#description"
-											data-toggle="collapse"
-											onClick={toggleDescriptionButton}>
-											Event Description {'   '}
-											<button
-												type="button"
-												className={showDescription}
-												onClick={toggleDescriptionButton}></button>
-										</a>
-									</div>
-									<div id="description" className="collapse show">
-										<p>
-											{props.event.description}
-											<br></br>
-										</p>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
-
-			{!clubAuthContext.clubId && (
-				<div className="section-container">
-					<div className="page-basic-container">
-						<div className="about-description">
-							<div className="toggle-section description">
-								<div className="short-description">
-									<div className="sub-heading">
-										<a
-											href="#instruction"
-											data-toggle="collapse"
-											onClick={toggleInstructionButton}>
-											Instruction {'   '}
-											<button
-												type="button"
-												className={showInstruction}
-												onClick={toggleInstructionButton}></button>
-										</a>
-									</div>
-									<div id="instruction" className="collapse show">
-										<p>
-											{props.event.instruction}
-											<br></br>
-										</p>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
-
-			{!clubAuthContext.clubId && (
-				<div className="section-container">
-					<div className="page-basic-container">
+				{/* <div className="section-container theme"> */}
+				<div className="theme">
+					<table className="table table-color">
+						{/* <tr>
+							<th>Heading A</th>
+							<th>Heading B</th>
+							<th>Heading C</th>
+						</tr> */}
+						<tr className="table-tr">
+							<td className="table-corner-td">&nbsp;</td>
+							<td className="table-center-toptd">{centerFront()}</td>
+							<td className="table-corner-td">&nbsp;</td>
+						</tr>
+						<tr>
+							<td className="table-side-td">{leftFront()}</td>
+							<td className="table-center-td">&nbsp;</td>
+							<td className="table-side-td">{rightFront()}</td>
+						</tr>
+						<tr>
+							<td className="table-side-td">{leftRear()}</td>
+							<td className="table-center-td">&nbsp;</td>
+							<td className="table-side-td">{rightRear()}</td>
+						</tr>
+						<tr>
+							<td className="table-corner-td">&nbsp;</td>
+							<td className="table-center-td">{centerRear()}</td>
+							<td className="table-corner-td">&nbsp;</td>
+						</tr>
+					</table>
+					{/* <div className="page-basic-container">
 						<div className="page-footer"></div>
-					</div>
+					</div> */}
 				</div>
-			)}
+			</div>
 		</React.Fragment>
 	);
 };

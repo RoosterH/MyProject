@@ -52,7 +52,7 @@ const UserGarage = React.lazy(() =>
 	import('./users/pages/UserGarage')
 );
 const NewCar = React.lazy(() => import('./cars/pages/NewCar'));
-// const CarItem = React.lazy(() => import('./cars/components/CarItem'));
+const Car = React.lazy(() => import('./cars/pages/Car'));
 
 const App = () => {
 	const {
@@ -72,6 +72,7 @@ const App = () => {
 		userId,
 		userName,
 		userEntries,
+		userImage,
 		userRedirectURL,
 		setUserRedirectURL
 	} = useUserAuth();
@@ -122,7 +123,7 @@ const App = () => {
 					<NewCar />
 				</Route>
 				<Route path="/users/cars/:carId" exact>
-					{/* <CarItem /> */}
+					<Car />
 				</Route>
 				<Route path="/events/:id" exact>
 					<Event />
@@ -208,6 +209,9 @@ const App = () => {
 				<Route path="/users/cars/new" exact>
 					<NewCar />
 				</Route>
+				<Route path="/users/cars/:carId" exact>
+					<Car />
+				</Route>
 				{/* End of page refresh section */}
 
 				<Route path="/error" exact>
@@ -236,6 +240,7 @@ const App = () => {
 					userId: userId,
 					userName: userName,
 					userEntries: userEntries,
+					userImage: userImage,
 					userRedirectURL: userRedirectURL,
 					userLogin: userLogin,
 					userLogout: userLogout,

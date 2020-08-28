@@ -18,24 +18,28 @@ const Car = () => {
 		clearError
 	} = useHttpClient();
 
-	const cId = useParams().id;
+	const cId = useParams().carId;
+	console.log('cId = ', cId);
 	useEffect(() => {
-		const fetechEvents = async () => {
+		console.log('fetching');
+		const fetechCars = async () => {
 			try {
 				const responseData = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL + `/cars/${cId}`
 				);
 				setLoadedCar(responseData.car);
+				console.log('responseData = ', responseData);
 			} catch (err) {
 				console.log('err = ', err);
 			}
 		};
-		fetechEvents();
+		console.log('fetching2');
+		fetechCars();
 	}, [sendRequest, cId]);
 
-	// calling EventsList from EventsList.js where it passes EVENTS to child EventsList
-	// just treat the following call as EventsList(items = EVENTS); items is the props
-	// name defined in EventsList
+	// calling CarsList from CarsList.js where it passes CARS to child CarsList
+	// just treat the following call as CarsList(items = CARS); items is the props
+	// name defined in CarsList
 	return (
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
@@ -44,7 +48,7 @@ const Car = () => {
 					<LoadingSpinner />
 				</div>
 			)}
-			{!isLoading && loadedCar && <CarItem event={loadedCar} />}
+			{!isLoading && loadedCar && <CarItem car={loadedCar} />}
 		</React.Fragment>
 	);
 };

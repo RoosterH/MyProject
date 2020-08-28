@@ -1,0 +1,279 @@
+.carItem {
+	background-color: #252222;
+	margin-top: -1rem;
+	/* height: 100rem; */
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	left: 0;
+}
+
+.event-pages {
+	margin: 0rem;
+}
+
+/* .header-title {
+	color: #4a4a4a;
+	font-size: 30px;
+	font-weight: 600;
+	line-height: 1.5;
+	max-width: 100%;
+	margin-bottom: 0;
+} */
+
+.section-container {
+	display: block;
+	position: relative;
+	top: 50px;
+	margin: 0 auto;
+	max-width: 1125px;
+	padding: 2rem 15px 15px 15px;
+	color: wheat;
+}
+
+.item-container {
+	display: block;
+	position: relative;
+	/* top: 50px; */
+	margin: 0 auto;
+	max-width: 1125px;
+	padding: 0.5rem 15px 15px 15px;
+	color: wheat;
+}
+
+.logo-container {
+	float: left;
+	width: 70px;
+	height: 70px;
+}
+
+.gingerman {
+	padding-top: 0.5rem;
+	color: cornsilk;
+}
+
+.logo-container img {
+	margin-top: 5px;
+	width: 70px;
+	height: 70px;
+}
+
+.primary-info {
+	overflow: hidden;
+}
+
+.clubname-container {
+	display: inline-block;
+	font-size: 14px;
+}
+
+.provider-clubname {
+	color: #197dc2;
+}
+.eventitem-eventtype {
+	display: inline-block;
+	line-height: 21px;
+	padding-top: 8px;
+	font-size: 14px;
+}
+
+.eventtype {
+	color: #197dc2;
+}
+
+.eventtype-container {
+	font-size: 14px;
+	padding: 10px;
+	position: relative;
+	min-height: 290px;
+}
+
+.page-basic-container {
+	display: inline-block;
+	padding-right: 18px;
+	position: relative;
+	width: 57%;
+}
+.eventimage-basic-container {
+	display: inline-block;
+	padding-right: 18px;
+	position: relative;
+	/* margin-left: 10rem; */
+	left: 150px;
+	/* width: 40%; */
+	width: 17rem;
+	bottom: 4.8rem;
+}
+
+.eventimage-container-img {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+.carinfo-container {
+	display: inline-block;
+	/* position: absolute; */
+	top: 0;
+	border: 1px;
+	border-style: ridge;
+	width: 43%;
+	/* position: absolute; */
+	position: relative;
+	font-size: 14px;
+	padding: 0.5rem;
+}
+
+.carinfo-container h3 {
+	font-size: 14px;
+	font-weight: 500;
+	display: inline;
+	margin-right: 0.5rem;
+}
+
+.carinfo-container h4 {
+	font-size: 12px;
+	font-weight: 400;
+	color: #ccdf76;
+	font-weight: 300;
+}
+
+.theme-table,
+.theme {
+	height: 600px;
+	width: 600px;
+	color: white;
+}
+
+.theme {
+	background: url('../utils/png/RaceCar.png');
+	background-repeat: no-repeat;
+	background-position: center;
+	background-position-y: 7rem;
+	left: 9rem;
+	position: relative;
+}
+
+.table-color {
+	color: white;
+	/* border: 0px solid white; */
+}
+
+.table-tr {
+	border: 0px;
+}
+
+.table td {
+	border-top: 0px white;
+}
+
+.table p {
+	font-size: smaller;
+	margin-bottom: 0.2rem;
+}
+
+.table-corner-td {
+	height: 200px;
+	width: 80px;
+	/* border-top: 0px; */
+}
+
+.table-center-toptd {
+	height: 200px;
+	width: 200px;
+	text-align: center;
+}
+
+.table-side-td {
+	height: 200px;
+	width: 50px;
+	/* border: 1px solid white; */
+}
+.table-center-td {
+	height: 200px;
+	width: 200px;
+	text-align: center;
+}
+
+.page-footer {
+	line-height: 21px;
+	margin-bottom: 10rem;
+	font-size: 14px;
+}
+
+@media (max-width: 780px) {
+	.theme-table,
+	.theme {
+		height: 400px;
+		width: 350px;
+		color: white;
+	}
+
+	.theme {
+		background: url('../utils/png/RaceCarSmall.png');
+		background-repeat: no-repeat;
+		background-position: center;
+		background-position-y: 7rem;
+		left: 0.2rem;
+		position: relative;
+	}
+
+	.table p {
+		font-size: smaller;
+		margin-bottom: 0rem;
+	}
+
+	.table-corner-td {
+		height: 100px;
+		width: 40px;
+		/* border-top: 0px; */
+	}
+
+	.table-center-toptd {
+		height: 100px;
+		width: 150px;
+		text-align: center;
+	}
+
+	.table-side-td {
+		height: 120px;
+		width: 40px;
+		/* border: 1px solid white; */
+	}
+	.table-center-td {
+		height: 120px;
+		width: 150px;
+		text-align: center;
+	}
+
+	.eventimage-basic-container {
+		display: inline-block;
+		padding-right: 18px;
+		position: relative;
+		/* margin-left: 10rem; */
+		left: 50px;
+		/* width: 40%; */
+		width: 10rem;
+		bottom: 4.8rem;
+	}
+
+	.event-pages {
+		/* margin-top: -20px; */
+		margin-top: 0px;
+	}
+	.logo-container {
+		margin-right: 10px;
+	}
+	.event-item__image {
+		height: 2.5rem;
+	}
+
+	.event-item__modal {
+		width: 45%;
+		height: 20%;
+	}
+	.description {
+		text-align: justify;
+	}
+}

@@ -57,7 +57,7 @@ const NewEvent = setFieldValue => {
 			// re-init redirectURL after re-direction route
 			clubAuthContext.setClubRedirectURL(null);
 		}
-	}, [location]);
+	}, [location, clubAuthContext]);
 
 	let tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
 	const [name, setName] = useState('');

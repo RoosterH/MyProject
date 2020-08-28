@@ -46,6 +46,7 @@ const UserAuth = () => {
 					}
 				);
 
+				console.log('responseData = ', responseData);
 				if (userAuthContext.userRedirectURL) {
 					// for re-direction, we need to set login information to be able to send request to backend
 					userAuthContext.userLogin(
@@ -53,7 +54,8 @@ const UserAuth = () => {
 						responseData.name,
 						responseData.token,
 						'',
-						responseData.entries
+						responseData.entries,
+						responseData.image
 					);
 					history.push(userAuthContext.userRedirectURL);
 				} else {
@@ -72,7 +74,8 @@ const UserAuth = () => {
 						responseData.name,
 						responseData.token,
 						'', //expirationDate will be defined in userAuth-hook
-						responseData.entries
+						responseData.entries,
+						responseData.image
 					);
 					// forward page needs to be after userAuthContext.userLoging() because <Route> is designed
 					// only if (userToken), we are able to access the route
@@ -159,7 +162,7 @@ const UserAuth = () => {
 	const userAuthForm = values => (
 		<div className="auth-div">
 			<h4 className="auth-form-header">
-				<i class="far fa-user" />
+				<i className="far fa-user" />
 				&nbsp;Driver Login
 			</h4>
 			<hr className="auth-form--hr" />
@@ -216,7 +219,7 @@ const UserAuth = () => {
 	const userSignupForm = values => (
 		<div className="auth-div">
 			<h4 className="auth-form-header">
-				<i class="fas fa-user-plus" />
+				<i className="fas fa-user-plus" />
 				&nbsp;Sign up a new account
 			</h4>
 			<hr className="auth-form--hr" />

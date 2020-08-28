@@ -3,13 +3,12 @@
  */
 const express = require('express');
 const { check } = require('express-validator');
-
 const usersController = require('../controllers/usersController');
+const carsController = require('../controllers/carsController');
 const fileUpload = require('../middleware/file-upload');
-const checkAuth = require('../middleware/check-auth');
+const checkUserAuth = require('../middleware/check-userAuth');
 const { route } = require('./clubsRoutes');
 const { Router } = require('express');
-
 const router = express.Router();
 
 // /api/users
@@ -34,7 +33,9 @@ router.post('/login', usersController.loginUser);
 
 // adding checkAuth middleware here will ensure all the requests below
 // need to be authenticated
-router.use(checkAuth);
+router.use(checkUserAuth);
+
+router.get('/garage/:uid', carsController.getCarsByUserId);
 
 // GET user events
 router.get('/events/:uid', usersController.getEvents);
