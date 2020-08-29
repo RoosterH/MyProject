@@ -880,6 +880,15 @@ const NewCar = setFieldValue => {
 								{errors.tireRearDiameter}
 							</div>
 						)}
+
+						{/* This first checkbox will result in a boolean value being stored. Note that the `value` prop
+            				on the <Field/> is omitted */}
+						<label className="event-form__checkbox">
+							<Field type="checkbox" name="toggle" />
+							{/* {`${values.toggle}`} */}
+							&nbsp;Check if you agree to share the following
+							sections.
+						</label>
 						<label
 							htmlFor="FrontPressure"
 							className="event-form__label_inline_half">
@@ -1064,25 +1073,25 @@ const NewCar = setFieldValue => {
 						)}
 						<label
 							htmlFor="LFToe"
-							className="event-form__label_inline_quarter">
+							className="event-form__label_inline_third">
 							<i className="far fa-steering-wheel " />
 							&nbsp; Left Front Toe &#x2033;
 						</label>
 						<label
 							htmlFor="RFToe"
-							className="event-form__label_inline_quarter">
+							className="event-form__label_inline_third">
 							Right Front Toe &#x2033;
 						</label>
 						<label
 							htmlFor="FrontToe"
-							className="event-form__label_inline_quarter">
+							className="event-form__label_inline_third">
 							Front Toe &#x2033;
 						</label>
 						<Field
 							id="LFToe"
 							name="LFToe"
 							type="text"
-							className="event-form__field_quarter"
+							className="event-form__field_third"
 							onBlur={event => {
 								// without handBlure(event) touched.LFToe will not work
 								handleBlur(event);
@@ -1094,7 +1103,7 @@ const NewCar = setFieldValue => {
 							id="RFToe"
 							name="RFToe"
 							type="text"
-							className="event-form__field_quarter"
+							className="event-form__field_third"
 							onBlur={event => {
 								// without handBlure(event) touched.RFToe will not work
 								handleBlur(event);
@@ -1106,7 +1115,7 @@ const NewCar = setFieldValue => {
 							id="FrontToe"
 							name="FrontToe"
 							type="text"
-							className="event-form__field_quarter"
+							className="event-form__field_third"
 							onBlur={event => {
 								// without handBlure(event) touched.RFToe will not work
 								handleBlur(event);

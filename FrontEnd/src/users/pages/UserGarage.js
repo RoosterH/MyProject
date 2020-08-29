@@ -54,6 +54,9 @@ const UserGarage = () => {
 					{ Authorization: 'Bearer ' + userAuthContext.userToken }
 				);
 				setLoadedCars(responseData.cars);
+				let userData = JSON.parse(localStorage.getItem('userData'));
+				userData.garage = responseData.cars;
+				localStorage.setItem('userData', JSON.stringify(userData));
 			} catch (err) {
 				console.log('err = ', err);
 			}

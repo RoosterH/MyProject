@@ -29,6 +29,9 @@ const carSchema = new Schema({
 	tireRearDiameter: { type: String, required: true },
 	tireRearRatio: { type: String, required: true },
 
+	// share the following sections to other users
+	share: { type: Boolean, required: true },
+
 	// tire pressure
 	FrontPressure: { type: String },
 	RearPressure: { type: String },
@@ -45,10 +48,10 @@ const carSchema = new Schema({
 	// toe
 	LFToe: { type: String },
 	RFToe: { type: String },
-	LToe: { type: String },
+	FrontToe: { type: String },
 	LRToe: { type: String },
 	RRToe: { type: String },
-	RToe: { type: String },
+	RearToe: { type: String },
 
 	// sawy bar
 	FBar: { type: String },

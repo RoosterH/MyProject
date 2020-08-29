@@ -22,7 +22,7 @@ export const useUserAuth = () => {
 			setUserName(uname);
 			setUserEntries(uentries);
 			setUserImage(uimage);
-			console.log('uimage = ', uimage);
+			// setUserGarage(ugarage);
 
 			// jwt token expires in 7 day
 			const tokenExp =
@@ -41,6 +41,7 @@ export const useUserAuth = () => {
 					expiration: tokenExp,
 					userEntries: uentries,
 					userImage: uimage
+					// userGarage: ugarage
 				})
 			);
 		},
@@ -75,7 +76,8 @@ export const useUserAuth = () => {
 				storageData.userToken,
 				moment(storageData.expiration),
 				storageData.userEntries,
-				storageData.userImage
+				storageData.userImage,
+				storageData.garage
 			);
 		}
 	}, [userLogin]);

@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const Car = require('../models/car');
 const User = require('../models/user');
 const fileUpload = require('../middleware/file-upload');
+const { request } = require('http');
 
 const errMsg = errors => {
 	var msg;
@@ -41,8 +42,43 @@ const getCarById = async (req, res, next) => {
 		return next(error);
 	}
 
-	// convert Mongoose object to a normal js object and get rid of _ of _id using getters: true
-	res.status(200).json({ car: car.toObject({ getters: true }) }); // { car } => { car: car }
+	// check if user owns the car
+	const userId = req.userData;
+	if (userId != car.userId && !car.share) {
+		res.status(200).json({
+			car: car.toObject({
+				getters: true,
+				// use transform to filter out password
+				transform: (doc, ret, opt) => {
+					delete ret['FrontPressure'];
+					delete ret['RearPressure'];
+					delete ret['LFCamber'];
+					delete ret['RFCamber'];
+					delete ret['LRCamber'];
+					delete ret['RRCamber'];
+					delete ret['LFCaster'];
+					delete ret['RFCaster'];
+					delete ret['LFToe'];
+					delete ret['RFToe'];
+					delete ret['FrontToe'];
+					delete ret['LRToe'];
+					delete ret['RRToe'];
+					delete ret['RearToe'];
+					delete ret['FBar'];
+					delete ret['RBar'];
+					delete ret['FRebound'];
+					delete ret['RRebound'];
+					delete ret['FCompression'];
+					delete ret['RCompression'];
+					delete ret['note'];
+					return ret;
+				}
+			})
+		});
+	} else {
+		// convert Mongoose object to a normal js object and get rid of _ of _id using getters: true
+		res.status(200).json({ car: car.toObject({ getters: true }) }); // { car } => { car: car }
+	}
 };
 
 // GET /api/cars/user/:uid
@@ -72,13 +108,56 @@ const getCarsByUserId = async (req, res, next) => {
 		return next();
 	}
 
-	res.status(200).json({
-		cars: user.garage.map(car =>
-			car.toObject({
-				getters: true
+	// check if request is coming from the same person
+	// if not, we need to chectk share setting for each car
+	if (req.userData != uId) {
+		res.status(200).json({
+			cars: user.garage.map(car => {
+				if (!car.share) {
+					car: car.toObject({
+						getters: true,
+						// use transform to filter out password
+						transform: (doc, ret, opt) => {
+							delete ret['FrontPressure'];
+							delete ret['RearPressure'];
+							delete ret['LFCamber'];
+							delete ret['RFCamber'];
+							delete ret['LRCamber'];
+							delete ret['RRCamber'];
+							delete ret['LFCaster'];
+							delete ret['RFCaster'];
+							delete ret['LFToe'];
+							delete ret['RFToe'];
+							delete ret['FrontToe'];
+							delete ret['LRToe'];
+							delete ret['RRToe'];
+							delete ret['RearToe'];
+							delete ret['FBar'];
+							delete ret['RBar'];
+							delete ret['FRebound'];
+							delete ret['RRebound'];
+							delete ret['FCompression'];
+							delete ret['RCompression'];
+							delete ret['note'];
+							return ret;
+						}
+					});
+				} else {
+					car.toObject({
+						getters: true
+					});
+				}
 			})
-		)
-	});
+		});
+	} else {
+		res.status(200).json({
+			cars: user.garage.map(car =>
+				car.toObject({
+					getters: true
+				})
+			)
+		});
+	}
 };
 
 // POST /api/cars/
@@ -113,6 +192,7 @@ const createCar = async (req, res, next) => {
 		tireRearWidth,
 		tireRearDiameter,
 		tireRearRatio,
+		share,
 		FrontPressure,
 		RearPressure,
 		LFCamber,
@@ -175,6 +255,7 @@ const createCar = async (req, res, next) => {
 		tireRearWidth,
 		tireRearDiameter,
 		tireRearRatio,
+		share,
 		FrontPressure,
 		RearPressure,
 		LFCamber,

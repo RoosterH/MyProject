@@ -254,6 +254,16 @@
 	margin: auto;
 }
 
+.event-form__checkbox {
+	display: block;
+	/* without solid, color does not work properly */
+	font-size: 15px;
+	font-family: 'Montserrat', sans-serif;
+	width: 90%;
+	height: 1.9rem;
+	margin: 0rem 0.1rem 0.5rem 1.5rem;
+}
+
 @media (min-width: 780px) {
 	.event-form-container {
 		min-width: 30rem;

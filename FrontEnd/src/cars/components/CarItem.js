@@ -21,39 +21,33 @@ const CarItem = props => {
 		clearError
 	} = useHttpClient();
 
+	console.log('in CarItem');
+
 	// useContext is listening to "UserAuthContext"
 	const userAuthContext = useContext(UserAuthContext);
+	const [owner, setOWner] = useState(false);
+	useEffect(() => {
+		if (userAuthContext.userId === props.car.userId) {
+			setOWner(true);
+		}
+	}, [userAuthContext.userId, props.car.userId]);
 
 	// modal section
 	const [showModal, setShowModal] = useState(false);
 	const openModalHandler = () => setShowModal(true);
 	const closeModalHandler = () => {
-		closeMapContainer();
 		setShowModal(false);
 	};
 
 	// modals for courseMap and delete confirmation
-	const [showMap, setShowMap] = useState(false);
 	const [showDELModal, setShowDELModal] = useState(false);
-	const [showPublishModal, setShowSubmitModal] = useState(false);
 
 	// event handlers
-	const openMapHandler = () => {
-		openModalHandler();
-		setShowMap(true);
-	};
-	const closeMapHandler = () => setShowMap(false);
 	const openDELHandler = () => {
 		setShowDELModal(true);
 	};
 	const closeDELHandler = () => {
 		setShowDELModal(false);
-	};
-	const openPublishHandler = () => {
-		setShowSubmitModal(true);
-	};
-	const closePublishHandler = () => {
-		setShowSubmitModal(false);
 	};
 
 	const history = useHistory();
@@ -75,7 +69,6 @@ const CarItem = props => {
 	};
 
 	const confirmPublishHandler = async () => {
-		setShowSubmitModal(false);
 		try {
 			await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
@@ -91,18 +84,6 @@ const CarItem = props => {
 			);
 			history.push(`/users/garage/${userAuthContext.userId}`);
 		} catch (err) {}
-	};
-
-	const [showCourse, setShowCourse] = useState(false);
-	const openCourseHandler = () => {
-		openModalHandler();
-		setShowCourse(true);
-	};
-	const closeCourseHandler = () => setShowCourse(false);
-
-	const closeMapContainer = () => {
-		showMap && closeMapHandler();
-		showCourse && closeCourseHandler();
 	};
 
 	const carImageElement =
@@ -217,35 +198,14 @@ const CarItem = props => {
 					recovered after deletion.
 				</p>
 			</Modal>
-			<Modal
-				className="modal-delete"
-				show={showPublishModal}
-				contentClass="event-item__modal-delete"
-				onCancel={closePublishHandler}
-				header="Warning!"
-				footerClass="event-item__modal-actions"
-				footer={
-					<React.Fragment>
-						<Button inverse onClick={closePublishHandler}>
-							No
-						</Button>
-						<Button danger onClick={confirmPublishHandler}>
-							YES
-						</Button>
-					</React.Fragment>
-				}>
-				<p className="modal__content">
-					Are you ready to submit {props.car.model}? Please confirm.
-				</p>
-			</Modal>
 			{isLoading && <LoadingSpinner asOverlay />}
 			{/* User image and car model*/}
 			<div className="carItem">
 				<div className="event-pages eventtype-page">
-					<section id="header" title="">
-						<div className="section-container">
+					<section id="header" className="section-header">
+						<div className="header-container">
 							<div className="logo-container ">
-								{userAuthContext.userImage && (
+								{owner && userAuthContext.userImage && (
 									<img
 										src={
 											process.env.REACT_APP_ASSET_URL +
@@ -254,20 +214,19 @@ const CarItem = props => {
 										alt={props.car.model}
 									/>
 								)}
-								{!userAuthContext.userImage && (
+								{(!owner || !userAuthContext.userImage) && (
 									<div className="gingerman">
 										<i className="fad fa-gingerbread-man fa-4x" />
 									</div>
 								)}
 							</div>
 							<div className="clubname-container">
-								{`${userAuthContext.userName}\'s`} &nbsp;
+								{`${props.car.userName}\'s`} &nbsp;
 								{props.car.model}
 							</div>
 						</div>
 					</section>
 				</div>
-				<br />
 				{/* Car info container */}
 				<div className="section-container">
 					<div className="carinfo-container">
@@ -305,20 +264,24 @@ const CarItem = props => {
 								</div>
 							</div>
 							<div className="modifybutton-container">
-								<Button
-									// inverse={}
-									to={`/events/form/${props.car.id}`}
-									size="small-orange">
-									MODIFY
-								</Button>
+								{owner && (
+									<Button
+										// inverse={}
+										to={`/events/form/${props.car.id}`}
+										size="small-orange">
+										MODIFY
+									</Button>
+								)}
 							</div>
 							<div className="deletebutton-container">
-								<Button
-									// inverse={}
-									to={`/events/form/${props.car.id}`}
-									size="small-orange">
-									DELETE&nbsp;
-								</Button>
+								{owner && (
+									<Button
+										// inverse={}
+										to={`/events/form/${props.car.id}`}
+										size="small-orange">
+										DELETE&nbsp;
+									</Button>
+								)}
 							</div>
 						</div>
 					</div>

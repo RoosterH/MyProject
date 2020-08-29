@@ -10,15 +10,15 @@ const checkUserAuth = require('../middleware/check-userAuth');
 
 const router = express.Router();
 
+// adding checkUserAuth middleware here will ensure all the requests below
+// need to be authenticated
+router.use(checkUserAuth);
+
 // pass the pointer of the function, we don't want to execute here.
 // Express will use the pointer to execute the function when it's needed
 router.get('/:cid', carsController.getCarById);
 
 router.get('/users/:uid', carsController.getCarsByUserId);
-
-// adding checkUserAuth middleware here will ensure all the requests below
-// need to be authenticated
-router.use(checkUserAuth);
 
 // only users are able to create an car
 router.post(
