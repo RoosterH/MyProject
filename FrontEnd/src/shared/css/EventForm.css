@@ -144,6 +144,7 @@
 	height: 1.9rem;
 	margin: 0rem 0.1rem 0.5rem 1.5rem;
 }
+
 .file-upload-button {
 	display: inline-block;
 	width: 5rem;
@@ -195,9 +196,47 @@
 	margin: 0rem 0.1rem 0.5rem 1.5rem;
 }
 
+.event-form__field-error_quarter {
+	display: inline-block;
+	font-size: 15px;
+	font-family: 'Montserrat', sans-serif;
+	color: #b10101;
+	/* height: 1.9rem; */
+	width: 20.2%;
+	margin-top: 0rem;
+	margin-right: 0.2rem;
+	margin-bottom: 0.5rem;
+	margin-left: 1.5rem;
+}
+
+.event-form__field-error_third {
+	display: inline-block;
+	font-size: 15px;
+	font-family: 'Montserrat', sans-serif;
+	color: #b10101;
+	/* height: 1.9rem; */
+	width: 27%;
+	margin-top: 0rem;
+	margin-right: 0.2rem;
+	margin-bottom: 0.5rem;
+	margin-left: 1.5rem;
+}
+
+.event-form__field-error_half {
+	display: inline-block;
+	font-size: 15px;
+	font-family: 'Montserrat', sans-serif;
+	color: #b10101;
+	/* height: 1.9rem; */
+	width: 42%;
+	margin-top: 0rem;
+	margin-right: 0.2rem;
+	margin-bottom: 0.5rem;
+	margin-left: 1.5rem;
+}
+
 .event-form__field-error-startDate {
 	display: inline-block;
-	/* without solid, color does not work properly */
 	font-size: 15px;
 	font-family: 'Montserrat', sans-serif;
 	color: #b10101;
@@ -211,7 +250,6 @@
 
 .event-form__field-error-endDate {
 	display: inline-block;
-	/* without solid, color does not work properly */
 	font-size: 15px;
 	font-family: 'Montserrat', sans-serif;
 	color: #b10101;
@@ -268,10 +306,12 @@
 	.event-form-container {
 		min-width: 30rem;
 	}
+
 	.event-form__coursemap {
 		min-width: 30rem;
 		/*height: 30rem;*/
 	}
+
 	.event-formgenerator-container {
 		min-width: 40rem;
 		max-width: 60rem;

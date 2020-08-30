@@ -616,11 +616,6 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.year && errors.year && (
-							<div className="event-form__field-error">
-								{errors.year}
-							</div>
-						)}
 						<Field
 							id="make"
 							name="make"
@@ -634,11 +629,6 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.make && errors.make && (
-							<div className="event-form__field-error">
-								{errors.make}
-							</div>
-						)}
 						<Field
 							id="model"
 							name="model"
@@ -652,11 +642,6 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.model && errors.model && (
-							<div className="event-form__field-error">
-								{errors.model}
-							</div>
-						)}
 						<Field
 							id="trimLevel"
 							name="trimLevel"
@@ -669,11 +654,29 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.trimLevel && errors.trimLevel && (
-							<div className="event-form__field-error">
-								{errors.trimLevel}
-							</div>
-						)}
+						{(touched.year ||
+							touched.make ||
+							touched.model ||
+							touched.trimLevel) &&
+							(errors.year ||
+								errors.make ||
+								errors.model ||
+								errors.trimLevel) && (
+								<React.Fragment>
+									<div className="event-form__field-error_quarter">
+										{errors.year}
+									</div>
+									<div className="event-form__field-error_quarter">
+										{errors.make}
+									</div>
+									<div className="event-form__field-error_quarter">
+										{errors.model}
+									</div>
+									<div className="event-form__field-error_quarter">
+										{errors.trimLevel}
+									</div>
+								</React.Fragment>
+							)}
 						<label
 							htmlFor="tireBrand"
 							className="event-form__label_inline_half">
@@ -698,11 +701,6 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.tireBrand && errors.tireBrand && (
-							<div className="event-form__field-error">
-								{errors.tireBrand}
-							</div>
-						)}
 						<Field
 							id="tireName"
 							name="tireName"
@@ -716,11 +714,17 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.tireName && errors.tireName && (
-							<div className="event-form__field-error">
-								{errors.tireName}
-							</div>
-						)}
+						{(touched.tireBrand || touched.tireName) &&
+							(errors.tireBrand || errors.tireName) && (
+								<React.Fragment>
+									<div className="event-form__field-error_half">
+										{errors.tireBrand}
+									</div>
+									<div className="event-form__field-error_half">
+										{errors.tireName}
+									</div>
+								</React.Fragment>
+							)}
 						<label
 							htmlFor="tireFrontWidth"
 							className="event-form__label_inline_third">
@@ -753,11 +757,6 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.tireFrontWidth && errors.tireFrontWidth && (
-							<div className="event-form__field-error">
-								{errors.tireFrontWidth}
-							</div>
-						)}
 						<Field
 							id="tireFrontRatio"
 							name="tireFrontRatio"
@@ -774,11 +773,6 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.tireFrontRatio && errors.tireFrontRatio && (
-							<div className="event-form__field-error">
-								{errors.tireFrontRatio}
-							</div>
-						)}
 						<Field
 							id="tireFrontDiameter"
 							name="tireFrontDiameter"
@@ -795,11 +789,23 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.tireFrontDiameter &&
-							errors.tireFrontDiameter && (
-								<div className="event-form__field-error">
-									{errors.tireFrontDiameter}
-								</div>
+						{(touched.tireFrontWidth ||
+							touched.tireFrontRatio ||
+							touched.tireFrontDiameter) &&
+							(errors.tireFrontWidth ||
+								errors.tireFrontRatio ||
+								errors.tireFrontDiameter) && (
+								<React.Fragment>
+									<div className="event-form__field-error_third">
+										{errors.tireFrontWidth}
+									</div>
+									<div className="event-form__field-error_third">
+										{errors.tireFrontRatio}
+									</div>
+									<div className="event-form__field-error_third">
+										{errors.tireFrontDiameter}
+									</div>
+								</React.Fragment>
 							)}
 						<label
 							htmlFor="tireRearWidth"
@@ -833,11 +839,6 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.tireRearWidth && errors.tireRearWidth && (
-							<div className="event-form__field-error">
-								{errors.tireRearWidth}
-							</div>
-						)}
 						<Field
 							id="tireRearRatio"
 							name="tireRearRatio"
@@ -854,11 +855,6 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.tireRearRatio && errors.tireRearRatio && (
-							<div className="event-form__field-error">
-								{errors.tireRearRatio}
-							</div>
-						)}
 						<Field
 							id="tireRearDiameter"
 							name="tireRearDiameter"
@@ -875,12 +871,24 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{touched.tireRearDiameter && errors.tireRearDiameter && (
-							<div className="event-form__field-error">
-								{errors.tireRearDiameter}
-							</div>
-						)}
-
+						{(touched.tireRearWidth ||
+							touched.tireRearRatio ||
+							touched.tireRearDiameter) &&
+							(errors.tireRearWidth ||
+								errors.tireRearRatio ||
+								errors.tireRearDiameter) && (
+								<React.Fragment>
+									<div className="event-form__field-error_third">
+										{errors.tireRearWidth}
+									</div>
+									<div className="event-form__field-error_third">
+										{errors.tireRearRatio}
+									</div>
+									<div className="event-form__field-error_third">
+										{errors.tireRearDiameter}
+									</div>
+								</React.Fragment>
+							)}
 						{/* This first checkbox will result in a boolean value being stored. Note that the `value` prop
             				on the <Field/> is omitted */}
 						<label className="event-form__checkbox">
