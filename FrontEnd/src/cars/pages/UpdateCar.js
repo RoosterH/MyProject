@@ -664,17 +664,29 @@ const UpdateCar = setFieldValue => {
 							htmlFor="year"
 							className="event-form__label_inline_quarter">
 							<i className="far fa-car-side" />
-							&nbsp; Year
+							&nbsp; Year &nbsp;
+							<i
+								className="far fa-gas-pump"
+								style={{ color: 'Tomato' }}
+							/>
 						</label>
 						<label
 							htmlFor="make"
 							className="event-form__label_inline_quarter">
-							Make
+							Make &nbsp;
+							<i
+								className="far fa-gas-pump"
+								style={{ color: 'Tomato' }}
+							/>
 						</label>
 						<label
 							htmlFor="model"
 							className="event-form__label_inline_quarter">
-							Model
+							Model &nbsp;
+							<i
+								className="far fa-gas-pump"
+								style={{ color: 'Tomato' }}
+							/>
 						</label>
 						<label
 							htmlFor="trimLevel"
@@ -756,12 +768,20 @@ const UpdateCar = setFieldValue => {
 							htmlFor="tireBrand"
 							className="event-form__label_inline_half">
 							<i className="fad fa-tire" />
-							&nbsp; Tire Brand
+							&nbsp; Tire Brand &nbsp;
+							<i
+								className="far fa-gas-pump"
+								style={{ color: 'Tomato' }}
+							/>
 						</label>
 						<label
 							htmlFor="tireName"
 							className="event-form__label_inline_half">
-							Tire Name
+							Tire Name &nbsp;
+							<i
+								className="far fa-gas-pump"
+								style={{ color: 'Tomato' }}
+							/>
 						</label>
 						<Field
 							id="tireBrand"
@@ -803,17 +823,29 @@ const UpdateCar = setFieldValue => {
 							htmlFor="tireFrontWidth"
 							className="event-form__label_inline_third">
 							<i className="far fa-ruler-horizontal" />
-							&nbsp; Front Tire Width
+							&nbsp; Front Tire Width &nbsp;
+							<i
+								className="far fa-gas-pump"
+								style={{ color: 'Tomato' }}
+							/>
 						</label>
 						<label
 							htmlFor="tireFrontRatio"
 							className="event-form__label_inline_third">
-							Front Tire Ratio
+							Front Tire Ratio &nbsp;
+							<i
+								className="far fa-gas-pump"
+								style={{ color: 'Tomato' }}
+							/>
 						</label>
 						<label
 							htmlFor="tireFrontDiameter"
 							className="event-form__label_inline_third">
-							Front Tire Diameter
+							Front Tire Diameter &nbsp;
+							<i
+								className="far fa-gas-pump"
+								style={{ color: 'Tomato' }}
+							/>
 						</label>
 						<Field
 							id="tireFrontWidth"
@@ -883,17 +915,29 @@ const UpdateCar = setFieldValue => {
 							htmlFor="tireRearWidth"
 							className="event-form__label_inline_third">
 							<i className="far fa-ruler-horizontal" />
-							&nbsp; Rear Tire Width
+							&nbsp; Rear Tire Width &nbsp;
+							<i
+								className="far fa-gas-pump"
+								style={{ color: 'Tomato' }}
+							/>
 						</label>
 						<label
 							htmlFor="tireRearRatio"
 							className="event-form__label_inline_third">
-							Rear Tire Ratio
+							Rear Tire Ratio &nbsp;
+							<i
+								className="far fa-gas-pump"
+								style={{ color: 'Tomato' }}
+							/>
 						</label>
 						<label
 							htmlFor="tireRearDiameter"
 							className="event-form__label_inline_third">
-							Rear Tire Diameter
+							Rear Tire Diameter &nbsp;
+							<i
+								className="far fa-gas-pump"
+								style={{ color: 'Tomato' }}
+							/>
 						</label>
 						<Field
 							id="tireRearWidth"
