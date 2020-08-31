@@ -282,6 +282,8 @@ const createEvent = async (req, res, next) => {
 
 // PATCH /api/events/:eid
 const updateEvent = async (req, res, next) => {
+	const eventId = req.params.eid;
+
 	// validate request, req checks are defined in eventRoutes.js using
 	// express-validator
 	const errors = validationResult(req);
@@ -341,7 +343,6 @@ const updateEvent = async (req, res, next) => {
 		return next(error);
 	}
 
-	const eventId = req.params.eid;
 	let event;
 	try {
 		event = await Event.findById(eventId);

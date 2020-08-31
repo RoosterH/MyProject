@@ -62,6 +62,17 @@
 	margin: 0rem 0.1rem 0.5rem 1.5rem;
 }
 
+.event-form__field_textarea {
+	display: block;
+	/* without solid, color does not work properly */
+	border-style: solid;
+	border-color: #c2c2c2;
+	font-size: 15px;
+	font-family: 'Montserrat', sans-serif;
+	width: 90%;
+	margin: 0rem 0.1rem 0.5rem 1.5rem;
+}
+
 .event-form__label_inline_half {
 	display: inline-block;
 	font-size: 15px;
@@ -102,7 +113,7 @@
 
 .event-form__label_inline_quarter {
 	display: inline-block;
-	font-size: 15px;
+	font-size: 12px;
 	width: 20.2%;
 	margin: 0rem 0.1rem 0.2rem 1.5rem;
 }
@@ -316,5 +327,309 @@
 		min-width: 40rem;
 		max-width: 60rem;
 		margin: auto;
+	}
+
+	.event-form {
+		margin: 1.5rem, 1rem, 10rem, 1.5rem;
+	}
+
+	.event-form-container {
+		padding-block-end: 10rem;
+		width: 70%;
+		margin: 0 auto;
+	}
+
+	.event-form-header {
+		width: 70%;
+		margin: 0 auto;
+		font-size: 25px;
+		/* margin: 0.5rem, 1rem, 0.2rem, 1rem; */
+		/* margin: 0.5rem auto 0.2rem auto; */
+	}
+
+	.event-form-header h4 {
+		font-size: 25px;
+		font-weight: 400;
+		margin-inline-start: 1.5rem;
+		margin-block-end: 0.2rem;
+	}
+
+	.event-form__hr {
+		margin: 0rem 1rem 0.5rem 1rem;
+	}
+
+	.event-form__label {
+		display: block;
+		font-size: 15px;
+		margin: 0rem 0.1rem 0.2rem 1.5rem;
+	}
+
+	.event-form__label_startdate {
+		display: inline-block;
+		font-size: 15px;
+		width: 42%;
+		margin-top: 0rem;
+		margin-right: 3.5%;
+		margin-bottom: 0.5rem;
+		margin-left: 1.5rem;
+	}
+
+	.event-form__label_enddate {
+		display: inline-block;
+		font-size: 15px;
+		width: 43%;
+		margin: 0rem 0rem 0.5rem 1rem;
+	}
+
+	.event-form__field {
+		display: block;
+		/* without solid, color does not work properly */
+		border-style: solid;
+		border-color: #c2c2c2;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		width: 90%;
+		height: 1.9rem;
+		margin: 0rem 0.1rem 0.5rem 1.5rem;
+	}
+
+	.event-form__label_inline_half {
+		display: inline-block;
+		font-size: 15px;
+		width: 43.5%;
+		margin: 0rem 0.1rem 0.2rem 1.5rem;
+	}
+
+	.event-form__field_half {
+		display: inline-block;
+		/* without solid, color does not work properly */
+		border-style: solid;
+		border-color: #c2c2c2;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		width: 43.5%;
+		height: 1.9rem;
+		margin: 0rem 0.1rem 0.5rem 1.5rem;
+	}
+
+	.event-form__label_inline_third {
+		display: inline-block;
+		font-size: 15px;
+		width: 28%;
+		margin: 0rem 0.1rem 0.2rem 1.5rem;
+	}
+
+	.event-form__field_third {
+		display: inline-block;
+		/* without solid, color does not work properly */
+		border-style: solid;
+		border-color: #c2c2c2;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		width: 28%;
+		height: 1.9rem;
+		margin: 0rem 0.1rem 0.5rem 1.5rem;
+	}
+
+	.event-form__label_inline_quarter {
+		display: inline-block;
+		font-size: 12px;
+		width: 20.2%;
+		margin: 0rem 0.1rem 0.2rem 1.5rem;
+	}
+
+	.event-form__field_quarter {
+		display: inline-block;
+		/* without solid, color does not work properly */
+		border-style: solid;
+		border-color: #c2c2c2;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		width: 20.2%;
+		height: 1.9rem;
+		margin: 0rem 0.1rem 0.5rem 1.5rem;
+	}
+
+	.event-form__field-textarea {
+		display: block;
+		/* without solid, color does not work properly */
+		border-style: solid;
+		border-color: #c2c2c2;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		width: 90%;
+		height: 15rem;
+		margin: 0rem 0.1rem 0.5rem 1.5rem;
+	}
+
+	.event-form__field-select {
+		display: block;
+		/* without solid, color does not work properly */
+		border-style: dashed;
+		border-width: 2px;
+		border-color: #c2c2c2;
+		/* color: transparent; */
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		width: 90%;
+		height: 1.9rem;
+		margin: 0rem 0.1rem 0.5rem 1.5rem;
+	}
+
+	.file-upload-button {
+		display: inline-block;
+		width: 5rem;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		margin: 1rem 2rem 2rem 1.5rem;
+	}
+
+	.event-form__eventtype {
+		display: block;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		width: 90%;
+		height: 2rem;
+		margin: 0rem 0.1rem 0.5rem 1.5rem;
+	}
+
+	.event-form__startdate {
+		display: inline-block;
+		border-style: solid;
+		border-color: #c2c2c2;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		width: 42%;
+		height: 2rem;
+		margin-top: 0rem;
+		margin-right: 3.5%;
+		margin-bottom: 0.5rem;
+		margin-left: 1.5rem;
+	}
+
+	.event-form__enddate {
+		display: inline-block;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		width: 43%;
+		height: 2rem;
+		margin: 0rem 0rem 0.5rem 1rem;
+	}
+
+	.event-form__field-error {
+		display: block;
+		/* without solid, color does not work properly */
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		color: #b10101;
+		width: 90%;
+		height: 1.9rem;
+		margin: 0rem 0.1rem 0.5rem 1.5rem;
+	}
+
+	.event-form__field-error_quarter {
+		display: inline-block;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		color: #b10101;
+		/* height: 1.9rem; */
+		width: 20.2%;
+		margin-top: 0rem;
+		margin-right: 0.2rem;
+		margin-bottom: 0.5rem;
+		margin-left: 1.5rem;
+	}
+
+	.event-form__field-error_third {
+		display: inline-block;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		color: #b10101;
+		/* height: 1.9rem; */
+		width: 27%;
+		margin-top: 0rem;
+		margin-right: 0.2rem;
+		margin-bottom: 0.5rem;
+		margin-left: 1.5rem;
+	}
+
+	.event-form__field-error_half {
+		display: inline-block;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		color: #b10101;
+		/* height: 1.9rem; */
+		width: 42%;
+		margin-top: 0rem;
+		margin-right: 0.2rem;
+		margin-bottom: 0.5rem;
+		margin-left: 1.5rem;
+	}
+
+	.event-form__field-error-startDate {
+		display: inline-block;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		color: #b10101;
+		width: 42%;
+		height: 1.9rem;
+		margin-top: 0rem;
+		margin-right: 3.5%;
+		margin-bottom: 0.5rem;
+		margin-left: 1.5rem;
+	}
+
+	.event-form__field-error-endDate {
+		display: inline-block;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		color: #b10101;
+		width: 43%;
+		height: 1.9rem;
+		margin: 0rem 0rem 0.5rem 1rem;
+	}
+
+	.event-form h2 {
+		font-weight: bold;
+	}
+
+	.event-form__coursemap {
+		display: block;
+	}
+
+	.event-form__coursemap img {
+		width: 6rem;
+		height: 6rem;
+	}
+
+	.image-upload__preview {
+		width: 13rem;
+		height: 13rem;
+		border: 1px solid #ccc;
+		display: flex;
+		margin: 0.2rem 2rem 1rem 1.5rem;
+	}
+
+	.image-upload__preview img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		/* no-repeat scroll 0 0; */
+	}
+
+	.event-formgenerator-container {
+		padding-block-end: 10rem;
+		width: 85%;
+		margin: auto;
+	}
+
+	.event-form__checkbox {
+		display: block;
+		/* without solid, color does not work properly */
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		width: 90%;
+		height: 1.9rem;
+		margin: 0rem 0.1rem 0.5rem 1.5rem;
 	}
 }

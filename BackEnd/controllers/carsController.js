@@ -8,6 +8,7 @@ const Car = require('../models/car');
 const User = require('../models/user');
 const fileUpload = require('../middleware/file-upload');
 const { request } = require('http');
+const { compare } = require('bcryptjs');
 
 const errMsg = errors => {
 	var msg;
@@ -50,8 +51,8 @@ const getCarById = async (req, res, next) => {
 				getters: true,
 				// use transform to filter out password
 				transform: (doc, ret, opt) => {
-					delete ret['FrontPressure'];
-					delete ret['RearPressure'];
+					delete ret['frontPressure'];
+					delete ret['rearPressure'];
 					delete ret['LFCamber'];
 					delete ret['RFCamber'];
 					delete ret['LRCamber'];
@@ -60,10 +61,10 @@ const getCarById = async (req, res, next) => {
 					delete ret['RFCaster'];
 					delete ret['LFToe'];
 					delete ret['RFToe'];
-					delete ret['FrontToe'];
+					delete ret['frontToe'];
 					delete ret['LRToe'];
 					delete ret['RRToe'];
-					delete ret['RearToe'];
+					delete ret['rearToe'];
 					delete ret['FBar'];
 					delete ret['RBar'];
 					delete ret['FRebound'];
@@ -114,12 +115,12 @@ const getCarsByUserId = async (req, res, next) => {
 		res.status(200).json({
 			cars: user.garage.map(car => {
 				if (!car.share) {
-					car: car.toObject({
+					return car.toObject({
 						getters: true,
 						// use transform to filter out password
 						transform: (doc, ret, opt) => {
-							delete ret['FrontPressure'];
-							delete ret['RearPressure'];
+							delete ret['frontPressure'];
+							delete ret['rearPressure'];
 							delete ret['LFCamber'];
 							delete ret['RFCamber'];
 							delete ret['LRCamber'];
@@ -128,10 +129,10 @@ const getCarsByUserId = async (req, res, next) => {
 							delete ret['RFCaster'];
 							delete ret['LFToe'];
 							delete ret['RFToe'];
-							delete ret['FrontToe'];
+							delete ret['frontToe'];
 							delete ret['LRToe'];
 							delete ret['RRToe'];
-							delete ret['RearToe'];
+							delete ret['rearToe'];
 							delete ret['FBar'];
 							delete ret['RBar'];
 							delete ret['FRebound'];
@@ -143,7 +144,7 @@ const getCarsByUserId = async (req, res, next) => {
 						}
 					});
 				} else {
-					car.toObject({
+					return car.toObject({
 						getters: true
 					});
 				}
@@ -193,8 +194,8 @@ const createCar = async (req, res, next) => {
 		tireRearDiameter,
 		tireRearRatio,
 		share,
-		FrontPressure,
-		RearPressure,
+		frontPressure,
+		rearPressure,
 		LFCamber,
 		RFCamber,
 		LRCamber,
@@ -203,10 +204,10 @@ const createCar = async (req, res, next) => {
 		RFCaster,
 		LFToe,
 		RFToe,
-		FrontToe,
+		frontToe,
 		LRToe,
 		RRToe,
-		RearToe,
+		rearToe,
 		FBar,
 		RBar,
 		FRebound,
@@ -218,7 +219,7 @@ const createCar = async (req, res, next) => {
 
 	// Validate user exists. If not, sends back an error
 	let user;
-	let userId = req.userData.userId;
+	let userId = req.userData;
 	try {
 		user = await User.findById(userId);
 	} catch (err) {
@@ -256,8 +257,8 @@ const createCar = async (req, res, next) => {
 		tireRearDiameter,
 		tireRearRatio,
 		share,
-		FrontPressure,
-		RearPressure,
+		frontPressure,
+		rearPressure,
 		LFCamber,
 		RFCamber,
 		LRCamber,
@@ -266,10 +267,10 @@ const createCar = async (req, res, next) => {
 		RFCaster,
 		LFToe,
 		RFToe,
-		FrontToe,
+		frontToe,
 		LRToe,
 		RRToe,
-		RearToe,
+		rearToe,
 		FBar,
 		RBar,
 		FRebound,
@@ -301,7 +302,6 @@ const createCar = async (req, res, next) => {
 		// only both tasks succeed, we commit the transaction
 		await session.commitTransaction();
 	} catch (err) {
-		console.log('err = ', err);
 		const error = new HttpError(
 			'Create car failed. Please try again later.',
 			500
@@ -313,10 +313,226 @@ const createCar = async (req, res, next) => {
 };
 
 // PATCH /api/cars/:cid
-const updateCar = async (req, res, next) => {};
+const updateCar = async (req, res, next) => {
+	const cId = req.params.cid;
+
+	// validate request, req checks are defined in carRoutes.js using
+	// express-validator
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		return next(
+			new HttpError(
+				`Update car process failed. Please check your data: ${result.array()}`,
+				422
+			)
+		);
+	}
+
+	// we need to get the data from body
+	const {
+		year,
+		make,
+		model,
+		trimLevel,
+		tireBrand,
+		tireName,
+		tireFrontWidth,
+		tireFrontDiameter,
+		tireFrontRatio,
+		tireRearWidth,
+		tireRearDiameter,
+		tireRearRatio,
+		share,
+		frontPressure,
+		rearPressure,
+		LFCamber,
+		RFCamber,
+		LRCamber,
+		RRCamber,
+		LFCaster,
+		RFCaster,
+		LFToe,
+		RFToe,
+		frontToe,
+		LRToe,
+		RRToe,
+		rearToe,
+		FBar,
+		RBar,
+		FRebound,
+		RRebound,
+		FCompression,
+		RCompression,
+		note
+	} = req.body;
+
+	// Validate user exists. If not, sends back an error
+	let user;
+	let userId = req.userData;
+	try {
+		user = await User.findById(userId);
+	} catch (err) {
+		const error = new HttpError(
+			'Create car process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!user) {
+		const error = new HttpError(
+			'Unable to modify car. Unauthorized request.',
+			401
+		);
+		return next(error);
+	}
+
+	// get the car from backend
+	let car;
+	try {
+		car = await Car.findById(cId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update car process failed, please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!car) {
+		return next(
+			new HttpError('Update car failed finding the car.'),
+			404
+		);
+	}
+
+	if (car.userId.toString() !== req.userData) {
+		const error = new HttpError('Unauthorized operation!!!', 401);
+		return next(error);
+	}
+
+	let imagePath = car.image;
+	if (req.files.image) {
+		imagePath = req.files.image[0].path;
+	}
+	car.year = year;
+	car.make = make;
+	car.model = model;
+	car.trimLevel = trimLevel;
+	car.image = imagePath;
+	car.tireBrand = tireBrand;
+	car.tireName = tireName;
+	car.tireFrontWidth = tireFrontWidth;
+	car.tireFrontDiameter = tireFrontDiameter;
+	car.tireFrontRatio = tireFrontRatio;
+	car.tireRearWidth = tireRearWidth;
+	car.tireRearDiameter = tireRearDiameter;
+	car.tireRearRatio = tireRearRatio;
+	car.share = share;
+	car.frontPressure = frontPressure;
+	car.rearPressure = rearPressure;
+	car.LFCamber = LFCamber;
+	car.RFCamber = RFCamber;
+	car.LRCamber = LRCamber;
+	car.RRCamber = RRCamber;
+	car.LFCaster = LFCaster;
+	car.RFCaster = RFCaster;
+	car.LFToe = LFToe;
+	car.RFToe = RFToe;
+	car.frontToe = frontToe;
+	car.LRToe = LRToe;
+	car.RRToe = RRToe;
+	car.rearToe = rearToe;
+	car.FBar = FBar;
+	car.RBar = RBar;
+	car.FRebound = FRebound;
+	car.RRebound = RRebound;
+	car.FCompression = FCompression;
+	car.RCompression = RCompression;
+	car.note = note;
+
+	try {
+		await car.save();
+	} catch (err) {
+		const error = new HttpError(
+			'Updating car failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(201).json({ car: car.toObject({ getters: true }) });
+};
 
 // PATCH /api/activate/:cid
-const activateCar = async (req, res, next) => {};
+const activateCar = async (req, res, next) => {
+	const cId = req.params.cid;
+
+	// we need to get the data from body
+	const { active } = req.body;
+
+	// Validate user exists. If not, sends back an error
+	let user;
+	let userId = req.userData;
+	try {
+		user = await User.findById(userId);
+	} catch (err) {
+		const error = new HttpError(
+			'Activate car process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!user) {
+		const error = new HttpError(
+			'Unable to activate/retire car. Unauthorized request.',
+			401
+		);
+		return next(error);
+	}
+
+	// get the car from backend
+	let car;
+	try {
+		car = await Car.findById(cId);
+	} catch (err) {
+		const error = new HttpError(
+			'Activate car process failed, please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!car) {
+		return next(
+			new HttpError('Activate car failed finding the car.'),
+			404
+		);
+	}
+
+	if (car.userId.toString() !== req.userData) {
+		const error = new HttpError('Unauthorized operation!!', 401);
+		return next(error);
+	}
+
+	car.active = active;
+	try {
+		await car.save();
+	} catch (err) {
+		const error = new HttpError(
+			'Activating car failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	let activeWord = active ? 'Activated' : 'Retired';
+	res.status(201).json({ message: `Car ${cId} is ${activeWord}.` });
+};
 
 const deleteCar = async (req, res, next) => {};
 

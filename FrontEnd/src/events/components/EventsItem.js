@@ -20,6 +20,7 @@ const EventsItem = props => {
 							alt={props.name}
 							className="avatar__event"
 							published={props.published}
+							publishDescription="PUBLISHED"
 						/>
 					</div>
 					<div className="events-item__info">

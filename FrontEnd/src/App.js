@@ -53,6 +53,7 @@ const UserGarage = React.lazy(() =>
 );
 const NewCar = React.lazy(() => import('./cars/pages/NewCar'));
 const Car = React.lazy(() => import('./cars/pages/Car'));
+const UpdateCar = React.lazy(() => import('./cars/pages/UpdateCar'));
 
 const App = () => {
 	const {
@@ -121,6 +122,9 @@ const App = () => {
 				</Route>
 				<Route path="/users/cars/new" exact>
 					<NewCar />
+				</Route>
+				<Route path="/users/cars/update/:carId" exact>
+					<UpdateCar />
 				</Route>
 				<Route path="/users/cars/:carId" exact>
 					<Car />
@@ -208,6 +212,9 @@ const App = () => {
 				</Route>
 				<Route path="/users/cars/new" exact>
 					<NewCar />
+				</Route>
+				<Route path="/users/cars/update/:carId" exact>
+					<UpdateCar />
 				</Route>
 				<Route path="/users/cars/:carId" exact>
 					<Car />

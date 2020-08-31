@@ -20,18 +20,20 @@ const Car = () => {
 	} = useHttpClient();
 
 	const cId = useParams().carId;
-	// let userData = JSON.parse(localStorage.getItem('userData'));
-	// let garage = userData.garage ? userData.garage : [];
-	// let foundCar = false;
-	// garage.map(car => {
-	// 	if (car.id === cId) {
-	// 		setLoadedCar(car);
-	// 		foundCar = true;
-	// 	}
-	// });
+
+	// check localStorage for saved garage data to avoid querying from backend
+	let userData = JSON.parse(localStorage.getItem('userData'));
+	let garage = userData.garage ? userData.garage : [];
 
 	useEffect(() => {
-		console.log('fetching');
+		let foundCar = false;
+		garage.map(car => {
+			if (car.id === cId) {
+				setLoadedCar(car);
+				foundCar = true;
+			}
+		});
+
 		const fetchCar = async () => {
 			try {
 				const responseData = await sendRequest(
@@ -46,22 +48,14 @@ const Car = () => {
 					}
 				);
 				setLoadedCar(responseData.car);
-				console.log('responseData = ', responseData);
 			} catch (err) {
 				console.log('err = ', err);
 			}
 		};
-		fetchCar();
-		// if (!foundCar) {
-		// 	console.log('car not found');
-		// 	foundCar = true;
-
-		// } else {
-		// 	console.log('car found');
-		// }
+		if (!foundCar) {
+			fetchCar();
+		}
 	}, [sendRequest, cId, setLoadedCar]);
-
-	console.log('loadedCar = ', loadedCar);
 
 	// calling CarsList from CarsList.js where it passes CARS to child CarsList
 	// just treat the following call as CarsList(items = CARS); items is the props

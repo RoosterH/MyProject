@@ -46,7 +46,6 @@ const UserAuth = () => {
 					}
 				);
 
-				console.log('responseData = ', responseData);
 				if (userAuthContext.userRedirectURL) {
 					// for re-direction, we need to set login information to be able to send request to backend
 					userAuthContext.userLogin(

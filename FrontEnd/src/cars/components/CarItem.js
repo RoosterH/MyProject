@@ -21,8 +21,6 @@ const CarItem = props => {
 		clearError
 	} = useHttpClient();
 
-	console.log('in CarItem');
-
 	// useContext is listening to "UserAuthContext"
 	const userAuthContext = useContext(UserAuthContext);
 	const [owner, setOWner] = useState(false);
@@ -32,6 +30,23 @@ const CarItem = props => {
 		}
 	}, [userAuthContext.userId, props.car.userId]);
 
+	const [active, setActive] = useState(props.car.active);
+	const [activeButtonName, setActiveButtonName] = useState(
+		'ACTIVATE'
+	);
+	const [activeButtonClassName, setActiveButtonClassName] = useState(
+		'small-green'
+	);
+	useEffect(() => {
+		if (active) {
+			setActiveButtonName('ACTIVATED');
+			setActiveButtonClassName('small-green');
+		} else {
+			setActiveButtonName('RETIRED');
+			setActiveButtonClassName('small-grey');
+		}
+	}, [active]);
+
 	// modal section
 	const [showModal, setShowModal] = useState(false);
 	const openModalHandler = () => setShowModal(true);
@@ -39,50 +54,20 @@ const CarItem = props => {
 		setShowModal(false);
 	};
 
-	// modals for courseMap and delete confirmation
-	const [showDELModal, setShowDELModal] = useState(false);
-
-	// event handlers
-	const openDELHandler = () => {
-		setShowDELModal(true);
-	};
-	const closeDELHandler = () => {
-		setShowDELModal(false);
-	};
-
-	const history = useHistory();
-	const confirmDeleteHandler = async () => {
-		setShowDELModal(false);
-		try {
-			await sendRequest(
-				process.env.REACT_APP_BACKEND_URL + `/cars/${props.car.id}`,
-				'DELETE',
-				null,
-				{
-					// No need for content-type since body is null,
-					// adding JWT to header for authentication
-					Authorization: 'Bearer ' + userAuthContext.userToken
-				}
-			);
-			history.push(`/users/garage/${userAuthContext.userId}`);
-		} catch (err) {}
-	};
-
-	const confirmPublishHandler = async () => {
+	const activateHandler = async () => {
 		try {
 			await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
-					`/cars/publish/${props.car.id}`,
+					`/cars/activate/${props.car.id}`,
 				'PATCH',
-				JSON.stringify({ published: true }),
+				JSON.stringify({ active: !active }),
 				{
-					// No need for content-type since body is null,
-					// adding JWT to header for authentication
 					'Content-Type': 'application/json',
+					// adding JWT to header for authentication
 					Authorization: 'Bearer ' + userAuthContext.userToken
 				}
 			);
-			history.push(`/users/garage/${userAuthContext.userId}`);
+			setActive(!active);
 		} catch (err) {}
 	};
 
@@ -99,29 +84,6 @@ const CarItem = props => {
 		) : (
 			<div></div>
 		);
-
-	const [showDescription, setShowDescription] = useState(
-		'btn collapsible minus-sign toggle-btn'
-	);
-	const toggleDescriptionButton = () => {
-		if (showDescription === 'btn collapsible minus-sign toggle-btn') {
-			setShowDescription('btn collapsible plus-sign toggle-btn');
-		} else {
-			setShowDescription('btn collapsible minus-sign toggle-btn');
-		}
-	};
-
-	const [showInstruction, setShowInstruction] = useState(
-		'btn collapsible minus-sign toggle-btn'
-	);
-	const toggleInstructionButton = () => {
-		if (showInstruction === 'btn collapsible minus-sign toggle-btn') {
-			setShowInstruction('btn collapsible plus-sign toggle-btn');
-		} else {
-			setShowInstruction('btn collapsible minus-sign toggle-btn');
-		}
-	};
-
 	const leftFront = () => (
 		<div>
 			<p>Toe : {props.car.LFToe} in</p>
@@ -133,8 +95,8 @@ const CarItem = props => {
 
 	const centerFront = () => (
 		<div>
-			<p>Tire Pressure : {props.car.FrontPressure}psi</p>
-			<p>Total Toe: {props.car.FrontToe}in</p>
+			<p>Tire Pressure : {props.car.frontPressure}psi</p>
+			<p>Total Toe: {props.car.frontToe}in</p>
 			<p>Rebound: {props.car.FRebound}</p>
 			<p>Compression: {props.car.FCompression}</p>
 		</div>
@@ -158,8 +120,8 @@ const CarItem = props => {
 
 	const centerRear = () => (
 		<div>
-			<p>Tire Pressure : {props.car.RearPressure}psi</p>
-			<p>Total Toe: {props.car.RearToe}in</p>
+			<p>Tire Pressure : {props.car.rearPressure}psi</p>
+			<p>Total Toe: {props.car.rearToe}in</p>
 			<p>Rebound: {props.car.RRebound}</p>
 			<p>Compression: {props.car.RCompression}</p>
 		</div>
@@ -175,29 +137,6 @@ const CarItem = props => {
 		// React.Frgment connect multiple components
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
-			{/* Modal to show delet confirmation message */}
-			<Modal
-				className="modal-delete"
-				show={showDELModal}
-				contentClass="event-item__modal-delete"
-				onCancel={closeDELHandler}
-				header="Warning!"
-				footerClass="event-item__modal-actions"
-				footer={
-					<React.Fragment>
-						<Button inverse onClick={closeDELHandler}>
-							CANCEL
-						</Button>
-						<Button danger onClick={confirmDeleteHandler}>
-							DELETE
-						</Button>
-					</React.Fragment>
-				}>
-				<p className="modal__content">
-					Do you really want to delete {props.car.model}? It cannot be
-					recovered after deletion.
-				</p>
-			</Modal>
 			{isLoading && <LoadingSpinner asOverlay />}
 			{/* User image and car model*/}
 			<div className="carItem">
@@ -267,7 +206,7 @@ const CarItem = props => {
 								{owner && (
 									<Button
 										// inverse={}
-										to={`/events/form/${props.car.id}`}
+										to={`/users/cars/update/${props.car.id}`}
 										size="small-orange">
 										MODIFY
 									</Button>
@@ -277,9 +216,9 @@ const CarItem = props => {
 								{owner && (
 									<Button
 										// inverse={}
-										to={`/events/form/${props.car.id}`}
-										size="small-orange">
-										DELETE&nbsp;
+										onClick={activateHandler}
+										size={activeButtonClassName}>
+										{activeButtonName}
 									</Button>
 								)}
 							</div>
@@ -287,7 +226,12 @@ const CarItem = props => {
 					</div>
 					<div className="note-container">
 						<h3>Note: </h3>
-						<p>{props.car.note}</p>
+						<textarea
+							rows="8"
+							cols="45"
+							className="note-container_textarea"
+							defaultValue={props.car.note}
+						/>
 					</div>
 				</div>
 				{/* <div className="section-container theme"> */}

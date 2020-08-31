@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useParams, useHistory, useLocation } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
@@ -21,7 +21,7 @@ import { FormContext } from '../../shared/context/form-context';
 
 import '../../shared/css/EventForm.css';
 
-const NewCar = setFieldValue => {
+const UpdateCar = setFieldValue => {
 	const [initialized, setInitialized] = useState(false);
 	const userAuthContext = useContext(UserAuthContext);
 	const formContext = useContext(FormContext);
@@ -43,11 +43,13 @@ const NewCar = setFieldValue => {
 		clearError
 	} = useHttpClient();
 
+	let carId = useParams().carId;
 	// authentication check
-	useUserLoginValidation('/users/cars/new');
+	useUserLoginValidation(`/users/cars/update/:${carId}`);
+
 	// If we are re-directing to this page, we want to clear up clubRedirectURL
 	let location = useLocation();
-	React.useEffect(() => {
+	useEffect(() => {
 		let path = location.pathname;
 		let userRedirectURL = userAuthContext.userRedirectURL;
 		if (path === userRedirectURL) {
@@ -79,7 +81,7 @@ const NewCar = setFieldValue => {
 	const [RFCaster, setRFCaster] = useState('');
 	const [LFToe, setLFToe] = useState('');
 	const [RFToe, setRFToe] = useState('');
-	const [frontToe, setfrontToe] = useState('');
+	const [frontToe, setFrontToe] = useState('');
 	const [LRToe, setLRToe] = useState('');
 	const [RRToe, setRRToe] = useState('');
 	const [rearToe, setRearToe] = useState('');
@@ -95,6 +97,70 @@ const NewCar = setFieldValue => {
 	// todo: const [courseMap, setCourseMap] = useState('');
 	let image = undefined;
 
+	const [OKLeavePage, setOKLeavePage] = useState(true);
+	const [loadedCar, setLoadedCar] = useState();
+
+	let initialValues = {};
+
+	console.log('before queryCar1');
+	useEffect(() => {
+		console.log('in queryCar1');
+		const queryCar = async () => {
+			try {
+				console.log('in queryCar');
+				const responseData = await sendRequest(
+					process.env.REACT_APP_BACKEND_URL + `/cars/${carId}`,
+					'GET',
+					null,
+					{
+						// adding JWT to header for authentication, JWT contains clubId
+						Authorization: 'Bearer ' + userAuthContext.userToken
+					}
+				);
+				if (!responseData.car) {
+					throw new Error('Request error, car data was not found');
+				}
+				setLoadedCar(responseData.car);
+				let car = responseData.car;
+				setYear(car.year);
+				setMake(car.make);
+				setModel(car.model);
+				setTrimLevel(car.trimLevel);
+				setShare(car.share);
+				setTireBrand(car.tireBrand);
+				setTireName(car.tireName);
+				setTireFrontWidth(car.tireFrontWidth);
+				setTireFrontDiameter(car.tireFrontDiameter);
+				setTireFrontRatio(car.tireFrontRatio);
+				setTireRearWidth(car.tireRearWidth);
+				setTireRearDiameter(car.tireRearDiameter);
+				setTireRearRatio(car.tireRearRatio);
+				setFrontPressure(car.frontPressure);
+				setRearPressure(car.rearPressure);
+				setLFCamber(car.LFCamber);
+				setRFCamber(car.RFCamber);
+				setLRCamber(car.LRCamber);
+				setRRCamber(car.RRCamber);
+				setLFCaster(car.LFCaster);
+				setRFCaster(car.RFCaster);
+				setLFToe(car.LFToe);
+				setRFToe(car.RFToe);
+				setFrontToe(car.frontToe);
+				setLRToe(car.LRToe);
+				setRRToe(car.RRToe);
+				setRearToe(car.rearToe);
+				setFBar(car.FBar);
+				setRBar(car.RBar);
+				setFRebound(car.FRebound);
+				setRRebound(car.RRebound);
+				setFCompression(car.FCompression);
+				setRCompression(car.RCompression);
+				setNote(car.note);
+			} catch (err) {}
+		};
+		queryCar();
+	}, [sendRequest, carId, initialized]);
+
 	// initialize local storage
 	// Get the existing data
 	var carFormData = localStorage.getItem('carFormData');
@@ -102,7 +168,7 @@ const NewCar = setFieldValue => {
 	// If no existing data, create an array; otherwise retrieve it
 	carFormData = carFormData ? JSON.parse(carFormData) : {};
 
-	const [OKLeavePage, setOKLeavePage] = useState(true);
+	console.log('initialized = ', initialized);
 	// local storage gets the higest priority
 	// get from localStorage
 	if (
@@ -110,6 +176,7 @@ const NewCar = setFieldValue => {
 		carFormData &&
 		moment(carFormData.expirationDate) > moment()
 	) {
+		console.log('inside moment');
 		setInitialized(true);
 		// Form data
 		if (carFormData.year) {
@@ -182,7 +249,7 @@ const NewCar = setFieldValue => {
 			setRFToe(carFormData.RFToe);
 		}
 		if (carFormData.frontToe) {
-			setfrontToe(carFormData.frontToe);
+			setLRToe(carFormData.frontToe);
 		}
 		if (carFormData.LRToe) {
 			setLRToe(carFormData.LRToe);
@@ -191,7 +258,7 @@ const NewCar = setFieldValue => {
 			setRRToe(carFormData.RRToe);
 		}
 		if (carFormData.rearToe) {
-			setRearToe(carFormData.rearToe);
+			setLRToe(carFormData.rearToe);
 		}
 		if (carFormData.FBar) {
 			setFBar(carFormData.FBar);
@@ -218,47 +285,48 @@ const NewCar = setFieldValue => {
 			//setImage(carFormData.image);
 			// setImageOK(false);
 		}
-	} else if (!initialized) {
+	} else if (!initialized && loadedCar) {
 		setInitialized(true);
+		console.log('in localstorage');
 		// initialize localStorage
 		carFormData['expirationDate'] = moment(
 			moment().add(1, 'days'),
 			moment.ISO_8601
 		);
-		carFormData['year'] = '';
-		carFormData['make'] = '';
-		carFormData['model'] = '';
-		carFormData['trimLevel'] = '';
-		carFormData['share'] = '';
-		carFormData['tireBrand'] = '';
-		carFormData['tireName'] = '';
-		carFormData['tireFrontWidth'] = '';
-		carFormData['tireFrontDiameter'] = '';
-		carFormData['tireFrontRatio'] = '';
-		carFormData['tireRearWidth'] = '';
-		carFormData['tireRearDiameter'] = '';
-		carFormData['tireRearRatio'] = '';
-		carFormData['frontPressure'] = '';
-		carFormData['rearPressure'] = '';
-		carFormData['LFCamber'] = '';
-		carFormData['RFCamber'] = '';
-		carFormData['LRCamber'] = '';
-		carFormData['RRCamber'] = '';
-		carFormData['LFCaster'] = '';
-		carFormData['RFCaster'] = '';
-		carFormData['LFToe'] = '';
-		carFormData['RFToe'] = '';
-		carFormData['frontToe'] = '';
-		carFormData['LRToe'] = '';
-		carFormData['RRToe'] = '';
-		carFormData['rearToe'] = '';
-		carFormData['FBar'] = '';
-		carFormData['RBar'] = '';
-		carFormData['FRebound'] = '';
-		carFormData['RRebound'] = '';
-		carFormData['FCompression'] = '';
-		carFormData['RCompression'] = '';
-		carFormData['note'] = '';
+		carFormData['year'] = loadedCar.year;
+		carFormData['make'] = loadedCar.make;
+		carFormData['model'] = loadedCar.model;
+		carFormData['trimLevel'] = loadedCar.trimLevel;
+		carFormData['share'] = loadedCar.share;
+		carFormData['tireBrand'] = loadedCar.tireBrand;
+		carFormData['tireName'] = loadedCar.tireName;
+		carFormData['tireFrontWidth'] = loadedCar.tireFrontWidth;
+		carFormData['tireFrontDiameter'] = loadedCar.tireFrontDiameter;
+		carFormData['tireFrontRatio'] = loadedCar.tireFrontRatio;
+		carFormData['tireRearWidth'] = loadedCar.tireRearWidth;
+		carFormData['tireRearDiameter'] = loadedCar.tireRearDiameter;
+		carFormData['tireRearRatio'] = loadedCar.tireRearRatio;
+		carFormData['frontPressure'] = loadedCar.frontPressure;
+		carFormData['rearPressure'] = loadedCar.rearPressure;
+		carFormData['LFCamber'] = loadedCar.LFCamber;
+		carFormData['RFCamber'] = loadedCar.RFCamber;
+		carFormData['LRCamber'] = loadedCar.LRCamber;
+		carFormData['RRCamber'] = loadedCar.RRCamber;
+		carFormData['LFCaster'] = loadedCar.LFCaster;
+		carFormData['RFCaster'] = loadedCar.RFCaster;
+		carFormData['LFToe'] = loadedCar.LFToe;
+		carFormData['RFToe'] = loadedCar.RFToe;
+		carFormData['frontToe'] = loadedCar.frontToe;
+		carFormData['LRToe'] = loadedCar.LRToe;
+		carFormData['RRToe'] = loadedCar.RRToe;
+		carFormData['rearToe'] = loadedCar.rearToe;
+		carFormData['FBar'] = loadedCar.FBar;
+		carFormData['RBar'] = loadedCar.RBar;
+		carFormData['FRebound'] = loadedCar.FRebound;
+		carFormData['RRebound'] = loadedCar.RRebound;
+		carFormData['FCompression'] = loadedCar.FCompression;
+		carFormData['RCompression'] = loadedCar.RCompression;
+		carFormData['note'] = loadedCar.note;
 		carFormData['image'] = undefined;
 		localStorage.setItem('carFormData', JSON.stringify(carFormData));
 	}
@@ -268,7 +336,7 @@ const NewCar = setFieldValue => {
 		// history.push(`/events/club/${userAuthContext.clubId}`);
 	};
 
-	const initialValues = {
+	initialValues = {
 		// editorState: new EditorState.createEmpty(),
 		year: year,
 		make: make,
@@ -307,6 +375,8 @@ const NewCar = setFieldValue => {
 		image: image
 	};
 
+	console.log('init = ', initialValues);
+
 	const updateCarFormData = (key, value) => {
 		const storageData = JSON.parse(
 			localStorage.getItem('carFormData')
@@ -323,7 +393,9 @@ const NewCar = setFieldValue => {
 			formData.append('make', values.make);
 			formData.append('model', values.model);
 			formData.append('trimLevel', values.trimLevel);
+
 			formData.append('share', values.share);
+
 			formData.append('tireBrand', values.tireBrand);
 			formData.append('tireName', values.tireName);
 			formData.append('tireFrontWidth', values.tireFrontWidth);
@@ -358,8 +430,8 @@ const NewCar = setFieldValue => {
 			formData.append('image', values.image);
 
 			await sendRequest(
-				process.env.REACT_APP_BACKEND_URL + '/cars',
-				'POST',
+				process.env.REACT_APP_BACKEND_URL + `/cars/${carId}`,
+				'PATCH',
 				formData,
 				{
 					// adding JWT to header for authentication
@@ -490,10 +562,7 @@ const NewCar = setFieldValue => {
 	const carForm = values => (
 		<div className="event-form">
 			<div className="event-form-header">
-				<h4>
-					{userName}
-					's car
-				</h4>
+				<h4>{userName}'s car</h4>
 				<hr className="event-form__hr" />
 			</div>
 			<Formik
@@ -625,6 +694,11 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
+						{touched.year && errors.year && (
+							<div className="event-form__field-error">
+								{errors.year}
+							</div>
+						)}
 						<Field
 							id="make"
 							name="make"
@@ -638,6 +712,11 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
+						{touched.make && errors.make && (
+							<div className="event-form__field-error">
+								{errors.make}
+							</div>
+						)}
 						<Field
 							id="model"
 							name="model"
@@ -651,6 +730,11 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
+						{touched.model && errors.model && (
+							<div className="event-form__field-error">
+								{errors.model}
+							</div>
+						)}
 						<Field
 							id="trimLevel"
 							name="trimLevel"
@@ -663,29 +747,11 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{(touched.year ||
-							touched.make ||
-							touched.model ||
-							touched.trimLevel) &&
-							(errors.year ||
-								errors.make ||
-								errors.model ||
-								errors.trimLevel) && (
-								<React.Fragment>
-									<div className="event-form__field-error_quarter">
-										{errors.year}
-									</div>
-									<div className="event-form__field-error_quarter">
-										{errors.make}
-									</div>
-									<div className="event-form__field-error_quarter">
-										{errors.model}
-									</div>
-									<div className="event-form__field-error_quarter">
-										{errors.trimLevel}
-									</div>
-								</React.Fragment>
-							)}
+						{touched.trimLevel && errors.trimLevel && (
+							<div className="event-form__field-error">
+								{errors.trimLevel}
+							</div>
+						)}
 						<label
 							htmlFor="tireBrand"
 							className="event-form__label_inline_half">
@@ -710,6 +776,11 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
+						{touched.tireBrand && errors.tireBrand && (
+							<div className="event-form__field-error">
+								{errors.tireBrand}
+							</div>
+						)}
 						<Field
 							id="tireName"
 							name="tireName"
@@ -723,17 +794,11 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{(touched.tireBrand || touched.tireName) &&
-							(errors.tireBrand || errors.tireName) && (
-								<React.Fragment>
-									<div className="event-form__field-error_half">
-										{errors.tireBrand}
-									</div>
-									<div className="event-form__field-error_half">
-										{errors.tireName}
-									</div>
-								</React.Fragment>
-							)}
+						{touched.tireName && errors.tireName && (
+							<div className="event-form__field-error">
+								{errors.tireName}
+							</div>
+						)}
 						<label
 							htmlFor="tireFrontWidth"
 							className="event-form__label_inline_third">
@@ -766,6 +831,11 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
+						{touched.tireFrontWidth && errors.tireFrontWidth && (
+							<div className="event-form__field-error">
+								{errors.tireFrontWidth}
+							</div>
+						)}
 						<Field
 							id="tireFrontRatio"
 							name="tireFrontRatio"
@@ -782,6 +852,11 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
+						{touched.tireFrontRatio && errors.tireFrontRatio && (
+							<div className="event-form__field-error">
+								{errors.tireFrontRatio}
+							</div>
+						)}
 						<Field
 							id="tireFrontDiameter"
 							name="tireFrontDiameter"
@@ -798,23 +873,11 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{(touched.tireFrontWidth ||
-							touched.tireFrontRatio ||
-							touched.tireFrontDiameter) &&
-							(errors.tireFrontWidth ||
-								errors.tireFrontRatio ||
-								errors.tireFrontDiameter) && (
-								<React.Fragment>
-									<div className="event-form__field-error_third">
-										{errors.tireFrontWidth}
-									</div>
-									<div className="event-form__field-error_third">
-										{errors.tireFrontRatio}
-									</div>
-									<div className="event-form__field-error_third">
-										{errors.tireFrontDiameter}
-									</div>
-								</React.Fragment>
+						{touched.tireFrontDiameter &&
+							errors.tireFrontDiameter && (
+								<div className="event-form__field-error">
+									{errors.tireFrontDiameter}
+								</div>
 							)}
 						<label
 							htmlFor="tireRearWidth"
@@ -848,6 +911,11 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
+						{touched.tireRearWidth && errors.tireRearWidth && (
+							<div className="event-form__field-error">
+								{errors.tireRearWidth}
+							</div>
+						)}
 						<Field
 							id="tireRearRatio"
 							name="tireRearRatio"
@@ -864,6 +932,11 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
+						{touched.tireRearRatio && errors.tireRearRatio && (
+							<div className="event-form__field-error">
+								{errors.tireRearRatio}
+							</div>
+						)}
 						<Field
 							id="tireRearDiameter"
 							name="tireRearDiameter"
@@ -880,30 +953,19 @@ const NewCar = setFieldValue => {
 								setOKLeavePage(false);
 							}}
 						/>
-						{(touched.tireRearWidth ||
-							touched.tireRearRatio ||
-							touched.tireRearDiameter) &&
-							(errors.tireRearWidth ||
-								errors.tireRearRatio ||
-								errors.tireRearDiameter) && (
-								<React.Fragment>
-									<div className="event-form__field-error_third">
-										{errors.tireRearWidth}
-									</div>
-									<div className="event-form__field-error_third">
-										{errors.tireRearRatio}
-									</div>
-									<div className="event-form__field-error_third">
-										{errors.tireRearDiameter}
-									</div>
-								</React.Fragment>
-							)}
+						{touched.tireRearDiameter && errors.tireRearDiameter && (
+							<div className="event-form__field-error">
+								{errors.tireRearDiameter}
+							</div>
+						)}
+
 						{/* This first checkbox will result in a boolean value being stored. Note that the `value` prop
-					            				on the <Field/> is omitted */}
+            				on the <Field/> is omitted */}
 						<label className="event-form__checkbox">
 							<Field type="checkbox" name="share" />
-							{/* {`${values.share}`} */} &nbsp; Check if you agree to
-							share the following sections.
+							{/* {`${values.toggle}`} */}
+							&nbsp;Check if you agree to share the following
+							sections.
 						</label>
 						<label
 							htmlFor="frontPressure"
@@ -1133,9 +1195,9 @@ const NewCar = setFieldValue => {
 							type="text"
 							className="event-form__field_third"
 							onBlur={event => {
-								// without handBlure(event) touched.frontToe will not work
+								// without handBlure(event) touched.RFToe will not work
 								handleBlur(event);
-								updateCarFormData('frontToe', event.target.value);
+								updateCarFormData('Front', event.target.value);
 								setOKLeavePage(false);
 							}}
 						/>
@@ -1157,7 +1219,7 @@ const NewCar = setFieldValue => {
 						<label
 							htmlFor="LRToe"
 							className="event-form__label_inline_third">
-							<i className="far fa-steering-wheel" />
+							<i className="far fa-steering-wheel " />
 							&nbsp; Left Rear Toe &#x2033;
 						</label>
 						<label
@@ -1356,8 +1418,8 @@ const NewCar = setFieldValue => {
 							</div>
 						)}
 						<label htmlFor="note" className="event-form__label">
-							<i className="far fa-sticky-note" />
-							&nbsp; Note(max: 350 characters)
+							<i className="far fa-sticky-note"></i>
+							&nbsp; Note (max: 350 characters)
 						</label>
 						<Field
 							id="note"
@@ -1402,6 +1464,7 @@ const NewCar = setFieldValue => {
 							previewStyle="image-upload__preview"
 							errorStyle="event-form__field-error"
 						/>
+
 						<Button
 							type="submit"
 							size="medium"
@@ -1474,4 +1537,4 @@ const NewCar = setFieldValue => {
 	);
 };
 
-export default NewCar;
+export default UpdateCar;

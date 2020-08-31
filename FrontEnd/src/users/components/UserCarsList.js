@@ -8,7 +8,6 @@ import '../../shared/css/EventsList.css';
 // treat this as a function looks like
 // EventList(props.items), caller will call as <EventList items=(value to be passed in) \>
 const UserCarsList = props => {
-	console.log('props = ', props);
 	if (props.items.length === 0) {
 		return (
 			<div className="center">
@@ -28,6 +27,7 @@ const UserCarsList = props => {
 					// so when render it will only render one element not the whole array
 					key={car.id}
 					id={car.id}
+					active={car.active}
 					year={car.year}
 					make={car.make}
 					model={car.model}

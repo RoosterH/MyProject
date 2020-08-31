@@ -14,7 +14,7 @@ const Avatar = props => {
 				/>
 				{props.published && (
 					<figcaption className="watermark-text">
-						Published
+						{props.publishDescription}
 					</figcaption>
 				)}
 			</figure>

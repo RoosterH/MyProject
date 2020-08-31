@@ -25,29 +25,46 @@ router.post(
 	'/',
 	fileUpload.fields([{ name: 'image', maxCount: 1 }]),
 	[
-		(check('year').isLength({ min: 4 }),
+		(check('active').isEmpty(),
+		check('year').isLength({ min: 4 }),
 		check('make').isLength({ min: 2 }),
 		check('model').isLength({ min: 2 }),
 		check('tireBrand').isLength({ min: 5 }),
-		check('tireName').isLength({ min: 2 }))
+		check('tireName').isLength({ min: 2 }),
+		check('tireFrontWidth').isLength({ min: 3 }, { max: 3 }),
+		check('tirFrontRatio').isLength({ min: 2 }, { max: 2 }),
+		check('tireFrontDiameter').isLength({ min: 2 }, { max: 2 }),
+		check('tireRearWidth').isLength({ min: 3 }, { max: 3 }),
+		check('tirRearRatio').isLength({ min: 2 }, { max: 2 }),
+		check('tireRearDiameter').isLength({ min: 2 }, { max: 2 })),
+		check('image').isEmpty(),
+		check('note').isLength({ max: 350 })
 	],
 	carsController.createCar
 );
+
+router.patch('/activate/:cid', carsController.activateCar);
 
 router.patch(
 	'/:cid',
 	fileUpload.fields([{ name: 'image', maxCount: 1 }]),
 	[
-		(check('year').isLength({ min: 4 }),
+		(check('active').isEmpty(),
+		check('year').isLength({ min: 4 }),
 		check('make').isLength({ min: 2 }),
 		check('model').isLength({ min: 2 }),
 		check('tireBrand').isLength({ min: 5 }),
-		check('tireName').isLength({ min: 5 }))
+		check('tireName').isLength({ min: 5 }),
+		check('tireFrontWidth').isLength({ min: 3 }, { max: 3 }),
+		check('tirFrontRatio').isLength({ min: 2 }, { max: 2 }),
+		check('tireFrontDiameter').isLength({ min: 2 }, { max: 2 }),
+		check('tireRearWidth').isLength({ min: 3 }, { max: 3 }),
+		check('tirRearRatio').isLength({ min: 2 }, { max: 2 }),
+		check('tireRearDiameter').isLength({ min: 2 }, { max: 2 })),
+		check('note').isLength({ max: 350 })
 	],
 	carsController.updateCar
 );
-
-router.patch('/activate/:cd', carsController.activateCar);
 
 router.delete('/:cid', carsController.deleteCar);
 

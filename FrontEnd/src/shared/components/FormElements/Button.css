@@ -72,6 +72,30 @@
 	border-color: #f79321;
 	color: #ffffff;
 	margin: 0rem;
+	width: 8rem;
+	text-align: center;
+}
+
+.button--small-green {
+	font-size: small;
+	font-family: 'Montserrat', sans-serif;
+	background: #2cc70d;
+	border-color: #2cc70d;
+	color: #ffffff;
+	margin: 0rem;
+	width: 8rem;
+	text-align: center;
+}
+
+.button--small-grey {
+	font-size: small;
+	font-family: 'Montserrat', sans-serif;
+	background: #888684;
+	border-color: #888684;
+	color: #ffffff;
+	margin: 0rem;
+	width: 8rem;
+	text-align: center;
 }
 
 .button--small-orange:hover {
@@ -131,4 +155,40 @@
 	font-family: 'Montserrat', sans-serif;
 	color: #000;
 	font-weight: 400;
+}
+
+@media (max-width: 780px) {
+	.button--small-orange {
+		font-size: 12px;
+		font-family: 'Montserrat', sans-serif;
+		background: #f79321;
+		border-color: #f79321;
+		color: #ffffff;
+		margin: 0rem;
+		padding: 0.2rem 0.5rem;
+		width: 6rem;
+		text-align: center;
+	}
+	.button--small-green {
+		font-size: 12px;
+		font-family: 'Montserrat', sans-serif;
+		background: #2cc70d;
+		border-color: #2cc70d;
+		color: #ffffff;
+		margin: 0rem;
+		padding: 0.2rem 0.5rem;
+		width: 6rem;
+		text-align: center;
+	}
+	.button--small-grey {
+		font-size: 12px;
+		font-family: 'Montserrat', sans-serif;
+		background: #888684;
+		border-color: #888684;
+		color: #ffffff;
+		margin: 0rem;
+		padding: 0.2rem 0.5rem;
+		width: 6rem;
+		text-align: center;
+	}
 }

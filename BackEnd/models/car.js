@@ -33,8 +33,8 @@ const carSchema = new Schema({
 	share: { type: Boolean, required: true },
 
 	// tire pressure
-	FrontPressure: { type: String },
-	RearPressure: { type: String },
+	frontPressure: { type: String },
+	rearPressure: { type: String },
 
 	/*** alignment section  ***/
 	// camber
@@ -48,10 +48,10 @@ const carSchema = new Schema({
 	// toe
 	LFToe: { type: String },
 	RFToe: { type: String },
-	FrontToe: { type: String },
+	frontToe: { type: String },
 	LRToe: { type: String },
 	RRToe: { type: String },
-	RearToe: { type: String },
+	rearToe: { type: String },
 
 	// sawy bar
 	FBar: { type: String },

@@ -46,7 +46,6 @@ const UserGarage = () => {
 	useEffect(() => {
 		const fetechEvents = async () => {
 			try {
-				console.log('in garage');
 				const responseData = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL + `/cars/users/${uId}`,
 					'GET',
@@ -54,9 +53,20 @@ const UserGarage = () => {
 					{ Authorization: 'Bearer ' + userAuthContext.userToken }
 				);
 				setLoadedCars(responseData.cars);
-				let userData = JSON.parse(localStorage.getItem('userData'));
-				userData.garage = responseData.cars;
-				localStorage.setItem('userData', JSON.stringify(userData));
+				// Check who's viewing the garage. If it's from owner, store data under localStorage 'userData'
+				// otherwise store in 'garages' with different userId
+				if (uId === userAuthContext.userId) {
+					let userData = JSON.parse(localStorage.getItem('userData'));
+					userData.garage = responseData.cars;
+					localStorage.setItem('userData', JSON.stringify(userData));
+				} else {
+					console.log('not the owner');
+					let garages = JSON.parse(localStorage.getItem('garages'))
+						? JSON.parse(localStorage.getItem('garages'))
+						: [];
+					garages.push({ uId: responseData.cars });
+					localStorage.setItem('garages', JSON.stringify(garages));
+				}
 			} catch (err) {
 				console.log('err = ', err);
 			}

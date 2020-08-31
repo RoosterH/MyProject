@@ -17,7 +17,7 @@
 	display: block;
 	position: relative;
 	top: 80px;
-	/* margin: 1.5rem; */
+	margin: 0rem 0rem 0rem 0.8rem;
 	max-width: 1125px;
 	padding: 2rem 15px 15px 15px;
 	color: wheat;
@@ -119,17 +119,19 @@
 .carinfo-container {
 	display: inline-block;
 	top: 0;
-	border: 1px;
+	border-width: 1px 1px 1px 1px;
 	border-style: ridge;
-	width: 40%;
-	height: 13.5rem;
+	border-color: goldenrod;
+	width: 10rem;
+	height: 11.5rem;
 	position: relative;
 	font-size: 14px;
 	padding: 0.5rem;
+	margin-left: 0.8rem;
 }
 
 .carinfo-container h3 {
-	font-size: 14px;
+	font-size: 12px;
 	font-weight: 500;
 	display: inline;
 	margin-right: 0.5rem;
@@ -138,25 +140,34 @@
 
 .carinfo-container h4 {
 	font-size: 12px;
-	font-weight: 400;
+	font-weight: 300;
 	color: rgb(221, 219, 219);
 	font-weight: 300;
 }
 
 .note-container {
 	display: inline-block;
-	top: -5.6rem;
-	/* border: 1px; */
-	/* border-style: ridge; */
-	width: 43%;
-	/* height: 13.5rem; */
-	position: relative;
+	top: 0;
+	border-width: 1px 1px 1px 0px;
+	border-style: ridge;
+	border-color: goldenrod;
+	width: 10rem;
+	height: 11.5rem;
+	position: absolute;
 	font-size: 14px;
 	padding: 0.5rem;
 }
+.note-container_textarea {
+	background-color: #252222;
+	color: wheat;
+	border-width: 0;
+	resize: vertical;
+	width: 90%;
+	height: 90%;
+}
 
 .note-container h3 {
-	font-size: 14px;
+	font-size: 12px;
 	font-weight: 500;
 	display: inline;
 	margin-right: 0.5rem;
@@ -194,7 +205,7 @@
 }
 
 .table p {
-	font-size: smaller;
+	font-size: 12px;
 	margin-bottom: 0rem;
 }
 
@@ -211,12 +222,12 @@
 }
 
 .table-side-td {
-	height: 120px;
+	height: 70px;
 	width: 40px;
 	/* border: 1px solid white; */
 }
 .table-center-td {
-	height: 120px;
+	height: 70px;
 	width: 150px;
 	text-align: center;
 }
@@ -227,7 +238,7 @@
 }
 .deletebutton-container {
 	position: absolute;
-	top: 10rem;
+	top: 9.5rem;
 }
 
 .page-footer {
@@ -245,7 +256,7 @@
 		display: block;
 		position: relative;
 		top: 80px;
-		margin: 0rem 1.5rem 1.5rem 1.5rem;
+		margin: 0rem 1.5rem 1.5rem 2rem;
 		max-width: 1125px;
 		padding: 2rem 15px 15px 15px;
 		color: wheat;
@@ -264,24 +275,53 @@
 	.carinfo-container {
 		display: inline-block;
 		top: 0;
-		border: 1px;
+		border-width: 1px 1px 1px 1px;
 		border-style: ridge;
+		border-color: goldenrod;
 		width: 25rem;
 		height: 13.5rem;
 		position: relative;
 		font-size: 14px;
 		padding: 0.5rem;
 	}
+	.carinfo-container h3 {
+		font-size: 14px;
+		font-weight: 500;
+		display: inline;
+		margin-right: 0.5rem;
+		color: wheat;
+	}
+	.carinfo-container h4 {
+		font-size: 12px;
+		font-weight: 400;
+		color: rgb(221, 219, 219);
+		font-weight: 300;
+	}
 	.note-container {
 		display: inline-block;
 		top: 0;
-		/* border: 1px; 
-		 border-style: ridge;  */
+		border-width: 1px 1px 1px 0px;
+		border-style: ridge;
+		border-color: goldenrod;
 		width: 25rem;
 		height: 13.5rem;
 		position: absolute;
 		font-size: 14px;
 		padding: 0.5rem;
+	}
+	.note-container_textarea {
+		background-color: #252222;
+		color: wheat;
+		border-width: 0;
+		columns: 45;
+		resize: none;
+	}
+	.note-container h3 {
+		font-size: 14px;
+		font-weight: 500;
+		display: inline;
+		margin-right: 0.5rem;
+		color: wheat;
 	}
 	.eventimage-basic-container {
 		display: inline-block;
@@ -381,5 +421,9 @@
 	.event-item__modal {
 		width: 45%;
 		height: 20%;
+	}
+	.deletebutton-container {
+		position: absolute;
+		top: 10rem;
 	}
 }
