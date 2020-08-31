@@ -8,7 +8,7 @@ import FormElements from './form-elements';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
-import '../../shared/scss/form-builder-form.scss';
+import '../scss/form-builder-form.scss';
 
 import { UserAuthContext } from '../../shared/context/auth-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';

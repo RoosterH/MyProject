@@ -31,7 +31,7 @@ const createEntry = async (req, res, next) => {
 	// Validate clubId exists. If not, sends back an error
 	let user;
 	// req.userData is inserted in check-auth.js
-	let userId = req.userData.userId;
+	let userId = req.userData;
 	try {
 		user = await User.findById(userId);
 	} catch (err) {

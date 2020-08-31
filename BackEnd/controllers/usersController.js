@@ -257,7 +257,7 @@ const updateUser = async (req, res, next) => {
 	}
 
 	const { name, password, email } = req.body;
-	const userId = req.userData.userId; // use userId from token instead of getting it from url to avoid hacking
+	const userId = req.userData; // use userId from token instead of getting it from url to avoid hacking
 
 	let user;
 	try {
@@ -311,7 +311,7 @@ const updateUser = async (req, res, next) => {
 
 // DELETE '/api/users/:cid'
 const deleteUser = async (req, res, next) => {
-	const userId = req.userData.userId; // use userId in the jwt instaed of getting it from url
+	const userId = req.userData; // use userId in the jwt instaed of getting it from url
 
 	let user;
 	try {

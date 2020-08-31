@@ -250,7 +250,7 @@ const updateClub = async (req, res, next) => {
 	}
 
 	const { name, password, email } = req.body;
-	const clubId = req.userData.clubId; // use clubId from token instead of getting it from url to avoid hacking
+	const clubId = req.userData; // use clubId from token instead of getting it from url to avoid hacking
 	let club;
 	try {
 		club = await Club.findById(clubId);
@@ -303,7 +303,7 @@ const updateClub = async (req, res, next) => {
 
 // DELETE '/api/clubs/:cid'
 const deleteClub = async (req, res, next) => {
-	const clubId = req.userData.clubId; // use clubId in the jwt instaed of getting it from url
+	const clubId = req.userData; // use clubId in the jwt instaed of getting it from url
 
 	let club;
 	try {
@@ -377,7 +377,7 @@ const logoutClub = (req, res) => {
 
 const getEventForm = async (req, res, next) => {
 	let club;
-	let clubId = req.userData.clubId;
+	let clubId = req.userData;
 	try {
 		club = await Club.findById(clubId);
 	} catch (err) {
@@ -450,7 +450,7 @@ const createEventForm = async (req, res, next) => {
 
 	// Validate clubId exists. If not, sends back an error
 	let club;
-	let clubId = req.userData.clubId;
+	let clubId = req.userData;
 	try {
 		club = await Club.findById(clubId);
 	} catch (err) {
@@ -526,7 +526,7 @@ const createEventForm = async (req, res, next) => {
 const publishEvent = async (req, res, next) => {
 	// Validate clubId exists. If not, sends back an error
 	let club;
-	let clubId = req.userData.clubId;
+	let clubId = req.userData;
 	try {
 		club = await Club.findById(clubId);
 	} catch (err) {

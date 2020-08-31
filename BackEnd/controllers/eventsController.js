@@ -186,7 +186,7 @@ const createEvent = async (req, res, next) => {
 
 	// Validate clubId exists. If not, sends back an error
 	let club;
-	let clubId = req.userData.clubId;
+	let clubId = req.userData;
 	try {
 		club = await Club.findById(clubId);
 	} catch (err) {
@@ -302,7 +302,7 @@ const updateEvent = async (req, res, next) => {
 
 	// Validate clubId exists. If not, sends back an error
 	let club;
-	let clubId = req.userData.clubId;
+	let clubId = req.userData;
 	try {
 		club = await Club.findById(clubId);
 	} catch (err) {
@@ -362,7 +362,7 @@ const updateEvent = async (req, res, next) => {
 	}
 
 	// we added userData in check-auth after verifying jwt
-	if (event.clubId.toString() !== req.userData.clubId) {
+	if (event.clubId.toString() !== req.userData) {
 		const error = new HttpError('Unauthorized operation!!!', 401);
 		return next(error);
 	}
@@ -448,7 +448,7 @@ const deleteEvent = async (req, res, next) => {
 
 	// because we populate clubId already so we can now use the getter id
 	// In updateEvent, there is no populate so we had to use clubId.toString()
-	if (event.clubId.id !== req.userData.clubId) {
+	if (event.clubId.id !== req.userData) {
 		const error = new HttpError('Unauthorized operation!!!', 401);
 		return next(error);
 	}
