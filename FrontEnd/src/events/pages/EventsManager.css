@@ -1,0 +1,125 @@
+.eventmanager {
+	background-color: #fefefe;
+	color: #4a4a4a;
+	font-family: Montserrat, sans-serif;
+	font-size: 12px;
+	font-weight: 400;
+}
+.dashboard-nav {
+	background-color: #fefefe;
+	color: #4a4a4a;
+	font-family: Montserrat, sans-serif;
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 1.42857143;
+}
+
+.dashboard-nav ul {
+	cursor: pointer;
+	list-style: outside none none;
+	margin: 0;
+	padding: 0;
+}
+.dashboard-nav ul li.dashboard-nav-menu {
+	display: inline-block;
+	width: 20%;
+}
+
+.dashboard-nav ul .dashboard-nav-menu a {
+	background-color: #4a4a4a;
+	color: #fff;
+	display: block;
+	overflow: hidden;
+	padding: 10px;
+	text-align: center;
+	text-decoration: none;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.dashboard-nav ul .dashboard-nav-menu a.active-nav,
+.dashboard-nav ul .dashboard-nav-menu a:not(.disabled):hover {
+	background-color: #d8d8d8;
+	color: #4a4a4a;
+	text-decoration: none;
+}
+
+.dashboard-nav ul .dropdown-menu {
+	border-radius: 0;
+	width: 100%;
+}
+
+li {
+	display: list-item;
+	text-align: -webkit-match-parent;
+}
+
+.fa {
+	display: inline-block;
+	font: normal normal normal 14px/1 FontAwesome;
+	font-size: inherit;
+	text-rendering: auto;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	transform: translate(0, 0);
+}
+.pull-right {
+	float: right !important;
+}
+.fa.pull-right {
+	margin-left: 0.3em;
+}
+
+.dropdown-menu {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 1000;
+	display: none;
+	float: left;
+	min-width: 160px;
+	padding: 5px 0;
+	margin: 2px 0 0;
+	font-size: 14px;
+	text-align: left;
+	list-style: none;
+	background-color: #fff;
+	-webkit-background-clip: padding-box;
+	background-clip: padding-box;
+	border: 1px solid #ccc;
+	border: 1px solid rgba(0, 0, 0, 0.15);
+	border-radius: 4px;
+	-webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+}
+.dashboard-tabs {
+	margin-top: 15px;
+	background-color: #fefefe;
+	color: #4a4a4a;
+	font-family: Montserrat, sans-serif;
+	font-size: 12px;
+	font-weight: 400;
+}
+.nav {
+	padding-left: 0;
+	margin-bottom: 0;
+	list-style: none;
+}
+
+.dashboard-tabs .nav-tabs {
+	border: 0;
+}
+.dashboard-tabs .nav-tabs > li button {
+	background-color: #fff;
+	border-color: #ccc;
+	border-radius: 0;
+	color: #4a4a4a;
+	margin: 0 15px 0 5px;
+	padding: 5px 30px;
+}
+.dashboard-tabs.activity-sections .tab-link {
+	border-radius: 0;
+	margin: 0 15px 0 5px;
+	padding: 5px 0;
+	width: 130px;
+}

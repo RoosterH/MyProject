@@ -36,6 +36,9 @@ const EventForm = React.lazy(() => import('./event/pages/EventForm'));
 const EventFormBuilder = React.lazy(() =>
 	import('./event/pages/EventFormBuilder')
 );
+const EventsManager = React.lazy(() =>
+	import('./events/pages/EventsManager')
+);
 const Events = React.lazy(() => import('./events/pages/Events'));
 const NewEvent = React.lazy(() => import('./event/pages/NewEvent'));
 const UpdateEvent = React.lazy(() =>
@@ -92,6 +95,9 @@ const App = () => {
 				</Route>
 				<Route path="/events/:id" exact>
 					<Event />
+				</Route>
+				<Route path="/events/manager/:cid" exact>
+					<EventsManager />
 				</Route>
 				<Route path="/events/formbuilder/:id" exact>
 					<EventFormBuilder />
@@ -180,6 +186,9 @@ const App = () => {
 					1. Route is for refreshing page
 					2. Redirect is for club not logged in
 				*/}
+				<Route path="/events/manager/:cid" exact>
+					<EventsManager />
+				</Route>
 				<Route path="/clubs/events/new" exact>
 					<NewEvent />
 				</Route>
