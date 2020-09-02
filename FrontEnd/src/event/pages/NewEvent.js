@@ -417,7 +417,7 @@ const NewEvent = setFieldValue => {
 				}) => (
 					<Form className="event-form-container">
 						<label htmlFor="name" className="event-form__label">
-							<i class="fal fa-file-alt" />
+							<i className="fal fa-file-alt" />
 							&nbsp; Event Name
 						</label>
 						<Field
@@ -444,7 +444,7 @@ const NewEvent = setFieldValue => {
 							</div>
 						)}
 						<label htmlFor="eventType" className="event-form__label">
-							<i class="fal fa-flag-checkered" />
+							<i className="fal fa-flag-checkered" />
 							&nbsp; Event Type
 						</label>
 						<Field
@@ -477,13 +477,13 @@ const NewEvent = setFieldValue => {
 						<label
 							htmlFor="startDate"
 							className="event-form__label_startdate">
-							<i class="fal fa-calendar-alt" />
+							<i className="fal fa-calendar-alt" />
 							&nbsp; Start Date
 						</label>
 						<label
 							htmlFor="endDate"
 							className="event-form__label_enddate">
-							<i class="fal fa-calendar-alt" />
+							<i className="fal fa-calendar-alt" />
 							&nbsp; End Date
 						</label>
 						<br />
@@ -537,13 +537,13 @@ const NewEvent = setFieldValue => {
 						<label
 							htmlFor="regStartDate"
 							className="event-form__label_startdate">
-							<i class="fal fa-calendar-alt" />
+							<i className="fal fa-calendar-alt" />
 							&nbsp; Registration Start Date
 						</label>
 						<label
 							htmlFor="regEndDate"
 							className="event-form__label_enddate">
-							<i class="fal fa-calendar-alt" />
+							<i className="fal fa-calendar-alt" />
 							&nbsp; Registration End Date
 						</label>
 						<Field
@@ -597,7 +597,7 @@ const NewEvent = setFieldValue => {
 								</React.Fragment>
 							)}
 						<label htmlFor="venue" className="event-form__label">
-							<i class="fal fa-plane-alt"></i>
+							<i className="fal fa-plane-alt"></i>
 							&nbsp; Venue
 						</label>
 						<Field
@@ -623,7 +623,7 @@ const NewEvent = setFieldValue => {
 							</div>
 						)}
 						<label htmlFor="address" className="event-form__label">
-							<i class="far fa-map-marker-alt" />
+							<i className="far fa-map-marker-alt" />
 							&nbsp; Venue Address
 						</label>
 						<Field
@@ -674,7 +674,7 @@ const NewEvent = setFieldValue => {
 						<label
 							htmlFor="description"
 							className="event-form__label">
-							<i class="fal fa-edit" />
+							<i className="fal fa-edit" />
 							&nbsp; Event Description
 						</label>
 						<Field
@@ -708,7 +708,7 @@ const NewEvent = setFieldValue => {
 						<label
 							htmlFor="instruction"
 							className="event-form__label">
-							<i class="fal fa-list-alt" />
+							<i className="fal fa-list-alt" />
 							&nbsp; Event Instruction
 						</label>
 						<Field
@@ -822,8 +822,8 @@ const NewEvent = setFieldValue => {
 										<PromptModal
 											onCancel={onCancel}
 											onConfirm={onConfirm}
-											contentClass="event-item__modal-content"
-											footerClass="event-item__modal-actions"
+											contentclassName="event-item__modal-content"
+											footerclassName="event-item__modal-actions"
 											error="You sure want to leave? Unsaved data will be lost.">
 											{/* render props.children */}
 										</PromptModal>

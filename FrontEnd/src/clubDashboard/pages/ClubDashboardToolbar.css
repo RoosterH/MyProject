@@ -1,3 +1,12 @@
+.clubname-title {
+	float: left !important;
+}
+
+.clubname-title h1 {
+	font-size: 25px;
+	color: #197dc2;
+}
+
 .eventmanager {
 	background-color: #fefefe;
 	color: #4a4a4a;
@@ -11,7 +20,10 @@
 	font-family: Montserrat, sans-serif;
 	font-size: 12px;
 	font-weight: 400;
-	line-height: 1.42857143;
+	margin-left: 1rem;
+	margin-right: 1rem;
+	/* line-height: 1.42857143;
+	margin-top: 0rem; */
 }
 
 .dashboard-nav ul {
@@ -24,8 +36,22 @@
 	display: inline-block;
 	width: 20%;
 }
+.dropdown,
+.dropup {
+	position: relative;
+}
 
 .dashboard-nav ul .dashboard-nav-menu a {
+	display: block;
+	overflow: hidden;
+	padding: 10px;
+	text-align: center;
+	text-decoration: none;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.menu-button {
 	background-color: #4a4a4a;
 	color: #fff;
 	display: block;
@@ -122,4 +148,77 @@ li {
 	margin: 0 15px 0 5px;
 	padding: 5px 0;
 	width: 130px;
+}
+
+.dropdown-blackbutton {
+	/* display: inline-block; */
+	width: 100%;
+	border-width: 0px;
+	color: white;
+	background-color: #4a4a4a;
+	line-height: 1rem;
+}
+
+.dropdown-blackbutton:hover {
+	/* display: inline-block; */
+	color: black;
+	background-color: #ddd;
+	line-height: 1rem;
+}
+
+.dropdown-greybutton {
+	width: 100%;
+	border-width: 0px;
+	color: black;
+	background-color: #ddd;
+	line-height: 1rem;
+}
+
+/* hover keep the same color */
+/* .dropdown-greybutton:hover {
+	color: white;
+	background-color: #4a4a4a;
+	line-height: 2rem;
+} */
+
+.dropdown-content {
+	display: none;
+	position: absolute;
+	background-color: #f1f1f1;
+	width: 100%;
+	min-width: 160px;
+	/*box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2); */
+	z-index: 1;
+	line-height: 1rem;
+}
+
+.dropdown-content a {
+	color: black;
+	padding: 12px 16px;
+	text-decoration: none;
+	display: block;
+}
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+	background-color: #ddd;
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+	display: block;
+	/* margin-left: 1.5rem; */
+}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+	background-color: #3e8e41;
+}
+
+.dashboard-tabs-header {
+	margin-left: 1rem;
+	margin-top: 15px;
+}
+
+.pull-left {
+	float: left !important;
 }

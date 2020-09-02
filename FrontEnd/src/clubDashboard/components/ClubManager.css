@@ -1,0 +1,24 @@
+.list-header {
+	margin: 1rem;
+}
+
+.h3 {
+	font-size: 18px;
+}
+
+.list-content {
+	margin: 0rem 1rem 1rem 1rem;
+	padding: 40px 0 40px 40px;
+	width: 80%;
+}
+
+.list-content-link {
+	font-size: 12px;
+	font-weight: 500;
+	color: #197dc2;
+}
+
+.list-content-desc {
+	font-size: 12px;
+	font-weight: 300;
+}

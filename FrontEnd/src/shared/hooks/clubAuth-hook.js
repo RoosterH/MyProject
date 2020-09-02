@@ -17,9 +17,9 @@ export const useClubAuth = () => {
 	// will be re-created each render cause infinite loop.
 	const clubLogin = useCallback(
 		(cid, cname, ctoken, cimage, expirationDate) => {
-			setClubToken(ctoken);
 			setClubId(cid);
 			setClubName(cname);
+			setClubToken(ctoken);
 			setClubImage(cimage);
 			// jwt token expires in 7 day
 			// max setTimeout is (2147483647 ms) or 24.855 days.
@@ -34,7 +34,9 @@ export const useClubAuth = () => {
 				'userData',
 				JSON.stringify({
 					clubId: cid,
+					clubName: cname,
 					clubToken: ctoken,
+					clubImage: cimage,
 					expiration: tokenExp
 				})
 			);
@@ -67,8 +69,9 @@ export const useClubAuth = () => {
 		) {
 			clubLogin(
 				storageData.clubId,
-				null,
+				storageData.clubName,
 				storageData.clubToken,
+				storageData.clubImage,
 				moment(storageData.expiration)
 			);
 		}

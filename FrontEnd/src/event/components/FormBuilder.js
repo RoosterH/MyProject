@@ -14,7 +14,7 @@ import { useHttpClient } from '../../shared/hooks/http-hook';
 import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 
 import './FormBuilder.css';
-import '../../shared/scss/application.scss';
+import '../../formbuilder/scss/application.scss';
 
 const FormBuilder = props => {
 	const clubAuthContext = useContext(ClubAuthContext);

@@ -36,8 +36,11 @@ const EventForm = React.lazy(() => import('./event/pages/EventForm'));
 const EventFormBuilder = React.lazy(() =>
 	import('./event/pages/EventFormBuilder')
 );
-const EventsManager = React.lazy(() =>
-	import('./events/pages/EventsManager')
+const ClubDashboardToolbar = React.lazy(() =>
+	import('./clubDashboard/pages/ClubDashboardToolbar')
+);
+const ClubManager = React.lazy(() =>
+	import('./clubDashboard/components/ClubManager')
 );
 const Events = React.lazy(() => import('./events/pages/Events'));
 const NewEvent = React.lazy(() => import('./event/pages/NewEvent'));
@@ -96,8 +99,8 @@ const App = () => {
 				<Route path="/events/:id" exact>
 					<Event />
 				</Route>
-				<Route path="/events/manager/:cid" exact>
-					<EventsManager />
+				<Route path="/clubs/manageClub/list" exact>
+					<ClubManager />
 				</Route>
 				<Route path="/events/formbuilder/:id" exact>
 					<EventFormBuilder />
@@ -186,8 +189,8 @@ const App = () => {
 					1. Route is for refreshing page
 					2. Redirect is for club not logged in
 				*/}
-				<Route path="/events/manager/:cid" exact>
-					<EventsManager />
+				<Route path="/clubs/manageClub/list" exact>
+					<ClubManager />
 				</Route>
 				<Route path="/clubs/events/new" exact>
 					<NewEvent />
@@ -278,6 +281,7 @@ const App = () => {
 										<LoadingSpinner />
 									</div>
 								}>
+								{clubToken && <ClubDashboardToolbar />}
 								{routes}
 							</Suspense>
 						</main>

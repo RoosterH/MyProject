@@ -61,9 +61,6 @@ const MainNavigation = props => {
 						MySeatTime
 					</Link>
 				</h1>
-				{isClubLoggedIn && (
-					<h1 className="main-navigation__menu_title">{clubName}</h1>
-				)}
 				{/* main-navigation__head is for desktop screen that only shows >= 768px */}
 				<nav className="main-navigation__header-nav">
 					<NavLinks />
