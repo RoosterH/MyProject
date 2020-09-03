@@ -53,10 +53,10 @@ let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');
 // only clubs are able to create an event
 router.post(
 	'/',
-	fileUpload.fields([
-		{ name: 'image', maxCount: 1 },
-		{ name: 'courseMap', maxCount: 1 }
-	]),
+	// fileUpload.fields([
+	// 	{ name: 'image', maxCount: 1 },
+	// 	{ name: 'courseMap', maxCount: 1 }
+	// ]),
 	[
 		(check('name').isLength({ min: 5 }),
 		check('type').isLength({ min: 5 }),

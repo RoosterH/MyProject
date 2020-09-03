@@ -1,0 +1,307 @@
+import React, { useContext, useEffect, useState } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
+import { Field, Form, Formik } from 'formik';
+import moment from 'moment';
+import NavigationPrompt from 'react-router-navigation-prompt';
+import * as Yup from 'yup';
+
+// import { EditorState } from 'draft-js';
+// import { RichEditorExample } from '../components/RichEditor';
+import 'draft-js/dist/Draft.css';
+
+import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
+import Button from '../../shared/components/FormElements/Button';
+import ErrorModal from '../../shared/components/UIElements/ErrorModal';
+import ImageUploader from '../../shared/components/FormElements/ImageUploader';
+import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
+import PromptModal from '../../shared/components/UIElements/PromptModal';
+
+import { useHttpClient } from '../../shared/hooks/http-hook';
+import { ClubAuthContext } from '../../shared/context/auth-context';
+import { FormContext } from '../../shared/context/form-context';
+
+import '../../shared/css/EventForm.css';
+import { eventTypes } from '../../event/components/EventTypes';
+
+const EventPhotos = props => {
+	let eId = props.eId;
+	const [initialized, setInitialized] = useState(false);
+	const clubAuthContext = useContext(ClubAuthContext);
+	const formContext = useContext(FormContext);
+
+	useEffect(() => {
+		let mounted = true;
+		if (mounted) {
+			formContext.setIsInsideForm(true);
+		}
+		return () => {
+			mounted = false;
+		};
+	}, [formContext]);
+
+	const {
+		isLoading,
+		error,
+		sendRequest,
+		clearError
+	} = useHttpClient();
+
+	// authentication check
+	useClubLoginValidation('/clubs/events/photos');
+
+	// If we are re-directing to this page, we want to clear up clubRedirectURL
+	let location = useLocation();
+	React.useEffect(() => {
+		let path = location.pathname;
+		let clubRedirectURL = clubAuthContext.clubRedirectURL;
+		if (path === clubRedirectURL) {
+			// re-init redirectURL after re-direction route
+			clubAuthContext.setClubRedirectURL(null);
+		}
+	}, [location, clubAuthContext]);
+
+	let image = undefined;
+	let courseMap = undefined;
+
+	// initialize local storage
+	// Get the existing data
+	var eventFormData = localStorage.getItem('eventFormData');
+
+	// If no existing data, create an array; otherwise retrieve it
+	eventFormData = eventFormData ? JSON.parse(eventFormData) : {};
+
+	const [OKLeavePage, setOKLeavePage] = useState(true);
+	// local storage gets the higest priority
+	// get from localStorage
+	if (
+		!initialized &&
+		eventFormData &&
+		moment(eventFormData.expirationDate) > moment()
+	) {
+		setInitialized(true);
+		// Form data
+		if (eventFormData.image) {
+			//setImage(eventFormData.image);
+			// setImageOK(false);
+		}
+		if (eventFormData.courseMap) {
+			// setCourseMap(eventFormData.courseMap);
+			// setCourseMapOK(false);
+		}
+	} else if (!initialized) {
+		setInitialized(true);
+		// initialize localStorage
+		eventFormData['expirationDate'] = moment(
+			moment().add(1, 'days'),
+			moment.ISO_8601
+		);
+		eventFormData['image'] = undefined;
+		eventFormData['courseMap'] = undefined;
+		localStorage.setItem(
+			'eventFormData',
+			JSON.stringify(eventFormData)
+		);
+	}
+
+	const removeEventFormData = () => {
+		localStorage.removeItem('eventFormData');
+		// history.push(`/events/club/${clubAuthContext.clubId}`);
+	};
+
+	const initialValues = {
+		image: image,
+		courseMap: courseMap
+	};
+
+	const updateEventFormData = (key, value) => {
+		const storageData = JSON.parse(
+			localStorage.getItem('eventFormData')
+		);
+		storageData[key] = value;
+		localStorage.setItem(
+			'eventFormData',
+			JSON.stringify(storageData)
+		);
+	};
+
+	const history = useHistory();
+	const submitHandler = async (values, actions) => {
+		try {
+			const formData = new FormData();
+			formData.append('image', values.image);
+			formData.append('courseMap', values.courseMap);
+
+			const responseData = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL + '/events/' + eId,
+				'PATCH',
+				formData,
+				{
+					// adding JWT to header for authentication
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
+				}
+			);
+			setOKLeavePage(true);
+			console.log('responseData = ', responseData);
+			// Redirect the club to a diffrent page
+			// history.push(`/events/club/${clubAuthContext.clubId}`);
+		} catch (err) {}
+	};
+
+	const validateImageSize = value => {
+		let error;
+		if (value && value.size > 1500000) {
+			error = 'File size needs to be smaller than 1.5MB';
+		}
+		return error;
+	};
+
+	const validateCourseMapSize = value => {
+		let error;
+		if (value && value.size > 1500000) {
+			error = 'File size needs to be smaller than 1.5MB';
+		}
+		return error;
+	};
+	/***** End of Form Validation *****/
+
+	const eventForm = values => (
+		<div className="event-form">
+			<div className="event-form-header">
+				<h4>Please enter event information</h4>
+				<hr className="event-form__hr" />
+			</div>
+			<Formik
+				enableReinitialize={true}
+				initialValues={initialValues}
+				onSubmit={(values, actions) => {
+					submitHandler(values);
+					if (!actions.isSubmitting) {
+					}
+				}}>
+				{({
+					values,
+					errors,
+					isSubmitting,
+					isValid,
+					setFieldValue,
+					touched,
+					handleBlur
+				}) => (
+					<Form className="event-form-container">
+						<Field
+							id="image"
+							name="image"
+							title="image"
+							component={ImageUploader}
+							validate={validateImageSize}
+							setFieldValue={setFieldValue}
+							errorMessage={errors.image ? errors.image : ''}
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+								// if (event.target.value) {
+								// 	setImageOK(false);
+								// } else {
+								// 	setImageOK(true);
+								// }
+							}}
+							labelStyle="event-form__label"
+							inputStyle="event-form__field-select"
+							previewStyle="image-upload__preview"
+							errorStyle="event-form__field-error"
+						/>
+						<Field
+							id="courseMap"
+							name="courseMap"
+							title="courseMap"
+							component={ImageUploader}
+							validate={validateCourseMapSize}
+							setFieldValue={setFieldValue}
+							errorMessage={errors.courseMap ? errors.courseMap : ''}
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+								// if (event.target.value) {
+								// 	setCourseMapOK(false);
+								// } else {
+								// 	setCourseMapOK(true);
+								// }
+							}}
+							labelStyle="event-form__label"
+							inputStyle="event-form__field-select"
+							previewStyle="image-upload__preview"
+							errorStyle="event-form__field-error"
+						/>
+						<Button
+							type="submit"
+							size="medium"
+							margin-left="1.5rem"
+							disabled={isSubmitting || !isValid}>
+							Submit
+						</Button>
+						<NavigationPrompt
+							afterConfirm={() => {
+								formContext.setIsInsideForm(false);
+								removeEventFormData();
+							}}
+							// Confirm navigation if going to a path that does not start with current path.
+							// We don't want to confirm navigation when OKLeavePage === true and redirect to '/clubs/auth' due to
+							// authentication issue
+							when={(crntLocation, nextLocation) => {
+								if (OKLeavePage) {
+									formContext.setIsInsideForm(false);
+									removeEventFormData();
+									return false;
+								} else {
+									// nextLocation.pathname !== '/clubs/auth' &&  --- adding this line causing state update on an
+									// unmounted component issue.  Without it, confirmation modal will pop up
+									// always gives the warning, because we want to be able to
+									// clear localStorage after confirm
+									return (
+										!nextLocation ||
+										!nextLocation.pathname.startsWith(
+											crntLocation.pathname
+										)
+									);
+								}
+							}}>
+							{({ isActive, onCancel, onConfirm }) => {
+								if (isActive) {
+									return (
+										<PromptModal
+											onCancel={onCancel}
+											onConfirm={onConfirm}
+											contentclassName="event-item__modal-content"
+											footerclassName="event-item__modal-actions"
+											error="You sure want to leave? Unsaved data will be lost.">
+											{/* render props.children */}
+										</PromptModal>
+									);
+								}
+								return (
+									<div>
+										This is probably an anti-pattern but ya know...
+									</div>
+								);
+							}}
+						</NavigationPrompt>
+					</Form>
+				)}
+			</Formik>
+		</div>
+	);
+
+	return (
+		<React.Fragment>
+			<ErrorModal error={error} onClear={clearError} />
+			{isLoading && (
+				<div className="center">
+					<LoadingSpinner />
+				</div>
+			)}
+			{eventForm()}
+		</React.Fragment>
+	);
+};
+
+export default EventPhotos;

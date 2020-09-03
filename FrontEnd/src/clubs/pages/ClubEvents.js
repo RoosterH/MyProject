@@ -8,6 +8,7 @@ import { useHttpClient } from '../../shared/hooks/http-hook';
 
 // Events is called in App.js where the route been defined
 const ClubEvents = () => {
+	console.log('inside clubevents');
 	const [loadedEvents, setLoadedEvents] = useState();
 	const {
 		isLoading,
@@ -23,8 +24,11 @@ const ClubEvents = () => {
 				const responseData = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL + `/events/club/${clubId}`
 				);
+				console.log('responseData = ', responseData);
 				setLoadedEvents(responseData.events);
-			} catch (err) {}
+			} catch (err) {
+				console.log('err = ', err);
+			}
 		};
 		fetechEvents();
 	}, [sendRequest, clubId]);

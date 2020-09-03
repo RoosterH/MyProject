@@ -25,6 +25,7 @@ import { eventTypes } from '../../event/components/EventTypes';
 
 const NewEvent = setFieldValue => {
 	const [initialized, setInitialized] = useState(false);
+	const [contButton, setContButton] = useState(false);
 	const clubAuthContext = useContext(ClubAuthContext);
 	const formContext = useContext(FormContext);
 
@@ -200,6 +201,7 @@ const NewEvent = setFieldValue => {
 	const history = useHistory();
 	const submitHandler = async (values, actions) => {
 		try {
+			console.log('values = ', values);
 			const formData = new FormData();
 			formData.append('name', values.name);
 			formData.append('type', values.type);
@@ -223,9 +225,11 @@ const NewEvent = setFieldValue => {
 			formData.append('address', values.address);
 			formData.append('description', values.description);
 			formData.append('instruction', values.instruction);
-			formData.append('image', values.image);
-			formData.append('courseMap', values.courseMap);
-
+			// formData.append('image', values.image);
+			// formData.append('courseMap', values.courseMap);
+			for (var key of formData.entries()) {
+				console.log(key[0] + ', ' + key[1]);
+			}
 			const responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + '/events',
 				'POST',
@@ -238,7 +242,8 @@ const NewEvent = setFieldValue => {
 			setOKLeavePage(true);
 			console.log('responseData = ', responseData);
 			// Redirect the club to a diffrent page
-			history.push(`/events/club/${clubAuthContext.clubId}`);
+			// history.push(`/events/club/${clubAuthContext.clubId}`);
+			setContButton(true);
 		} catch (err) {}
 	};
 
@@ -739,7 +744,7 @@ const NewEvent = setFieldValue => {
 								{errors.instruction}
 							</div>
 						)}
-						<Field
+						{/* <Field
 							id="image"
 							name="image"
 							title="image"
@@ -750,11 +755,6 @@ const NewEvent = setFieldValue => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
-								// if (event.target.value) {
-								// 	setImageOK(false);
-								// } else {
-								// 	setImageOK(true);
-								// }
 							}}
 							labelStyle="event-form__label"
 							inputStyle="event-form__field-select"
@@ -772,23 +772,25 @@ const NewEvent = setFieldValue => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
-								// if (event.target.value) {
-								// 	setCourseMapOK(false);
-								// } else {
-								// 	setCourseMapOK(true);
-								// }
 							}}
 							labelStyle="event-form__label"
 							inputStyle="event-form__field-select"
 							previewStyle="image-upload__preview"
 							errorStyle="event-form__field-error"
-						/>
+						/> */}
 						<Button
 							type="submit"
 							size="medium"
 							margin-left="1.5rem"
 							disabled={isSubmitting || !isValid}>
-							Submit
+							SAVE
+						</Button>
+						<Button
+							type=""
+							size="medium"
+							margin-left="1.5rem"
+							disabled={isSubmitting || !contButton}>
+							CONTINUE
 						</Button>
 						<NavigationPrompt
 							afterConfirm={() => {

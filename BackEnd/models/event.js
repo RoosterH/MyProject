@@ -8,7 +8,7 @@ const Schema = mongoose.Schema;
 // each club has multiple events and each event is owned by a club
 const eventSchema = new Schema({
 	name: { type: String, required: true },
-	image: { type: String, required: true },
+	image: { type: String },
 	type: { type: String, required: true },
 	startDate: { type: Date, required: true },
 	endDate: { type: Date, required: true },

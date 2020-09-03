@@ -154,6 +154,7 @@ const getEventsByDate = async (req, res, next) => {
 
 // POST /api/events/
 const createEvent = async (req, res, next) => {
+	console.log('req = ', req.body);
 	// validate request, req checks are defined in eventRoutes.js using
 	// express-validator
 	const errors = validationResult(req);
@@ -212,11 +213,11 @@ const createEvent = async (req, res, next) => {
 		return next(error);
 	}
 
-	let imagePath = req.files.image[0].path;
-	let courseMapPath;
-	if (req.files.courseMapPath) {
-		courseMapPath = req.files.courseMap[0].path;
-	}
+	// let imagePath = req.files.image[0].path;
+	// let courseMapPath;
+	// if (req.files.courseMapPath) {
+	// 	courseMapPath = req.files.courseMap[0].path;
+	// }
 
 	const newEvent = new Event({
 		name,
@@ -238,8 +239,8 @@ const createEvent = async (req, res, next) => {
 		clubId: clubId,
 		clubName: club.name,
 		clubImage: club.image,
-		image: imagePath,
-		courseMap: courseMapPath,
+		// image: imagePath,
+		// courseMap: courseMapPath,
 		published: false,
 		formData: [],
 		entries: []
