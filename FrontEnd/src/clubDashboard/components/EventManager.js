@@ -1,46 +1,40 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 import './ClubManager.css';
 
-const ManageClub = () => {
+const EventManager = () => {
 	return (
 		<React.Fragment>
 			<div className="list-header clearfix">
-				<div className="h3">Club Manager</div>
+				<div className="h3">Event Manager</div>
 			</div>
 
 			<div className="list-content">
-				<p className="list-content-link">Club Overview</p>
-				<p className="list-content-desc">
-					Here’s where you define everything that you wish to show on
-					your club main page. Tell prospective drivers about your
-					club, your races, your mission, and your staff. You can also
-					set up your contact information.
-				</p>
+				<div className="list-content-link">
+					<Link to="/clubs/newEventManager/" exact="exact">
+						<i
+							className="fa fa-sort-desc pull-right"
+							aria-hidden="true"
+						/>
+						Add New Event
+					</Link>
+					{/* <p className="list-content-link">Add New Event</p> */}
 
-				<p className="list-content-link">Photo Manager</p>
-				<p className="list-content-desc">
-					Want to look at all your photos at once? You can do that
-					right here in the photo manager.
-				</p>
-				<p className="list-content-link">Manage Your Team</p>
-				<p className="list-content-desc">
-					Manage Your Team Invite your co-workers to access your
-					ActivityHero dashboard. Admins can set up or manage the
-					listing, and Support can only view reports.
-				</p>
-				<p className="list-content-link">Billing</p>
-				<p className="list-content-desc">
-					This Credit Card will be used to pay for boosting activities
-					and/or any annual set-up fees if you have opted for that.
-				</p>
-				<p className="list-content-link">About MySeatTime</p>
-				<p className="list-content-desc">
-					Learn more about your current listing plan.
-				</p>
+					<p className="list-content-desc">
+						Here’s where you add a new event. Follow steps to add a
+						new club event.
+					</p>
+
+					<p className="list-content-link">Edit Event</p>
+					<p className="list-content-desc">
+						Want to edit an existing event? Pick the one you want to
+						edit.
+					</p>
+				</div>
 			</div>
 		</React.Fragment>
 	);
 };
 
-export default ManageClub;
+export default EventManager;

@@ -34,9 +34,10 @@ const NavLinks = props => {
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
 			<ul className="nav-links">
+				{/* Make clubManager the entry page of Dashboard  */}
 				{clubLoggedIn && (
 					<li>
-						<NavLink to={`/clubs/manageClub/list`} exact>
+						<NavLink to={`/clubs/clubManager`} exact>
 							DASHBOARD
 						</NavLink>
 					</li>

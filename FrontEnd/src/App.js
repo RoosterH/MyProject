@@ -42,7 +42,16 @@ const ClubDashboardToolbar = React.lazy(() =>
 const ClubManager = React.lazy(() =>
 	import('./clubDashboard/components/ClubManager')
 );
+const EventManager = React.lazy(() =>
+	import('./clubDashboard/components/EventManager')
+);
+const NewEventManager = React.lazy(() =>
+	import('./clubDashboard/components/NewEventManager')
+);
 const Events = React.lazy(() => import('./events/pages/Events'));
+const EventPhotos = React.lazy(() =>
+	import('./event/pages/EventPhotos')
+);
 const NewEvent = React.lazy(() => import('./event/pages/NewEvent'));
 const UpdateEvent = React.lazy(() =>
 	import('./event/pages/UpdateEvent')
@@ -99,14 +108,23 @@ const App = () => {
 				<Route path="/events/:id" exact>
 					<Event />
 				</Route>
-				<Route path="/clubs/manageClub/list" exact>
+				<Route path="/clubs/clubManager/" exact>
 					<ClubManager />
+				</Route>
+				<Route path="/clubs/eventManager/" exact>
+					<EventManager />
+				</Route>
+				<Route path="/clubs/newEventManager/" exact>
+					<NewEventManager />
 				</Route>
 				<Route path="/events/formbuilder/:id" exact>
 					<EventFormBuilder />
 				</Route>
 				<Route path="/clubs/events/new" exact>
 					<NewEvent />
+				</Route>
+				<Route path="/clubs/events/photos" exact>
+					<EventPhotos />
 				</Route>
 				<Route path="/events/update/:id" exact>
 					<UpdateEvent />
@@ -189,11 +207,20 @@ const App = () => {
 					1. Route is for refreshing page
 					2. Redirect is for club not logged in
 				*/}
-				<Route path="/clubs/manageClub/list" exact>
+				<Route path="/clubs/clubManager" exact>
 					<ClubManager />
+				</Route>
+				<Route path="/clubs/eventManager" exact>
+					<EventManager />
+				</Route>
+				<Route path="/clubs/newEventManager/" exact>
+					<NewEventManager />
 				</Route>
 				<Route path="/clubs/events/new" exact>
 					<NewEvent />
+				</Route>
+				<Route path="/clubs/events/photos" exact>
+					<EventPhotos />
 				</Route>
 				{/* <Redirect strict from="/clubs/events/new" to="/clubs/auth" /> */}
 

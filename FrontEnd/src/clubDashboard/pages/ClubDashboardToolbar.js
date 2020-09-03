@@ -26,7 +26,7 @@ const ClubDashboardToolbar = () => {
 				<ul>
 					<li className="dashboard-nav-menu dropdown">
 						<Link
-							to="/clubs/manageClub/list"
+							to="/clubs/clubManager"
 							exact="exact"
 							className="dropdown-blackbutton">
 							<i
@@ -44,7 +44,7 @@ const ClubDashboardToolbar = () => {
 
 					<li className="dashboard-nav-menu dropdown">
 						<Link
-							to="/clubs/manageClub/list"
+							to="/clubs/eventManager/"
 							exact="exact"
 							className="dropdown-greybutton">
 							<i
@@ -55,18 +55,18 @@ const ClubDashboardToolbar = () => {
 						</Link>
 						<div className="dropdown-content">
 							{/* <a href="#">Add New Event</a> */}
-							<NavLink to={'/clubs/events/new'} exact>
+							<NavLink to={'/clubs/newEventManager'} exact>
 								Add New Event
 							</NavLink>
 							<NavLink to={`/events/club/${cid}/`} exact>
-								CLUB EVENTS
+								Edit Event
 							</NavLink>
 						</div>
 					</li>
 
 					<li className="dashboard-nav-menu dropdown">
 						<Link
-							to="/clubs/manageClub/list"
+							to="/clubs/"
 							exact="exact"
 							className="dropdown-blackbutton">
 							<i
@@ -123,40 +123,6 @@ const ClubDashboardToolbar = () => {
 					</li>
 				</ul>
 			</div>
-
-			{/* <div class="dashboard-tabs-header clearfix">
-				<div class="pull-left">
-					<div class="tab-section-title">Business Overview</div>
-				</div>
-			</div> */}
-
-			{/* THE FOLLOWING IS GOOD */}
-			{/* <div className="eventmanager">
-				<div className="dashboard-tabs activity-sections">
-					<ul className="nav nav-tabs">
-						<li>
-							<button className="btn btn-default tab-link">
-								Description
-							</button>
-						</li>
-						<li>
-							<button className="btn btn-default tab-link">
-								Photos
-							</button>
-						</li>
-						<li>
-							<button className="btn btn-default tab-link active">
-								Sessions
-							</button>
-						</li>
-						<li>
-							<button className="btn btn-default tab-link">
-								Video
-							</button>
-						</li>
-					</ul>
-				</div>
-			</div> */}
 		</React.Fragment>
 	);
 };
