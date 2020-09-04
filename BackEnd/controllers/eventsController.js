@@ -154,7 +154,6 @@ const getEventsByDate = async (req, res, next) => {
 
 // POST /api/events/
 const createEvent = async (req, res, next) => {
-	console.log('req = ', req.body);
 	// validate request, req checks are defined in eventRoutes.js using
 	// express-validator
 	const errors = validationResult(req);
@@ -228,7 +227,8 @@ const createEvent = async (req, res, next) => {
 		regEndDate: moment(regEndDate)
 			.add(23, 'h')
 			.add(59, 'm')
-			.add(59, 's'),
+			.add(59, 's')
+			.format(),
 		venue,
 		address,
 		coordinate,
@@ -239,10 +239,10 @@ const createEvent = async (req, res, next) => {
 		clubId: clubId,
 		clubName: club.name,
 		clubImage: club.image,
-		// image: imagePath,
+		image: 'UNDEFINED',
 		// courseMap: courseMapPath,
 		published: false,
-		formData: [],
+		entryFormData: [],
 		entries: []
 	});
 
@@ -281,6 +281,110 @@ const createEvent = async (req, res, next) => {
 		.json({ event: newEvent.toObject({ getters: true }) });
 };
 
+// PATCH /api/events/photos/:eid
+const updateEventPhotos = async (req, res, next) => {
+	const eventId = req.params.eid;
+
+	// validate request, req checks are defined in eventRoutes.js using
+	// express-validator
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		return next(
+			new HttpError(
+				`Update event photo process failed. Please check your data: ${result.array()}`,
+				422
+			)
+		);
+	}
+
+	// Validate clubId exists. If not, sends back an error
+	let club;
+	let clubId = req.userData;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update event photos process failed during club validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!club) {
+		const error = new HttpError(
+			'Update event photos failure. Unauthorized request.',
+			404
+		);
+		return next(error);
+	}
+
+	let event;
+	try {
+		event = await Event.findById(eventId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update event process failed, please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!event) {
+		return next(
+			new HttpError('Update event failed finding the event.'),
+			404
+		);
+	}
+
+	// we added userData in check-auth after verifying jwt
+	if (event.clubId.toString() !== req.userData) {
+		const error = new HttpError('Unauthorized operation!!!', 401);
+		return next(error);
+	}
+
+	// check whether image or courseMap been changed or not
+	let imagePath, courseMapPath;
+	if (req.files.image) {
+		imagePath = req.files.image[0].path;
+		if (event.image) {
+			fs.unlink(event.image, err => {
+				console.log(err);
+			});
+		}
+	}
+	if (req.files.courseMap) {
+		courseMapPath = req.files.courseMap[0].path;
+		if (event.courseMap) {
+			fs.unlink(event.courseMap, err => {
+				console.log(err);
+			});
+		}
+	}
+
+	if (imagePath) {
+		event.image = imagePath;
+	}
+	if (courseMapPath) {
+		event.courseMap = courseMapPath;
+	}
+
+	try {
+		await event.save();
+		res
+			.status(200)
+			.json({ event: event.toObject({ getters: true }) });
+	} catch (err) {
+		console.log('err = ', err);
+		const error = new HttpError(
+			'Updating event failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+};
+
 // PATCH /api/events/:eid
 const updateEvent = async (req, res, next) => {
 	const eventId = req.params.eid;
@@ -313,7 +417,6 @@ const updateEvent = async (req, res, next) => {
 		);
 		return next(error);
 	}
-
 	if (!club) {
 		const error = new HttpError(
 			'Update event failure. Unauthorized request.',
@@ -555,3 +658,4 @@ exports.createEvent = createEvent;
 exports.updateEvent = updateEvent;
 exports.deleteEvent = deleteEvent;
 exports.getEventEntryFormAnswer = getEventEntryFormAnswer;
+exports.updateEventPhotos = updateEventPhotos;

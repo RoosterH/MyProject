@@ -21,13 +21,27 @@ import { ClubAuthContext } from '../../shared/context/auth-context';
 import { FormContext } from '../../shared/context/form-context';
 
 import '../../shared/css/EventForm.css';
-import { eventTypes } from '../../event/components/EventTypes';
 
 const EventPhotos = props => {
-	let eId = props.eId;
+	let eId = props.eventId;
 	const [initialized, setInitialized] = useState(false);
 	const clubAuthContext = useContext(ClubAuthContext);
 	const formContext = useContext(FormContext);
+
+	// contButton controls when to enable CONTINUE button, set to true after submitHandler() succeeds
+	const [contButton, setContButton] = useState(false);
+	// contButtonStatus is the return value back to NewEventManger, set to true @ CONTINUE button onClick()
+	const [contStatus, setContinueStatus] = useState(false);
+	const continueHandler = () => {
+		setContinueStatus(true);
+	};
+
+	// return true back to NewEventManger to move to next stage
+	useEffect(() => {
+		if (contStatus) {
+			props.eventPhotosStatus(true);
+		}
+	}, [contStatus, props]);
 
 	useEffect(() => {
 		let mounted = true;
@@ -51,7 +65,7 @@ const EventPhotos = props => {
 
 	// If we are re-directing to this page, we want to clear up clubRedirectURL
 	let location = useLocation();
-	React.useEffect(() => {
+	useEffect(() => {
 		let path = location.pathname;
 		let clubRedirectURL = clubAuthContext.clubRedirectURL;
 		if (path === clubRedirectURL) {
@@ -132,7 +146,7 @@ const EventPhotos = props => {
 			formData.append('courseMap', values.courseMap);
 
 			const responseData = await sendRequest(
-				process.env.REACT_APP_BACKEND_URL + '/events/' + eId,
+				process.env.REACT_APP_BACKEND_URL + '/events/photos/' + eId,
 				'PATCH',
 				formData,
 				{
@@ -141,7 +155,7 @@ const EventPhotos = props => {
 				}
 			);
 			setOKLeavePage(true);
-			console.log('responseData = ', responseData);
+			setContButton(true);
 			// Redirect the club to a diffrent page
 			// history.push(`/events/club/${clubAuthContext.clubId}`);
 		} catch (err) {}
@@ -238,6 +252,14 @@ const EventPhotos = props => {
 							margin-left="1.5rem"
 							disabled={isSubmitting || !isValid}>
 							Submit
+						</Button>
+						<Button
+							type="button"
+							size="medium"
+							margin-left="1.5rem"
+							disabled={!contButton}
+							onClick={continueHandler}>
+							Continue
 						</Button>
 						<NavigationPrompt
 							afterConfirm={() => {

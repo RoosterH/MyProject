@@ -12,7 +12,7 @@ import 'draft-js/dist/Draft.css';
 import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
-import ImageUploader from '../../shared/components/FormElements/ImageUploader';
+// import ImageUploader from '../../shared/components/FormElements/ImageUploader';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 
@@ -23,11 +23,29 @@ import { FormContext } from '../../shared/context/form-context';
 import '../../shared/css/EventForm.css';
 import { eventTypes } from '../../event/components/EventTypes';
 
-const NewEvent = setFieldValue => {
+const NewEvent = props => {
 	const [initialized, setInitialized] = useState(false);
-	const [contButton, setContButton] = useState(false);
 	const clubAuthContext = useContext(ClubAuthContext);
 	const formContext = useContext(FormContext);
+
+	// contButton controls when to enable CONTINUE button, set to true after submitHandler() succeeds
+	const [contButton, setContButton] = useState(false);
+	// continueStatus controls when to return props.newEventStatus back to NewEventManager
+	const [continueStatus, setContinueStatus] = useState(false);
+	const [eventId, setEventId] = useState();
+
+	const continueHandler = () => {
+		setContinueStatus(true);
+	};
+	// this is the return function that passes finishing status back to NewEventManager
+	useEffect(() => {
+		props.newEventStatus(continueStatus);
+	}, [continueStatus, props]);
+
+	// return eventId to NewEventManager
+	useEffect(() => {
+		props.eventIdHandler(eventId);
+	}, [eventId, props]);
 
 	useEffect(() => {
 		let mounted = true;
@@ -73,8 +91,8 @@ const NewEvent = setFieldValue => {
 	const [instruction, setInstruction] = useState('');
 	// todo: retrieve file from Reader: const [image, setImage] = useState();
 	// todo: const [courseMap, setCourseMap] = useState('');
-	let image = undefined;
-	let courseMap = undefined;
+	// let image = undefined;
+	// let courseMap = undefined;
 
 	// initialize local storage
 	// Get the existing data
@@ -133,10 +151,10 @@ const NewEvent = setFieldValue => {
 			setInstruction(eventFormData.instruction);
 			// setDescriptionOK(false);
 		}
-		if (eventFormData.image) {
-			//setImage(eventFormData.image);
-			// setImageOK(false);
-		}
+		// if (eventFormData.image) {
+		//  //setImage(eventFormData.image);
+		// //setImageOK(false);
+		// }
 		if (eventFormData.courseMap) {
 			// setCourseMap(eventFormData.courseMap);
 			// setCourseMapOK(false);
@@ -158,8 +176,8 @@ const NewEvent = setFieldValue => {
 		eventFormData['address'] = '';
 		eventFormData['description'] = '';
 		eventFormData['instruction'] = '';
-		eventFormData['image'] = undefined;
-		eventFormData['courseMap'] = undefined;
+		// eventFormData['image'] = undefined;
+		// eventFormData['courseMap'] = undefined;
 		localStorage.setItem(
 			'eventFormData',
 			JSON.stringify(eventFormData)
@@ -175,7 +193,7 @@ const NewEvent = setFieldValue => {
 		// editorState: new EditorState.createEmpty(),
 		name: name,
 		type: type,
-		image: image,
+		// image: image,
 		startDate: startDate,
 		endDate: endDate,
 		regStartDate: regStartDate,
@@ -183,8 +201,8 @@ const NewEvent = setFieldValue => {
 		venue: venue,
 		address: address,
 		description: description,
-		instruction: instruction,
-		courseMap: courseMap
+		instruction: instruction
+		// courseMap: courseMap
 	};
 
 	const updateEventFormData = (key, value) => {
@@ -201,7 +219,6 @@ const NewEvent = setFieldValue => {
 	const history = useHistory();
 	const submitHandler = async (values, actions) => {
 		try {
-			console.log('values = ', values);
 			const formData = new FormData();
 			formData.append('name', values.name);
 			formData.append('type', values.type);
@@ -227,9 +244,6 @@ const NewEvent = setFieldValue => {
 			formData.append('instruction', values.instruction);
 			// formData.append('image', values.image);
 			// formData.append('courseMap', values.courseMap);
-			for (var key of formData.entries()) {
-				console.log(key[0] + ', ' + key[1]);
-			}
 			const responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + '/events',
 				'POST',
@@ -240,10 +254,10 @@ const NewEvent = setFieldValue => {
 				}
 			);
 			setOKLeavePage(true);
-			console.log('responseData = ', responseData);
 			// Redirect the club to a diffrent page
 			// history.push(`/events/club/${clubAuthContext.clubId}`);
 			setContButton(true);
+			setEventId(responseData.event.id);
 		} catch (err) {}
 	};
 
@@ -417,6 +431,7 @@ const NewEvent = setFieldValue => {
 					isSubmitting,
 					isValid,
 					setFieldValue,
+					submitted,
 					touched,
 					handleBlur
 				}) => (
@@ -635,7 +650,7 @@ const NewEvent = setFieldValue => {
 							id="address"
 							name="address"
 							type="text"
-							placeholder="Crows Landing, CA"
+							placeholder="ex: Crows Landing, CA"
 							className="event-form__field"
 							validate={validateAddress}
 							onBlur={event => {
@@ -786,10 +801,11 @@ const NewEvent = setFieldValue => {
 							SAVE
 						</Button>
 						<Button
-							type=""
+							type="button"
 							size="medium"
 							margin-left="1.5rem"
-							disabled={isSubmitting || !contButton}>
+							disabled={!contButton}
+							onClick={continueHandler}>
 							CONTINUE
 						</Button>
 						<NavigationPrompt

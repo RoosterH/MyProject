@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 // import Button from '../../shared/components/FormElements/Button';
 import { Link, NavLink } from 'react-router-dom';
 import { ClubAuthContext } from '../../shared/context/auth-context';
@@ -6,7 +6,6 @@ import './ClubDashboardToolbar.css';
 
 const ClubDashboardToolbar = () => {
 	const clubAuthContext = useContext(ClubAuthContext);
-	const clubLoggedIn = clubAuthContext.isClubLoggedIn;
 	let cid = clubAuthContext.clubId;
 	let clubName = clubAuthContext.clubName;
 	return (
@@ -36,9 +35,9 @@ const ClubDashboardToolbar = () => {
 							Club Manager
 						</Link>
 						<div className="dropdown-content">
-							<a href="#">Club Overview</a>
-							<a href="#">Photo Manager</a>
-							<a href="#">Billing</a>
+							<a href="">Club Overview</a>
+							<a href="">Photo Manager</a>
+							<a href="">Billing</a>
 						</div>
 					</li>
 

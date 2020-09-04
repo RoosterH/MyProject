@@ -179,7 +179,7 @@
 	border-color: #c2c2c2;
 	font-size: 15px;
 	font-family: 'Montserrat', sans-serif;
-	width: 42%;
+	width: 42% !important;
 	height: 2rem;
 	margin-top: 0rem;
 	margin-right: 3.5%;
@@ -191,7 +191,7 @@
 	display: inline-block;
 	font-size: 15px;
 	font-family: 'Montserrat', sans-serif;
-	width: 43%;
+	width: 43% !important;
 	height: 2rem;
 	margin: 0rem 0rem 0.5rem 1rem;
 }
@@ -499,7 +499,7 @@
 		border-color: #c2c2c2;
 		font-size: 15px;
 		font-family: 'Montserrat', sans-serif;
-		width: 42%;
+		width: 42% !important;
 		height: 2rem;
 		margin-top: 0rem;
 		margin-right: 3.5%;
@@ -511,7 +511,7 @@
 		display: inline-block;
 		font-size: 15px;
 		font-family: 'Montserrat', sans-serif;
-		width: 43%;
+		width: 43% !important;
 		height: 2rem;
 		margin: 0rem 0rem 0.5rem 1rem;
 	}

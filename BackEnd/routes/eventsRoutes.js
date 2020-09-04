@@ -48,15 +48,20 @@ router.get(
 	eventsController.getEventEntryFormAnswer
 );
 
+// fileUpload.fields([
+// 	{ name: 'image', maxCount: 1 },
+// 	{ name: 'courseMap', maxCount: 1 }
+// ]),
+
 // last valid day to allow for event addition, modification, or deletion
 let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');
 // only clubs are able to create an event
 router.post(
 	'/',
-	// fileUpload.fields([
-	// 	{ name: 'image', maxCount: 1 },
-	// 	{ name: 'courseMap', maxCount: 1 }
-	// ]),
+	fileUpload.fields([
+		{ name: 'image', maxCount: 1 },
+		{ name: 'courseMap', maxCount: 1 }
+	]),
 	[
 		(check('name').isLength({ min: 5 }),
 		check('type').isLength({ min: 5 }),
@@ -78,6 +83,15 @@ router.post(
 		check('instruction').isLength({ min: 10 }))
 	],
 	eventsController.createEvent
+);
+
+router.patch(
+	'/photos/:eid',
+	fileUpload.fields([
+		{ name: 'image', maxCount: 1 },
+		{ name: 'courseMap', maxCount: 1 }
+	]),
+	eventsController.updateEventPhotos
 );
 
 router.patch(

@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import NewEvent from '../../event/pages/NewEvent';
 import EventFormBuilder from '../../event/pages/EventFormBuilder';
+import EventPhotos from '../../event/pages/EventPhotos';
 import './ClubManager.css';
 
 const NewEventManager = () => {
-	const [eventInfo, setEventInfo] = useState(true);
-	const [eventInfoClass, setEventInfoClass] = useState(
-		'li-tab_orange'
-	);
+	const [eventId, setEventId] = useState();
+	const [eventInfo, setEventInfo] = useState(false);
+	const [eventInfoClass, setEventInfoClass] = useState('li-tab');
 	const [photo, setPhoto] = useState(false);
 	const [photoClass, setPhotoClass] = useState('li-tab');
 	const [formBuilder, setFormBuilder] = useState(false);
@@ -22,7 +22,7 @@ const NewEventManager = () => {
 		setPhoto(false);
 		setPhotoClass('li-tab');
 		setFormBuilder(false);
-		setFormBuilder('li-tab');
+		setFormBuilderClass('li-tab');
 		setSubmit(false);
 		setSubmitClass('li-tab');
 		setPercentage('25');
@@ -33,7 +33,7 @@ const NewEventManager = () => {
 		setPhoto(true);
 		setPhotoClass('li-tab_orange');
 		setFormBuilder(false);
-		setFormBuilder('li-tab');
+		setFormBuilderClass('li-tab');
 		setSubmit(false);
 		setSubmitClass('li-tab');
 		setPercentage('50');
@@ -60,6 +60,43 @@ const NewEventManager = () => {
 		setSubmitClass('li-tab_orange');
 		setPercentage('100');
 	};
+
+	// set defualt page, if none is false, we will use eventInfo as default
+	if (!eventInfo && !photo && !formBuilder && !submit) {
+		eventInfoClickHandler();
+	}
+
+	// getting continue status back from <NewEvent />
+	const [newEventStatus, setNewEventStatus] = useState(false);
+	const NewEventHandler = status => {
+		if (status) {
+			// set newEventStatus to true
+			setNewEventStatus(true);
+		}
+	};
+	const EventIDHandler = eId => {
+		setEventId(eId);
+	};
+	useEffect(() => {
+		// if newEventStatus is true, move to the next stage => Photo.
+		if (newEventStatus) {
+			photoClickHandler();
+		}
+	}, [newEventStatus, eventInfo]);
+
+	// getting continue status back from <EventPhoto />
+	const [photoStatus, setPhotoStatus] = useState(false);
+	const PhotoHandler = status => {
+		if (status) {
+			setPhotoStatus(true);
+		}
+	};
+	useEffect(() => {
+		if (photoStatus) {
+			formBuilderClickHandler();
+		}
+	}, [photoStatus, formBuilderClickHandler]);
+
 	return (
 		<React.Fragment>
 			<div className="list-header clearfix">
@@ -115,7 +152,18 @@ const NewEventManager = () => {
 						</li> */}
 					</ul>
 					<div className="tab-content">
-						{eventInfo && <NewEvent />}
+						{eventInfo && (
+							<NewEvent
+								newEventStatus={NewEventHandler}
+								eventIdHandler={EventIDHandler}
+							/>
+						)}
+						{photo && (
+							<EventPhotos
+								eventPhotosStatus={PhotoHandler}
+								eventId={eventId}
+							/>
+						)}
 						{formBuilder && <EventFormBuilder />}
 					</div>
 				</div>

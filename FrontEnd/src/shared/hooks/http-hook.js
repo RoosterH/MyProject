@@ -13,9 +13,6 @@ export const useHttpClient = () => {
 	// argument [] is the dependency as in useEffect, in our case there is no dependencies
 	const sendRequest = useCallback(
 		async (url, method = 'GET', body = null, headers = {}) => {
-			for (var key of body.entries()) {
-				console.log(key[0] + ', ' + key[1]);
-			}
 			setIsLoading(true);
 			/**
 			 * Usage case of AbortController() is when the request been submitted
