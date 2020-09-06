@@ -723,11 +723,11 @@ class RadioButtons extends React.Component {
 						const this_key = `preview_${option.key}`;
 						const props = {};
 						props.name = self.props.data.field_name;
-
 						props.type = 'radio';
 						props.value = option.value;
 						if (self.props.mutable) {
 							props.defaultChecked =
+								self.props.defaultValue !== null &&
 								self.props.defaultValue !== undefined &&
 								(self.props.defaultValue.indexOf(option.key) > -1 ||
 									self.props.defaultValue.indexOf(option.value) > -1);
@@ -814,6 +814,7 @@ class Rating extends React.Component {
 
 		if (this.props.mutable) {
 			props.rating =
+				this.props.defaultValue !== null &&
 				this.props.defaultValue !== undefined
 					? parseFloat(this.props.defaultValue, 10)
 					: 0;
@@ -997,6 +998,7 @@ class Range extends React.Component {
 		this.inputField = React.createRef();
 		this.state = {
 			value:
+				props.defaultValue !== null &&
 				props.defaultValue !== undefined
 					? parseInt(props.defaultValue, 10)
 					: parseInt(props.data.default_value, 10)
@@ -1142,6 +1144,7 @@ class ParagraphCheckbox extends React.Component {
 							props.value = option.value;
 							if (self.props.mutable) {
 								props.defaultChecked =
+									self.props.defaultValue !== null &&
 									self.props.defaultValue !== undefined &&
 									self.props.defaultValue.indexOf(option.key) > -1;
 							}

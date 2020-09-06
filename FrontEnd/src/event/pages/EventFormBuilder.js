@@ -7,10 +7,11 @@ import { ClubAuthContext } from '../../shared/context/auth-context';
 
 import '../../shared/css/EventForm.css';
 
-const EventFormBuilder = () => {
+const EventFormBuilder = props => {
 	const clubAuthContext = useContext(ClubAuthContext);
 
-	let eventId = useParams().id;
+	console.log(props);
+	let eventId = props.eventId;
 	useClubLoginValidation(`/events/formbuilder/${eventId}`);
 	// If we are re-directing to this page, we want to clear up clubRedirectURL
 	let location = useLocation();

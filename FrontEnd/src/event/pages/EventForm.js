@@ -30,10 +30,10 @@ const EventForm = () => {
 	let location = useLocation();
 	React.useEffect(() => {
 		let path = location.pathname;
-		let redirectURL = userAuthContext.redirectURL;
+		let redirectURL = userAuthContext.userRedirectURL;
 		if (path === redirectURL) {
 			// re-init redirectURL after re-direction route
-			userAuthContext.setRedirectURL(null);
+			userAuthContext.setUserRedirectURL(null);
 		}
 	}, [location, userAuthContext]);
 
@@ -67,7 +67,7 @@ const EventForm = () => {
 	// url is /events/form/:eId/:uId
 	let url = '/events/form/' + eId;
 	const storageData = JSON.parse(localStorage.getItem('userData'));
-	if (storageData.userId) {
+	if (storageData && storageData.userId) {
 		url += '/' + storageData.userId;
 	}
 
@@ -85,10 +85,10 @@ const EventForm = () => {
 						Authorization: 'Bearer ' + userAuthContext.userToken
 					}
 				);
-				setFormAnswer(responseData.entryFormAnswer);
-				setFormData(responseData.entryFormData);
-
-				console.log('I am in mounted');
+				if (responseData) {
+					setFormAnswer(responseData.entryFormAnswer);
+					setFormData(responseData.entryFormData);
+				}
 			} catch (err) {
 				console.log('err = ', err);
 			}
@@ -106,7 +106,6 @@ const EventForm = () => {
 		setFormAnswer,
 		url
 	]);
-
 	return (
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
@@ -125,7 +124,6 @@ const EventForm = () => {
 							action_name="Register"
 							data={formData}
 						/>
-
 						<div className="modal-footer">
 							<button
 								type="button"

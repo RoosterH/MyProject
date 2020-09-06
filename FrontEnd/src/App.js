@@ -52,6 +52,9 @@ const Events = React.lazy(() => import('./events/pages/Events'));
 const EventPhotos = React.lazy(() =>
 	import('./event/pages/EventPhotos')
 );
+const EventRegistration = React.lazy(() =>
+	import('./event/pages/EventRegistration')
+);
 const NewEvent = React.lazy(() => import('./event/pages/NewEvent'));
 const UpdateEvent = React.lazy(() =>
 	import('./event/pages/UpdateEvent')
@@ -125,6 +128,9 @@ const App = () => {
 				</Route>
 				<Route path="/clubs/events/photos" exact>
 					<EventPhotos />
+				</Route>
+				<Route path="/clubs/events/registration" exact>
+					<EventRegistration />
 				</Route>
 				<Route path="/events/update/:id" exact>
 					<UpdateEvent />
@@ -221,6 +227,9 @@ const App = () => {
 				</Route>
 				<Route path="/clubs/events/photos" exact>
 					<EventPhotos />
+				</Route>
+				<Route path="/clubs/events/registration" exact>
+					<EventRegistration />
 				</Route>
 				{/* <Redirect strict from="/clubs/events/new" to="/clubs/auth" /> */}
 

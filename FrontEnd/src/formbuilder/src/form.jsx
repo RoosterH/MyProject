@@ -86,7 +86,8 @@ export default class ReactForm extends React.Component {
 	}
 
 	_getDefaultValue(item) {
-		if (item.field_name) {
+		console.log('item = ', item);
+		if (item.field_name && this.answerData) {
 			return this.answerData[item.field_name];
 		}
 		return null;
@@ -100,7 +101,10 @@ export default class ReactForm extends React.Component {
 
 		const defaultChecked = [];
 		item.options.forEach(option => {
-			if (this.answerData[`option_${option.key}`]) {
+			if (
+				this.answerData &&
+				this.answerData[`option_${option.key}`]
+			) {
 				defaultChecked.push(option.key);
 			}
 		});

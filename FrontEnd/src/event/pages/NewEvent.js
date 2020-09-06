@@ -7,12 +7,11 @@ import * as Yup from 'yup';
 
 // import { EditorState } from 'draft-js';
 // import { RichEditorExample } from '../components/RichEditor';
-import 'draft-js/dist/Draft.css';
+// import 'draft-js/dist/Draft.css';
 
 import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
-// import ImageUploader from '../../shared/components/FormElements/ImageUploader';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 
@@ -113,52 +112,42 @@ const NewEvent = props => {
 		// Form data
 		if (eventFormData.name) {
 			setName(eventFormData.name);
-			// setNameOK(false);
 		}
 		if (eventFormData.type) {
 			setType(eventFormData.type);
-			// setTypeOK(false);
 		}
 		if (eventFormData.startDate) {
 			setStartDate(eventFormData.startDate);
-			// setStartDateOK(false);
 		}
 		if (eventFormData.endDate) {
 			setEndDate(eventFormData.endDate);
-			// setEndDateOK(false);
 		}
 		if (eventFormData.regStartDate) {
 			setRegStartDate(eventFormData.regStartDate);
-			// setRegStartDateOK(false);
 		}
 		if (eventFormData.regEndDate) {
 			setRegEndDate(eventFormData.regEndDate);
-			// setRegEndDateOK(false);
 		}
 		if (eventFormData.venue) {
 			setVenue(eventFormData.venue);
-			// setVenueOK(false);
 		}
 		if (eventFormData.address) {
 			setAddress(eventFormData.address);
-			// setAddressOK(false);
 		}
 		if (eventFormData.description) {
 			setDescription(eventFormData.description);
-			// setDescriptionOK(false);
 		}
 		if (eventFormData.instruction) {
 			setInstruction(eventFormData.instruction);
-			// setDescriptionOK(false);
 		}
 		// if (eventFormData.image) {
 		//  //setImage(eventFormData.image);
 		// //setImageOK(false);
 		// }
-		if (eventFormData.courseMap) {
-			// setCourseMap(eventFormData.courseMap);
-			// setCourseMapOK(false);
-		}
+		// if (eventFormData.courseMap) {
+		// setCourseMap(eventFormData.courseMap);
+		// setCourseMapOK(false);
+		// }
 	} else if (!initialized) {
 		setInitialized(true);
 		// initialize localStorage
@@ -379,6 +368,7 @@ const NewEvent = props => {
 		<div className="event-form">
 			<div className="event-form-header">
 				<h4>Please enter event information</h4>
+				<h5>&nbsp;All fields are required</h5>
 				<hr className="event-form__hr" />
 			</div>
 			<Formik
@@ -451,11 +441,6 @@ const NewEvent = props => {
 								handleBlur(event);
 								updateEventFormData('name', event.target.value);
 								setOKLeavePage(false);
-								// if (event.target.value) {
-								// 	setNameOK(false);
-								// } else {
-								// 	setNameOK(true);
-								// }
 							}}
 						/>
 						{touched.name && errors.name && (
@@ -476,11 +461,6 @@ const NewEvent = props => {
 								handleBlur(event);
 								updateEventFormData('type', event.target.value);
 								setOKLeavePage(false);
-								// if (event.target.value !== 'Autocross') {
-								// 	setTypeOK(false);
-								// } else {
-								// 	setTypeOK(true);
-								// }
 							}}>
 							<option value="Event Type" disabled>
 								Event Type
@@ -518,11 +498,6 @@ const NewEvent = props => {
 								handleBlur(event);
 								updateEventFormData('startDate', event.target.value);
 								setOKLeavePage(false);
-								// if (event.target.value !== tomorrow) {
-								// 	setStartDateOK(false);
-								// } else {
-								// 	setStartDateOK(true);
-								// }
 							}}
 						/>
 						<Field
@@ -536,11 +511,6 @@ const NewEvent = props => {
 								handleBlur(event);
 								updateEventFormData('endDate', event.target.value);
 								setOKLeavePage(false);
-								// if (event.target.value !== tomorrow) {
-								// 	setEndDateOK(false);
-								// } else {
-								// 	setEndDateOK(true);
-								// }
 							}}
 						/>
 						{(touched.startDate || touched.endDate) &&
@@ -580,11 +550,6 @@ const NewEvent = props => {
 									event.target.value
 								);
 								setOKLeavePage(false);
-								// if (event.target.value !== tomorrow) {
-								// 	setRegStartDateOK(false);
-								// } else {
-								// 	setRegStartDateOK(true);
-								// }
 							}}
 						/>
 						<Field
@@ -598,11 +563,6 @@ const NewEvent = props => {
 								handleBlur(event);
 								updateEventFormData('regEndDate', event.target.value);
 								setOKLeavePage(false);
-								// if (event.target.value !== tomorrow) {
-								// 	setRegEndDateOK(false);
-								// } else {
-								// 	setRegEndDateOK(true);
-								// }
 							}}
 						/>
 						{(touched.regStartDate || touched.regEndDate) &&
@@ -624,17 +584,13 @@ const NewEvent = props => {
 							id="venue"
 							name="venue"
 							type="text"
+							placeholder="ex: Crows Landing"
 							className="event-form__field"
 							validate={validateVenue}
 							onBlur={event => {
 								handleBlur(event);
 								updateEventFormData('venue', event.target.value);
 								setOKLeavePage(false);
-								// if (event.target.value) {
-								// 	setVenueOK(false);
-								// } else {
-								// 	setVenueOK(true);
-								// }
 							}}
 						/>
 						{touched.venue && errors.venue && (
@@ -657,11 +613,6 @@ const NewEvent = props => {
 								handleBlur(event);
 								updateEventFormData('address', event.target.value);
 								setOKLeavePage(false);
-								// if (event.target.value) {
-								// 	setAddressOK(false);
-								// } else {
-								// 	setAddressOK(true);
-								// }
 							}}
 						/>
 						{touched.address && errors.address && (
@@ -713,11 +664,6 @@ const NewEvent = props => {
 									event.target.value
 								);
 								setOKLeavePage(false);
-								// if (event.target.value) {
-								// 	setDescriptionOK(false);
-								// } else {
-								// 	setDescriptionOK(true);
-								// }
 							}}
 						/>
 						{touched.description && errors.description && (
@@ -747,11 +693,6 @@ const NewEvent = props => {
 									event.target.value
 								);
 								setOKLeavePage(false);
-								// if (event.target.value) {
-								// 	setInstructionOK(false);
-								// } else {
-								// 	setInstructionOK(true);
-								// }
 							}}
 						/>
 						{touched.instruction && errors.instruction && (

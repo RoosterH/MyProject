@@ -4,10 +4,14 @@ import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
 
+// import { EditorState } from 'draft-js';
+// import { RichEditorExample } from '../components/RichEditor';
+import 'draft-js/dist/Draft.css';
+
 import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
-import ImageUploader from '../../shared/components/FormElements/ImageUploader';
+// import ImageUploader from '../../shared/components/FormElements/ImageUploader';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 
@@ -17,26 +21,24 @@ import { FormContext } from '../../shared/context/form-context';
 
 import '../../shared/css/EventForm.css';
 
-const EventPhotos = props => {
-	let eId = props.eventId;
+const EventRegistration = props => {
+	let eventId = props.eventId;
 	const [initialized, setInitialized] = useState(false);
 	const clubAuthContext = useContext(ClubAuthContext);
 	const formContext = useContext(FormContext);
 
 	// contButton controls when to enable CONTINUE button, set to true after submitHandler() succeeds
 	const [contButton, setContButton] = useState(false);
-	// contButtonStatus is the return value back to NewEventManger, set to true @ CONTINUE button onClick()
-	const [contStatus, setContinueStatus] = useState(false);
+	// continueStatus controls when to return props.newEventStatus back to NewEventManager
+	const [continueStatus, setContinueStatus] = useState(false);
+
 	const continueHandler = () => {
 		setContinueStatus(true);
 	};
-
-	// return true back to NewEventManger to move to next stage
+	// this is the return function that passes finishing status back to NewEventManager
 	useEffect(() => {
-		if (contStatus) {
-			props.eventPhotosStatus(true);
-		}
-	}, [contStatus, props]);
+		props.registrationStatus(continueStatus);
+	}, [continueStatus, props]);
 
 	useEffect(() => {
 		let mounted = true;
@@ -56,11 +58,11 @@ const EventPhotos = props => {
 	} = useHttpClient();
 
 	// authentication check
-	useClubLoginValidation('/clubs/events/photos');
+	useClubLoginValidation('/clubs/events/registration');
 
 	// If we are re-directing to this page, we want to clear up clubRedirectURL
 	let location = useLocation();
-	useEffect(() => {
+	React.useEffect(() => {
 		let path = location.pathname;
 		let clubRedirectURL = clubAuthContext.clubRedirectURL;
 		if (path === clubRedirectURL) {
@@ -69,8 +71,10 @@ const EventPhotos = props => {
 		}
 	}, [location, clubAuthContext]);
 
-	let image = undefined;
-	let courseMap = undefined;
+	let tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
+	const [totalCap, setTotalCap] = useState('');
+	const [numGroups, setNumGroups] = useState('');
+	const [capDistribution, setCapDistribution] = useState('');
 
 	// initialize local storage
 	// Get the existing data
@@ -89,13 +93,14 @@ const EventPhotos = props => {
 	) {
 		setInitialized(true);
 		// Form data
-		if (eventFormData.image) {
-			//setImage(eventFormData.image);
-			// setImageOK(false);
+		if (eventFormData.totalCap) {
+			setTotalCap(eventFormData.totalCap);
 		}
-		if (eventFormData.courseMap) {
-			// setCourseMap(eventFormData.courseMap);
-			// setCourseMapOK(false);
+		if (eventFormData.numGroups) {
+			setNumGroups(eventFormData.numGroups);
+		}
+		if (eventFormData.capDistribution) {
+			setCapDistribution(eventFormData.capDistribution);
 		}
 	} else if (!initialized) {
 		setInitialized(true);
@@ -104,8 +109,9 @@ const EventPhotos = props => {
 			moment().add(1, 'days'),
 			moment.ISO_8601
 		);
-		eventFormData['image'] = undefined;
-		eventFormData['courseMap'] = undefined;
+		eventFormData['totalCap'] = '';
+		eventFormData['numGroups'] = '';
+		eventFormData['capDistribution'] = '';
 		localStorage.setItem(
 			'eventFormData',
 			JSON.stringify(eventFormData)
@@ -114,12 +120,13 @@ const EventPhotos = props => {
 
 	const removeEventFormData = () => {
 		localStorage.removeItem('eventFormData');
-		// history.push(`/events/club/${clubAuthContext.clubId}`);
 	};
 
 	const initialValues = {
-		image: image,
-		courseMap: courseMap
+		// editorState: new EditorState.createEmpty(),
+		totalCap: totalCap,
+		numGroups: numGroups,
+		capDistribution: capDistribution
 	};
 
 	const updateEventFormData = (key, value) => {
@@ -133,51 +140,71 @@ const EventPhotos = props => {
 		);
 	};
 
+	const [
+		capDistributionClicked,
+		setCapDistributionClicked
+	] = useState(false);
+	const togglecapDistribution = event => {
+		setCapDistributionClicked(event.target.checked);
+	};
+
 	const history = useHistory();
 	const submitHandler = async (values, actions) => {
 		try {
-			const formData = new FormData();
-			formData.append('image', values.image);
-			formData.append('courseMap', values.courseMap);
-
+			console.log('values = ', values);
+			console.log(
+				'capDistributionClicked = ',
+				capDistributionClicked
+			);
 			const responseData = await sendRequest(
-				process.env.REACT_APP_BACKEND_URL + '/events/photos/' + eId,
+				process.env.REACT_APP_BACKEND_URL +
+					`/events/registration/${eventId}`,
 				'PATCH',
-				formData,
+				JSON.stringify({
+					totalCap: values.totalCap,
+					numGroups: values.numGroups,
+					capDistribution: capDistributionClicked
+				}),
 				{
+					'Content-Type': 'application/json',
 					// adding JWT to header for authentication
 					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
 			setOKLeavePage(true);
-			setContButton(true);
 			// Redirect the club to a diffrent page
 			// history.push(`/events/club/${clubAuthContext.clubId}`);
+			setContButton(true);
 		} catch (err) {}
 	};
 
-	const validateImageSize = value => {
-		let error;
-		if (value && value.size > 1500000) {
-			error = 'File size needs to be smaller than 1.5MB';
+	/***** Form Validation Section  *****/
+	const [validateTotalCap, setValidateTotalCap] = useState(
+		() => value => {
+			let error;
+			if (!value) {
+				error = 'Total participants is required.';
+			}
+			return error;
 		}
-		return error;
-	};
+	);
 
-	const validateCourseMapSize = value => {
-		let error;
-		if (value && value.size > 1500000) {
-			error = 'File size needs to be smaller than 1.5MB';
+	const [validateNumGroups, setValidateNumGroups] = useState(
+		() => value => {
+			let error;
+			if (!value) {
+				error = 'Number of groups is required.';
+			}
+			return error;
 		}
-		return error;
-	};
+	);
 	/***** End of Form Validation *****/
 
 	const eventForm = values => (
 		<div className="event-form">
 			<div className="event-form-header">
-				<h4>Please upload event image and course map</h4>
-				<h5>Course map is optional</h5>
+				<h4>Please enter event registration information</h4>
+				{/* <h5>&nbsp;All fields are required</h5> */}
 				<hr className="event-form__hr" />
 			</div>
 			<Formik
@@ -186,6 +213,28 @@ const EventPhotos = props => {
 				onSubmit={(values, actions) => {
 					submitHandler(values);
 					if (!actions.isSubmitting) {
+						setValidateTotalCap(() => value => {
+							let error;
+							if (!value) {
+								error = 'Total number of participants is required.';
+							}
+							let numVal = parseInt(value);
+							if (isNaN(numVal)) {
+								error = 'Please inputer a number.';
+							}
+							return error;
+						});
+						setValidateNumGroups(() => value => {
+							let error;
+							if (!value) {
+								error = 'Number of groups is required.';
+							}
+							let numVal = parseInt(value);
+							if (isNaN(numVal)) {
+								error = 'Please inputer a number.';
+							}
+							return error;
+						});
 					}
 				}}>
 				{({
@@ -194,54 +243,64 @@ const EventPhotos = props => {
 					isSubmitting,
 					isValid,
 					setFieldValue,
+					submitted,
 					touched,
 					handleBlur
 				}) => (
 					<Form className="event-form-container">
+						<label htmlFor="totalCap" className="event-form__label">
+							<i className="fal fa-users"></i>
+							&nbsp; Total Participants
+						</label>
 						<Field
-							id="image"
-							name="image"
-							title="Event Image"
-							component={ImageUploader}
-							validate={validateImageSize}
-							setFieldValue={setFieldValue}
-							errorMessage={errors.image ? errors.image : ''}
+							id="totalCap"
+							name="totalCap"
+							type="text"
+							className="event-form__field_quarter"
+							validate={validateTotalCap}
+							onBlur={event => {
+								// without handBlure(event) touched.name will not work
+								handleBlur(event);
+								updateEventFormData('totalCap', event.target.value);
+								setOKLeavePage(false);
+							}}
+						/>
+						{touched.totalCap && errors.totalCap && (
+							<div className="event-form__field-error_quarter">
+								{errors.totalCap}
+							</div>
+						)}
+						<label htmlFor="numGroups" className="event-form__label">
+							<i className="fal fa-users-class"></i>
+							&nbsp; Number of Groups
+						</label>
+						<Field
+							id="numGroups"
+							name="numGroups"
+							type="text"
+							className="event-form__field_quarter"
+							validate={validateNumGroups}
 							onBlur={event => {
 								handleBlur(event);
+								updateEventFormData('numGroups', event.target.value);
 								setOKLeavePage(false);
-								// if (event.target.value) {
-								// 	setImageOK(false);
-								// } else {
-								// 	setImageOK(true);
-								// }
-							}}
-							labelStyle="event-form__label"
-							inputStyle="event-form__field-select"
-							previewStyle="image-upload__preview"
-							errorStyle="event-form__field-error"
-						/>
-						<Field
-							id="courseMap"
-							name="courseMap"
-							title="Course Map (Optional)"
-							component={ImageUploader}
-							validate={validateCourseMapSize}
-							setFieldValue={setFieldValue}
-							errorMessage={errors.courseMap ? errors.courseMap : ''}
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-								// if (event.target.value) {
-								// 	setCourseMapOK(false);
-								// } else {
-								// 	setCourseMapOK(true);
-								// }
-							}}
-							labelStyle="event-form__label"
-							inputStyle="event-form__field-select"
-							previewStyle="image-upload__preview"
-							errorStyle="event-form__field-error"
-						/>
+							}}></Field>
+						{touched.numGroups && errors.numGroups && (
+							<div className="event-form__field-error_quarter">
+								{errors.numGroups}
+							</div>
+						)}
+						<label className="event-form__checkbox">
+							<input
+								type="checkbox"
+								id="capDistribution"
+								name="capDistribution"
+								onChange={togglecapDistribution}
+							/>{' '}
+							&nbsp; Check the box if you want to evenly distribute
+							total participant number to each group.
+						</label>
+
 						<Button
 							type="submit"
 							size="medium"
@@ -255,7 +314,7 @@ const EventPhotos = props => {
 							margin-left="1.5rem"
 							disabled={!contButton}
 							onClick={continueHandler}>
-							Continue
+							CONTINUE
 						</Button>
 						<NavigationPrompt
 							afterConfirm={() => {
@@ -322,4 +381,4 @@ const EventPhotos = props => {
 	);
 };
 
-export default EventPhotos;
+export default EventRegistration;

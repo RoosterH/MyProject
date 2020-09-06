@@ -47,7 +47,7 @@ const UpdateCar = setFieldValue => {
 	// authentication check
 	useUserLoginValidation(`/users/cars/update/:${carId}`);
 
-	// If we are re-directing to this page, we want to clear up clubRedirectURL
+	// If we are re-directing to this page, we want to clear up userRedirectURL
 	let location = useLocation();
 	useEffect(() => {
 		let path = location.pathname;
@@ -333,7 +333,6 @@ const UpdateCar = setFieldValue => {
 
 	const removeCarFormData = () => {
 		localStorage.removeItem('carFormData');
-		// history.push(`/events/club/${userAuthContext.clubId}`);
 	};
 
 	initialValues = {

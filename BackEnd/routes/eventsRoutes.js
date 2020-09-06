@@ -95,6 +95,15 @@ router.patch(
 );
 
 router.patch(
+	'/registration/:eid',
+	[
+		check('totalCap').not().isEmpty(),
+		check('numGroups').not().isEmpty()
+	],
+	eventsController.updateEventRegistration
+);
+
+router.patch(
 	'/:eid',
 	fileUpload.fields([
 		{ name: 'image', maxCount: 1 },

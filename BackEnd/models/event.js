@@ -36,7 +36,16 @@ const eventSchema = new Schema({
 	entryFormData: { type: Array, required: true },
 	entries: [
 		{ type: mongoose.Types.ObjectId, required: true, ref: 'Entry' }
-	]
+	],
+	waitList: [
+		{ type: mongoose.Types.ObjectId, required: true, ref: 'Entry' }
+	],
+	totalCap: { type: Number },
+	totalEntries: { type: Number },
+	numGroups: { type: Number },
+	// if true, we will create an array groupEntries with numGroup elements. Each element value cannot exceed totalCap / numGroups.
+	capDistribution: { type: Boolean },
+	groupEntries: [{ type: Number }]
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

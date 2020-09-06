@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import NewEvent from '../../event/pages/NewEvent';
-import EventFormBuilder from '../../event/pages/EventFormBuilder';
+import FormBuilder from '../../event/components/FormBuilder';
 import EventPhotos from '../../event/pages/EventPhotos';
+import EventRegistration from '../../event/pages/EventRegistration';
 import './ClubManager.css';
 
 const NewEventManager = () => {
@@ -12,8 +13,10 @@ const NewEventManager = () => {
 	const [photoClass, setPhotoClass] = useState('li-tab');
 	const [formBuilder, setFormBuilder] = useState(false);
 	const [formBuilderClass, setFormBuilderClass] = useState('li-tab');
-	const [submit, setSubmit] = useState(false);
-	const [submitClass, setSubmitClass] = useState('li-tab');
+	const [registration, setRegistration] = useState(false);
+	const [registrationClass, setRegistrationClass] = useState(
+		'li-tab'
+	);
 	const [percentage, setPercentage] = useState('25');
 
 	const eventInfoClickHandler = () => {
@@ -23,8 +26,8 @@ const NewEventManager = () => {
 		setPhotoClass('li-tab');
 		setFormBuilder(false);
 		setFormBuilderClass('li-tab');
-		setSubmit(false);
-		setSubmitClass('li-tab');
+		setRegistration(false);
+		setRegistrationClass('li-tab');
 		setPercentage('25');
 	};
 	const photoClickHandler = () => {
@@ -34,8 +37,8 @@ const NewEventManager = () => {
 		setPhotoClass('li-tab_orange');
 		setFormBuilder(false);
 		setFormBuilderClass('li-tab');
-		setSubmit(false);
-		setSubmitClass('li-tab');
+		setRegistration(false);
+		setRegistrationClass('li-tab');
 		setPercentage('50');
 	};
 	const formBuilderClickHandler = () => {
@@ -45,24 +48,24 @@ const NewEventManager = () => {
 		setPhotoClass('li-tab');
 		setFormBuilder(true);
 		setFormBuilderClass('li-tab_orange');
-		setSubmit(false);
-		setSubmitClass('li-tab');
+		setRegistration(false);
+		setRegistrationClass('li-tab');
 		setPercentage('75');
 	};
-	const submitClickHandler = () => {
+	const registrationClickHandler = () => {
 		setEventInfo(false);
 		setEventInfoClass('li-tab');
 		setPhoto(false);
 		setPhotoClass('li-tab');
 		setFormBuilder(false);
 		setFormBuilderClass('li-tab');
-		setSubmit(true);
-		setSubmitClass('li-tab_orange');
+		setRegistration(true);
+		setRegistrationClass('li-tab_orange');
 		setPercentage('100');
 	};
 
 	// set defualt page, if none is false, we will use eventInfo as default
-	if (!eventInfo && !photo && !formBuilder && !submit) {
+	if (!eventInfo && !photo && !formBuilder && !registration) {
 		eventInfoClickHandler();
 	}
 
@@ -97,31 +100,58 @@ const NewEventManager = () => {
 		}
 	}, [photoStatus, formBuilderClickHandler]);
 
+	// getting continue status back from <FormBuilder />
+	const [formBuilderStatus, setFormBuilderStatus] = useState(false);
+	const FormBuilderHandler = status => {
+		if (status) {
+			setFormBuilderStatus(status);
+		}
+	};
+	useEffect(() => {
+		if (formBuilderStatus) {
+			registrationClickHandler();
+		}
+	}, [formBuilderStatus, registrationClickHandler]);
+
+	// getting continue status back from <FormBuilder />
+	const [registrationStatus, setRegistrationStatus] = useState(false);
+	const RegistrationHandler = status => {
+		if (status) {
+			setRegistrationStatus(status);
+		}
+	};
+	// useEffect(() => {
+	// 	if (registrationStatus) {
+	// 		// registrationClickHandler();
+	// 	}
+	// }, [registtrationStatus, registrationClickHandler]);
+
 	return (
 		<React.Fragment>
 			<div className="list-header clearfix">
 				<div className="h3">New Event Manager</div>
 			</div>
 
-			<div className="progress">
-				<div
-					className="progress-bar"
-					role="progressbar"
-					style={{ width: `${percentage}%` }}
-					aria-valuenow={percentage}
-					aria-valuemin="0"
-					aria-valuemax="100">
-					{`${percentage}%`}
-				</div>
-			</div>
 			{/* New Event Manager Tabs*/}
 			<div className="eventmanager">
 				<div className="dashboard-tabs activity-sections">
+					<div className="progress">
+						<div
+							className="progress-bar progress-bar-striped progress-bar-animated"
+							role="progressbar"
+							style={{ width: `${percentage}%` }}
+							aria-valuenow={percentage}
+							aria-valuemin="0"
+							aria-valuemax="100">
+							{`${percentage}%`}
+						</div>
+					</div>
+					<br />
 					<ul className="nav nav-tabs">
 						<li className={eventInfoClass}>Event Information</li>
 						<li className={photoClass}>Photos</li>
 						<li className={formBuilderClass}>FormBuilder</li>
-						<li className={submitClass}>Submit</li>
+						<li className={registrationClass}>Registration</li>
 						{/* <li>
 							<button
 								className="btn btn-default tab-link"
@@ -164,7 +194,18 @@ const NewEventManager = () => {
 								eventId={eventId}
 							/>
 						)}
-						{formBuilder && <EventFormBuilder />}
+						{formBuilder && (
+							<FormBuilder
+								formbuilderStatus={FormBuilderHandler}
+								eventId={eventId}
+							/>
+						)}
+						{registration && (
+							<EventRegistration
+								registrationStatus={RegistrationHandler}
+								eventId={eventId}
+							/>
+						)}
 					</div>
 				</div>
 			</div>

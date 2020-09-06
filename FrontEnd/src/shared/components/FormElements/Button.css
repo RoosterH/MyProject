@@ -139,22 +139,35 @@
 .button--entryform--save {
 	display: inline-block;
 	width: 5rem;
-	font-size: 1rem;
+	/* width: auto; */
+	font-size: 12px;
 	font-family: 'Montserrat', sans-serif;
-	background: #e5001b;
-	color: #fff;
-	border-color: #e5001b;
-	margin-left: 2rem;
+	background: white;
+	color: rgb(7, 151, 50);
+	/* border-color: #e5001b; */
+	/* margin-left: 1rem; */
 	font-weight: 400;
+	text-align: center;
+}
+
+.button--entryform--save:hover {
+	background: rgb(5, 138, 45);
+	color: rgb(243, 245, 141);
 }
 
 .button--entryform--back {
 	display: inline-block;
-	width: 5rem;
-	font-size: 1rem;
+	width: auto;
+	font-size: 12px;
 	font-family: 'Montserrat', sans-serif;
-	color: #000;
+	background: white;
+	color: rgb(28, 8, 211);
 	font-weight: 400;
+	text-align: center;
+}
+.button--entryform--back:hover {
+	background: rgb(64, 244, 250);
+	color: rgb(28, 8, 211);
 }
 
 @media (max-width: 780px) {

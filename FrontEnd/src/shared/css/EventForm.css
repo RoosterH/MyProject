@@ -348,8 +348,16 @@
 	}
 
 	.event-form-header h4 {
-		font-size: 25px;
+		font-size: 18px;
 		font-weight: 400;
+		margin-inline-start: 1.5rem;
+		margin-block-end: 0.2rem;
+	}
+
+	.event-form-header h5 {
+		font-size: 12px;
+		font-weight: 500;
+		color: rgba(255, 0, 0, 0.562);
 		margin-inline-start: 1.5rem;
 		margin-block-end: 0.2rem;
 	}

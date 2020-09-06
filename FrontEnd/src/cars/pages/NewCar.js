@@ -265,7 +265,6 @@ const NewCar = setFieldValue => {
 
 	const removeCarFormData = () => {
 		localStorage.removeItem('carFormData');
-		// history.push(`/events/club/${userAuthContext.clubId}`);
 	};
 
 	const initialValues = {

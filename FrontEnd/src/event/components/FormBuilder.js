@@ -17,46 +17,16 @@ import './FormBuilder.css';
 import '../../formbuilder/scss/application.scss';
 
 const FormBuilder = props => {
-	const clubAuthContext = useContext(ClubAuthContext);
-	const formContext = useContext(FormContext);
+	let eventId = props.eventId;
+
+	const [contButton, setContButton] = useState(false);
+	const [contStatus, setContStatus] = useState(false);
 	useEffect(() => {
-		let mounted = true;
-		if (mounted) {
-			formContext.setIsInsideForm(true);
+		if (contStatus) {
+			props.formbuilderStatus(true);
 		}
-		return () => {
-			mounted = false;
-		};
-	}, [formContext]);
+	}, [contStatus, props]);
 
-	const {
-		isLoading,
-		error,
-		sendRequest,
-		clearError
-	} = useHttpClient();
-	const history = useHistory();
-	const [published, setPublished] = useState(true);
-	const [unsavedData, setUnsavedData] = useState();
-	const [saveTemplateClicked, setSaveTemplateClicked] = useState(
-		false
-	);
-
-	const toggleSaveTemplate = event => {
-		setSaveTemplateClicked(event.target.checked);
-		// after SAVE to backend, user click checkbox "Save as entry form template", enable SAVE button
-		// if checkbox value is true
-		if (event.target.checked && !unsavedData) {
-			const storageData = JSON.parse(
-				localStorage.getItem('eventEntryForm')
-			);
-			if (storageData) {
-				setUnsavedData(storageData);
-			}
-		}
-	};
-
-	let eventId = props.id;
 	if (!eventId || eventId === 'error') {
 		// possibly page refresh, look for localStorage
 		const storageData = JSON.parse(localStorage.getItem('eventData'));
@@ -82,6 +52,58 @@ const FormBuilder = props => {
 			})
 		);
 	}
+
+	const clubAuthContext = useContext(ClubAuthContext);
+	const formContext = useContext(FormContext);
+	useEffect(() => {
+		let mounted = true;
+		if (mounted) {
+			formContext.setIsInsideForm(true);
+		}
+		return () => {
+			mounted = false;
+		};
+	}, [formContext]);
+
+	useClubLoginValidation(`/events/formbuilder/${eventId}`);
+	// If we are re-directing to this page, we want to clear up clubRedirectURL
+	let location = useLocation();
+	React.useEffect(() => {
+		let path = location.pathname;
+		let clubRedirectURL = clubAuthContext.clubRedirectURL;
+		if (path === clubRedirectURL) {
+			// re-init redirectURL after re-direction route
+			clubAuthContext.setClubRedirectURL(null);
+		}
+	}, [clubAuthContext, location]);
+
+	const {
+		isLoading,
+		error,
+		sendRequest,
+		clearError
+	} = useHttpClient();
+	const history = useHistory();
+	const [published, setPublished] = useState(true);
+	const [unsavedData, setUnsavedData] = useState();
+	const [saveTemplateClicked, setSaveTemplateClicked] = useState(
+		false
+	);
+
+	const toggleSaveTemplate = event => {
+		setSaveTemplateClicked(event.target.checked);
+		// after SAVE to backend, user click checkbox "Save as entry form template", enable SAVE button
+		// if checkbox value is true
+		if (event.target.checked && !unsavedData) {
+			const storageData = JSON.parse(
+				localStorage.getItem('eventEntryForm')
+			);
+			// SAVE button enabled when there is an unsavedData
+			if (storageData) {
+				setUnsavedData(storageData);
+			}
+		}
+	};
 
 	const saveHandler = async () => {
 		// use existing localStorage data instead of querying from backend
@@ -109,14 +131,16 @@ const FormBuilder = props => {
 			);
 			if (responseData) {
 				setUnsavedData(undefined);
+				setContButton(true);
 			}
 		} catch (err) {
 			console.log('err = ', err);
 		}
 	};
 
-	const backHandler = () => {
-		history.push(`/events/${eventId}`);
+	const continueHandler = () => {
+		setContStatus(true);
+		// history.push(`/events/${eventId}`);
 	};
 
 	// define tool bar items, full definitions are in toolbar.jsx
@@ -373,6 +397,7 @@ const FormBuilder = props => {
 
 	// getResponseData is a callback function that returns responseData to its caller
 	const onLoad = getResponseData => {
+		console.log('eventId = ', eventId);
 		// GET event form from server
 		let responseData;
 		const fetchForm = async () => {
@@ -448,18 +473,24 @@ const FormBuilder = props => {
 					disabled={!unsavedData}
 					size="entryform--save"
 					onClick={saveHandler}>
-					Save
+					SAVE
 				</Button>
-				<Button size="entryform--back" onClick={backHandler}>
-					Back
+				<Button
+					disabled={!contButton}
+					size="entryform--back"
+					onClick={continueHandler}>
+					CONTINUE
 				</Button>
+				{/* <Button size="entryform--back" onClick={backHandler}>
+					BACK
+				</Button> */}
 				<label className="formbuilder-label">
 					<input
 						type="checkbox"
 						id="saveTemplate"
 						name="saveTemplate"
 						onChange={toggleSaveTemplate}
-					/>{' '}
+					/>
 					&nbsp; Save as entry form template
 				</label>
 			</div>
