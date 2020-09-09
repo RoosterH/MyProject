@@ -36,6 +36,9 @@ const EventForm = React.lazy(() => import('./event/pages/EventForm'));
 // const EventFormBuilder = React.lazy(() =>
 // 	import('./event/pages/EventFormBuilder')
 // );
+const FormBuilder = React.lazy(() =>
+	import('./event/components/FormBuilder')
+);
 const ClubDashboardToolbar = React.lazy(() =>
 	import('./clubDashboard/pages/ClubDashboardToolbar')
 );
@@ -134,6 +137,9 @@ const App = () => {
 				{/* <Route path="/events/formbuilder/:id" exact>
 					<EventFormBuilder />
 				</Route> */}
+				<Route path="/events/form/:id" exact>
+					<FormBuilder />
+				</Route>
 				<Route path="/clubs/events/new" exact>
 					<NewEvent />
 				</Route>
@@ -249,6 +255,9 @@ const App = () => {
 				{/* <Route path="/events/formbuilder/:id" exact>
 					<EventFormBuilder />
 				</Route> */}
+				<Route path="/events/form/:id" exact>
+					<FormBuilder />
+				</Route>
 				{/* <Redirect
 					strict
 					from="/events/formbuilder/:id"

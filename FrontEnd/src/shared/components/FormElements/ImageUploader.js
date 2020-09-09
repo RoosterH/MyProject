@@ -5,6 +5,7 @@ import Image from '../UIElements/Image';
 
 const ImageUploader = props => {
 	const [previewUrl, setPreviewUrl] = useState();
+	const [currentUrl, setCurrentUrl] = useState(props.field.value);
 	const handleImageChange = e => {
 		e.preventDefault();
 		let fileReader = new FileReader();
@@ -14,6 +15,7 @@ const ImageUploader = props => {
 				// fileReader.result is different from file.name
 				// fileReader.result contains metadata, file.name is a string
 				setPreviewUrl(fileReader.result);
+				setCurrentUrl(null);
 			};
 			fileReader.readAsDataURL(file);
 			// set value back to Formik
@@ -39,6 +41,21 @@ const ImageUploader = props => {
 				onChange={handleImageChange}
 				className={props.inputStyle}
 			/>
+			{!errorMessage && !previewUrl && (
+				<div className={props.previewStyle}>
+					{currentUrl && (
+						<React.Fragment>
+							<p>Current file: {currentUrl}</p>
+							<Image
+								draggable="true"
+								src={currentUrl}
+								alt="Existing file"
+								// ondrag={() => props.onDrag()}
+							/>
+						</React.Fragment>
+					)}
+				</div>
+			)}
 			{!errorMessage && previewUrl && (
 				<div className={props.previewStyle}>
 					{previewUrl && (

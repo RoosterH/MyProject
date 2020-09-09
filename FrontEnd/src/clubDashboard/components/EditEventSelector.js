@@ -7,7 +7,6 @@ import { useParams } from 'react-router-dom';
 
 const EditEventSelector = () => {
 	let clubId = useParams().clubId;
-	console.log('clubId = ', clubId);
 	const clubAuthContext = useContext(ClubAuthContext);
 	console.log('clubAuthContext = ', clubAuthContext);
 	if (

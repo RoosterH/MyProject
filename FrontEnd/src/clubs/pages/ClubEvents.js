@@ -6,7 +6,6 @@ import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { ClubAuthContext } from '../../shared/context/auth-context';
-import { UserAuthContext } from '../../shared/context/auth-context';
 
 // Events is called in App.js where the route been defined
 const ClubEvents = props => {

@@ -76,6 +76,18 @@
 	text-align: center;
 }
 
+.button--editeventmanager-orange {
+	font-size: 12px;
+	font-family: 'Montserrat', sans-serif;
+	background: #f79321;
+	border-color: #f79321;
+	color: #ffffff;
+	margin: 0rem;
+	width: 10rem;
+	text-align: center;
+	margin: 0rem 0.5rem 0rem 0rem;
+}
+
 .button--small-green {
 	font-size: small;
 	font-family: 'Montserrat', sans-serif;
@@ -96,6 +108,24 @@
 	margin: 0rem;
 	width: 8rem;
 	text-align: center;
+}
+
+.button--editeventmanager-grey {
+	font-size: 12px;
+	font-family: 'Montserrat', sans-serif;
+	background: #888684;
+	border-color: #888684;
+	color: #ffffff;
+	margin: 0rem;
+	width: 10rem;
+	text-align: center;
+	margin: 0rem 0.5rem 0rem 0rem;
+}
+
+.button--editeventmanager-grey:hover {
+	background: #f5ba80;
+	border-color: #f5ba80;
+	color: #ffffff;
 }
 
 .button--small-orange:hover {
@@ -182,6 +212,17 @@
 		width: 6rem;
 		text-align: center;
 	}
+	.button--editeventmanager-orange {
+		font-size: 10px;
+		font-family: 'Montserrat', sans-serif;
+		background: #f79321;
+		border-color: #f79321;
+		color: #ffffff;
+		margin: 0rem;
+		padding: 0.2rem 0.5rem;
+		width: 6rem;
+		text-align: center;
+	}
 	.button--small-green {
 		font-size: 12px;
 		font-family: 'Montserrat', sans-serif;
@@ -195,6 +236,17 @@
 	}
 	.button--small-grey {
 		font-size: 12px;
+		font-family: 'Montserrat', sans-serif;
+		background: #888684;
+		border-color: #888684;
+		color: #ffffff;
+		margin: 0rem;
+		padding: 0.2rem 0.5rem;
+		width: 6rem;
+		text-align: center;
+	}
+	.button--editeventmanager-grey {
+		font-size: 10px;
 		font-family: 'Montserrat', sans-serif;
 		background: #888684;
 		border-color: #888684;

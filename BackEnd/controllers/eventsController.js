@@ -108,10 +108,7 @@ const getOwnerClubEvent = async (req, res, next) => {
 
 	let event;
 	try {
-		event = await Event.findById(
-			eventId,
-			'-entryFormData -entries -waitList -totalCap -totalEntries -numGroups -capDistribution -groupEntries'
-		);
+		event = await Event.findById(eventId);
 	} catch (err) {
 		// this error is displayed if the request to the DB had some issues
 		console.log('err = ', err);
@@ -461,7 +458,7 @@ const updateEventPhotos = async (req, res, next) => {
 		event = await Event.findById(eventId);
 	} catch (err) {
 		const error = new HttpError(
-			'Update event process failed, please try again later.',
+			'Update event photos process failed, please try again later.',
 			500
 		);
 		return next(error);
@@ -566,7 +563,7 @@ const updateEventRegistration = async (req, res, next) => {
 		event = await Event.findById(eventId);
 	} catch (err) {
 		const error = new HttpError(
-			'Update event process failed, please try again later.',
+			'Update event registration process failed, please try again later.',
 			500
 		);
 		return next(error);
@@ -703,6 +700,7 @@ const updateEvent = async (req, res, next) => {
 	try {
 		event = await Event.findById(eventId);
 	} catch (err) {
+		console.log('err = ', err);
 		const error = new HttpError(
 			'Update event process failed, please try again later.',
 			500

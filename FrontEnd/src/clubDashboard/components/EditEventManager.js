@@ -1,130 +1,78 @@
 import React, { useState, useEffect } from 'react';
 import UpdateEvent from '../../event/pages/UpdateEvent';
-import FormBuilder from '../../event/components/FormBuilder';
-import EventPhotos from '../../event/pages/EventPhotos';
-import EventRegistration from '../../event/pages/EventRegistration';
+import UpdateFormBuilder from '../../event/components/UpdateFormBuilder';
+import UpdateEventPhotos from '../../event/pages/UpdateEventPhotos';
+import UpdateEventRegistration from '../../event/pages/UpdateEventRegistration';
+import Button from '../../shared/components/FormElements/Button';
 import './ClubManager.css';
-import { useParams } from 'react-router-dom';
 
 const EditEventManager = props => {
 	let eventId = props.event.id;
 
+	// eventInfo controls what to display in Tab Content
 	const [eventInfo, setEventInfo] = useState(false);
-	const [eventInfoClass, setEventInfoClass] = useState('li-tab');
+	// eventInfoClass contorls className used for Button
+	const [eventInfoClass, setEventInfoClass] = useState(
+		'editeventmanager-grey'
+	);
 	const [photo, setPhoto] = useState(false);
-	const [photoClass, setPhotoClass] = useState('li-tab');
+	const [photoClass, setPhotoClass] = useState(
+		'editeventmanager-grey'
+	);
 	const [formBuilder, setFormBuilder] = useState(false);
-	const [formBuilderClass, setFormBuilderClass] = useState('li-tab');
+	const [formBuilderClass, setFormBuilderClass] = useState(
+		'editeventmanager-grey'
+	);
 	const [registration, setRegistration] = useState(false);
 	const [registrationClass, setRegistrationClass] = useState(
-		'li-tab'
+		'editeventmanager-grey'
 	);
-	const [percentage, setPercentage] = useState('25');
 
 	const eventInfoClickHandler = () => {
 		setEventInfo(true);
-		setEventInfoClass('li-tab_orange');
+		setEventInfoClass('editeventmanager-orange');
 		setPhoto(false);
-		setPhotoClass('li-tab');
+		setPhotoClass('editeventmanager-grey');
 		setFormBuilder(false);
-		setFormBuilderClass('li-tab');
+		setFormBuilderClass('editeventmanager-grey');
 		setRegistration(false);
-		setRegistrationClass('li-tab');
-		setPercentage('25');
+		setRegistrationClass('editeventmanager-grey');
 	};
 	const photoClickHandler = () => {
 		setEventInfo(false);
-		setEventInfoClass('li-tab');
+		setEventInfoClass('editeventmanager-grey');
 		setPhoto(true);
-		setPhotoClass('li-tab_orange');
+		setPhotoClass('editeventmanager-orange');
 		setFormBuilder(false);
-		setFormBuilderClass('li-tab');
+		setFormBuilderClass('editeventmanager-grey');
 		setRegistration(false);
-		setRegistrationClass('li-tab');
-		setPercentage('50');
+		setRegistrationClass('editeventmanager-grey');
 	};
 	const formBuilderClickHandler = () => {
 		setEventInfo(false);
-		setEventInfoClass('li-tab');
+		setEventInfoClass('editeventmanager-grey');
 		setPhoto(false);
-		setPhotoClass('li-tab');
+		setPhotoClass('editeventmanager-grey');
 		setFormBuilder(true);
-		setFormBuilderClass('li-tab_orange');
+		setFormBuilderClass('editeventmanager-orange');
 		setRegistration(false);
-		setRegistrationClass('li-tab');
-		setPercentage('75');
+		setRegistrationClass('editeventmanager-grey');
 	};
 	const registrationClickHandler = () => {
 		setEventInfo(false);
-		setEventInfoClass('li-tab');
+		setEventInfoClass('editeventmanager-grey');
 		setPhoto(false);
-		setPhotoClass('li-tab');
+		setPhotoClass('editeventmanager-grey');
 		setFormBuilder(false);
-		setFormBuilderClass('li-tab');
+		setFormBuilderClass('editeventmanager-grey');
 		setRegistration(true);
-		setRegistrationClass('li-tab_orange');
-		setPercentage('100');
+		setRegistrationClass('editeventmanager-orange');
 	};
 
 	// set defualt page, if none is false, we will use eventInfo as default
 	if (!eventInfo && !photo && !formBuilder && !registration) {
 		eventInfoClickHandler();
 	}
-
-	// getting continue status back from <EditEvent />
-	const [newEventStatus, setNewEventStatus] = useState(false);
-	const EditEventHandler = status => {
-		if (status) {
-			// set newEventStatus to true
-			setNewEventStatus(true);
-		}
-	};
-
-	useEffect(() => {
-		// if newEventStatus is true, move to the next stage => Photo.
-		if (newEventStatus) {
-			photoClickHandler();
-		}
-	}, [newEventStatus, eventInfo]);
-
-	// getting continue status back from <EventPhoto />
-	const [photoStatus, setPhotoStatus] = useState(false);
-	const PhotoHandler = status => {
-		if (status) {
-			setPhotoStatus(true);
-		}
-	};
-	useEffect(() => {
-		if (photoStatus) {
-			formBuilderClickHandler();
-		}
-	}, [photoStatus, formBuilderClickHandler]);
-
-	// getting continue status back from <FormBuilder />
-	const [formBuilderStatus, setFormBuilderStatus] = useState(false);
-	const FormBuilderHandler = status => {
-		if (status) {
-			setFormBuilderStatus(status);
-		}
-	};
-	useEffect(() => {
-		if (formBuilderStatus) {
-			registrationClickHandler();
-		}
-	}, [formBuilderStatus, registrationClickHandler]);
-
-	// getting continue status back from <FormBuilder />
-	const [registrationStatus, setRegistrationStatus] = useState(false);
-	const RegistrationHandler = status => {
-		if (status) {
-			setRegistrationStatus(status);
-		}
-	};
-	useEffect(() => {
-		if (registrationStatus) {
-			registrationClickHandler();
-		}
-	}, [registrationStatus, registrationClickHandler]);
 
 	return (
 		<React.Fragment>
@@ -135,58 +83,60 @@ const EditEventManager = props => {
 			{/* Edit Event Manager Tabs*/}
 			<div className="eventmanager">
 				<div className="dashboard-tabs activity-sections">
-					{/* <div className="progress">
-						<div
-							className="progress-bar progress-bar-striped progress-bar-animated"
-							role="progressbar"
-							style={{ width: `${percentage}%` }}
-							aria-valuenow={percentage}
-							aria-valuemin="0"
-							aria-valuemax="100">
-							{`${percentage}%`}
-						</div>
-					</div> */}
 					<br />
 					<ul className="nav nav-tabs">
-						<li className={eventInfoClass}>Event Information</li>
-						<li className={photoClass}>Photos</li>
-						<li className={formBuilderClass}>FormBuilder</li>
-						<li className={registrationClass}>Registration</li>
-						{/* <li>
-							<button
-								className="btn btn-default tab-link"
-								autoFocus
-								onClick={eventInfoClickHandler}>
-								Event Information
-							</button>
-						</li> */}
-						{/* <li className="btn btn-default tab-link" autoFocus> */}
-
-						{/* <li>
-							<button className="btn btn-default tab-link">
-								Photos
-							</button>
-						</li> */}
-
-						{/* <li>
-							<button
-								className="btn btn-default tab-link"
-								onClick={formBuilderClickHandler}>
-								Form Builder
-							</button>
-						</li> */}
-						{/* <li>
-							<button className="btn btn-default tab-link">
-								Video
-							</button>
-						</li> */}
+						{/* <li> */}
+						<Button
+							size={eventInfoClass}
+							autoFocus
+							onClick={eventInfoClickHandler}>
+							Event Information
+						</Button>
+						{/* </li> */}
+						{/* <li> */}
+						<Button
+							size={photoClass}
+							autoFocus
+							onClick={photoClickHandler}>
+							Photos
+						</Button>
+						{/* </li> */}
+						{/* <li> */}
+						<Button
+							size={formBuilderClass}
+							autoFocus
+							onClick={formBuilderClickHandler}>
+							Form Builder
+						</Button>
+						{/* </li> */}
+						{/* <li> */}
+						<Button
+							size={registrationClass}
+							autoFocus
+							onClick={registrationClickHandler}>
+							Registration
+						</Button>
+						{/* </li> */}
 					</ul>
+					<div className="tab-content">
+						{eventInfo && <UpdateEvent event={props.event} />}
+						{photo && <UpdateEventPhotos event={props.event} />}
+						{formBuilder && <UpdateFormBuilder event={props.event} />}
+						{registration && (
+							<UpdateEventRegistration event={props.event} />
+						)}
+					</div>
+					{/* 
+					<li className={eventInfoClass}>Event Information</li>
+					<li className={photoClass}>Photos</li>
+					<li className={formBuilderClass}>FormBuilder</li>
+					<li className={registrationClass}>Registration</li>
 					<div className="tab-content">
 						{eventInfo && <UpdateEvent eventId={eventId} />}
 						{photo && <EventPhotos eventId={eventId} />}
 						{formBuilder && <FormBuilder eventId={eventId} />}
 						{registration && <EventRegistration eventId={eventId} />}
-					</div>
+					</div> */}
 				</div>
 			</div>
 		</React.Fragment>

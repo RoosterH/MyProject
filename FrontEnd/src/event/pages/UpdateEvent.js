@@ -20,6 +20,7 @@ import '../../event/components/EventItem.css';
 import { eventTypes } from '../../event/components/EventTypes';
 
 const UpdateEvent = props => {
+	const [loadedEvent, setLoadedEvent] = useState(props.event);
 	const {
 		isLoading,
 		error,
@@ -29,7 +30,7 @@ const UpdateEvent = props => {
 
 	const clubAuthContext = useContext(ClubAuthContext);
 
-	let eventId = props.eventId;
+	let eventId = props.event.id;
 	// authentication check
 	useClubLoginValidation(`/events/form/${eventId}`);
 
@@ -75,8 +76,6 @@ const UpdateEvent = props => {
 		showImage && closeImageHandler();
 	};
 
-	const [loadedEvent, setLoadedEvent] = useState();
-
 	if (!eventId || eventId === 'error') {
 		// possibly page refresh, look for localStorage
 		const storageData = JSON.parse(localStorage.getItem('eventID'));
@@ -113,22 +112,22 @@ const UpdateEvent = props => {
 	};
 
 	// GET event from server
-	useEffect(() => {
-		const fetchEvent = async () => {
-			try {
-				const responseData = await sendRequest(
-					process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`
-				);
-				if (!responseData.event) {
-					throw new Error(
-						'Request error, previous event data was not found'
-					);
-				}
-				setLoadedEvent(responseData.event);
-			} catch (err) {}
-		};
-		fetchEvent();
-	}, [sendRequest, eventId]);
+	// useEffect(() => {
+	// 	const fetchEvent = async () => {
+	// 		try {
+	// 			const responseData = await sendRequest(
+	// 				process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`
+	// 			);
+	// 			if (!responseData.event) {
+	// 				throw new Error(
+	// 					'Request error, previous event data was not found'
+	// 				);
+	// 			}
+	// 			setLoadedEvent(responseData.event);
+	// 		} catch (err) {}
+	// 	};
+	// 	fetchEvent();
+	// }, [sendRequest, eventId]);
 
 	/***** Form Validation Section  *****/
 	// 1. Field level: Field validate={validateName}. This validates when Field is onBlur

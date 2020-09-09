@@ -35,7 +35,7 @@ const Event = props => {
 
 	// 2 different routes here.
 	// 1. Request from owner club for the event, backend returns all the event information for furture editing.
-	//    This avoids multiple requests to the backend
+	//    This avoids multiple requests to the backend.
 	// 2. The other is the general request.  This request will get limited info from backend.
 	useEffect(() => {
 		const fetechEvents = async () => {
@@ -58,6 +58,7 @@ const Event = props => {
 					);
 				}
 				setLoadedEvent(responseData.event);
+				console.log('event = ', responseData.event);
 			} catch (err) {}
 		};
 		fetechEvents();

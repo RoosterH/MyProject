@@ -22,7 +22,7 @@ import { FormContext } from '../../shared/context/form-context';
 import '../../shared/css/EventForm.css';
 
 const EventRegistration = props => {
-	let eventId = props.eventId;
+	let eventId = props.event.id;
 	const [initialized, setInitialized] = useState(false);
 	const clubAuthContext = useContext(ClubAuthContext);
 	const formContext = useContext(FormContext);
@@ -35,10 +35,6 @@ const EventRegistration = props => {
 	const continueHandler = () => {
 		setContinueStatus(true);
 	};
-	// this is the return function that passes finishing status back to NewEventManager
-	useEffect(() => {
-		props.registrationStatus(continueStatus);
-	}, [continueStatus, props]);
 
 	useEffect(() => {
 		let mounted = true;
@@ -124,9 +120,9 @@ const EventRegistration = props => {
 
 	const initialValues = {
 		// editorState: new EditorState.createEmpty(),
-		totalCap: totalCap,
-		numGroups: numGroups,
-		capDistribution: capDistribution
+		totalCap: props.event.totalCap,
+		numGroups: props.event.numGroups,
+		capDistribution: props.event.capDistribution
 	};
 
 	const updateEventFormData = (key, value) => {
@@ -152,11 +148,6 @@ const EventRegistration = props => {
 	const history = useHistory();
 	const submitHandler = async (values, actions) => {
 		try {
-			console.log('values = ', values);
-			console.log(
-				'capDistributionClicked = ',
-				capDistributionClicked
-			);
 			const responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
 					`/events/registration/${eventId}`,
@@ -215,7 +206,6 @@ const EventRegistration = props => {
 					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
-			history.push(`/clubs/clubManager}`);
 		} catch (err) {}
 	};
 
@@ -331,7 +321,7 @@ const EventRegistration = props => {
 							type="button"
 							size="medium"
 							margin-left="1.5rem"
-							disabled={!contButton}
+							disabled={props.event.publish}
 							onClick={publishHandler}>
 							PUBLISH
 						</Button>
