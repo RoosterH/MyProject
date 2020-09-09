@@ -31,6 +31,11 @@ const EventManager = () => {
 						Want to edit an existing event? Pick the one you want to
 						edit.
 					</p>
+
+					<p className="list-content-link">View Event</p>
+					<p className="list-content-desc">
+						View existing events. Pick the one you want to view.
+					</p>
 				</div>
 			</div>
 		</React.Fragment>

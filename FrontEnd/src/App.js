@@ -33,9 +33,9 @@ const Error = React.lazy(() => import('./shared/utils/error'));
 // event section
 const Event = React.lazy(() => import('./event/pages/Event'));
 const EventForm = React.lazy(() => import('./event/pages/EventForm'));
-const EventFormBuilder = React.lazy(() =>
-	import('./event/pages/EventFormBuilder')
-);
+// const EventFormBuilder = React.lazy(() =>
+// 	import('./event/pages/EventFormBuilder')
+// );
 const ClubDashboardToolbar = React.lazy(() =>
 	import('./clubDashboard/pages/ClubDashboardToolbar')
 );
@@ -47,6 +47,12 @@ const EventManager = React.lazy(() =>
 );
 const NewEventManager = React.lazy(() =>
 	import('./clubDashboard/components/NewEventManager')
+);
+const EditEventManager = React.lazy(() =>
+	import('./clubDashboard/components/EditEventManager')
+);
+const EditEventSelector = React.lazy(() =>
+	import('./clubDashboard/components/EditEventSelector')
 );
 const Events = React.lazy(() => import('./events/pages/Events'));
 const EventPhotos = React.lazy(() =>
@@ -108,9 +114,8 @@ const App = () => {
 				<Route path="/events/club/:clubId" exact>
 					<ClubEvents />
 				</Route>
-				<Route path="/events/:id" exact>
-					<Event />
-				</Route>
+				{/* to pass props via Link, we have to assign component={Event} here */}
+				<Route path="/events/:id" component={Event} exact />
 				<Route path="/clubs/clubManager/" exact>
 					<ClubManager />
 				</Route>
@@ -120,9 +125,15 @@ const App = () => {
 				<Route path="/clubs/newEventManager/" exact>
 					<NewEventManager />
 				</Route>
-				<Route path="/events/formbuilder/:id" exact>
-					<EventFormBuilder />
+				<Route path="/clubs/editEventSelector/:clubId" exact>
+					<EditEventSelector />
 				</Route>
+				<Route path="/clubs/editEventManager/" exact>
+					<EditEventManager />
+				</Route>
+				{/* <Route path="/events/formbuilder/:id" exact>
+					<EventFormBuilder />
+				</Route> */}
 				<Route path="/clubs/events/new" exact>
 					<NewEvent />
 				</Route>
@@ -162,9 +173,7 @@ const App = () => {
 				<Route path="/users/cars/:carId" exact>
 					<Car />
 				</Route>
-				<Route path="/events/:id" exact>
-					<Event />
-				</Route>
+				<Route path="/events/:id" component={Event} exact />
 				<Route path="/events/form/:id" exact>
 					<EventForm />
 				</Route>
@@ -191,9 +200,7 @@ const App = () => {
 				<Route path="/events/" exact>
 					<Events />
 				</Route>
-				<Route path="/events/:id" exact>
-					<Event />
-				</Route>
+				<Route path="/events/:id" component={Event} exact />
 				<Route path="/events/club/:clubId" exact>
 					<ClubEvents />
 				</Route>
@@ -208,11 +215,6 @@ const App = () => {
 				</Route>
 
 				{/* The following section is for page refresh. Without it, refresh will not happen */}
-				{/* Very import to keep sequence of the following 2 routes. Change the sequence will cause
-				    page refreshing not working properly.
-					1. Route is for refreshing page
-					2. Redirect is for club not logged in
-				*/}
 				<Route path="/clubs/clubManager" exact>
 					<ClubManager />
 				</Route>
@@ -231,6 +233,12 @@ const App = () => {
 				<Route path="/clubs/events/registration" exact>
 					<EventRegistration />
 				</Route>
+				<Route path="/clubs/editEventSelector/:clubId" exact>
+					<EditEventSelector />
+				</Route>
+				<Route path="/clubs/editEventManager/" exact>
+					<EditEventManager />
+				</Route>
 				{/* <Redirect strict from="/clubs/events/new" to="/clubs/auth" /> */}
 
 				{/* Very import to keep sequence of the following 2 routes. Change the sequence will cause
@@ -238,9 +246,9 @@ const App = () => {
 					1. Route is for refreshing page
 					2. Redirect is for club not logged in
 				*/}
-				<Route path="/events/formbuilder/:id" exact>
+				{/* <Route path="/events/formbuilder/:id" exact>
 					<EventFormBuilder />
-				</Route>
+				</Route> */}
 				{/* <Redirect
 					strict
 					from="/events/formbuilder/:id"

@@ -86,7 +86,6 @@ export default class ReactForm extends React.Component {
 	}
 
 	_getDefaultValue(item) {
-		console.log('item = ', item);
 		if (item.field_name && this.answerData) {
 			return this.answerData[item.field_name];
 		}

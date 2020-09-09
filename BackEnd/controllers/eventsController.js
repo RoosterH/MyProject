@@ -26,9 +26,12 @@ const getAllEvents = async (req, res, next) => {
 	const cId = req.params.cid;
 	let events;
 	try {
-		events = await Event.find({}).sort({
-			startDate: -1,
-			endDate: -1
+		events = await Event.find(
+			{},
+			'-entryFormData -entries -waitList -totalCap -totalEntries -numGroups -capDistribution -groupEntries'
+		).sort({
+			startDate: 1,
+			endDate: 1
 		});
 	} catch (err) {
 		const error = new HttpError(
@@ -56,9 +59,62 @@ const getEventById = async (req, res, next) => {
 
 	let event;
 	try {
-		event = await Event.findById(eventId);
+		event = await Event.findById(
+			eventId,
+			'-entryFormData -entries -waitList -totalCap -totalEntries -numGroups -capDistribution -groupEntries'
+		);
 	} catch (err) {
 		// this error is displayed if the request to the DB had some issues
+		console.log('err = ', err);
+		const error = new HttpError(
+			'Get event by ID process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'Could not find the event with the provided id',
+			404
+		);
+		return next(error);
+	}
+
+	// convert Mongoose object to a normal js object and get rid of _ of _id using getters: true
+	res.status(200).json({
+		event: event.toObject({
+			getters: true,
+			transform: (doc, ret, opt) => {
+				delete ret['entryFormData'];
+				delete ret['entries'];
+				delete ret['waitList'];
+				delete ret['totalCap'];
+				delete ret['totalEntries'];
+				delete ret['numGroups'];
+				delete ret['capDistribution'];
+				delete ret['groupEntries'];
+				return ret;
+			}
+		})
+	}); // { event } => { event: event }
+};
+
+// GET /api/events/:eid
+const getOwnerClubEvent = async (req, res, next) => {
+	// req.params is getting the eid from url, such as /api/events/:id
+	const eventId = req.params.eid;
+
+	let event;
+	try {
+		event = await Event.findById(
+			eventId,
+			'-entryFormData -entries -waitList -totalCap -totalEntries -numGroups -capDistribution -groupEntries'
+		);
+	} catch (err) {
+		// this error is displayed if the request to the DB had some issues
+		console.log('err = ', err);
 		const error = new HttpError(
 			'Get event by ID process failed. Please try again later.',
 			500
@@ -87,7 +143,10 @@ const getEventsByClubId = async (req, res, next) => {
 	try {
 		club = await Club.findById(cId).populate({
 			path: 'events',
-			options: { sort: { startDate: -1, endDate: -1 } }
+			options: {
+				sort: { startDate: -1, endDate: -1 },
+				published: true
+			}
 		});
 	} catch (err) {
 		const error = new HttpError(
@@ -110,7 +169,76 @@ const getEventsByClubId = async (req, res, next) => {
 	res.status(200).json({
 		events: club.events.map(event =>
 			event.toObject({
-				getters: true
+				getters: true,
+				transform: (doc, ret, opt) => {
+					delete ret['coordinate'];
+					delete ret['description'];
+					delete ret['instruction'];
+					delete ret['courseMap'];
+					delete ret['clubImage'];
+					delete ret['entryFormData'];
+					delete ret['entries'];
+					delete ret['waitList'];
+					delete ret['totalCap'];
+					delete ret['totalEntries'];
+					delete ret['numGroups'];
+					delete ret['capDistribution'];
+					delete ret['groupEntries'];
+					return ret;
+				}
+			})
+		)
+	});
+};
+
+const getEventsByOwnerClubId = async (req, res, next) => {
+	const cId = req.params.cid;
+
+	let club;
+	try {
+		club = await Club.findById(cId).populate({
+			path: 'events',
+			options: {
+				sort: { startDate: -1, endDate: -1 }
+			}
+		});
+	} catch (err) {
+		console.log('err = ', err);
+		const error = new HttpError(
+			'Get events by owner club ID process failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'Could not find the club owner.',
+			404
+		);
+		return next(error);
+	}
+
+	if (!club.events || club.events.length === 0) {
+		const error = new HttpError('Could not find any event.', 404);
+		return next(error);
+	}
+
+	res.status(200).json({
+		events: club.events.map(event =>
+			event.toObject({
+				getters: true,
+				transform: (doc, ret, opt) => {
+					delete ret['entryFormData'];
+					delete ret['entries'];
+					delete ret['waitList'];
+					delete ret['totalCap'];
+					delete ret['totalEntries'];
+					delete ret['numGroups'];
+					delete ret['capDistribution'];
+					delete ret['groupEntries'];
+					return ret;
+				}
 			})
 		)
 	});
@@ -122,11 +250,14 @@ const getEventsByDate = async (req, res, next) => {
 	let events;
 	// index {type: 1, startDate: 1}, covered query {type, startDate} is indexed
 	try {
-		events = await Event.find({
-			type: eventType,
-			startDate: { $gte: startDate, $lte: endDate },
-			published: true
-		}).sort({
+		events = await Event.find(
+			{
+				type: eventType,
+				startDate: { $gte: startDate, $lte: endDate },
+				published: true
+			},
+			'-entryFormData -entries -waitList -totalCap -totalEntries -numGroups -capDistribution -groupEntries'
+		).sort({
 			endDate: 1
 		});
 	} catch (err) {
@@ -276,10 +407,13 @@ const createEvent = async (req, res, next) => {
 		);
 		return next(error);
 	}
-
 	res
 		.status(201)
-		.json({ event: newEvent.toObject({ getters: true }) });
+		.json({ message: `Event: ${event.name} photos been created` });
+
+	// res
+	// 	.status(201)
+	// 	.json({ event: newEvent.toObject({ getters: true }) });
 };
 
 // PATCH /api/events/photos/:eid
@@ -376,7 +510,7 @@ const updateEventPhotos = async (req, res, next) => {
 		await event.save();
 		res
 			.status(200)
-			.json({ event: event.toObject({ getters: true }) });
+			.json({ message: `Event: ${event.name} photos been updated` });
 	} catch (err) {
 		console.log('err = ', err);
 		const error = new HttpError(
@@ -465,9 +599,34 @@ const updateEventRegistration = async (req, res, next) => {
 
 	try {
 		await event.save();
-		res
-			.status(200)
-			.json({ event: event.toObject({ getters: true }) });
+		res.status(200).json({
+			event: event.toObject({
+				getters: true,
+				transform: (doc, ret, opt) => {
+					delete ret['name'];
+					delete ret['image'];
+					delete ret['type'];
+					delete ret['startDate'];
+					delete ret['endDate'];
+					delete ret['regStartDate'];
+					delete ret['regEndDate'];
+					delete ret['venue'];
+					delete ret['address'];
+					delete ret['cooridnate'];
+					delete ret['description'];
+					delete ret['insutruction'];
+					delete ret['courseMap'];
+					delete ret['clubId'];
+					delete ret['clubName'];
+					delete ret['clubImage'];
+					delete ret['published'];
+					delete ret['entryFormData'];
+					delete ret['entries'];
+					delete ret['waitList'];
+					return ret;
+				}
+			})
+		});
 	} catch (err) {
 		console.log('err = ', err);
 		const error = new HttpError(
@@ -565,23 +724,23 @@ const updateEvent = async (req, res, next) => {
 	}
 
 	// check whether image or courseMap been changed or not
-	let imagePath, courseMapPath;
-	if (req.files.image) {
-		imagePath = req.files.image[0].path;
-		if (event.image) {
-			fs.unlink(event.image, err => {
-				console.log(err);
-			});
-		}
-	}
-	if (req.files.courseMap) {
-		courseMapPath = req.files.courseMap[0].path;
-		if (event.courseMap) {
-			fs.unlink(event.courseMap, err => {
-				console.log(err);
-			});
-		}
-	}
+	// let imagePath, courseMapPath;
+	// if (req.files.image) {
+	// 	imagePath = req.files.image[0].path;
+	// 	if (event.image) {
+	// 		fs.unlink(event.image, err => {
+	// 			console.log(err);
+	// 		});
+	// 	}
+	// }
+	// if (req.files.courseMap) {
+	// 	courseMapPath = req.files.courseMap[0].path;
+	// 	if (event.courseMap) {
+	// 		fs.unlink(event.courseMap, err => {
+	// 			console.log(err);
+	// 		});
+	// 	}
+	// }
 
 	// update event info
 	event.name = name;
@@ -590,24 +749,39 @@ const updateEvent = async (req, res, next) => {
 	event.endDate = moment(endDate);
 	event.regStartDate = moment(regStartDate);
 	event.regEndDate = moment(regEndDate);
-	if (imagePath) {
-		event.image = imagePath;
-	}
+	// if (imagePath) {
+	// 	event.image = imagePath;
+	// }
 	event.venue = venue;
 	event.address = address;
 	event.description = description;
 	event.instruction = instruction;
 	event.coordinate = coordinate;
 	event.published = false;
-	if (courseMapPath) {
-		event.courseMap = courseMapPath;
-	}
+	// if (courseMapPath) {
+	// 	event.courseMap = courseMapPath;
+	// }
 
 	try {
 		await event.save();
-		res
-			.status(200)
-			.json({ event: event.toObject({ getters: true }) });
+		res.status(200).json({
+			event: event.toObject({
+				getters: true,
+				transform: (doc, ret, opt) => {
+					delete ret['image'];
+					delete ret['courseMap'];
+					delete ret['entryFormData'];
+					delete ret['entries'];
+					delete ret['waitList'];
+					delete ret['totalCap'];
+					delete ret['totalEntries'];
+					delete ret['numGroups'];
+					delete ret['capDistribution'];
+					delete ret['groupEntries'];
+					return ret;
+				}
+			})
+		});
 	} catch (err) {
 		console.log('err = ', err);
 		const error = new HttpError(
@@ -680,7 +854,7 @@ const deleteEvent = async (req, res, next) => {
 		return next(error);
 	}
 
-	if (event.image) {
+	if (event.image !== 'UNDEFINED' && event.image) {
 		fs.unlink(event.image, err => {
 			console.log('unlink event image error = ', err);
 		});
@@ -745,6 +919,7 @@ const getEventEntryFormAnswer = async (req, res, next) => {
 // export a pointer of the function
 exports.getAllEvents = getAllEvents;
 exports.getEventById = getEventById;
+exports.getOwnerClubEvent = getOwnerClubEvent;
 exports.getEventsByClubId = getEventsByClubId;
 exports.getEventsByDate = getEventsByDate;
 exports.createEvent = createEvent;
@@ -753,3 +928,4 @@ exports.deleteEvent = deleteEvent;
 exports.getEventEntryFormAnswer = getEventEntryFormAnswer;
 exports.updateEventPhotos = updateEventPhotos;
 exports.updateEventRegistration = updateEventRegistration;
+exports.getEventsByOwnerClubId = getEventsByOwnerClubId;

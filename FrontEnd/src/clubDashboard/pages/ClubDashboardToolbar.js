@@ -57,8 +57,11 @@ const ClubDashboardToolbar = () => {
 							<NavLink to={'/clubs/newEventManager'} exact>
 								Add New Event
 							</NavLink>
-							<NavLink to={`/events/club/${cid}/`} exact>
-								Edit Event
+							<NavLink to={`/clubs/editEventSelector/${cid}`} exact>
+								Edit Events
+							</NavLink>
+							<NavLink to={`/events/club/${cid}`} exact>
+								View Events
 							</NavLink>
 						</div>
 					</li>

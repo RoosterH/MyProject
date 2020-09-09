@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import EventsList from '../../events/components/EventsList';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import { useHttpClient } from '../../shared/hooks/http-hook';
+import { ClubAuthContext } from '../../shared/context/auth-context';
+import { UserAuthContext } from '../../shared/context/auth-context';
 
 // Events is called in App.js where the route been defined
-const ClubEvents = () => {
-	console.log('inside clubevents');
+const ClubEvents = props => {
 	const [loadedEvents, setLoadedEvents] = useState();
 	const {
 		isLoading,
@@ -17,14 +18,38 @@ const ClubEvents = () => {
 		clearError
 	} = useHttpClient();
 
-	const clubId = useParams().clubId;
+	// let cid = useParams().clubId;
+	// let clubId = props.clubId ? props.clubId : cid;
+	let clubId = props.clubId;
+
+	const clubAuthContext = useContext(ClubAuthContext);
+	let ownerClubEvent = false;
+	if (clubAuthContext && clubAuthContext.clubId === clubId) {
+		ownerClubEvent = true;
+	}
+
 	useEffect(() => {
 		const fetechEvents = async () => {
 			try {
-				const responseData = await sendRequest(
-					process.env.REACT_APP_BACKEND_URL + `/events/club/${clubId}`
-				);
-				console.log('responseData = ', responseData);
+				let responseData;
+				// For ownerClubEvent, use different route that will get all events owned by the club
+				if (ownerClubEvent) {
+					responseData = await sendRequest(
+						process.env.REACT_APP_BACKEND_URL +
+							`/events/ownerClub/${clubId}`,
+						'GET',
+						null,
+						{
+							Authorization: 'Bearer ' + clubAuthContext.clubToken
+						}
+					);
+				} else {
+					// This route only gets published events
+					responseData = await sendRequest(
+						process.env.REACT_APP_BACKEND_URL +
+							`/events/club/${clubId}`
+					);
+				}
 				setLoadedEvents(responseData.events);
 			} catch (err) {
 				console.log('err = ', err);

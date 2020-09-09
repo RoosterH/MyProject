@@ -200,6 +200,24 @@ const EventRegistration = props => {
 	);
 	/***** End of Form Validation *****/
 
+	const publishHandler = async () => {
+		try {
+			await sendRequest(
+				process.env.REACT_APP_BACKEND_URL +
+					`/clubs/publish/${eventId}`,
+				'PATCH',
+				JSON.stringify({ published: true }),
+				{
+					// No need for content-type since body is null,
+					// adding JWT to header for authentication
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
+				}
+			);
+			history.push(`/clubs/clubManager}`);
+		} catch (err) {}
+	};
+
 	const eventForm = values => (
 		<div className="event-form">
 			<div className="event-form-header">
@@ -313,8 +331,8 @@ const EventRegistration = props => {
 							size="medium"
 							margin-left="1.5rem"
 							disabled={!contButton}
-							onClick={continueHandler}>
-							CONTINUE
+							onClick={publishHandler}>
+							PUBLISH
 						</Button>
 						<NavigationPrompt
 							afterConfirm={() => {

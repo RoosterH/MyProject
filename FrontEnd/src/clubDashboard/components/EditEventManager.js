@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import NewEvent from '../../event/pages/NewEvent';
+import UpdateEvent from '../../event/pages/UpdateEvent';
 import FormBuilder from '../../event/components/FormBuilder';
 import EventPhotos from '../../event/pages/EventPhotos';
 import EventRegistration from '../../event/pages/EventRegistration';
 import './ClubManager.css';
+import { useParams } from 'react-router-dom';
 
-const NewEventManager = () => {
-	const [eventId, setEventId] = useState();
+const EditEventManager = props => {
+	let eventId = props.event.id;
+
 	const [eventInfo, setEventInfo] = useState(false);
 	const [eventInfoClass, setEventInfoClass] = useState('li-tab');
 	const [photo, setPhoto] = useState(false);
@@ -69,17 +71,15 @@ const NewEventManager = () => {
 		eventInfoClickHandler();
 	}
 
-	// getting continue status back from <NewEvent />
+	// getting continue status back from <EditEvent />
 	const [newEventStatus, setNewEventStatus] = useState(false);
-	const NewEventHandler = status => {
+	const EditEventHandler = status => {
 		if (status) {
 			// set newEventStatus to true
 			setNewEventStatus(true);
 		}
 	};
-	const EventIDHandler = eId => {
-		setEventId(eId);
-	};
+
 	useEffect(() => {
 		// if newEventStatus is true, move to the next stage => Photo.
 		if (newEventStatus) {
@@ -129,13 +129,13 @@ const NewEventManager = () => {
 	return (
 		<React.Fragment>
 			<div className="list-header clearfix">
-				<div className="h3">New Event Manager</div>
+				<div className="h3">{props.event.name}</div>
 			</div>
 
-			{/* New Event Manager Tabs*/}
+			{/* Edit Event Manager Tabs*/}
 			<div className="eventmanager">
 				<div className="dashboard-tabs activity-sections">
-					<div className="progress">
+					{/* <div className="progress">
 						<div
 							className="progress-bar progress-bar-striped progress-bar-animated"
 							role="progressbar"
@@ -145,7 +145,7 @@ const NewEventManager = () => {
 							aria-valuemax="100">
 							{`${percentage}%`}
 						</div>
-					</div>
+					</div> */}
 					<br />
 					<ul className="nav nav-tabs">
 						<li className={eventInfoClass}>Event Information</li>
@@ -182,30 +182,10 @@ const NewEventManager = () => {
 						</li> */}
 					</ul>
 					<div className="tab-content">
-						{eventInfo && (
-							<NewEvent
-								newEventStatus={NewEventHandler}
-								eventIdHandler={EventIDHandler}
-							/>
-						)}
-						{photo && (
-							<EventPhotos
-								eventPhotosStatus={PhotoHandler}
-								eventId={eventId}
-							/>
-						)}
-						{formBuilder && (
-							<FormBuilder
-								formbuilderStatus={FormBuilderHandler}
-								eventId={eventId}
-							/>
-						)}
-						{registration && (
-							<EventRegistration
-								registrationStatus={RegistrationHandler}
-								eventId={eventId}
-							/>
-						)}
+						{eventInfo && <UpdateEvent eventId={eventId} />}
+						{photo && <EventPhotos eventId={eventId} />}
+						{formBuilder && <FormBuilder eventId={eventId} />}
+						{registration && <EventRegistration eventId={eventId} />}
 					</div>
 				</div>
 			</div>
@@ -213,4 +193,4 @@ const NewEventManager = () => {
 	);
 };
 
-export default NewEventManager;
+export default EditEventManager;

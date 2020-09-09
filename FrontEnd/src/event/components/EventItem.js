@@ -7,6 +7,7 @@ import moment from 'moment';
 import countdown from 'moment-countdown';
 
 import Button from '../../shared/components/FormElements/Button';
+import EditEventManager from '../../clubDashboard/components/EditEventManager';
 import Card from '../../shared/components/UIElements/Card';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
@@ -370,10 +371,11 @@ const EventItem = props => {
 					Are you ready to submit {props.event.name}? Please confirm.
 				</p>
 			</Modal>
-			{/* This section is for User club */}
+			{/* This section is for Users and  Clubs that do not own the event */}
 			{/* render logo/club name/event type  */}
 			{isLoading && <LoadingSpinner asOverlay />}
-			{!clubAuthContext.clubId && (
+			{(!clubAuthContext.clubId ||
+				clubAuthContext.clubId !== props.event.clubId) && (
 				<div className="event-pages eventtype-page">
 					<section id="header" title="">
 						<div className="section-container">
@@ -413,7 +415,8 @@ const EventItem = props => {
 			)}
 			{/* this section is for event image */}
 			{/* Regitration container */}
-			{!clubAuthContext.clubId && (
+			{(!clubAuthContext.clubId ||
+				clubAuthContext.clubId !== props.event.clubId) && (
 				<div className="section-container">
 					<div className="page-basic-container">
 						<div className="eventimage-container">
@@ -464,7 +467,8 @@ const EventItem = props => {
 				</div>
 			)}
 
-			{!clubAuthContext.clubId && (
+			{(!clubAuthContext.clubId ||
+				clubAuthContext.clubId !== props.event.clubId) && (
 				<div className="section-container">
 					<div className="page-basic-container">
 						<div className="about-description">
@@ -495,7 +499,8 @@ const EventItem = props => {
 				</div>
 			)}
 
-			{!clubAuthContext.clubId && (
+			{(!clubAuthContext.clubId ||
+				clubAuthContext.clubId !== props.event.clubId) && (
 				<div className="section-container">
 					<div className="page-basic-container">
 						<div className="about-description">
@@ -526,7 +531,8 @@ const EventItem = props => {
 				</div>
 			)}
 
-			{!clubAuthContext.clubId && (
+			{(!clubAuthContext.clubId ||
+				clubAuthContext.clubId !== props.event.clubId) && (
 				<div className="section-container">
 					<div className="page-basic-container">
 						<div className="page-footer"></div>
@@ -534,8 +540,11 @@ const EventItem = props => {
 				</div>
 			)}
 
-			{/* for Clubs */}
+			{/* for Club that owns this event */}
 			{clubAuthContext.clubId === props.event.clubId && (
+				<EditEventManager event={props.event} />
+			)}
+			{/* {clubAuthContext.clubId === props.event.clubId && (
 				<Card className="event-item__content">
 					{isLoading && <LoadingSpinner asOverlay />}
 					<div>
@@ -621,7 +630,7 @@ const EventItem = props => {
 							)}
 					</div>
 				</Card>
-			)}
+			)} */}
 		</React.Fragment>
 	);
 };

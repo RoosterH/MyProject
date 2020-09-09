@@ -19,7 +19,7 @@ import '../../shared/css/EventForm.css';
 import '../../event/components/EventItem.css';
 import { eventTypes } from '../../event/components/EventTypes';
 
-const UpdateEvent = () => {
+const UpdateEvent = props => {
 	const {
 		isLoading,
 		error,
@@ -29,8 +29,7 @@ const UpdateEvent = () => {
 
 	const clubAuthContext = useContext(ClubAuthContext);
 
-	// get eventId from url
-	let eventId = useParams().id;
+	let eventId = props.eventId;
 	// authentication check
 	useClubLoginValidation(`/events/form/${eventId}`);
 
@@ -109,8 +108,8 @@ const UpdateEvent = () => {
 		address: '',
 		description: '',
 		instruction: '',
-		courseMap: '',
-		isSaveButton: false
+		courseMap: ''
+		// isSaveButton: false
 	};
 
 	// GET event from server
@@ -222,43 +221,45 @@ const UpdateEvent = () => {
 		}
 	);
 
+	const [saveButtonEnabled, setSaveButtonEnabled] = useState(false);
+
 	// To save, we only care about image sizes
-	const [imageValid, setImageValid] = useState(true);
-	const [courseMapValid, setCourseMapValid] = useState(true);
+	// const [imageValid, setImageValid] = useState(true);
+	// const [courseMapValid, setCourseMapValid] = useState(true);
 
 	// Save button is an intermediate stage so we will allow Save as long as
 	// image size and course map size are valid
-	const [saveButtonIsValid, setSaveButtonIsValid] = useState(true);
-	useEffect(() => {
-		let valid = imageValid && courseMapValid;
-		setSaveButtonIsValid(valid);
-	}, [imageValid, courseMapValid]);
+	// const [saveButtonEnabled, setSaveButtonEnabled] = useState(true);
+	// useEffect(() => {
+	// 	let valid = imageValid && courseMapValid;
+	// 	setSaveButtonEnabled(valid);
+	// }, [imageValid, courseMapValid]);
 
-	const [validateImageSize, setValidateImageSize] = useState(
-		() => value => {
-			let error;
-			if (value && value.size > 1500000) {
-				error = 'File size needs to be smaller than 1.5MB';
-				setImageValid(false);
-			} else {
-				setImageValid(true);
-			}
-			return error;
-		}
-	);
+	// const [validateImageSize, setValidateImageSize] = useState(
+	// 	() => value => {
+	// 		let error;
+	// 		if (value && value.size > 1500000) {
+	// 			error = 'File size needs to be smaller than 1.5MB';
+	// 			setImageValid(false);
+	// 		} else {
+	// 			setImageValid(true);
+	// 		}
+	// 		return error;
+	// 	}
+	// );
 
-	const [validateCourseMapSize, setValidateCourseMapSize] = useState(
-		() => value => {
-			let error;
-			if (value && value.size > 1500000) {
-				error = 'File size needs to be smaller than 1.5MB';
-				setCourseMapValid(false);
-			} else {
-				setCourseMapValid(true);
-			}
-			return error;
-		}
-	);
+	// const [validateCourseMapSize, setValidateCourseMapSize] = useState(
+	// 	() => value => {
+	// 		let error;
+	// 		if (value && value.size > 1500000) {
+	// 			error = 'File size needs to be smaller than 1.5MB';
+	// 			setCourseMapValid(false);
+	// 		} else {
+	// 			setCourseMapValid(true);
+	// 		}
+	// 		return error;
+	// 	}
+	// );
 	/***** End of Form Validation *****/
 
 	const submitHandler = async values => {
@@ -274,8 +275,8 @@ const UpdateEvent = () => {
 			formData.append('address', values.address);
 			formData.append('description', values.description);
 			formData.append('instruction', values.instruction);
-			formData.append('image', values.image);
-			formData.append('courseMap', values.courseMap);
+			// formData.append('image', values.image);
+			// formData.append('courseMap', values.courseMap);
 
 			const responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`,
@@ -290,43 +291,44 @@ const UpdateEvent = () => {
 			// Without it, form will keep the old initial values.
 			setLoadedEvent(responseData.event);
 			setOKLeavePage(true);
-			history.push('/events/' + eventId);
+			setSaveButtonEnabled(false);
 		} catch (err) {}
 	};
 
-	const saveHandler = async values => {
-		try {
-			const formData = new FormData();
-			formData.append('name', values.name);
-			formData.append('type', values.type);
-			formData.append('startDate', values.startDate); //format 2020-08-01
-			formData.append('endDate', values.endDate);
-			formData.append('regStartDate', values.regStartDate);
-			formData.append('regEndDate', values.regEndDate);
-			formData.append('venue', values.venue);
-			formData.append('address', values.address);
-			formData.append('description', values.description);
-			formData.append('instruction', values.instruction);
-			formData.append('image', values.image);
-			formData.append('courseMap', values.courseMap);
+	// const saveHandler = async values => {
+	// 	try {
+	// 		const formData = new FormData();
+	// 		formData.append('name', values.name);
+	// 		formData.append('type', values.type);
+	// 		formData.append('startDate', values.startDate); //format 2020-08-01
+	// 		formData.append('endDate', values.endDate);
+	// 		formData.append('regStartDate', values.regStartDate);
+	// 		formData.append('regEndDate', values.regEndDate);
+	// 		formData.append('venue', values.venue);
+	// 		formData.append('address', values.address);
+	// 		formData.append('description', values.description);
+	// 		formData.append('instruction', values.instruction);
+	// 		// formData.append('image', values.image);
+	// 		// formData.append('courseMap', values.courseMap);
 
-			const responseData = await sendRequest(
-				process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`,
-				'PATCH',
-				formData,
-				{
-					// adding JWT to header for authentication, JWT contains clubId
-					Authorization: 'Bearer ' + clubAuthContext.clubToken
-				}
-			);
-			// Need to set the loadedEvent so we will set initialValues again.
-			// Without it, form will keep the old initial values.
-			setLoadedEvent(responseData.event);
-			setOKLeavePage(true);
+	// 		const responseData = await sendRequest(
+	// 			process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`,
+	// 			'PATCH',
+	// 			formData,
+	// 			{
+	// 				// adding JWT to header for authentication, JWT contains clubId
+	// 				Authorization: 'Bearer ' + clubAuthContext.clubToken
+	// 			}
+	// 		);
+	// 		// Need to set the loadedEvent so we will set initialValues again.
+	// 		// Without it, form will keep the old initial values.
+	// 		setLoadedEvent(responseData.event);
+	// 		setOKLeavePage(true);
 
-			// history.push('/events/' + eventId);
-		} catch (err) {}
-	};
+	// 		console.log('eventId = ', eventId);
+	// 		history.push('/events/' + eventId);
+	// 	} catch (err) {}
+	// };
 	if (isLoading) {
 		return (
 			<div className="center">
@@ -346,7 +348,7 @@ const UpdateEvent = () => {
 		initialValues = {
 			name: loadedEvent.name,
 			type: loadedEvent.type,
-			image: loadedEvent.image,
+			// image: loadedEvent.image,
 			startDate: moment(loadedEvent.startDate).format('YYYY-MM-DD'),
 			endDate: moment(loadedEvent.endDate).format('YYYY-MM-DD'),
 			regStartDate: moment(loadedEvent.regStartDate).format(
@@ -356,9 +358,9 @@ const UpdateEvent = () => {
 			venue: loadedEvent.venue,
 			address: loadedEvent.address,
 			description: loadedEvent.description,
-			instruction: loadedEvent.instruction,
-			courseMap: loadedEvent.courseMap,
-			isSaveButton: false
+			instruction: loadedEvent.instruction
+			// courseMap: loadedEvent.courseMap,
+			// isSaveButton: false
 		};
 	}
 
@@ -377,12 +379,12 @@ const UpdateEvent = () => {
 				initialValues={initialValues}
 				validationSchema={dateValidationSchema}
 				onSubmit={(values, actions) => {
-					values.isSaveButton
-						? saveHandler(values)
-						: submitHandler(values);
-					if (values.isSaveButton) {
-						alert('Your form is saved.');
-					}
+					// values.isSaveButton
+					// 	? saveHandler(values)
+					submitHandler(values);
+					// if (values.isSaveButton) {
+					// 	alert('Your form is saved.');
+					// }
 					if (actions.isSubmitting) {
 						actions.setSubmitting(false);
 					}
@@ -457,6 +459,7 @@ const UpdateEvent = () => {
 								// To take advantage of touched, we can pass formik.handleBlur to each input's onBlur prop.
 								handleBlur(event);
 								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
 							}}
 						/>
 						{touched.name && errors.name && (
@@ -477,6 +480,7 @@ const UpdateEvent = () => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
 							}}>
 							<option value="Event Type" disabled>
 								Event Type
@@ -512,6 +516,7 @@ const UpdateEvent = () => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
 							}}
 						/>
 						<Field
@@ -525,6 +530,7 @@ const UpdateEvent = () => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
 							}}
 						/>
 						{(touched.startDate || touched.endDate) &&
@@ -559,6 +565,7 @@ const UpdateEvent = () => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
 							}}
 						/>
 						<Field
@@ -571,6 +578,7 @@ const UpdateEvent = () => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
 							}}
 						/>
 						{(touched.regStartDate || touched.regEndDate) &&
@@ -596,6 +604,7 @@ const UpdateEvent = () => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
 							}}
 						/>
 						{touched.venue && errors.venue && (
@@ -616,6 +625,7 @@ const UpdateEvent = () => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
 							}}
 						/>
 						{touched.address && errors.address && (
@@ -640,6 +650,7 @@ const UpdateEvent = () => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
 							}}
 						/>
 						{touched.description && errors.description && (
@@ -664,6 +675,7 @@ const UpdateEvent = () => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
 							}}
 						/>
 						{touched.instruction && errors.instruction && (
@@ -671,7 +683,7 @@ const UpdateEvent = () => {
 								{errors.instruction}
 							</div>
 						)}
-						<Field
+						{/* <Field
 							id="image"
 							name="image"
 							title="image"
@@ -682,6 +694,7 @@ const UpdateEvent = () => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
 							}}
 							labelStyle="event-form__label"
 							inputStyle="event-form__field-select"
@@ -699,17 +712,18 @@ const UpdateEvent = () => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
 							}}
 							labelStyle="event-form__label"
 							inputStyle="event-form__field-select"
 							previewStyle="image-upload__preview"
 							errorStyle="event-form__field-error"
-						/>
-						<Button
+						/> */}
+						{/* <Button
 							type="submit"
 							size="medium"
 							margin-left="1.5rem"
-							disabled={isSubmitting || !saveButtonIsValid}
+							disabled={isSubmitting || !saveButtonEnabled}
 							onClick={e => {
 								setFieldValue('isSaveButton', true, false);
 								setValidateName(() => () => {});
@@ -719,20 +733,22 @@ const UpdateEvent = () => {
 								setValidateInstruction(() => () => {});
 							}}>
 							Save
-						</Button>
+						</Button> */}
 						<Button
 							type="submit"
 							size="medium"
 							margin-left="1.5rem"
-							disabled={isSubmitting || !isValid}
+							disabled={
+								isSubmitting || !isValid || !saveButtonEnabled
+							}
 							onClick={e => {
 								setFieldValue('isSaveButton', false, false);
 							}}>
-							Submit
+							SAVE
 						</Button>
-						<Button type="button" size="medium" onClick={backHandler}>
+						{/* <Button type="button" size="medium" onClick={backHandler}>
 							Back
-						</Button>
+						</Button> */}
 						<NavigationPrompt
 							afterConfirm={() => {
 								localStorage.removeItem('eventID');

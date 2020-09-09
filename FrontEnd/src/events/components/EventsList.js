@@ -11,10 +11,7 @@ const EventList = props => {
 	if (props.items.length === 0) {
 		return (
 			<div className="center">
-				<Card>
-					<h2>No event found. Please click to create a new event</h2>
-					<Button to="/events/new">Create a new event</Button>
-				</Card>
+				<h2>No event found.</h2>
 			</div>
 		);
 	}
@@ -31,6 +28,7 @@ const EventList = props => {
 					type={event.type}
 					image={process.env.REACT_APP_ASSET_URL + `/${event.image}`}
 					clubName={event.clubName}
+					clubId={event.clubId}
 					startDate={event.startDate}
 					endDate={event.endDate}
 					venue={event.venue}

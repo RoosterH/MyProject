@@ -32,6 +32,8 @@ const eventSchema = new Schema({
 	clubName: { type: String, required: true },
 	clubImage: { type: String, required: true },
 	published: { type: Boolean, required: true },
+
+	// The following section will not be returned to front end unless from specific requests
 	// event entry form
 	entryFormData: { type: Array, required: true },
 	entries: [
@@ -40,11 +42,15 @@ const eventSchema = new Schema({
 	waitList: [
 		{ type: mongoose.Types.ObjectId, required: true, ref: 'Entry' }
 	],
+	// Total entries allowed in an event
 	totalCap: { type: Number },
+	// Number of entries
 	totalEntries: { type: Number },
+	// Number of groups in an event
 	numGroups: { type: Number },
 	// if true, we will create an array groupEntries with numGroup elements. Each element value cannot exceed totalCap / numGroups.
 	capDistribution: { type: Boolean },
+	// Number of entries for each group
 	groupEntries: [{ type: Number }]
 });
 

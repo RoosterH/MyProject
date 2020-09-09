@@ -15,9 +15,24 @@ const router = express.Router();
 // Express will use the pointer to execute the function when it's needed
 router.get('/', eventsController.getAllEvents);
 
+router.get(
+	'/ownerClubEvent/:eid',
+	eventsController.getOwnerClubEvent
+);
 router.get('/:eid', eventsController.getEventById);
 
 router.get('/club/:cid', eventsController.getEventsByClubId);
+
+router.get(
+	'/ownerClub/:cid',
+	eventsController.getEventsByOwnerClubId
+);
+
+// get event entry form and answer
+router.get(
+	'/form/:eid/:uid',
+	eventsController.getEventEntryFormAnswer
+);
 
 // request events between dates
 router.post(
@@ -41,12 +56,6 @@ router.post(
 // adding checkClubAuth middleware here will ensure all the requests below
 // need to be authenticated
 router.use(checkClubAuth);
-
-// get event entry form and answer
-router.get(
-	'/form/:eid/:uid',
-	eventsController.getEventEntryFormAnswer
-);
 
 // fileUpload.fields([
 // 	{ name: 'image', maxCount: 1 },

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 
+import Event from '../../event/pages/Event';
 import Avatar from '../../shared/components/UIElements/Avatar';
 import Card from '../../shared/components/UIElements/Card';
 import '../../shared/css/EventsItem.css';
@@ -13,7 +14,14 @@ const EventsItem = props => {
 	return (
 		<li className="events-item">
 			<Card className="events-item__content">
-				<Link to={`/events/${props.id}`}>
+				{/* in order to pass props via Link, we need to make an object {{pathname: xxx, state: xxx}} App.js Route also needs to make a change */}
+				<Link
+					to={{
+						pathname: `/events/${props.id}`,
+						state: {
+							props: props
+						}
+					}}>
 					<div className="events-item__image">
 						<Avatar
 							image={props.image}
