@@ -310,7 +310,8 @@ const EventRegistration = props => {
 							</div>
 						)}
 						<label className="event-form__checkbox">
-							<Field
+							{/* Field does not work for manual toggling */}
+							<input
 								type="checkbox"
 								id="capDistribution"
 								name="capDistribution"

@@ -41,23 +41,22 @@ const ImageUploader = props => {
 				onChange={handleImageChange}
 				className={props.inputStyle}
 			/>
-			{!errorMessage && !previewUrl && (
-				<div className={props.previewStyle}>
-					{currentUrl && (
-						<React.Fragment>
-							<p>Current file: {currentUrl}</p>
-							<Image
-								draggable="true"
-								// src={currentUrl}
-								src={
-									process.env.REACT_APP_ASSET_URL + `/${currentUrl}`
-								}
-								alt="Existing file"
-								// ondrag={() => props.onDrag()}
-							/>
-						</React.Fragment>
-					)}
-				</div>
+			{!errorMessage && !previewUrl && currentUrl && (
+				<React.Fragment>
+					<label htmlFor={id} className={props.labelStyle}>
+						Current Image
+					</label>
+					<div className={props.previewStyle}>
+						<Image
+							draggable="true"
+							// src={currentUrl}
+							src={process.env.REACT_APP_ASSET_URL + `/${currentUrl}`}
+							alt="Existing file"
+							// ondrag={() => props.onDrag()}
+						/>
+						}
+					</div>
+				</React.Fragment>
 			)}
 			{!errorMessage && previewUrl && (
 				<div className={props.previewStyle}>

@@ -9,6 +9,13 @@ import './ClubManager.css';
 const EditEventManager = props => {
 	let eventId = props.event.id;
 
+	const [event, setEvent] = useState(props.event);
+	// getting newEvent from all update procs after the change been saved to backend
+	// so we can have updated event information
+	const updateEvent = newEvent => {
+		setEvent(newEvent);
+	};
+
 	// eventInfo controls what to display in Tab Content
 	const [eventInfo, setEventInfo] = useState(false);
 	// eventInfoClass contorls className used for Button
@@ -111,11 +118,29 @@ const EditEventManager = props => {
 						</Button>
 					</ul>
 					<div className="tab-content">
-						{eventInfo && <UpdateEvent event={props.event} />}
-						{photo && <UpdateEventPhotos event={props.event} />}
-						{formBuilder && <UpdateFormBuilder event={props.event} />}
+						{eventInfo && (
+							<UpdateEvent
+								event={event}
+								returnNewEvent={updateEvent}
+							/>
+						)}
+						{photo && (
+							<UpdateEventPhotos
+								event={event}
+								returnNewEvent={updateEvent}
+							/>
+						)}
+						{formBuilder && (
+							<UpdateFormBuilder
+								event={event}
+								returnNewEvent={updateEvent}
+							/>
+						)}
 						{registration && (
-							<UpdateEventRegistration event={props.event} />
+							<UpdateEventRegistration
+								event={event}
+								returnNewEvent={updateEvent}
+							/>
 						)}
 					</div>
 				</div>

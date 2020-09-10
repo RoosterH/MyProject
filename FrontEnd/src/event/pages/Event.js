@@ -19,12 +19,6 @@ const Event = props => {
 	const clubId = props.location.state.props.clubId;
 	const [clubOwnerRequest, setClubOwnerRequest] = useState(false);
 
-	useEffect(() => {
-		if (clubId === clubAuthContext.clubId) {
-			setClubOwnerRequest(true);
-		}
-	}, [clubId, clubAuthContext, setClubOwnerRequest]);
-
 	const [loadedEvent, setLoadedEvent] = useState();
 	const {
 		isLoading,
@@ -37,11 +31,13 @@ const Event = props => {
 	// 1. Request from owner club for the event, backend returns all the event information for furture editing.
 	//    This avoids multiple requests to the backend.
 	// 2. The other is the general request.  This request will get limited info from backend.
+	// *** No dependency here as intended.  This is to avoid re-renderng in EditEventManager to send request to backend again
 	useEffect(() => {
 		const fetechEvents = async () => {
 			try {
 				let responseData;
-				if (clubOwnerRequest) {
+				if (clubId === clubAuthContext.clubId) {
+					console.log('in Event');
 					responseData = await sendRequest(
 						process.env.REACT_APP_BACKEND_URL +
 							`/events/ownerClubEvent/${eId}`,
@@ -52,6 +48,7 @@ const Event = props => {
 							Authorization: 'Bearer ' + clubAuthContext.clubToken
 						}
 					);
+					setClubOwnerRequest(true);
 				} else {
 					responseData = await sendRequest(
 						process.env.REACT_APP_BACKEND_URL + `/events/${eId}`
@@ -61,7 +58,7 @@ const Event = props => {
 			} catch (err) {}
 		};
 		fetechEvents();
-	}, [sendRequest, eId, setLoadedEvent, clubOwnerRequest]);
+	}, []);
 
 	// calling EventsList from EventsList.js where it passes EVENTS to child EventsList
 	// just treat the following call as EventsList(items = EVENTS); items is the props

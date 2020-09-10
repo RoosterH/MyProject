@@ -122,6 +122,8 @@ const FormBuilder = props => {
 			);
 			if (responseData) {
 				setUnsavedData(undefined);
+				// return new event back to EditEventManager
+				props.returnNewEvent(responseData.event);
 			}
 		} catch (err) {
 			console.log('err = ', err);
@@ -381,36 +383,47 @@ const FormBuilder = props => {
 	];
 
 	// getResponseData is a callback function that returns responseData to its caller
+	// const onLoad = getResponseData => {
+	// 	// GET event form from server
+	// 	let responseData;
+	// 	const fetchForm = async () => {
+	// 		try {
+	// 			responseData = await sendRequest(
+	// 				process.env.REACT_APP_BACKEND_URL +
+	// 					`/clubs/form/${eventId}`,
+	// 				'GET',
+	// 				null,
+	// 				{
+	// 					// adding JWT to header for authentication, JWT contains clubId
+	// 					Authorization: 'Bearer ' + clubAuthContext.clubToken
+	// 				}
+	// 			);
+	// 			if (responseData) {
+	// 				getResponseData(responseData);
+	// 				setPublished(responseData.published);
+	// 				setUnsavedData(responseData);
+	// 				// save the from data got from backend to localstorage
+	// 				localStorage.setItem(
+	// 					'eventEntryForm',
+	// 					JSON.stringify(responseData)
+	// 				);
+	// 			}
+	// 		} catch (err) {
+	// 			console.log('err = ', err);
+	// 		}
+	// 	};
+	// 	return fetchForm();
+	// };
+
 	const onLoad = getResponseData => {
-		// GET event form from server
-		let responseData;
-		const fetchForm = async () => {
-			try {
-				responseData = await sendRequest(
-					process.env.REACT_APP_BACKEND_URL +
-						`/clubs/form/${eventId}`,
-					'GET',
-					null,
-					{
-						// adding JWT to header for authentication, JWT contains clubId
-						Authorization: 'Bearer ' + clubAuthContext.clubToken
-					}
-				);
-				if (responseData) {
-					getResponseData(responseData);
-					setPublished(responseData.published);
-					setUnsavedData(responseData);
-					// save the from data got from backend to localstorage
-					localStorage.setItem(
-						'eventEntryForm',
-						JSON.stringify(responseData)
-					);
-				}
-			} catch (err) {
-				console.log('err = ', err);
-			}
-		};
-		return fetchForm();
+		getResponseData(props.event.entryFormData);
+		setPublished(props.event.published);
+		setUnsavedData(props.event.entryFormData);
+		// save the from data got from backend to localstorage
+		localStorage.setItem(
+			'eventEntryForm',
+			JSON.stringify(props.event.entryFormData)
+		);
 	};
 
 	function fixFormData(data) {

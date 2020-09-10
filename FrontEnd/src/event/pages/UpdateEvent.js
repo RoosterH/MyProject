@@ -291,6 +291,8 @@ const UpdateEvent = props => {
 			setLoadedEvent(responseData.event);
 			setOKLeavePage(true);
 			setSaveButtonEnabled(false);
+			console.log('return new event');
+			props.returnNewEvent(responseData.event);
 		} catch (err) {}
 	};
 

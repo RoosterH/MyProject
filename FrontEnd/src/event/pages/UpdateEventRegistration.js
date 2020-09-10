@@ -22,19 +22,19 @@ import { FormContext } from '../../shared/context/form-context';
 import '../../shared/css/EventForm.css';
 
 const EventRegistration = props => {
+	console.log('props.event = ', props.event);
 	let eventId = props.event.id;
 	const [initialized, setInitialized] = useState(false);
 	const clubAuthContext = useContext(ClubAuthContext);
 	const formContext = useContext(FormContext);
+	const [published, setPublished] = useState(props.event.published);
+	const [publishBtnName, setPublishBtnName] = useState('PUBLISH');
 
-	// contButton controls when to enable CONTINUE button, set to true after submitHandler() succeeds
-	const [contButton, setContButton] = useState(false);
-	// continueStatus controls when to return props.newEventStatus back to NewEventManager
-	const [continueStatus, setContinueStatus] = useState(false);
-
-	const continueHandler = () => {
-		setContinueStatus(true);
-	};
+	useEffect(() => {
+		if (published) {
+			setPublishBtnName('PUBLISHED');
+		}
+	}, [published, publishBtnName, props]);
 
 	useEffect(() => {
 		let mounted = true;
@@ -146,7 +146,7 @@ const EventRegistration = props => {
 	};
 
 	const history = useHistory();
-	const submitHandler = async (values, actions) => {
+	const saveHandler = async (values, actions) => {
 		try {
 			const responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
@@ -164,9 +164,9 @@ const EventRegistration = props => {
 				}
 			);
 			setOKLeavePage(true);
-			// Redirect the club to a diffrent page
-			// history.push(`/events/club/${clubAuthContext.clubId}`);
-			setContButton(true);
+			setPublished(false);
+			console.log('return new event');
+			props.returnNewEvent(responseData.event);
 		} catch (err) {}
 	};
 
@@ -206,6 +206,7 @@ const EventRegistration = props => {
 					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
+			setPublished(true);
 		} catch (err) {}
 	};
 
@@ -220,7 +221,7 @@ const EventRegistration = props => {
 				enableReinitialize={true}
 				initialValues={initialValues}
 				onSubmit={(values, actions) => {
-					submitHandler(values);
+					saveHandler(values);
 					if (!actions.isSubmitting) {
 						setValidateTotalCap(() => value => {
 							let error;
@@ -300,6 +301,7 @@ const EventRegistration = props => {
 							</div>
 						)}
 						<label className="event-form__checkbox">
+							{/* Field does not work for manual toggling */}
 							<Field
 								type="checkbox"
 								id="capDistribution"
@@ -321,9 +323,9 @@ const EventRegistration = props => {
 							type="button"
 							size="medium"
 							margin-left="1.5rem"
-							disabled={props.event.publish}
+							disabled={published}
 							onClick={publishHandler}>
-							PUBLISH
+							{publishBtnName}
 						</Button>
 						<NavigationPrompt
 							afterConfirm={() => {

@@ -8,6 +8,7 @@ const ClubDashboardToolbar = () => {
 	const clubAuthContext = useContext(ClubAuthContext);
 	let cid = clubAuthContext.clubId;
 	let clubName = clubAuthContext.clubName;
+	console.log('cid = ', cid);
 	return (
 		<React.Fragment>
 			<div className="dashboard-tabs-header clearfix">

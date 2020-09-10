@@ -135,8 +135,8 @@ const UpdateEventPhotos = props => {
 				}
 			);
 			setOKLeavePage(true);
-			// Redirect the club to a diffrent page
-			// history.push(`/events/club/${clubAuthContext.clubId}`);
+			console.log('return new event');
+			props.returnNewEvent(responseData.event);
 		} catch (err) {}
 	};
 
