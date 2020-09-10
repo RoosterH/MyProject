@@ -7,6 +7,17 @@
 	font-weight: 400;
 }
 
+.selector-title {
+	font-size: 24px;
+	font-style: bold;
+}
+
+.selector-warning {
+	font-size: 16px;
+	color: rgb(207, 20, 20);
+	font-style: bold;
+}
+
 .list-content {
 	margin: 0rem 1rem 1rem 1rem;
 	padding: 40px 0 40px 40px;

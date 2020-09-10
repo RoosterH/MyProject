@@ -137,7 +137,7 @@ const App = () => {
 				{/* <Route path="/events/formbuilder/:id" exact>
 					<EventFormBuilder />
 				</Route> */}
-				<Route path="/events/form/:id" exact>
+				<Route path="/events/formbuilder/:id" exact>
 					<FormBuilder />
 				</Route>
 				<Route path="/clubs/events/new" exact>
@@ -255,7 +255,7 @@ const App = () => {
 				{/* <Route path="/events/formbuilder/:id" exact>
 					<EventFormBuilder />
 				</Route> */}
-				<Route path="/events/form/:id" exact>
+				<Route path="/events/formbuilder/:id" exact>
 					<FormBuilder />
 				</Route>
 				{/* <Redirect

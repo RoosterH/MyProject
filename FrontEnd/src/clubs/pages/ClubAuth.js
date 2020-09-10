@@ -65,7 +65,7 @@ const ClubAuth = () => {
 					 * trying to redirect page after logging
 					 */
 
-					history.push(`/events/club/${responseData.clubId}`);
+					history.push(`/clubs/clubManager/`);
 					// club.id is coming from clubsController loginClub
 					// id is from {getters: true}
 					clubAuthContext.clubLogin(

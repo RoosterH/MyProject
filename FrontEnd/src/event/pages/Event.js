@@ -3,9 +3,9 @@ import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
 import { useHttpClient } from '../../shared/hooks/http-hook';
-import { useParams, useLocation } from 'react-router-dom';
 
 import EventItem from '../components/EventItem';
+import EditEventItem from '../components/EditEventItem';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 
 // Events is called in App.js where the route been defined
@@ -58,7 +58,6 @@ const Event = props => {
 					);
 				}
 				setLoadedEvent(responseData.event);
-				console.log('event = ', responseData.event);
 			} catch (err) {}
 		};
 		fetechEvents();
@@ -75,7 +74,15 @@ const Event = props => {
 					<LoadingSpinner />
 				</div>
 			)}
-			{!isLoading && loadedEvent && <EventItem event={loadedEvent} />}
+			{/* For club who owns the event, we will go to EditEventItem */}
+			{!isLoading && loadedEvent && clubOwnerRequest && (
+				<EditEventItem event={loadedEvent} />
+			)}
+			{/* For users and clubs don't own the event, we will go to
+			EventItem */}
+			{!isLoading && loadedEvent && !clubOwnerRequest && (
+				<EventItem event={loadedEvent} />
+			)}
 		</React.Fragment>
 	);
 };

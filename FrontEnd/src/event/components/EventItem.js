@@ -7,15 +7,13 @@ import moment from 'moment';
 import countdown from 'moment-countdown';
 
 import Button from '../../shared/components/FormElements/Button';
-import EditEventManager from '../../clubDashboard/components/EditEventManager';
-import Card from '../../shared/components/UIElements/Card';
-import ErrorModal from '../../shared/components/UIElements/ErrorModal';
+
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import Image from '../../shared/components/UIElements/Image';
 import Map from '../../shared/components/UIElements/Map';
 import Modal from '../../shared/components/UIElements/Modal';
+import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 
-import { ClubAuthContext } from '../../shared/context/auth-context';
 import { UserAuthContext } from '../../shared/context/auth-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import './EventItem.css';
@@ -29,7 +27,7 @@ const EventItem = props => {
 	} = useHttpClient();
 
 	// useContext is listening to "ClubAuthContext"
-	const clubAuthContext = useContext(ClubAuthContext);
+	// const clubAuthContext = useContext(ClubAuthContext);
 	const userAuthContext = useContext(UserAuthContext);
 
 	// modal section
@@ -42,8 +40,9 @@ const EventItem = props => {
 
 	// modals for courseMap and delete confirmation
 	const [showMap, setShowMap] = useState(false);
-	const [showDELModal, setShowDELModal] = useState(false);
-	const [showPublishModal, setShowSubmitModal] = useState(false);
+
+	// const [showDELModal, setShowDELModal] = useState(false);
+	// const [showPublishModal, setShowSubmitModal] = useState(false);
 
 	// event handlers
 	const openMapHandler = () => {
@@ -51,56 +50,57 @@ const EventItem = props => {
 		setShowMap(true);
 	};
 	const closeMapHandler = () => setShowMap(false);
-	const openDELHandler = () => {
-		setShowDELModal(true);
-	};
-	const closeDELHandler = () => {
-		setShowDELModal(false);
-	};
-	const openPublishHandler = () => {
-		setShowSubmitModal(true);
-	};
-	const closePublishHandler = () => {
-		setShowSubmitModal(false);
-	};
+	// const openDELHandler = () => {
+	// 	setShowDELModal(true);
+	// };
+	// const closeDELHandler = () => {
+	// 	setShowDELModal(false);
+	// };
+	// const openPublishHandler = () => {
+	// 	setShowSubmitModal(true);
+	// };
+	// const closePublishHandler = () => {
+	// 	setShowSubmitModal(false);
+	// };
 
 	const history = useHistory();
-	const confirmDeleteHandler = async () => {
-		setShowDELModal(false);
-		try {
-			await sendRequest(
-				process.env.REACT_APP_BACKEND_URL +
-					`/events/${props.event.id}`,
-				'DELETE',
-				null,
-				{
-					// No need for content-type since body is null,
-					// adding JWT to header for authentication
-					Authorization: 'Bearer ' + clubAuthContext.clubToken
-				}
-			);
-			history.push(`/events/club/${clubAuthContext.clubId}`);
-		} catch (err) {}
-	};
 
-	const confirmPublishHandler = async () => {
-		setShowSubmitModal(false);
-		try {
-			await sendRequest(
-				process.env.REACT_APP_BACKEND_URL +
-					`/clubs/publish/${props.event.id}`,
-				'PATCH',
-				JSON.stringify({ published: true }),
-				{
-					// No need for content-type since body is null,
-					// adding JWT to header for authentication
-					'Content-Type': 'application/json',
-					Authorization: 'Bearer ' + clubAuthContext.clubToken
-				}
-			);
-			history.push(`/events/club/${clubAuthContext.clubId}`);
-		} catch (err) {}
-	};
+	// const confirmDeleteHandler = async () => {
+	// 	setShowDELModal(false);
+	// 	try {
+	// 		await sendRequest(
+	// 			process.env.REACT_APP_BACKEND_URL +
+	// 				`/events/${props.event.id}`,
+	// 			'DELETE',
+	// 			null,
+	// 			{
+	// 				// No need for content-type since body is null,
+	// 				// adding JWT to header for authentication
+	// 				Authorization: 'Bearer ' + clubAuthContext.clubToken
+	// 			}
+	// 		);
+	// 		history.push(`/events/club/${clubAuthContext.clubId}`);
+	// 	} catch (err) {}
+	// };
+
+	// const confirmPublishHandler = async () => {
+	// 	setShowSubmitModal(false);
+	// 	try {
+	// 		await sendRequest(
+	// 			process.env.REACT_APP_BACKEND_URL +
+	// 				`/clubs/publish/${props.event.id}`,
+	// 			'PATCH',
+	// 			JSON.stringify({ published: true }),
+	// 			{
+	// 				// No need for content-type since body is null,
+	// 				// adding JWT to header for authentication
+	// 				'Content-Type': 'application/json',
+	// 				Authorization: 'Bearer ' + clubAuthContext.clubToken
+	// 			}
+	// 		);
+	// 		history.push(`/events/club/${clubAuthContext.clubId}`);
+	// 	} catch (err) {}
+	// };
 
 	const [showCourse, setShowCourse] = useState(false);
 	const openCourseHandler = () => {
@@ -328,7 +328,7 @@ const EventItem = props => {
 				</div>
 			</Modal>
 			{/* Modal to show delet confirmation message */}
-			<Modal
+			{/* <Modal
 				className="modal-delete"
 				show={showDELModal}
 				contentClass="event-item__modal-delete"
@@ -349,8 +349,8 @@ const EventItem = props => {
 					Do you really want to delete {props.event.name}? It cannot
 					be recovered after deletion.
 				</p>
-			</Modal>
-			<Modal
+			</Modal> */}
+			{/* <Modal
 				className="modal-delete"
 				show={showPublishModal}
 				contentClass="event-item__modal-delete"
@@ -370,267 +370,200 @@ const EventItem = props => {
 				<p className="modal__content">
 					Are you ready to submit {props.event.name}? Please confirm.
 				</p>
-			</Modal>
+			</Modal> */}
 			{/* This section is for Users and  Clubs that do not own the event */}
 			{/* render logo/club name/event type  */}
 			{isLoading && <LoadingSpinner asOverlay />}
-			{(!clubAuthContext.clubId ||
-				clubAuthContext.clubId !== props.event.clubId) && (
-				<div className="event-pages eventtype-page">
-					<section id="header" title="">
-						<div className="section-container">
-							<div className="logo-container ">
-								<img
-									src={
-										process.env.REACT_APP_ASSET_URL +
-										`/${props.event.clubImage}`
-									}
-									alt={props.event.clubName}
-								/>
-							</div>
-							<div className="primary-info">
-								<h3 className="header-title">{props.event.name}</h3>
-							</div>
-							<div className="clubname-container">
-								From{' '}
-								<a
-									href="/"
-									target="_blank"
-									className="provider-clubname">
-									{props.event.clubName}
-								</a>
-							</div>
-							<div className="clearfix">
-								<div>
-									<div className="eventitem-eventtype">
-										<a href="/" className="eventtype">
-											{props.event.type}
-										</a>
-									</div>
-								</div>
-							</div>
-						</div>
-					</section>
-				</div>
-			)}
-			{/* this section is for event image */}
-			{/* Regitration container */}
-			{(!clubAuthContext.clubId ||
-				clubAuthContext.clubId !== props.event.clubId) && (
-				<div className="section-container">
-					<div className="page-basic-container">
-						<div className="eventimage-container">
+			{/* {(!clubAuthContext.clubId ||
+				clubAuthContext.clubId !== props.event.clubId) && ( */}
+			<div className="event-pages eventtype-page">
+				<section id="header" title="">
+					<div className="section-container">
+						<div className="logo-container ">
 							<img
 								src={
 									process.env.REACT_APP_ASSET_URL +
-									`/${props.event.image}`
+									`/${props.event.clubImage}`
 								}
-								alt={props.event.name}
-								className="eventimage-container-img"
+								alt={props.event.clubName}
 							/>
 						</div>
-					</div>
-					<div className="registration-container">
-						<div className="col-xs-12">
-							<div className="clearfix">
-								<RegistrationMSG />
+						<div className="primary-info">
+							<h3 className="header-title">{props.event.name}</h3>
+						</div>
+						<div className="clubname-container">
+							From{' '}
+							<a
+								href="/"
+								target="_blank"
+								className="provider-clubname">
+								{props.event.clubName}
+							</a>
+						</div>
+						<div className="clearfix">
+							<div>
+								<div className="eventitem-eventtype">
+									<a href="/" className="eventtype">
+										{props.event.type}
+									</a>
+								</div>
 							</div>
+						</div>
+					</div>
+				</section>
+			</div>
+			{/* )} */}
+			{/* this section is for event image */}
+			{/* Regitration container */}
+			{/* {(!clubAuthContext.clubId ||
+				clubAuthContext.clubId !== props.event.clubId) && ( */}
+			<div className="section-container">
+				{/* event image on the left */}
+				<div className="page-basic-container">
+					<div className="eventimage-container">
+						<img
+							src={
+								process.env.REACT_APP_ASSET_URL +
+								`/${props.event.image}`
+							}
+							alt={props.event.name}
+							className="eventimage-container-img"
+						/>
+					</div>
+				</div>
+				{/* registration container on the right */}
+				<div className="registration-container">
+					<div className="col-xs-12">
+						<div className="clearfix">
+							<RegistrationMSG />
+						</div>
+						<div className="section">
+							<strong>
+								{startDate} — {endDate}
+							</strong>
+							<br /> <br />
+						</div>
+						<div>
+							<h3>{props.event.venue}</h3>
+							<Image
+								title={props.event.venue}
+								alt={props.event.venue}
+								src={require('../../shared/utils/png/GMapSmall.png')}
+								onClick={() => openMapHandler()}
+								onHoover
+							/>
+							<h4>{props.event.address}</h4>
+						</div>
+					</div>
+					<div className="col-xs-12">
+						{/* {!clubAuthContext.clubId && ( */}
+						<Button
+							inverse={!openRegistration}
+							to={`/events/form/${props.event.id}`}
+							size="small-orange">
+							{buttonName}
+						</Button>
+						{/* )} */}
+					</div>
+				</div>
+			</div>
+			{/* )} */}
+
+			{/* {(!clubAuthContext.clubId ||
+				clubAuthContext.clubId !== props.event.clubId) && ( */}
+			<div className="section-container">
+				<div className="page-basic-container">
+					<div className="about-description">
+						<div className="toggle-section description">
+							<div className="short-description">
+								<div className="sub-heading">
+									<a
+										href="#description"
+										data-toggle="collapse"
+										onClick={toggleDescriptionButton}>
+										Event Description {'   '}
+										<button
+											type="button"
+											className={showDescription}
+											onClick={toggleDescriptionButton}></button>
+									</a>
+								</div>
+								<div id="description" className="collapse show">
+									<p>
+										{props.event.description}
+										<br></br>
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				{props.event.courseMap && (
+					<div className="courseMap-container">
+						<div className="col-xs-12">
 							<div className="section">
-								<strong>
-									{startDate} — {endDate}
-								</strong>
-								<br /> <br />
+								<div className="coursemap-title">Course Map</div>
 							</div>
 							<div>
-								<h3>{props.event.venue}</h3>
 								<Image
-									title={props.event.venue}
-									alt={props.event.venue}
-									src={require('../../shared/utils/png/GMapSmall.png')}
-									onClick={() => openMapHandler()}
-									onHoover
-								/>
-								<h4>{props.event.address}</h4>
-							</div>
-						</div>
-						<div className="col-xs-12">
-							{!clubAuthContext.clubId && (
-								<Button
-									inverse={!openRegistration}
-									to={`/events/form/${props.event.id}`}
-									size="small-orange">
-									{buttonName}
-								</Button>
-							)}
-						</div>
-					</div>
-				</div>
-			)}
-
-			{(!clubAuthContext.clubId ||
-				clubAuthContext.clubId !== props.event.clubId) && (
-				<div className="section-container">
-					<div className="page-basic-container">
-						<div className="about-description">
-							<div className="toggle-section description">
-								<div className="short-description">
-									<div className="sub-heading">
-										<a
-											href="#description"
-											data-toggle="collapse"
-											onClick={toggleDescriptionButton}>
-											Event Description {'   '}
-											<button
-												type="button"
-												className={showDescription}
-												onClick={toggleDescriptionButton}></button>
-										</a>
-									</div>
-									<div id="description" className="collapse show">
-										<p>
-											{props.event.description}
-											<br></br>
-										</p>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
-
-			{(!clubAuthContext.clubId ||
-				clubAuthContext.clubId !== props.event.clubId) && (
-				<div className="section-container">
-					<div className="page-basic-container">
-						<div className="about-description">
-							<div className="toggle-section description">
-								<div className="short-description">
-									<div className="sub-heading">
-										<a
-											href="#instruction"
-											data-toggle="collapse"
-											onClick={toggleInstructionButton}>
-											Instruction {'   '}
-											<button
-												type="button"
-												className={showInstruction}
-												onClick={toggleInstructionButton}></button>
-										</a>
-									</div>
-									<div id="instruction" className="collapse show">
-										<p>
-											{props.event.instruction}
-											<br></br>
-										</p>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
-
-			{(!clubAuthContext.clubId ||
-				clubAuthContext.clubId !== props.event.clubId) && (
-				<div className="section-container">
-					<div className="page-basic-container">
-						<div className="page-footer"></div>
-					</div>
-				</div>
-			)}
-
-			{/* for Club that owns this event */}
-			{clubAuthContext.clubId === props.event.clubId && (
-				<EditEventManager event={props.event} />
-			)}
-			{/* {clubAuthContext.clubId === props.event.clubId && (
-				<Card className="event-item__content">
-					{isLoading && <LoadingSpinner asOverlay />}
-					<div>
-						<h2 className="alert alert-primary" role="alert">
-							{props.event.name}
-						</h2>
-					</div>
-					{eventImageElement}
-					<div className="event-item__info">
-						<RegistrationMSG />
-						<h3>
-							{startDate} — {endDate}
-						</h3>
-						<h3>{props.event.venue}</h3>
-						<h4>{props.event.address}</h4>
-						<Button
-							size="small-googlemap"
-							onClick={() => openMapHandler()}>
-							Google Map
-						</Button>
-						<div className="event-item__description">
-							<p>{props.event.description}</p>
-						</div>
-						<div className="event-item__description">
-							<h3 className="event-item__content__h3heavy">
-								Special Instructions:
-							</h3>
-							<p className="event-item__description">
-								{props.event.instruction}
-							</p>
-						</div>
-					</div>
-					<div className="event-item__coursemap">
-						{props.event.courseMap && (
-							<React.Fragment>
-								<h3>Course Map </h3>
-								<Image
-									title={props.event.name}
-									alt={props.event.name + 'course map'}
+									title={props.event.courseMap}
+									alt={props.event.courseMap}
 									src={
 										process.env.REACT_APP_ASSET_URL +
 										`/${props.event.courseMap}`
 									}
 									onClick={() => openCourseHandler()}
 									onHoover
+									className="courseMap"
 								/>
-							</React.Fragment>
-						)}
+							</div>
+						</div>
 					</div>
-					<div className="event-item__actions">
-						{clubAuthContext.clubId === props.event.clubId && (
-							<Button
-								to={`/events/formbuilder/${props.event.id}`}
-								size="small">
-								ENTRY FORM
-							</Button>
-						)}
-						{clubAuthContext.clubId === props.event.clubId &&
-							formStartDate > validFormModDate && (
-								<Button
-									to={`/events/update/${props.event.id}`}
-									size="small">
-									EDIT
-								</Button>
-							)}
-						{clubAuthContext.clubId === props.event.clubId &&
-							!props.event.published &&
-							formStartDate > validFormModDate &&
-							props.event.entryFormData && (
-								<Button
-									disabele={props.event.published}
-									onClick={openPublishHandler}
-									size="small">
-									PUBLISH
-								</Button>
-							)}
-						{clubAuthContext.clubId === props.event.clubId &&
-							!props.event.published &&
-							formStartDate > validFormModDate && (
-								<Button danger onClick={openDELHandler} size="small">
-									DELETE
-								</Button>
-							)}
+				)}
+			</div>
+			{/* )} */}
+
+			{/* {(!clubAuthContext.clubId ||
+				clubAuthContext.clubId !== props.event.clubId) && ( */}
+			<div className="section-container">
+				<div className="page-basic-container">
+					<div className="about-description">
+						<div className="toggle-section description">
+							<div className="short-description">
+								<div className="sub-heading">
+									<a
+										href="#instruction"
+										data-toggle="collapse"
+										onClick={toggleInstructionButton}>
+										Instruction {'   '}
+										<button
+											type="button"
+											className={showInstruction}
+											onClick={toggleInstructionButton}></button>
+									</a>
+								</div>
+								<div id="instruction" className="collapse show">
+									<p>
+										{props.event.instruction}
+										<br></br>
+									</p>
+								</div>
+							</div>
+						</div>
 					</div>
-				</Card>
-			)} */}
+				</div>
+			</div>
+			{/* )} */}
+
+			{/* {(!clubAuthContext.clubId ||
+				clubAuthContext.clubId !== props.event.clubId) && ( */}
+			<div className="section-container">
+				<div className="page-basic-container">
+					<div className="page-footer"></div>
+				</div>
+			</div>
+			{/* )} */}
 		</React.Fragment>
 	);
 };

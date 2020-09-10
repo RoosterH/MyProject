@@ -107,7 +107,6 @@ const FormBuilder = props => {
 		}
 
 		try {
-			console.log('unsavedData = ', unsavedData);
 			const responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + `/clubs/form/${eventId}`,
 				'POST',
@@ -383,7 +382,6 @@ const FormBuilder = props => {
 
 	// getResponseData is a callback function that returns responseData to its caller
 	const onLoad = getResponseData => {
-		console.log('eventId = ', eventId);
 		// GET event form from server
 		let responseData;
 		const fetchForm = async () => {

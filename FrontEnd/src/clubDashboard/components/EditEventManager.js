@@ -85,38 +85,30 @@ const EditEventManager = props => {
 				<div className="dashboard-tabs activity-sections">
 					<br />
 					<ul className="nav nav-tabs">
-						{/* <li> */}
 						<Button
 							size={eventInfoClass}
 							autoFocus
 							onClick={eventInfoClickHandler}>
 							Event Information
 						</Button>
-						{/* </li> */}
-						{/* <li> */}
 						<Button
 							size={photoClass}
 							autoFocus
 							onClick={photoClickHandler}>
 							Photos
 						</Button>
-						{/* </li> */}
-						{/* <li> */}
 						<Button
 							size={formBuilderClass}
 							autoFocus
 							onClick={formBuilderClickHandler}>
 							Form Builder
 						</Button>
-						{/* </li> */}
-						{/* <li> */}
 						<Button
 							size={registrationClass}
 							autoFocus
 							onClick={registrationClickHandler}>
 							Registration
 						</Button>
-						{/* </li> */}
 					</ul>
 					<div className="tab-content">
 						{eventInfo && <UpdateEvent event={props.event} />}
@@ -126,17 +118,6 @@ const EditEventManager = props => {
 							<UpdateEventRegistration event={props.event} />
 						)}
 					</div>
-					{/* 
-					<li className={eventInfoClass}>Event Information</li>
-					<li className={photoClass}>Photos</li>
-					<li className={formBuilderClass}>FormBuilder</li>
-					<li className={registrationClass}>Registration</li>
-					<div className="tab-content">
-						{eventInfo && <UpdateEvent eventId={eventId} />}
-						{photo && <EventPhotos eventId={eventId} />}
-						{formBuilder && <FormBuilder eventId={eventId} />}
-						{registration && <EventRegistration eventId={eventId} />}
-					</div> */}
 				</div>
 			</div>
 		</React.Fragment>

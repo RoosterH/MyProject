@@ -3,13 +3,14 @@ import React from 'react';
 import './Image.css';
 
 const Image = props => {
+	let imageClass = props.className ? props.className : 'image';
 	return (
 		<img
 			src={props.src}
 			alt={props.alt}
 			type={props.type}
 			onClick={props.onClick}
-			className="image"></img>
+			className={imageClass}></img>
 	);
 };
 

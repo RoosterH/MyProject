@@ -1,3 +1,12 @@
 .image:hover {
 	cursor: pointer;
 }
+
+.courseMap {
+	width: 75px;
+	height: 75px;
+}
+
+.courseMap:hover {
+	cursor: pointer;
+}

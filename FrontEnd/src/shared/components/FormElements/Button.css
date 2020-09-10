@@ -212,6 +212,14 @@
 		width: 6rem;
 		text-align: center;
 	}
+
+	.button--small-orange--inverse {
+		background: #bebcba;
+		border-color: #bebcba;
+		color: #ffffff;
+		pointer-events: none;
+	}
+
 	.button--editeventmanager-orange {
 		font-size: 10px;
 		font-family: 'Montserrat', sans-serif;
@@ -223,6 +231,7 @@
 		width: 6rem;
 		text-align: center;
 	}
+
 	.button--small-green {
 		font-size: 12px;
 		font-family: 'Montserrat', sans-serif;

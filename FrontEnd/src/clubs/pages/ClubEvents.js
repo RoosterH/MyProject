@@ -43,6 +43,7 @@ const ClubEvents = props => {
 						}
 					);
 				} else {
+					console.log('clubId = ', clubId);
 					// This route only gets published events
 					responseData = await sendRequest(
 						process.env.REACT_APP_BACKEND_URL +
