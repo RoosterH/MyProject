@@ -58,7 +58,7 @@ const RegistrationManager = React.lazy(() =>
 	import('./clubDashboard/components/RegistrationManager')
 );
 const EventReportSelector = React.lazy(() =>
-	import('./clubDashboard/components/RegistrationManager')
+	import('./clubDashboard/components/EventReportSelector')
 );
 
 const EditEventSelector = React.lazy(() =>
@@ -147,7 +147,7 @@ const App = () => {
 				<Route path="/clubs/registrationManager/" exact>
 					<RegistrationManager />
 				</Route>
-				<Route path="/clubs/eventReportSelector/" exact>
+				<Route path="/clubs/eventReportSelector/:clubId" exact>
 					<EventReportSelector />
 				</Route>
 				<Route path="/clubs/ViewEventSelector/:clubId" exact>
@@ -246,6 +246,12 @@ const App = () => {
 				</Route>
 				<Route path="/clubs/newEventManager/" exact>
 					<NewEventManager />
+				</Route>
+				<Route path="/clubs/registrationManager/" exact>
+					<RegistrationManager />
+				</Route>
+				<Route path="/clubs/eventReportSelector/:clubId" exact>
+					<EventReportSelector />
 				</Route>
 				<Route path="/clubs/events/new" exact>
 					<NewEvent />

@@ -13,7 +13,7 @@ const EventReportSelector = () => {
 	if (
 		!clubAuthContext ||
 		!clubAuthContext.clubId ||
-		clubAuthContext.clubId != clubId
+		clubAuthContext.clubId !== clubId
 	) {
 		return (
 			<div className="list-header clearfix">
@@ -28,10 +28,10 @@ const EventReportSelector = () => {
 		<React.Fragment>
 			<div className="list-header clearfix">
 				<div className="selector-title">
-					Please select an event to view
+					Please select an event to view registration reports
 				</div>
 			</div>
-			<ClubEvents clubId={clubId} registration={true} />;
+			<ClubEvents clubId={clubId} registrationReport={true} />;
 		</React.Fragment>
 	);
 };

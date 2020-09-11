@@ -10,22 +10,25 @@ const EventManager = () => {
 	return (
 		<React.Fragment>
 			<div className="list-header clearfix">
-				<div className="h3">Event Manager</div>
+				<div className="h3">Registration Manager</div>
 			</div>
 
 			<div className="list-content">
 				<div className="list-content-link">
-					<Link to="/clubs/newEventManager/" exact="exact">
+					<Link
+						to={`/clubs/eventReportSelector/${cid}`}
+						exact="exact">
 						<i
 							className="fa fa-sort-desc pull-right"
 							aria-hidden="true"
 						/>
-						Add New Event
+						Entry Report Manager
 					</Link>
-					<Link to="/clubs/newEventManager/" exact="exact">
+					<Link
+						to={`/clubs/eventReportSelector/${cid}`}
+						exact="exact">
 						<p className="list-content-desc">
-							Here’s where you add a new event. Follow steps to add a
-							new club event.
+							Read all sort of entry reports here.
 						</p>
 					</Link>
 

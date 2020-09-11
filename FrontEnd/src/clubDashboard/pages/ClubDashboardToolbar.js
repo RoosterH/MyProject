@@ -72,10 +72,9 @@ const ClubDashboardToolbar = () => {
 							Registration Manager
 						</Link>
 						<div className="dropdown-content">
-							<NavLink to={'/clubs/eventReportSelector'} exact>
-								Entry Reports
+							<NavLink to={`/clubs/eventReportSelector/${cid}`} exact>
+								Entry Report Manager
 							</NavLink>
-							<a href="#">Entry Reports</a>
 							<a href="#">Waitlist</a>
 							<a href="#">Pending Waitlist Invitations</a>
 							<a href="#">Detailed Analytics</a>

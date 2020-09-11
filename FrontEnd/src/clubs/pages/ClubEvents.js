@@ -12,7 +12,9 @@ const ClubEvents = props => {
 	// readoOnly false is for Club EditEvents; true is for Club EventManager View Events and users and non-owner club
 	let readOnly = props.readOnly ? props.readOnly : false;
 	// registration is true is for Registration Manager
-	let registration = props.registration ? props.registration : false;
+	let registrationReport = props.registrationReport
+		? props.registrationReport
+		: false;
 
 	const [loadedEvents, setLoadedEvents] = useState();
 	const {
@@ -40,15 +42,28 @@ const ClubEvents = props => {
 				// ownerClubEvent gets all events, published/unpublished
 				// non-owner gets only published events
 				if (ownerClubEvent) {
-					responseData = await sendRequest(
-						process.env.REACT_APP_BACKEND_URL +
-							`/events/ownerClub/${clubId}`,
-						'GET',
-						null,
-						{
-							Authorization: 'Bearer ' + clubAuthContext.clubToken
-						}
-					);
+					// for registration reports, we will only query published events
+					if (registrationReport) {
+						responseData = await sendRequest(
+							process.env.REACT_APP_BACKEND_URL +
+								`/events/ownerClubPublished/${clubId}`,
+							'GET',
+							null,
+							{
+								Authorization: 'Bearer ' + clubAuthContext.clubToken
+							}
+						);
+					} else {
+						responseData = await sendRequest(
+							process.env.REACT_APP_BACKEND_URL +
+								`/events/ownerClub/${clubId}`,
+							'GET',
+							null,
+							{
+								Authorization: 'Bearer ' + clubAuthContext.clubToken
+							}
+						);
+					}
 				} else {
 					console.log('clubId = ', clubId);
 					// This route only gets published events
@@ -63,7 +78,7 @@ const ClubEvents = props => {
 			}
 		};
 		fetechEvents();
-	}, [sendRequest, clubId]);
+	}, [sendRequest, clubId, registrationReport]);
 
 	// calling EventsList from EventsList.js where it passes EVENTS to child EventsList
 	// just treat the following call as EventsList(items = EVENTS); items is the props
@@ -84,7 +99,7 @@ const ClubEvents = props => {
 					items={loadedEvents}
 					displayPublished={true}
 					readOnly={readOnly}
-					registration={registration}
+					registrationReport={registrationReport}
 				/>
 			)}
 		</React.Fragment>

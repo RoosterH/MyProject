@@ -243,6 +243,61 @@ const getEventsByOwnerClubId = async (req, res, next) => {
 	});
 };
 
+// GET /api/ownerClubPublishedEvent/:eid
+const getPublishedEventsByOwnerClubId = async (req, res, next) => {
+	const cId = req.params.cid;
+
+	let club;
+	try {
+		club = await Club.findById(cId).populate({
+			path: 'events',
+			match: { published: true },
+			options: {
+				sort: { startDate: -1, endDate: -1 }
+			}
+		});
+	} catch (err) {
+		console.log('err = ', err);
+		const error = new HttpError(
+			'Get events by owner club ID process failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'Could not find the club owner.',
+			404
+		);
+		return next(error);
+	}
+
+	if (!club.events || club.events.length === 0) {
+		const error = new HttpError('Could not find any event.', 404);
+		return next(error);
+	}
+
+	res.status(200).json({
+		events: club.events.map(event =>
+			event.toObject({
+				getters: true,
+				transform: (doc, ret, opt) => {
+					delete ret['entryFormData'];
+					delete ret['entries'];
+					delete ret['waitList'];
+					delete ret['totalCap'];
+					delete ret['totalEntries'];
+					delete ret['numGroups'];
+					delete ret['capDistribution'];
+					delete ret['groupEntries'];
+					return ret;
+				}
+			})
+		)
+	});
+};
+
 // POST /api/events/date/
 const getEventsByDate = async (req, res, next) => {
 	const { eventType, startDate, endDate, distance, zip } = req.body;
@@ -855,7 +910,6 @@ const getEventEntryFormAnswer = async (req, res, next) => {
 // export a pointer of the function
 exports.getAllEvents = getAllEvents;
 exports.getEventById = getEventById;
-exports.getOwnerClubEvent = getOwnerClubEvent;
 exports.getEventsByClubId = getEventsByClubId;
 exports.getEventsByDate = getEventsByDate;
 exports.createEvent = createEvent;
@@ -865,3 +919,5 @@ exports.getEventEntryFormAnswer = getEventEntryFormAnswer;
 exports.updateEventPhotos = updateEventPhotos;
 exports.updateEventRegistration = updateEventRegistration;
 exports.getEventsByOwnerClubId = getEventsByOwnerClubId;
+exports.getPublishedEventsByOwnerClubId = getPublishedEventsByOwnerClubId;
+exports.getOwnerClubEvent = getOwnerClubEvent;
