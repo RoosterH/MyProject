@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-// import Button from '../../shared/components/FormElements/Button';
 import { Link, NavLink } from 'react-router-dom';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import './ClubDashboardToolbar.css';
@@ -8,18 +7,12 @@ const ClubDashboardToolbar = () => {
 	const clubAuthContext = useContext(ClubAuthContext);
 	let cid = clubAuthContext.clubId;
 	let clubName = clubAuthContext.clubName;
-	console.log('cid = ', cid);
 	return (
 		<React.Fragment>
 			<div className="dashboard-tabs-header clearfix">
 				<div className="clubname-title">
 					<h1 className="">{clubName}</h1>
 				</div>
-				{/* <div class="pull-right ng-scope" ng-if="$ctrl.currentPlan">
-					<p class="current-plan-note ng-binding">
-						Your Current ActivityHero Plan: Free
-					</p>
-				</div> */}
 			</div>
 
 			<div className="dashboard-nav">
@@ -38,7 +31,8 @@ const ClubDashboardToolbar = () => {
 						<div className="dropdown-content">
 							<a href="">Club Overview</a>
 							<a href="">Photo Manager</a>
-							<a href="">Billing</a>
+							<a href="">Manage Your Team</a>
+							<a href="">About MySeatTime</a>
 						</div>
 					</li>
 
@@ -54,14 +48,13 @@ const ClubDashboardToolbar = () => {
 							Event Manager
 						</Link>
 						<div className="dropdown-content">
-							{/* <a href="#">Add New Event</a> */}
 							<NavLink to={'/clubs/newEventManager'} exact>
 								Add New Event
 							</NavLink>
 							<NavLink to={`/clubs/editEventSelector/${cid}`} exact>
 								Edit Events
 							</NavLink>
-							<NavLink to={`/events/club/${cid}`} exact>
+							<NavLink to={`/clubs/ownerClubEvents/${cid}`} exact>
 								View Events
 							</NavLink>
 						</div>
@@ -69,19 +62,24 @@ const ClubDashboardToolbar = () => {
 
 					<li className="dashboard-nav-menu dropdown">
 						<Link
-							to="/clubs/"
+							to="/clubs/RegistrationManager"
 							exact="exact"
 							className="dropdown-blackbutton">
 							<i
 								className="fa fa-sort-desc pull-right"
 								aria-hidden="true"
 							/>
-							Event Dashboard
+							Registration Manager
 						</Link>
 						<div className="dropdown-content">
-							<a href="#">Event Reports</a>
-							<a href="#">Event Board </a>
-							<a href="#">Billing</a>
+							<NavLink to={'/clubs/eventReportSelector'} exact>
+								Entry Reports
+							</NavLink>
+							<a href="#">Entry Reports</a>
+							<a href="#">Waitlist</a>
+							<a href="#">Pending Waitlist Invitations</a>
+							<a href="#">Detailed Analytics</a>
+							<a href="#">User Credits</a>
 						</div>
 					</li>
 
@@ -119,9 +117,7 @@ const ClubDashboardToolbar = () => {
 							Nothing yet
 						</Link>
 						<div className="dropdown-content">
-							<a href="#">Event Reports</a>
 							<a href="#">Test</a>
-							<a href="#">Billing</a>
 						</div>
 					</li>
 				</ul>

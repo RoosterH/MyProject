@@ -9,6 +9,11 @@ import { ClubAuthContext } from '../../shared/context/auth-context';
 
 // Events is called in App.js where the route been defined
 const ClubEvents = props => {
+	// readoOnly false is for Club EditEvents; true is for Club EventManager View Events and users and non-owner club
+	let readOnly = props.readOnly ? props.readOnly : false;
+	// registration is true is for Registration Manager
+	let registration = props.registration ? props.registration : false;
+
 	const [loadedEvents, setLoadedEvents] = useState();
 	const {
 		isLoading,
@@ -32,6 +37,8 @@ const ClubEvents = props => {
 			try {
 				let responseData;
 				// For ownerClubEvent, use different route that will get all events owned by the club
+				// ownerClubEvent gets all events, published/unpublished
+				// non-owner gets only published events
 				if (ownerClubEvent) {
 					responseData = await sendRequest(
 						process.env.REACT_APP_BACKEND_URL +
@@ -70,7 +77,15 @@ const ClubEvents = props => {
 				</div>
 			)}
 			{!isLoading && loadedEvents && (
-				<EventsList items={loadedEvents} displayPublished={true} />
+				// displayPublished: print PUBLISHED on images
+				// readOnly true- for Club ViewEvent; false- for all others
+				// registration: true- Club Registration Manager
+				<EventsList
+					items={loadedEvents}
+					displayPublished={true}
+					readOnly={readOnly}
+					registration={registration}
+				/>
 			)}
 		</React.Fragment>
 	);

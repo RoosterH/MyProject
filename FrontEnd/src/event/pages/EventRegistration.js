@@ -32,9 +32,6 @@ const EventRegistration = props => {
 	// continueStatus controls when to return props.newEventStatus back to NewEventManager
 	const [continueStatus, setContinueStatus] = useState(false);
 
-	const continueHandler = () => {
-		setContinueStatus(true);
-	};
 	// this is the return function that passes finishing status back to NewEventManager
 	useEffect(() => {
 		props.registrationStatus(continueStatus);
@@ -71,7 +68,6 @@ const EventRegistration = props => {
 		}
 	}, [location, clubAuthContext]);
 
-	let tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
 	const [totalCap, setTotalCap] = useState('');
 	const [numGroups, setNumGroups] = useState('');
 	const [capDistribution, setCapDistribution] = useState('');
@@ -157,7 +153,7 @@ const EventRegistration = props => {
 				'capDistributionClicked = ',
 				capDistributionClicked
 			);
-			const responseData = await sendRequest(
+			await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
 					`/events/registration/${eventId}`,
 				'PATCH',

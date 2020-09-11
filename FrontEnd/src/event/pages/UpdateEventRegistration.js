@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
@@ -11,7 +11,6 @@ import 'draft-js/dist/Draft.css';
 import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
-// import ImageUploader from '../../shared/components/FormElements/ImageUploader';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 
@@ -22,7 +21,6 @@ import { FormContext } from '../../shared/context/form-context';
 import '../../shared/css/EventForm.css';
 
 const EventRegistration = props => {
-	console.log('props.event = ', props.event);
 	let eventId = props.event.id;
 	const [initialized, setInitialized] = useState(false);
 	const clubAuthContext = useContext(ClubAuthContext);
@@ -67,7 +65,6 @@ const EventRegistration = props => {
 		}
 	}, [location, clubAuthContext]);
 
-	let tomorrow = moment().add(1, 'days').format('YYYY-MM-DD');
 	const [totalCap, setTotalCap] = useState('');
 	const [numGroups, setNumGroups] = useState('');
 	const [capDistribution, setCapDistribution] = useState('');
@@ -145,7 +142,6 @@ const EventRegistration = props => {
 		setCapDistributionClicked(event.target.checked);
 	};
 
-	const history = useHistory();
 	const saveHandler = async (values, actions) => {
 		try {
 			const responseData = await sendRequest(
@@ -165,7 +161,6 @@ const EventRegistration = props => {
 			);
 			setOKLeavePage(true);
 			setPublished(false);
-			console.log('return new event');
 			props.returnNewEvent(responseData.event);
 		} catch (err) {}
 	};
@@ -194,7 +189,7 @@ const EventRegistration = props => {
 
 	const publishHandler = async () => {
 		try {
-			await sendRequest(
+			let responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
 					`/clubs/publish/${eventId}`,
 				'PATCH',
@@ -207,6 +202,7 @@ const EventRegistration = props => {
 				}
 			);
 			setPublished(true);
+			props.returnNewEvent(responseData.event);
 		} catch (err) {}
 	};
 
@@ -302,7 +298,7 @@ const EventRegistration = props => {
 						)}
 						<label className="event-form__checkbox">
 							{/* Field does not work for manual toggling */}
-							<Field
+							<input
 								type="checkbox"
 								id="capDistribution"
 								name="capDistribution"

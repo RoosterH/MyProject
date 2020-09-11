@@ -111,32 +111,6 @@ const UpdateEvent = props => {
 		// isSaveButton: false
 	};
 
-	// GET event from server
-	// useEffect(() => {
-	// 	const fetchEvent = async () => {
-	// 		try {
-	// 			const responseData = await sendRequest(
-	// 				process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`
-	// 			);
-	// 			if (!responseData.event) {
-	// 				throw new Error(
-	// 					'Request error, previous event data was not found'
-	// 				);
-	// 			}
-	// 			setLoadedEvent(responseData.event);
-	// 		} catch (err) {}
-	// 	};
-	// 	fetchEvent();
-	// }, [sendRequest, eventId]);
-
-	/***** Form Validation Section  *****/
-	// 1. Field level: Field validate={validateName}. This validates when Field is onBlur
-	// 2. startDate, endDate, regStartDate, and regEndDate use Yup beacuse Yup.ref makes it convenient to check peer fields
-	// 3. Save: useState to set validation function to no check.  After submitting, change state
-	// back to original validation function.  Save is only not allowed if image/course map sizes are
-	// too large.
-	// 4. Submit: use Formik isValid to enable the button.  Formik submission will validate everything.
-
 	const dateValidationSchema = Yup.object().shape({
 		startDate: Yup.date()
 			.min(tomorrow, 'Start date must be no later than end date')
@@ -221,46 +195,6 @@ const UpdateEvent = props => {
 	);
 
 	const [saveButtonEnabled, setSaveButtonEnabled] = useState(false);
-
-	// To save, we only care about image sizes
-	// const [imageValid, setImageValid] = useState(true);
-	// const [courseMapValid, setCourseMapValid] = useState(true);
-
-	// Save button is an intermediate stage so we will allow Save as long as
-	// image size and course map size are valid
-	// const [saveButtonEnabled, setSaveButtonEnabled] = useState(true);
-	// useEffect(() => {
-	// 	let valid = imageValid && courseMapValid;
-	// 	setSaveButtonEnabled(valid);
-	// }, [imageValid, courseMapValid]);
-
-	// const [validateImageSize, setValidateImageSize] = useState(
-	// 	() => value => {
-	// 		let error;
-	// 		if (value && value.size > 1500000) {
-	// 			error = 'File size needs to be smaller than 1.5MB';
-	// 			setImageValid(false);
-	// 		} else {
-	// 			setImageValid(true);
-	// 		}
-	// 		return error;
-	// 	}
-	// );
-
-	// const [validateCourseMapSize, setValidateCourseMapSize] = useState(
-	// 	() => value => {
-	// 		let error;
-	// 		if (value && value.size > 1500000) {
-	// 			error = 'File size needs to be smaller than 1.5MB';
-	// 			setCourseMapValid(false);
-	// 		} else {
-	// 			setCourseMapValid(true);
-	// 		}
-	// 		return error;
-	// 	}
-	// );
-	/***** End of Form Validation *****/
-
 	const submitHandler = async values => {
 		try {
 			const formData = new FormData();
@@ -296,40 +230,6 @@ const UpdateEvent = props => {
 		} catch (err) {}
 	};
 
-	// const saveHandler = async values => {
-	// 	try {
-	// 		const formData = new FormData();
-	// 		formData.append('name', values.name);
-	// 		formData.append('type', values.type);
-	// 		formData.append('startDate', values.startDate); //format 2020-08-01
-	// 		formData.append('endDate', values.endDate);
-	// 		formData.append('regStartDate', values.regStartDate);
-	// 		formData.append('regEndDate', values.regEndDate);
-	// 		formData.append('venue', values.venue);
-	// 		formData.append('address', values.address);
-	// 		formData.append('description', values.description);
-	// 		formData.append('instruction', values.instruction);
-	// 		// formData.append('image', values.image);
-	// 		// formData.append('courseMap', values.courseMap);
-
-	// 		const responseData = await sendRequest(
-	// 			process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`,
-	// 			'PATCH',
-	// 			formData,
-	// 			{
-	// 				// adding JWT to header for authentication, JWT contains clubId
-	// 				Authorization: 'Bearer ' + clubAuthContext.clubToken
-	// 			}
-	// 		);
-	// 		// Need to set the loadedEvent so we will set initialValues again.
-	// 		// Without it, form will keep the old initial values.
-	// 		setLoadedEvent(responseData.event);
-	// 		setOKLeavePage(true);
-
-	// 		console.log('eventId = ', eventId);
-	// 		history.push('/events/' + eventId);
-	// 	} catch (err) {}
-	// };
 	if (isLoading) {
 		return (
 			<div className="center">
@@ -349,7 +249,6 @@ const UpdateEvent = props => {
 		initialValues = {
 			name: loadedEvent.name,
 			type: loadedEvent.type,
-			// image: loadedEvent.image,
 			startDate: moment(loadedEvent.startDate).format('YYYY-MM-DD'),
 			endDate: moment(loadedEvent.endDate).format('YYYY-MM-DD'),
 			regStartDate: moment(loadedEvent.regStartDate).format(
@@ -360,8 +259,6 @@ const UpdateEvent = props => {
 			address: loadedEvent.address,
 			description: loadedEvent.description,
 			instruction: loadedEvent.instruction
-			// courseMap: loadedEvent.courseMap,
-			// isSaveButton: false
 		};
 	}
 
@@ -380,12 +277,7 @@ const UpdateEvent = props => {
 				initialValues={initialValues}
 				validationSchema={dateValidationSchema}
 				onSubmit={(values, actions) => {
-					// values.isSaveButton
-					// 	? saveHandler(values)
 					submitHandler(values);
-					// if (values.isSaveButton) {
-					// 	alert('Your form is saved.');
-					// }
 					if (actions.isSubmitting) {
 						actions.setSubmitting(false);
 					}
@@ -684,57 +576,6 @@ const UpdateEvent = props => {
 								{errors.instruction}
 							</div>
 						)}
-						{/* <Field
-							id="image"
-							name="image"
-							title="image"
-							component={ImageUploader}
-							validate={validateImageSize}
-							setFieldValue={setFieldValue}
-							errorMessage={errors.image ? errors.image : ''}
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-								setSaveButtonEnabled(true);
-							}}
-							labelStyle="event-form__label"
-							inputStyle="event-form__field-select"
-							previewStyle="image-upload__preview"
-							errorStyle="event-form__field-error"
-						/>
-						<Field
-							id="courseMap"
-							name="courseMap"
-							title="courseMap"
-							component={ImageUploader}
-							validate={validateCourseMapSize}
-							setFieldValue={setFieldValue}
-							errorMessage={errors.courseMap ? errors.courseMap : ''}
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-								setSaveButtonEnabled(true);
-							}}
-							labelStyle="event-form__label"
-							inputStyle="event-form__field-select"
-							previewStyle="image-upload__preview"
-							errorStyle="event-form__field-error"
-						/> */}
-						{/* <Button
-							type="submit"
-							size="medium"
-							margin-left="1.5rem"
-							disabled={isSubmitting || !saveButtonEnabled}
-							onClick={e => {
-								setFieldValue('isSaveButton', true, false);
-								setValidateName(() => () => {});
-								setValidateVenue(() => () => {});
-								setValidateAddress(() => () => {});
-								setValidateDescription(() => () => {});
-								setValidateInstruction(() => () => {});
-							}}>
-							Save
-						</Button> */}
 						<Button
 							type="submit"
 							size="medium"
@@ -747,9 +588,6 @@ const UpdateEvent = props => {
 							}}>
 							SAVE
 						</Button>
-						{/* <Button type="button" size="medium" onClick={backHandler}>
-							Back
-						</Button> */}
 						<NavigationPrompt
 							afterConfirm={() => {
 								localStorage.removeItem('eventID');

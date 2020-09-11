@@ -54,6 +54,13 @@ const NewEventManager = React.lazy(() =>
 const EditEventManager = React.lazy(() =>
 	import('./clubDashboard/components/EditEventManager')
 );
+const RegistrationManager = React.lazy(() =>
+	import('./clubDashboard/components/RegistrationManager')
+);
+const EventReportSelector = React.lazy(() =>
+	import('./clubDashboard/components/RegistrationManager')
+);
+
 const EditEventSelector = React.lazy(() =>
 	import('./clubDashboard/components/EditEventSelector')
 );
@@ -65,6 +72,9 @@ const EventRegistration = React.lazy(() =>
 	import('./event/pages/EventRegistration')
 );
 const NewEvent = React.lazy(() => import('./event/pages/NewEvent'));
+const ViewEventSelector = React.lazy(() =>
+	import('./clubDashboard/components/ViewEventSelector')
+);
 const UpdateEvent = React.lazy(() =>
 	import('./event/pages/UpdateEvent')
 );
@@ -134,9 +144,15 @@ const App = () => {
 				<Route path="/clubs/editEventManager/" exact>
 					<EditEventManager />
 				</Route>
-				{/* <Route path="/events/formbuilder/:id" exact>
-					<EventFormBuilder />
-				</Route> */}
+				<Route path="/clubs/registrationManager/" exact>
+					<RegistrationManager />
+				</Route>
+				<Route path="/clubs/eventReportSelector/" exact>
+					<EventReportSelector />
+				</Route>
+				<Route path="/clubs/ViewEventSelector/:clubId" exact>
+					<ViewEventSelector />
+				</Route>
 				<Route path="/events/formbuilder/:id" exact>
 					<FormBuilder />
 				</Route>
@@ -221,6 +237,7 @@ const App = () => {
 				</Route>
 
 				{/* The following section is for page refresh. Without it, refresh will not happen */}
+				{/*** To aviod unauthorized requests, all the pages below need to add loginValidation ***/}
 				<Route path="/clubs/clubManager" exact>
 					<ClubManager />
 				</Route>
@@ -245,25 +262,13 @@ const App = () => {
 				<Route path="/clubs/editEventManager/" exact>
 					<EditEventManager />
 				</Route>
-				{/* <Redirect strict from="/clubs/events/new" to="/clubs/auth" /> */}
+				<Route path="/clubs/ViewEventSelector/:clubId" exact>
+					<ViewEventSelector />
+				</Route>
 
-				{/* Very import to keep sequence of the following 2 routes. Change the sequence will cause
-				    page refreshing not working properly.
-					1. Route is for refreshing page
-					2. Redirect is for club not logged in
-				*/}
-				{/* <Route path="/events/formbuilder/:id" exact>
-					<EventFormBuilder />
-				</Route> */}
 				<Route path="/events/formbuilder/:id" exact>
 					<FormBuilder />
 				</Route>
-				{/* <Redirect
-					strict
-					from="/events/formbuilder/:id"
-					to="/clubs/auth"
-				/> */}
-
 				<Route path="/events/form/:id" exact>
 					<EventForm />
 				</Route>

@@ -101,7 +101,7 @@ const getEventById = async (req, res, next) => {
 	}); // { event } => { event: event }
 };
 
-// GET /api/events/:eid
+// GET /api/ownerClubEvent/:eid
 const getOwnerClubEvent = async (req, res, next) => {
 	// req.params is getting the eid from url, such as /api/events/:id
 	const eventId = req.params.eid;
@@ -136,6 +136,7 @@ const getOwnerClubEvent = async (req, res, next) => {
 const getEventsByClubId = async (req, res, next) => {
 	const cId = req.params.cid;
 
+	console.log('cId = ', cId);
 	let club;
 	try {
 		club = await Club.findById(cId).populate({
@@ -146,6 +147,7 @@ const getEventsByClubId = async (req, res, next) => {
 			}
 		});
 	} catch (err) {
+		console.log('err = ', err);
 		const error = new HttpError(
 			'Get events by club ID process failed. Please try again later',
 			500
@@ -340,12 +342,6 @@ const createEvent = async (req, res, next) => {
 		return next(error);
 	}
 
-	// let imagePath = req.files.image[0].path;
-	// let courseMapPath;
-	// if (req.files.courseMapPath) {
-	// 	courseMapPath = req.files.courseMap[0].path;
-	// }
-
 	const newEvent = new Event({
 		name,
 		type,
@@ -404,13 +400,10 @@ const createEvent = async (req, res, next) => {
 		);
 		return next(error);
 	}
+
 	res
 		.status(201)
-		.json({ message: `Event: ${event.name} photos been created` });
-
-	// res
-	// 	.status(201)
-	// 	.json({ event: newEvent.toObject({ getters: true }) });
+		.json({ event: newEvent.toObject({ getters: true }) });
 };
 
 // PATCH /api/events/photos/:eid
@@ -503,11 +496,15 @@ const updateEventPhotos = async (req, res, next) => {
 		event.courseMap = courseMapPath;
 	}
 
+	// set published to false. User needs to re-publish the event
+	event.published = false;
 	try {
 		await event.save();
-		res
-			.status(200)
-			.json({ message: `Event: ${event.name} photos been updated` });
+		res.status(200).json({
+			event: event.toObject({
+				getters: true
+			})
+		});
 	} catch (err) {
 		console.log('err = ', err);
 		const error = new HttpError(
@@ -585,6 +582,8 @@ const updateEventRegistration = async (req, res, next) => {
 	event.totalCap = totalCap;
 	event.numGroups = numGroups;
 	event.capDistribution = capDistribution;
+	// set published to false to force re-publish
+	event.published = false;
 
 	// if capDistribution is true, we will create numGroups groups.
 	// Each group can only have totalCap / numGroups participants
@@ -598,30 +597,7 @@ const updateEventRegistration = async (req, res, next) => {
 		await event.save();
 		res.status(200).json({
 			event: event.toObject({
-				getters: true,
-				transform: (doc, ret, opt) => {
-					delete ret['name'];
-					delete ret['image'];
-					delete ret['type'];
-					delete ret['startDate'];
-					delete ret['endDate'];
-					delete ret['regStartDate'];
-					delete ret['regEndDate'];
-					delete ret['venue'];
-					delete ret['address'];
-					delete ret['cooridnate'];
-					delete ret['description'];
-					delete ret['insutruction'];
-					delete ret['courseMap'];
-					delete ret['clubId'];
-					delete ret['clubName'];
-					delete ret['clubImage'];
-					delete ret['published'];
-					delete ret['entryFormData'];
-					delete ret['entries'];
-					delete ret['waitList'];
-					return ret;
-				}
+				getters: true
 			})
 		});
 	} catch (err) {
@@ -721,25 +697,6 @@ const updateEvent = async (req, res, next) => {
 		return next(error);
 	}
 
-	// check whether image or courseMap been changed or not
-	// let imagePath, courseMapPath;
-	// if (req.files.image) {
-	// 	imagePath = req.files.image[0].path;
-	// 	if (event.image) {
-	// 		fs.unlink(event.image, err => {
-	// 			console.log(err);
-	// 		});
-	// 	}
-	// }
-	// if (req.files.courseMap) {
-	// 	courseMapPath = req.files.courseMap[0].path;
-	// 	if (event.courseMap) {
-	// 		fs.unlink(event.courseMap, err => {
-	// 			console.log(err);
-	// 		});
-	// 	}
-	// }
-
 	// update event info
 	event.name = name;
 	event.type = type;
@@ -747,37 +704,18 @@ const updateEvent = async (req, res, next) => {
 	event.endDate = moment(endDate);
 	event.regStartDate = moment(regStartDate);
 	event.regEndDate = moment(regEndDate);
-	// if (imagePath) {
-	// 	event.image = imagePath;
-	// }
 	event.venue = venue;
 	event.address = address;
 	event.description = description;
 	event.instruction = instruction;
 	event.coordinate = coordinate;
 	event.published = false;
-	// if (courseMapPath) {
-	// 	event.courseMap = courseMapPath;
-	// }
 
 	try {
 		await event.save();
 		res.status(200).json({
 			event: event.toObject({
-				getters: true,
-				transform: (doc, ret, opt) => {
-					delete ret['image'];
-					delete ret['courseMap'];
-					delete ret['entryFormData'];
-					delete ret['entries'];
-					delete ret['waitList'];
-					delete ret['totalCap'];
-					delete ret['totalEntries'];
-					delete ret['numGroups'];
-					delete ret['capDistribution'];
-					delete ret['groupEntries'];
-					return ret;
-				}
+				getters: true
 			})
 		});
 	} catch (err) {

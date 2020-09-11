@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import moment from 'moment';
 
 // DO NOT REMOVE IT, this is a plugin of moment() for moment().countdown
@@ -8,26 +8,15 @@ import countdown from 'moment-countdown';
 
 import Button from '../../shared/components/FormElements/Button';
 
-import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import Image from '../../shared/components/UIElements/Image';
 import Map from '../../shared/components/UIElements/Map';
 import Modal from '../../shared/components/UIElements/Modal';
-import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 
 import { UserAuthContext } from '../../shared/context/auth-context';
-import { useHttpClient } from '../../shared/hooks/http-hook';
 import './EventItem.css';
 
 const EventItem = props => {
-	const {
-		isLoading,
-		error,
-		sendRequest,
-		clearError
-	} = useHttpClient();
-
 	// useContext is listening to "ClubAuthContext"
-	// const clubAuthContext = useContext(ClubAuthContext);
 	const userAuthContext = useContext(UserAuthContext);
 
 	// modal section
@@ -41,67 +30,12 @@ const EventItem = props => {
 	// modals for courseMap and delete confirmation
 	const [showMap, setShowMap] = useState(false);
 
-	// const [showDELModal, setShowDELModal] = useState(false);
-	// const [showPublishModal, setShowSubmitModal] = useState(false);
-
 	// event handlers
 	const openMapHandler = () => {
 		openModalHandler();
 		setShowMap(true);
 	};
 	const closeMapHandler = () => setShowMap(false);
-	// const openDELHandler = () => {
-	// 	setShowDELModal(true);
-	// };
-	// const closeDELHandler = () => {
-	// 	setShowDELModal(false);
-	// };
-	// const openPublishHandler = () => {
-	// 	setShowSubmitModal(true);
-	// };
-	// const closePublishHandler = () => {
-	// 	setShowSubmitModal(false);
-	// };
-
-	const history = useHistory();
-
-	// const confirmDeleteHandler = async () => {
-	// 	setShowDELModal(false);
-	// 	try {
-	// 		await sendRequest(
-	// 			process.env.REACT_APP_BACKEND_URL +
-	// 				`/events/${props.event.id}`,
-	// 			'DELETE',
-	// 			null,
-	// 			{
-	// 				// No need for content-type since body is null,
-	// 				// adding JWT to header for authentication
-	// 				Authorization: 'Bearer ' + clubAuthContext.clubToken
-	// 			}
-	// 		);
-	// 		history.push(`/events/club/${clubAuthContext.clubId}`);
-	// 	} catch (err) {}
-	// };
-
-	// const confirmPublishHandler = async () => {
-	// 	setShowSubmitModal(false);
-	// 	try {
-	// 		await sendRequest(
-	// 			process.env.REACT_APP_BACKEND_URL +
-	// 				`/clubs/publish/${props.event.id}`,
-	// 			'PATCH',
-	// 			JSON.stringify({ published: true }),
-	// 			{
-	// 				// No need for content-type since body is null,
-	// 				// adding JWT to header for authentication
-	// 				'Content-Type': 'application/json',
-	// 				Authorization: 'Bearer ' + clubAuthContext.clubToken
-	// 			}
-	// 		);
-	// 		history.push(`/events/club/${clubAuthContext.clubId}`);
-	// 	} catch (err) {}
-	// };
-
 	const [showCourse, setShowCourse] = useState(false);
 	const openCourseHandler = () => {
 		openModalHandler();
@@ -119,23 +53,6 @@ const EventItem = props => {
 		'MM/DD/YYYY, ddd'
 	);
 	let endDate = moment(props.event.endDate).format('MM/DD/YYYY, ddd');
-	let formStartDate = moment(props.event.startDate).format(
-		'YYYY-MM-DD'
-	);
-	let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');
-	const eventImageElement =
-		props.event.image !== '' ? (
-			<div className="event-item__image">
-				<img
-					src={
-						process.env.REACT_APP_ASSET_URL + `/${props.event.image}`
-					}
-					alt={props.name}
-				/>
-			</div>
-		) : (
-			<div></div>
-		);
 
 	const [regDuration, setRegDuration] = useState('');
 	useEffect(() => {
@@ -297,7 +214,6 @@ const EventItem = props => {
 	return (
 		// React.Frgment connect multiple components
 		<React.Fragment>
-			<ErrorModal error={error} onClear={clearError} />
 			{/* Modal to show google map and course map */}
 			<Modal
 				show={showModal}
@@ -327,55 +243,8 @@ const EventItem = props => {
 					)}
 				</div>
 			</Modal>
-			{/* Modal to show delet confirmation message */}
-			{/* <Modal
-				className="modal-delete"
-				show={showDELModal}
-				contentClass="event-item__modal-delete"
-				onCancel={closeDELHandler}
-				header="Warning!"
-				footerClass="event-item__modal-actions"
-				footer={
-					<React.Fragment>
-						<Button inverse onClick={closeDELHandler}>
-							CANCEL
-						</Button>
-						<Button danger onClick={confirmDeleteHandler}>
-							DELETE
-						</Button>
-					</React.Fragment>
-				}>
-				<p className="modal__content">
-					Do you really want to delete {props.event.name}? It cannot
-					be recovered after deletion.
-				</p>
-			</Modal> */}
-			{/* <Modal
-				className="modal-delete"
-				show={showPublishModal}
-				contentClass="event-item__modal-delete"
-				onCancel={closePublishHandler}
-				header="Warning!"
-				footerClass="event-item__modal-actions"
-				footer={
-					<React.Fragment>
-						<Button inverse onClick={closePublishHandler}>
-							No
-						</Button>
-						<Button danger onClick={confirmPublishHandler}>
-							YES
-						</Button>
-					</React.Fragment>
-				}>
-				<p className="modal__content">
-					Are you ready to submit {props.event.name}? Please confirm.
-				</p>
-			</Modal> */}
 			{/* This section is for Users and  Clubs that do not own the event */}
 			{/* render logo/club name/event type  */}
-			{isLoading && <LoadingSpinner asOverlay />}
-			{/* {(!clubAuthContext.clubId ||
-				clubAuthContext.clubId !== props.event.clubId) && ( */}
 			<div className="event-pages eventtype-page">
 				<section id="header" title="">
 					<div className="section-container">
@@ -412,11 +281,8 @@ const EventItem = props => {
 					</div>
 				</section>
 			</div>
-			{/* )} */}
 			{/* this section is for event image */}
 			{/* Regitration container */}
-			{/* {(!clubAuthContext.clubId ||
-				clubAuthContext.clubId !== props.event.clubId) && ( */}
 			<div className="section-container">
 				{/* event image on the left */}
 				<div className="page-basic-container">
@@ -456,21 +322,16 @@ const EventItem = props => {
 						</div>
 					</div>
 					<div className="col-xs-12">
-						{/* {!clubAuthContext.clubId && ( */}
 						<Button
 							inverse={!openRegistration}
 							to={`/events/form/${props.event.id}`}
 							size="small-orange">
 							{buttonName}
 						</Button>
-						{/* )} */}
 					</div>
 				</div>
 			</div>
-			{/* )} */}
 
-			{/* {(!clubAuthContext.clubId ||
-				clubAuthContext.clubId !== props.event.clubId) && ( */}
 			<div className="section-container">
 				<div className="page-basic-container">
 					<div className="about-description">
@@ -522,10 +383,7 @@ const EventItem = props => {
 					</div>
 				)}
 			</div>
-			{/* )} */}
 
-			{/* {(!clubAuthContext.clubId ||
-				clubAuthContext.clubId !== props.event.clubId) && ( */}
 			<div className="section-container">
 				<div className="page-basic-container">
 					<div className="about-description">
@@ -554,16 +412,11 @@ const EventItem = props => {
 					</div>
 				</div>
 			</div>
-			{/* )} */}
-
-			{/* {(!clubAuthContext.clubId ||
-				clubAuthContext.clubId !== props.event.clubId) && ( */}
 			<div className="section-container">
 				<div className="page-basic-container">
 					<div className="page-footer"></div>
 				</div>
 			</div>
-			{/* )} */}
 		</React.Fragment>
 	);
 };

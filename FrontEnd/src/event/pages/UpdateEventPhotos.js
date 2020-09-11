@@ -54,53 +54,49 @@ const UpdateEventPhotos = props => {
 		}
 	}, [location, clubAuthContext]);
 
-	let image = undefined;
-	let courseMap = undefined;
-
 	// initialize local storage
 	// Get the existing data
-	var eventFormData = localStorage.getItem('eventFormData');
+	// var eventFormData = localStorage.getItem('eventFormData');
 
 	// If no existing data, create an array; otherwise retrieve it
-	eventFormData = eventFormData ? JSON.parse(eventFormData) : {};
+	// eventFormData = eventFormData ? JSON.parse(eventFormData) : {};
 
 	const [OKLeavePage, setOKLeavePage] = useState(true);
 	// local storage gets the higest priority
 	// get from localStorage
-	if (
-		!initialized &&
-		eventFormData &&
-		moment(eventFormData.expirationDate) > moment()
-	) {
-		setInitialized(true);
-		// Form data
-		if (eventFormData.image) {
-			//setImage(eventFormData.image);
-			// setImageOK(false);
-		}
-		if (eventFormData.courseMap) {
-			// setCourseMap(eventFormData.courseMap);
-			// setCourseMapOK(false);
-		}
-	} else if (!initialized) {
-		setInitialized(true);
-		// initialize localStorage
-		eventFormData['expirationDate'] = moment(
-			moment().add(1, 'days'),
-			moment.ISO_8601
-		);
-		eventFormData['image'] = undefined;
-		eventFormData['courseMap'] = undefined;
-		localStorage.setItem(
-			'eventFormData',
-			JSON.stringify(eventFormData)
-		);
-	}
+	// if (
+	// 	!initialized &&
+	// 	eventFormData &&
+	// 	moment(eventFormData.expirationDate) > moment()
+	// ) {
+	// 	setInitialized(true);
+	// 	// Form data
+	// 	if (eventFormData.image) {
+	// 		setImage(eventFormData.image);
+	// 		// setImageOK(false);
+	// 	}
+	// 	if (eventFormData.courseMap) {
+	// 		setCourseMap(eventFormData.courseMap);
+	// 		// setCourseMapOK(false);
+	// 	}
+	// } else if (!initialized) {
+	// 	setInitialized(true);
+	// 	// initialize localStorage
+	// 	eventFormData['expirationDate'] = moment(
+	// 		moment().add(1, 'days'),
+	// 		moment.ISO_8601
+	// 	);
+	// 	eventFormData['image'] = undefined;
+	// 	eventFormData['courseMap'] = undefined;
+	// 	localStorage.setItem(
+	// 		'eventFormData',
+	// 		JSON.stringify(eventFormData)
+	// 	);
+	// }
 
-	const removeEventFormData = () => {
-		localStorage.removeItem('eventFormData');
-		// history.push(`/events/club/${clubAuthContext.clubId}`);
-	};
+	// const removeEventFormData = () => {
+	// 	localStorage.removeItem('eventFormData');
+	// };
 
 	const initialValues = {
 		image: props.event.image,
@@ -193,11 +189,6 @@ const UpdateEventPhotos = props => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
-								// if (event.target.value) {
-								// 	setImageOK(false);
-								// } else {
-								// 	setImageOK(true);
-								// }
 							}}
 							labelStyle="event-form__label"
 							inputStyle="event-form__field-select"
@@ -215,11 +206,6 @@ const UpdateEventPhotos = props => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
-								// if (event.target.value) {
-								// 	setCourseMapOK(false);
-								// } else {
-								// 	setCourseMapOK(true);
-								// }
 							}}
 							labelStyle="event-form__label"
 							inputStyle="event-form__field-select"
@@ -236,7 +222,7 @@ const UpdateEventPhotos = props => {
 						<NavigationPrompt
 							afterConfirm={() => {
 								formContext.setIsInsideForm(false);
-								removeEventFormData();
+								// removeEventFormData();
 							}}
 							// Confirm navigation if going to a path that does not start with current path.
 							// We don't want to confirm navigation when OKLeavePage === true and redirect to '/clubs/auth' due to
@@ -244,7 +230,7 @@ const UpdateEventPhotos = props => {
 							when={(crntLocation, nextLocation) => {
 								if (OKLeavePage) {
 									formContext.setIsInsideForm(false);
-									removeEventFormData();
+									// removeEventFormData();
 									return false;
 								} else {
 									// nextLocation.pathname !== '/clubs/auth' &&  --- adding this line causing state update on an

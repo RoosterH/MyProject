@@ -122,25 +122,13 @@ const EventPhotos = props => {
 		courseMap: courseMap
 	};
 
-	const updateEventFormData = (key, value) => {
-		const storageData = JSON.parse(
-			localStorage.getItem('eventFormData')
-		);
-		storageData[key] = value;
-		localStorage.setItem(
-			'eventFormData',
-			JSON.stringify(storageData)
-		);
-	};
-
-	const history = useHistory();
 	const submitHandler = async (values, actions) => {
 		try {
 			const formData = new FormData();
 			formData.append('image', values.image);
 			formData.append('courseMap', values.courseMap);
 
-			const responseData = await sendRequest(
+			await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + '/events/photos/' + eId,
 				'PATCH',
 				formData,

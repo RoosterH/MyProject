@@ -1,7 +1,5 @@
 import React from 'react';
 
-import Button from '../../shared/components/FormElements/Button';
-import Card from '../../shared/components/UIElements/Card';
 import EventsItem from './EventsItem';
 import '../../shared/css/EventsList.css';
 
@@ -34,6 +32,7 @@ const EventList = props => {
 					venue={event.venue}
 					entryFormData={event.entryFormData}
 					published={props.displayPublished ? event.published : false}
+					readOnly={props.readOnly}
 				/>
 			))}
 		</ul>

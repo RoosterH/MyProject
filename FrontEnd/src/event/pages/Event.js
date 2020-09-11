@@ -18,6 +18,8 @@ const Event = props => {
 	const eId = props.location.state.props.id;
 	const clubId = props.location.state.props.clubId;
 	const [clubOwnerRequest, setClubOwnerRequest] = useState(false);
+	// readOnly is to control OwnerClub View Events, we do not want to go to <EditEventItem> route
+	const readOnly = props.location.state.props.readOnly;
 
 	const [loadedEvent, setLoadedEvent] = useState();
 	const {
@@ -72,14 +74,16 @@ const Event = props => {
 				</div>
 			)}
 			{/* For club who owns the event, we will go to EditEventItem */}
-			{!isLoading && loadedEvent && clubOwnerRequest && (
+			{!isLoading && loadedEvent && clubOwnerRequest && !readOnly && (
 				<EditEventItem event={loadedEvent} />
 			)}
-			{/* For users and clubs don't own the event, we will go to
+			{/* For users, clubs don't own the event, and OwnerClub wants to view event, we will go to
 			EventItem */}
-			{!isLoading && loadedEvent && !clubOwnerRequest && (
-				<EventItem event={loadedEvent} />
-			)}
+			{!isLoading &&
+				loadedEvent &&
+				(!clubOwnerRequest || (clubOwnerRequest && readOnly)) && (
+					<EventItem event={loadedEvent} />
+				)}
 		</React.Fragment>
 	);
 };

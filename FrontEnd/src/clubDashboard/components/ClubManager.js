@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React from 'react';
 
 import './ClubManager.css';
 
@@ -25,18 +25,12 @@ const ManageClub = () => {
 				</p>
 				<p className="list-content-link">Manage Your Team</p>
 				<p className="list-content-desc">
-					Manage Your Team Invite your co-workers to access your
-					ActivityHero dashboard. Admins can set up or manage the
-					listing, and Support can only view reports.
-				</p>
-				<p className="list-content-link">Billing</p>
-				<p className="list-content-desc">
-					This Credit Card will be used to pay for boosting activities
-					and/or any annual set-up fees if you have opted for that.
+					Manage Your Team Invite your co-workers to access your club
+					dashboard.
 				</p>
 				<p className="list-content-link">About MySeatTime</p>
 				<p className="list-content-desc">
-					Learn more about your current listing plan.
+					Learn more about MySeatTime.
 				</p>
 			</div>
 		</React.Fragment>

@@ -55,6 +55,7 @@ export const useUserAuth = () => {
 		// remove token from storage
 		localStorage.removeItem('userData');
 		localStorage.removeItem('garages');
+		localStorage.removeItem('eventData');
 		// reset userTokenExpDate; otherwise won't be able to login after
 		// token expires
 		setUserTokenExpDate(null);

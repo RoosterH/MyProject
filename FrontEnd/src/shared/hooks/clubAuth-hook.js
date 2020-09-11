@@ -50,6 +50,11 @@ export const useClubAuth = () => {
 		setClubName(null);
 		// remove token from storage
 		localStorage.removeItem('userData');
+		// clean up
+		localStorage.removeItem('eventData');
+		localStorage.removeItem('eventEntryForm');
+		localStorage.removeItem('eventID');
+		localStorage.removeItem('eventFormData');
 		// reset clubTokenExpDate; otherwise won't be able to login after
 		// token expires
 		setClubTokenExpDate(null);

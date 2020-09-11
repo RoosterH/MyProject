@@ -18,6 +18,26 @@
 	font-style: bold;
 }
 
+.eventname {
+	display: inline-block;
+	font-size: 16px;
+	font-weight: 400;
+}
+
+.published {
+	display: inline-block;
+	font-size: 16px;
+	color: rgb(5, 161, 39);
+	font-style: bold;
+}
+
+.published-warning {
+	display: inline-block;
+	font-size: 16px;
+	color: rgb(207, 20, 20);
+	font-style: bold;
+}
+
 .list-content {
 	margin: 0rem 1rem 1rem 1rem;
 	padding: 40px 0 40px 40px;

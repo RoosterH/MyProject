@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import UpdateEvent from '../../event/pages/UpdateEvent';
 import UpdateFormBuilder from '../../event/components/UpdateFormBuilder';
 import UpdateEventPhotos from '../../event/pages/UpdateEventPhotos';
@@ -6,7 +6,8 @@ import UpdateEventRegistration from '../../event/pages/UpdateEventRegistration';
 import Button from '../../shared/components/FormElements/Button';
 import './ClubManager.css';
 
-const EditEventManager = props => {
+const RegistrationManager = props => {
+	let eventId = props.event.id;
 	const [published, setPublished] = useState(props.event.published);
 
 	const [event, setEvent] = useState(props.event);
@@ -160,4 +161,4 @@ const EditEventManager = props => {
 	);
 };
 
-export default EditEventManager;
+export default RegistrationManager;
