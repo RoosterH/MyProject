@@ -85,15 +85,17 @@ const EditEventManager = props => {
 	return (
 		<React.Fragment>
 			<div className="list-header clearfix">
-				<div className="eventname">{props.event.name}</div>
+				<div className="eventname">
+					{props.event.name} &nbsp;&nbsp;&nbsp;{' '}
+				</div>
 				{published && (
 					<div className="published">
-						&nbsp; This event has been published
+						This event has been published
 					</div>
 				)}
 				{!published && (
 					<div className="published-warning">
-						&nbsp; This event has not been published
+						This event has not been published
 					</div>
 				)}
 			</div>

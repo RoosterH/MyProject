@@ -904,7 +904,11 @@ const getEventEntryFormAnswer = async (req, res, next) => {
 
 	res
 		.status(200)
-		.json({ entryFormData: entryFormData, entryFormAnswer: answer });
+		.json({
+			eventName: event.name,
+			entryFormData: entryFormData,
+			entryFormAnswer: answer
+		});
 };
 
 // export a pointer of the function

@@ -115,7 +115,6 @@ const FormBuilder = props => {
 		}
 
 		try {
-			console.log('unsavedData = ', unsavedData);
 			const responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + `/clubs/form/${eventId}`,
 				'POST',
@@ -151,7 +150,7 @@ const FormBuilder = props => {
 			name: 'Registration Options',
 			icon: 'far fa-dot-circle',
 			label: '<strong>Registration Options</strong>',
-			field_name: 'regOption',
+			field_name: 'Registration-',
 			required: true,
 			options: [
 				{
@@ -166,34 +165,13 @@ const FormBuilder = props => {
 				}
 			]
 		},
-		// {
-		// 	key: 'Checkboxes',
-		// 	canHaveAnswer: true,
-		// 	name: 'Registration Options Multiple Selection',
-		// 	icon: 'far fa-dot-circle',
-		// 	label: '<strong>Registration Options</strong>',
-		// 	field_name: 'regOption',
-		// 	required: true,
-		// 	options: [
-		// 		{
-		// 			value: '50',
-		// 			text: 'AAS Member $50',
-		// 			key: `regCheckboxOption_0`
-		// 		},
-		// 		{
-		// 			value: '60',
-		// 			text: 'AAS Member $60',
-		// 			key: `regCheckboxOption_1`
-		// 		}
-		// 	]
-		// },
 		{
 			key: 'RadioButtons',
 			canHaveAnswer: true,
 			name: 'Race Session Single Selection',
 			icon: 'far fa-dot-circle',
 			label: '<strong>Registration Options</strong>',
-			field_name: 'regOption',
+			field_name: 'RaceSessionSingle-',
 			required: true,
 			options: [
 				{
@@ -229,7 +207,7 @@ const FormBuilder = props => {
 			name: 'Race Session Multiple Selection',
 			icon: 'far fa-check-square',
 			label: '<strong>Registration Options</strong>',
-			field_name: 'regOption',
+			field_name: 'RaceSessionMultiple-',
 			required: true,
 			options: [
 				{
@@ -262,10 +240,10 @@ const FormBuilder = props => {
 		{
 			key: 'RadioButtons',
 			canHaveAnswer: true,
-			name: 'Lunch Selection',
+			name: 'Lunch Options',
 			icon: 'far fa-dot-circle',
 			label: '<strong>Lunch Selection</strong>',
-			field_name: 'lunchOption',
+			field_name: 'Lunch-',
 			required: true,
 			options: [
 				{
@@ -296,7 +274,7 @@ const FormBuilder = props => {
 			name: 'Worker Signup',
 			icon: 'far fa-dot-circle',
 			label: '<strong>Worker Signup</strong>',
-			field_name: 'workerOption',
+			field_name: 'WorkerGroup-',
 			required: true,
 			options: [
 				{
@@ -334,7 +312,7 @@ const FormBuilder = props => {
 			icon: 'far fa-check-square',
 			label: '<strong>Event Waiver</strong>',
 			content: 'Waiver...',
-			field_name: 'waiverCheckbox',
+			field_name: 'Waiver-',
 			required: true,
 			options: [
 				{
@@ -353,7 +331,7 @@ const FormBuilder = props => {
 			icon: 'far fa-check-square',
 			label: '<strong>Disclaimer</strong>',
 			content: 'Disclaimer...',
-			field_name: 'disclaimerCheckbox',
+			field_name: 'Disclaimer-',
 			required: true,
 			options: [
 				{
@@ -397,7 +375,6 @@ const FormBuilder = props => {
 
 	// getResponseData is a callback function that returns responseData to its caller
 	const onLoad = getResponseData => {
-		console.log('eventId = ', eventId);
 		// GET event form from server
 		let responseData;
 		const fetchForm = async () => {
@@ -438,7 +415,6 @@ const FormBuilder = props => {
 		data = fixFormData(data);
 
 		const setData = () => {
-			console.log('data = ', data);
 			// save the array to unsavedData and backend
 			// format of data: {task_data: Array(6)}
 			setUnsavedData(data.task_data);

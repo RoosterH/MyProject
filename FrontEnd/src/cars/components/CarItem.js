@@ -140,32 +140,32 @@ const CarItem = props => {
 			{isLoading && <LoadingSpinner asOverlay />}
 			{/* User image and car model*/}
 			<div className="carItem">
-				<div className="event-pages eventtype-page">
-					<section id="header" className="section-header">
-						<div className="header-container">
-							<div className="logo-container ">
-								{owner && userAuthContext.userImage && (
-									<img
-										src={
-											process.env.REACT_APP_ASSET_URL +
-											`/${userAuthContext.userImage}`
-										}
-										alt={props.car.model}
-									/>
-								)}
-								{(!owner || !userAuthContext.userImage) && (
-									<div className="gingerman">
-										<i className="fad fa-gingerbread-man fa-4x" />
-									</div>
-								)}
-							</div>
-							<div className="clubname-container">
-								{`${props.car.userName}\'s`} &nbsp;
-								{props.car.model}
-							</div>
+				{/* <div className="event-pages eventtype-page"> */}
+				<section id="header" className="section-header">
+					<div className="header-container">
+						<div className="logo-container ">
+							{owner && userAuthContext.userImage && (
+								<img
+									src={
+										process.env.REACT_APP_ASSET_URL +
+										`/${userAuthContext.userImage}`
+									}
+									alt={props.car.model}
+								/>
+							)}
+							{(!owner || !userAuthContext.userImage) && (
+								<div className="gingerman">
+									<i className="fad fa-gingerbread-man fa-4x" />
+								</div>
+							)}
 						</div>
-					</section>
-				</div>
+						<div className="clubname-container">
+							{`${props.car.userName}\'s`} &nbsp;
+							{props.car.model} {props.car.trimLevel}
+						</div>
+					</div>
+				</section>
+				{/* </div> */}
 				{/* Car info container */}
 				<div className="section-container">
 					<div className="carinfo-container">

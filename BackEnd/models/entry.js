@@ -12,7 +12,8 @@ const entrySchema = new Schema({
 		required: true,
 		ref: 'User'
 	},
-	userName: { type: String, required: true },
+	userLastName: { type: String, required: true },
+	userFirstName: { type: String, required: true },
 	clubId: {
 		type: mongoose.Types.ObjectId,
 		required: true,

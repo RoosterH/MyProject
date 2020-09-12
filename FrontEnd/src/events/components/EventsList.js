@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useContext } from 'react';
 
 import EventsItem from './EventsItem';
+import { UserAuthContext } from '../../shared/context/auth-context';
 import '../../shared/css/EventsList.css';
 
 // treat this as a function looks like
 // EventList(props.items), caller will call as <EventList items=(value to be passed in) \>
 const EventList = props => {
+	const userAuthContext = useContext(UserAuthContext);
 	if (props.items.length === 0) {
 		return (
 			<div className="center">
@@ -14,9 +16,30 @@ const EventList = props => {
 		);
 	}
 
+	// we use localStorage to store useEntries and match the event to find out wheather it's a user signed up event.
+	let entries = [];
+	if (userAuthContext.userId) {
+		let userData = JSON.parse(localStorage.getItem('userData'));
+		if (userData.userId === userAuthContext.userId) {
+			for (var i = 0; i < userData.userEntries.length; ++i) {
+				entries.push(userData.userEntries[i]);
+			}
+		}
+	}
+
+	let events = props.items;
+	let signup = new Map();
+	for (var i = 0; i < events.length; ++i) {
+		for (var j = 0; j < entries.length; ++j) {
+			if (entries[j].eventId === events[i].id) {
+				signup[events[i].id] = true;
+			}
+		}
+	}
+
 	return (
 		<ul className="events-list">
-			{props.items.map(event => (
+			{events.map(event => (
 				<EventsItem
 					// In React, each child in the array should have a unique "key" prop
 					// so when render it will only render one element not the whole array
@@ -31,8 +54,9 @@ const EventList = props => {
 					endDate={event.endDate}
 					venue={event.venue}
 					entryFormData={event.entryFormData}
-					published={props.displayPublished ? event.published : false}
+					published={props.displayPublished ? event.published : false} // getting flag from event
 					readOnly={props.readOnly}
+					signup={signup[event.id]}
 				/>
 			))}
 		</ul>

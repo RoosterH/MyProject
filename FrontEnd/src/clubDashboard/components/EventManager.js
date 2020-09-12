@@ -43,7 +43,7 @@ const EventManager = () => {
 						</p>
 					</Link>
 
-					<Link to={`/clubs/ownerClubEvents/${cid}`} exact="exact">
+					<Link to={`/clubs/viewEventSelector/${cid}`} exact="exact">
 						<i
 							className="fa fa-sort-desc pull-right"
 							aria-hidden="true"

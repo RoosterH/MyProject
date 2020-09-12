@@ -28,6 +28,8 @@ const EventsItem = props => {
 							className="avatar__event"
 							published={props.published}
 							publishDescription="PUBLISHED"
+							signup={props.signup}
+							signupDescription="ENROLLED"
 						/>
 					</div>
 					<div className="events-item__info">

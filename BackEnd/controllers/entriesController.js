@@ -49,7 +49,6 @@ const createEntry = async (req, res, next) => {
 		);
 		return next(error);
 	}
-
 	// Validate eventId belonging to the found club. If not, sends back an error
 	let event;
 	const eventId = req.params.eid;
@@ -62,12 +61,13 @@ const createEntry = async (req, res, next) => {
 		return next(error);
 	}
 
-	let entry = await Entry.findOne(
-		{ eventId: eventId },
-		{ userId: userId }
-	);
+	let entry = await Entry.findOne({
+		eventId: eventId,
+		userId: userId
+	});
 
 	if (entry) {
+		console.log('entry = ', entry);
 		// if entry found, we only need to override the answer
 		entry.answer = [];
 		answer.map(data => entry.answer.push(data));
@@ -84,7 +84,8 @@ const createEntry = async (req, res, next) => {
 		// entry not found, create a new entry and store the entryId to event and user
 		entry = new Entry({
 			userId,
-			userName: user.name,
+			userLastName: user.lastname,
+			userFirstName: user.firstname,
 			clubId: event.clubId,
 			clubName: event.clubName,
 			eventId,
@@ -93,7 +94,7 @@ const createEntry = async (req, res, next) => {
 			time: moment(),
 			published: true
 		});
-
+		console.log('entry = ', entry);
 		try {
 			const session = await mongoose.startSession();
 			session.startTransaction();
@@ -110,6 +111,7 @@ const createEntry = async (req, res, next) => {
 			// only all tasks succeed, we commit the transaction
 			await session.commitTransaction();
 		} catch (err) {
+			console.log('err = ', err);
 			const error = new HttpError(
 				'Event registration process failed due to technical issue. Please try again later.',
 				500

@@ -72,7 +72,11 @@ const UserEvents = () => {
 				</div>
 			)}
 			{!isLoading && loadedEvents && (
-				<EventsList items={loadedEvents} displayPublished={false} />
+				<EventsList
+					items={loadedEvents}
+					displayPublished={false}
+					displaySignup={true}
+				/>
 			)}
 		</React.Fragment>
 	);

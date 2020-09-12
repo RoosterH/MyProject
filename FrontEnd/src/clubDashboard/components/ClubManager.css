@@ -29,13 +29,26 @@
 	font-size: 16px;
 	color: rgb(5, 161, 39);
 	font-style: bold;
+
+	display: inline-block;
+	background-color: rgb(177, 245, 192);
+	border: 1px solid transparent;
+	border-color: rgb(84, 236, 117);
+	color: rgb(9, 136, 37);
+	padding: 10px 6px;
+	font-size: 12px;
+	font-weight: 400;
 }
 
 .published-warning {
 	display: inline-block;
-	font-size: 16px;
-	color: rgb(207, 20, 20);
-	font-style: bold;
+	background-color: #f8d7da;
+	border: 1px solid transparent;
+	border-color: #f5c6cb;
+	color: #721c24;
+	padding: 10px 6px;
+	font-size: 12px;
+	font-weight: 400;
 }
 
 .list-content {

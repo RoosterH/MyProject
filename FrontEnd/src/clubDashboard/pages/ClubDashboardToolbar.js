@@ -54,7 +54,7 @@ const ClubDashboardToolbar = () => {
 							<NavLink to={`/clubs/editEventSelector/${cid}`} exact>
 								Edit Events
 							</NavLink>
-							<NavLink to={`/clubs/ownerClubEvents/${cid}`} exact>
+							<NavLink to={`/clubs/viewEventSelector/${cid}`} exact>
 								View Events
 							</NavLink>
 						</div>

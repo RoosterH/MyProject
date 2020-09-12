@@ -50,7 +50,7 @@ const UserAuth = () => {
 					// for re-direction, we need to set login information to be able to send request to backend
 					userAuthContext.userLogin(
 						responseData.userId,
-						responseData.name,
+						responseData.username,
 						responseData.token,
 						'',
 						responseData.entries,
@@ -70,7 +70,7 @@ const UserAuth = () => {
 					// id is from {getters: true}
 					userAuthContext.userLogin(
 						responseData.userId,
-						responseData.name,
+						responseData.username,
 						responseData.token,
 						'', //expirationDate will be defined in userAuth-hook
 						responseData.entries,
@@ -95,8 +95,10 @@ const UserAuth = () => {
 
 				// FormData() is a browser API. We can append text or binary data to FormData
 				const formData = new FormData();
+				formData.append('username', values.username);
+				formData.append('lastname', values.lastname);
+				formData.append('firstname', values.firstname);
 				formData.append('email', values.email);
-				formData.append('name', values.name);
 				formData.append('password', values.password);
 				formData.append(
 					'passwordValidation',
@@ -125,10 +127,34 @@ const UserAuth = () => {
 
 	// Formik section
 	const initialValues = {
+		username: '',
+		lastname: '',
+		firstname: '',
 		email: '',
 		image: undefined,
 		password: '',
 		passwordValidation: ''
+	};
+	const validateUserName = value => {
+		let error;
+		if (!value) {
+			error = 'User Name is required.';
+		}
+		return error;
+	};
+	const validateLastName = value => {
+		let error;
+		if (!value) {
+			error = 'Last Name is required.';
+		}
+		return error;
+	};
+	const validateFirstName = value => {
+		let error;
+		if (!value) {
+			error = 'First Name is required.';
+		}
+		return error;
 	};
 	const validateEmail = value => {
 		let error;
@@ -235,6 +261,57 @@ const UserAuth = () => {
 				}) => (
 					<Form className="auth-from-container">
 						<div>
+							<label htmlFor="username" className="auth-form-label">
+								User Name
+							</label>
+							<Field
+								id="username"
+								name="username"
+								type="text"
+								validate={validateUserName}
+								className="auth-form-input"
+							/>
+							{touched.username && errors.username && (
+								<div className="auth-form-error">
+									{errors.username}
+								</div>
+							)}
+						</div>
+						<div>
+							<label htmlFor="lastname" className="auth-form-label">
+								Last Name
+							</label>
+							<Field
+								id="lastname"
+								name="lastname"
+								type="text"
+								validate={validateLastName}
+								className="auth-form-input"
+							/>
+							{touched.lastname && errors.lastname && (
+								<div className="auth-form-error">
+									{errors.lastname}
+								</div>
+							)}
+						</div>
+						<div>
+							<label htmlFor="firstname" className="auth-form-label">
+								First Name
+							</label>
+							<Field
+								id="firstname"
+								name="firstname"
+								type="text"
+								validate={validateFirstName}
+								className="auth-form-input"
+							/>
+							{touched.firstname && errors.firstname && (
+								<div className="auth-form-error">
+									{errors.firstname}
+								</div>
+							)}
+						</div>
+						<div>
 							<label htmlFor="email" className="auth-form-label">
 								Email
 							</label>
@@ -252,7 +329,7 @@ const UserAuth = () => {
 						<Field
 							id="image"
 							name="image"
-							title="Club Image"
+							title="User Image"
 							component={ImageUploader}
 							validate={validateImage}
 							setFieldValue={setFieldValue}

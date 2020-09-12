@@ -186,6 +186,11 @@ const EventItem = props => {
 	const [userRegisteredEvent, setUserRegisteredEvent] = useState(
 		false
 	);
+
+	// Instead of getting information from backend, trick here is to useLocalStorage.
+	// Once user entered the event, form.jsx returns entry back to EventForm.formSubmitted()
+	// We will save the entry to localStorage "UserData.userEntries" array.
+	// Here we match the current event with the array to determine using 'REGISTER EVENT' or 'MODIFY ENTRY'
 	const [buttonName, setButtonName] = useState('REGISTER EVENT');
 	let eventId = useParams().id;
 	useEffect(() => {
@@ -280,141 +285,141 @@ const EventItem = props => {
 						</div>
 					</div>
 				</section>
-			</div>
-			{/* this section is for event image */}
-			{/* Regitration container */}
-			<div className="section-container">
-				{/* event image on the left */}
-				<div className="page-basic-container">
-					<div className="eventimage-container">
-						<img
-							src={
-								process.env.REACT_APP_ASSET_URL +
-								`/${props.event.image}`
-							}
-							alt={props.event.name}
-							className="eventimage-container-img"
-						/>
-					</div>
-				</div>
-				{/* registration container on the right */}
-				<div className="registration-container">
-					<div className="col-xs-12">
-						<div className="clearfix">
-							<RegistrationMSG />
-						</div>
-						<div className="section">
-							<strong>
-								{startDate} — {endDate}
-							</strong>
-							<br /> <br />
-						</div>
-						<div>
-							<h3>{props.event.venue}</h3>
-							<Image
-								title={props.event.venue}
-								alt={props.event.venue}
-								src={require('../../shared/utils/png/GMapSmall.png')}
-								onClick={() => openMapHandler()}
-								onHoover
+				{/* this section is for event image */}
+				{/* Regitration container */}
+				<div className="section-container">
+					{/* event image on the left */}
+					<div className="page-basic-container">
+						<div className="eventimage-container">
+							<img
+								src={
+									process.env.REACT_APP_ASSET_URL +
+									`/${props.event.image}`
+								}
+								alt={props.event.name}
+								className="eventimage-container-img"
 							/>
-							<h4>{props.event.address}</h4>
 						</div>
 					</div>
-					<div className="col-xs-12">
-						<Button
-							inverse={!openRegistration}
-							to={`/events/form/${props.event.id}`}
-							size="small-orange">
-							{buttonName}
-						</Button>
-					</div>
-				</div>
-			</div>
-
-			<div className="section-container">
-				<div className="page-basic-container">
-					<div className="about-description">
-						<div className="toggle-section description">
-							<div className="short-description">
-								<div className="sub-heading">
-									<a
-										href="#description"
-										data-toggle="collapse"
-										onClick={toggleDescriptionButton}>
-										Event Description {'   '}
-										<button
-											type="button"
-											className={showDescription}
-											onClick={toggleDescriptionButton}></button>
-									</a>
-								</div>
-								<div id="description" className="collapse show">
-									<p>
-										{props.event.description}
-										<br></br>
-									</p>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				{props.event.courseMap && (
-					<div className="courseMap-container">
+					{/* registration container on the right */}
+					<div className="registration-container">
 						<div className="col-xs-12">
+							<div className="clearfix">
+								<RegistrationMSG />
+							</div>
 							<div className="section">
-								<div className="coursemap-title">Course Map</div>
+								<strong>
+									{startDate} — {endDate}
+								</strong>
+								<br /> <br />
 							</div>
 							<div>
+								<h3>{props.event.venue}</h3>
 								<Image
-									title={props.event.courseMap}
-									alt={props.event.courseMap}
-									src={
-										process.env.REACT_APP_ASSET_URL +
-										`/${props.event.courseMap}`
-									}
-									onClick={() => openCourseHandler()}
+									title={props.event.venue}
+									alt={props.event.venue}
+									src={require('../../shared/utils/png/GMapSmall.png')}
+									onClick={() => openMapHandler()}
 									onHoover
-									className="courseMap"
 								/>
+								<h4>{props.event.address}</h4>
+							</div>
+						</div>
+						<div className="col-xs-12">
+							<Button
+								inverse={!openRegistration}
+								to={`/events/form/${props.event.id}`}
+								size="small-orange">
+								{buttonName}
+							</Button>
+						</div>
+					</div>
+				</div>
+
+				<div className="section-container">
+					<div className="page-basic-container">
+						<div className="about-description">
+							<div className="toggle-section description">
+								<div className="short-description">
+									<div className="sub-heading">
+										<a
+											href="#description"
+											data-toggle="collapse"
+											onClick={toggleDescriptionButton}>
+											Event Description {'   '}
+											<button
+												type="button"
+												className={showDescription}
+												onClick={toggleDescriptionButton}></button>
+										</a>
+									</div>
+									<div id="description" className="collapse show">
+										<p>
+											{props.event.description}
+											<br></br>
+										</p>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
-				)}
-			</div>
 
-			<div className="section-container">
-				<div className="page-basic-container">
-					<div className="about-description">
-						<div className="toggle-section description">
-							<div className="short-description">
-								<div className="sub-heading">
-									<a
-										href="#instruction"
-										data-toggle="collapse"
-										onClick={toggleInstructionButton}>
-										Instruction {'   '}
-										<button
-											type="button"
-											className={showInstruction}
-											onClick={toggleInstructionButton}></button>
-									</a>
+					{props.event.courseMap && (
+						<div className="courseMap-container">
+							<div className="col-xs-12">
+								<div className="section">
+									<div className="coursemap-title">Course Map</div>
 								</div>
-								<div id="instruction" className="collapse show">
-									<p>
-										{props.event.instruction}
-										<br></br>
-									</p>
+								<div>
+									<Image
+										title={props.event.courseMap}
+										alt={props.event.courseMap}
+										src={
+											process.env.REACT_APP_ASSET_URL +
+											`/${props.event.courseMap}`
+										}
+										onClick={() => openCourseHandler()}
+										onHoover
+										className="courseMap"
+									/>
+								</div>
+							</div>
+						</div>
+					)}
+				</div>
+
+				<div className="section-container">
+					<div className="page-basic-container">
+						<div className="about-description">
+							<div className="toggle-section description">
+								<div className="short-description">
+									<div className="sub-heading">
+										<a
+											href="#instruction"
+											data-toggle="collapse"
+											onClick={toggleInstructionButton}>
+											Instruction {'   '}
+											<button
+												type="button"
+												className={showInstruction}
+												onClick={toggleInstructionButton}></button>
+										</a>
+									</div>
+									<div id="instruction" className="collapse show">
+										<p>
+											{props.event.instruction}
+											<br></br>
+										</p>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			<div className="section-container">
-				<div className="page-basic-container">
-					<div className="page-footer"></div>
+				<div className="section-container">
+					<div className="page-basic-container">
+						<div className="page-footer"></div>
+					</div>
 				</div>
 			</div>
 		</React.Fragment>

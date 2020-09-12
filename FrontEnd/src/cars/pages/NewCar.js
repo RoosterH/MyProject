@@ -945,8 +945,8 @@ const NewCar = setFieldValue => {
 					            				on the <Field/> is omitted */}
 						<label className="event-form__checkbox">
 							<Field type="checkbox" name="share" />
-							{/* {`${values.share}`} */} &nbsp; Check if you agree to
-							share the following sections.
+							{/* {`${values.share}`} */} &nbsp; Check if you want to
+							make the following information visible to public
 						</label>
 						<label
 							htmlFor="frontPressure"

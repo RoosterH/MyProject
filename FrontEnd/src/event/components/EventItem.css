@@ -1,5 +1,12 @@
 .event-item {
-	margin: 0rem;
+	/* margin: 0rem; */
+	margin-top: 4rem;
+	position: absolute;
+	height: 80rem;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	left: 0;
 }
 
 .event-item__content {

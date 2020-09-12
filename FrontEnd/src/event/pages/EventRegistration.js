@@ -211,7 +211,7 @@ const EventRegistration = props => {
 					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
-			history.push(`/clubs/clubManager}`);
+			history.push(`/clubs/clubManager`);
 		} catch (err) {}
 	};
 

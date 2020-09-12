@@ -265,7 +265,6 @@ export default class ReactForm extends React.Component {
 
 	async handleSubmit(e) {
 		e.preventDefault();
-
 		let errors = [];
 		if (!this.props.skip_validations) {
 			errors = this.validateForm();
@@ -279,8 +278,6 @@ export default class ReactForm extends React.Component {
 			if (answer_data) {
 				try {
 					const answer = this._collectFormData(this.props.data);
-
-					// let eventId = '5f2c86bbecd136a29ed14fa8';
 					// we need to use JSON.stringify to send array objects.
 					// FormData with JSON.stringify not working
 					let responseData = await this.sendRQ(
@@ -297,6 +294,7 @@ export default class ReactForm extends React.Component {
 							Authorization: 'Bearer ' + this.userToken
 						}
 					);
+					this.props.returnSubmitStatus(responseData.entry);
 				} catch (err) {}
 			} else {
 				throw new Error('Submit failed. Please select answers.');

@@ -12,7 +12,7 @@ const UserCarsList = props => {
 		return (
 			<div className="center">
 				<Card>
-					<h2>No event found. Please click to create a new event</h2>
+					<h2>No car found. Please click to create a new car</h2>
 					<Button to="/users/cars/new">Add a car</Button>
 				</Card>
 			</div>

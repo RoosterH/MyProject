@@ -9,18 +9,19 @@ import EditEventItem from '../components/EditEventItem';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 
 // Events is called in App.js where the route been defined
-// path={'/events/:id'}
+// 2 routes to call Event component
+// 1. path={'/events/:id'}
+// 2. In EventsItem <Link to={{pathname: `/events/${props.id}`, state: {props: props}}}> via EventWrapper
 const Event = props => {
 	const clubAuthContext = useContext(ClubAuthContext);
-
 	// props is passed via Link in the format of state: {props: props}
 	// we need to get the props value using props.location.state.props.id
 	const eId = props.location.state.props.id;
 	const clubId = props.location.state.props.clubId;
-	const [clubOwnerRequest, setClubOwnerRequest] = useState(false);
 	// readOnly is to control OwnerClub View Events, we do not want to go to <EditEventItem> route
 	const readOnly = props.location.state.props.readOnly;
 
+	const [clubOwnerRequest, setClubOwnerRequest] = useState(false);
 	const [loadedEvent, setLoadedEvent] = useState();
 	const {
 		isLoading,
@@ -39,7 +40,6 @@ const Event = props => {
 			try {
 				let responseData;
 				if (clubId === clubAuthContext.clubId) {
-					console.log('in Event');
 					responseData = await sendRequest(
 						process.env.REACT_APP_BACKEND_URL +
 							`/events/ownerClubEvent/${eId}`,

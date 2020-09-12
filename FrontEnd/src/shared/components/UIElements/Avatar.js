@@ -17,6 +17,11 @@ const Avatar = props => {
 						{props.publishDescription}
 					</figcaption>
 				)}
+				{props.signup && (
+					<figcaption className="watermark-text">
+						{props.signupDescription}
+					</figcaption>
+				)}
 			</figure>
 		</div>
 	);

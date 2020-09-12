@@ -16,7 +16,7 @@ const getAllUsers = async (req, res, next) => {
 	let users;
 	try {
 		// we don't want to return password field
-		users = await User.find({}, '-password').sort({ name: 1 });
+		users = await User.find({}, '-password').sort({ username: 1 });
 	} catch (err) {
 		const error = new HttpError(
 			'Get all users process failed. Please try again later.',
@@ -73,7 +73,14 @@ const createUser = async (req, res, next) => {
 		return next(error);
 	}
 
-	const { name, email, password, passwordValidation } = req.body;
+	const {
+		username,
+		lastname,
+		firstname,
+		email,
+		password,
+		passwordValidation
+	} = req.body;
 
 	if (password !== passwordValidation) {
 		const error = new HttpError(
@@ -115,7 +122,9 @@ const createUser = async (req, res, next) => {
 	}
 
 	const newUser = new User({
-		name,
+		username,
+		lastname,
+		firstname,
 		email,
 		image: req.file.path,
 		password: hashedPassword,
@@ -154,7 +163,9 @@ const createUser = async (req, res, next) => {
 
 	res.status(201).json({
 		userId: newUser.id,
-		name: newUser.name,
+		username: newUser.username,
+		lastname: newUser.lastname,
+		firstname: newUser.firstname,
 		email: newUser.email,
 		token: token,
 		entries: [],
@@ -164,7 +175,7 @@ const createUser = async (req, res, next) => {
 
 // POST '/api/users/login'
 const loginUser = async (req, res, next) => {
-	const { name, password, email } = req.body;
+	const { username, email, password } = req.body;
 
 	// validation to make sure email does not exist in our DB
 	let existingUser;
@@ -231,7 +242,7 @@ const loginUser = async (req, res, next) => {
 
 	res.status(200).json({
 		userId: existingUser.id,
-		name: existingUser.name,
+		username: existingUser.username,
 		email: existingUser.email,
 		token: token,
 		entries: existingUser.entries,
@@ -256,7 +267,7 @@ const updateUser = async (req, res, next) => {
 		return next(error);
 	}
 
-	const { name, password, email } = req.body;
+	const { username, password, email } = req.body;
 	const userId = req.userData; // use userId from token instead of getting it from url to avoid hacking
 
 	let user;
@@ -279,7 +290,7 @@ const updateUser = async (req, res, next) => {
 	}
 
 	// update user info
-	user.name = name;
+	user.username = username;
 	user.password = password;
 	user.email = email;
 
@@ -335,7 +346,7 @@ const deleteUser = async (req, res, next) => {
 		return next(error);
 	}
 
-	let userName = user.name;
+	let userName = user.username;
 	// We do not want to delete all the associated events with users.
 	// Instead we will be assiging the associated userId to our dummy user (MySeatTime).
 	try {

@@ -150,7 +150,7 @@ const App = () => {
 				<Route path="/clubs/eventReportSelector/:clubId" exact>
 					<EventReportSelector />
 				</Route>
-				<Route path="/clubs/ViewEventSelector/:clubId" exact>
+				<Route path="/clubs/viewEventSelector/:clubId" exact>
 					<ViewEventSelector />
 				</Route>
 				<Route path="/events/formbuilder/:id" exact>
@@ -268,7 +268,7 @@ const App = () => {
 				<Route path="/clubs/editEventManager/" exact>
 					<EditEventManager />
 				</Route>
-				<Route path="/clubs/ViewEventSelector/:clubId" exact>
+				<Route path="/clubs/viewEventSelector/:clubId" exact>
 					<ViewEventSelector />
 				</Route>
 
