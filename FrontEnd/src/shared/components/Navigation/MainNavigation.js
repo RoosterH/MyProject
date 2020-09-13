@@ -9,7 +9,7 @@ import './MainNavigation.css';
 import { ClubAuthContext } from '../../context/auth-context';
 
 const MainNavigation = props => {
-	const clubAuth = useContext(ClubAuthContext);
+	const clubAuthContext = useContext(ClubAuthContext);
 	const [isClubLoggedIn, setIsClubLoggedIn] = useState(false);
 	const [clubName, setClubName] = useState('');
 	/* 
@@ -26,14 +26,14 @@ const MainNavigation = props => {
 	};
 
 	useEffect(() => {
-		if (clubAuth.isClubLoggedIn) {
+		if (clubAuthContext.isClubLoggedIn) {
 			setIsClubLoggedIn(true);
-			setClubName(clubAuth.clubName);
+			setClubName(clubAuthContext.clubName);
 		} else {
 			setIsClubLoggedIn(false);
 			setClubName('');
 		}
-	}, [clubAuth]);
+	}, [clubAuthContext]);
 
 	return (
 		// <React.Fragment> is a wrapper helps solve multiple return issues.
@@ -57,9 +57,12 @@ const MainNavigation = props => {
 					<span />
 				</button>
 				<h1 className="main-navigation__menu_title">
-					<Link to="/" style={{ textDecoration: 'none' }}>
-						MySeatTime
-					</Link>
+					{!isClubLoggedIn && (
+						<Link to="/" style={{ textDecoration: 'none' }}>
+							MySeatTime
+						</Link>
+					)}
+					{isClubLoggedIn && 'MySeatTime'}
 				</h1>
 				{/* main-navigation__head is for desktop screen that only shows >= 768px */}
 				<nav className="main-navigation__header-nav">

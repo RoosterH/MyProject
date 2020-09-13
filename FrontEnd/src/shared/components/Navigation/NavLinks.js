@@ -70,7 +70,8 @@ const NavLinks = props => {
 						</NavLink>
 					</li>
 				)}
-				{clubLoggedIn && !isInsideForm && (
+				{/* {clubLoggedIn && !isInsideForm && ( */}
+				{clubLoggedIn && (
 					<li>
 						<button onClick={logoutHandler}>LOGOUT</button>
 						{isLoading && <LoadingSpinner asOverlay />}
