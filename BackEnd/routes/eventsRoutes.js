@@ -66,6 +66,9 @@ router.get(
 	eventsController.getEventEntryFormAnswer
 );
 
+// get event entry report
+router.get('/entryreport/:eid', eventsController.getEntryReport);
+
 // last valid day to allow for event addition, modification, or deletion
 let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');
 // only clubs are able to create an event

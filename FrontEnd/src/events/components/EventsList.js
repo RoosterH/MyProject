@@ -57,6 +57,7 @@ const EventList = props => {
 					published={props.displayPublished ? event.published : false} // getting flag from event
 					readOnly={props.readOnly}
 					signup={signup[event.id]}
+					entryReportManager={props.entryReportManager}
 				/>
 			))}
 		</ul>

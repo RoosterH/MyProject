@@ -6,7 +6,9 @@ import { useHttpClient } from '../../shared/hooks/http-hook';
 
 import EventItem from '../components/EventItem';
 import EditEventItem from '../components/EditEventItem';
+import EntryReportManager from '../components/EntryReportEventItem';
 import { ClubAuthContext } from '../../shared/context/auth-context';
+import EntryReportEventItem from '../components/EntryReportEventItem';
 
 // Events is called in App.js where the route been defined
 // 2 routes to call Event component
@@ -20,9 +22,13 @@ const Event = props => {
 	const clubId = props.location.state.props.clubId;
 	// readOnly is to control OwnerClub View Events, we do not want to go to <EditEventItem> route
 	const readOnly = props.location.state.props.readOnly;
+	// entryReportManager is to direct the path to Entry Report Manager
+	const entryReportManager =
+		props.location.state.props.entryReportManager;
 
 	const [clubOwnerRequest, setClubOwnerRequest] = useState(false);
 	const [loadedEvent, setLoadedEvent] = useState();
+	const [loadedEntryData, setLoadedEntryData] = useState();
 	const {
 		isLoading,
 		error,
@@ -39,7 +45,10 @@ const Event = props => {
 		const fetechEvents = async () => {
 			try {
 				let responseData;
-				if (clubId === clubAuthContext.clubId) {
+				if (
+					clubId === clubAuthContext.clubId &&
+					!entryReportManager
+				) {
 					responseData = await sendRequest(
 						process.env.REACT_APP_BACKEND_URL +
 							`/events/ownerClubEvent/${eId}`,
@@ -51,17 +60,35 @@ const Event = props => {
 						}
 					);
 					setClubOwnerRequest(true);
+					setLoadedEvent(responseData.event);
+				} else if (
+					clubId === clubAuthContext.clubId &&
+					entryReportManager
+				) {
+					responseData = await sendRequest(
+						process.env.REACT_APP_BACKEND_URL +
+							`/events/entryreport/${eId}`,
+						'GET',
+						null,
+						{
+							// adding JWT to header for authentication, JWT contains clubId
+							Authorization: 'Bearer ' + clubAuthContext.clubToken
+						}
+					);
+					setClubOwnerRequest(true);
+					setLoadedEntryData(responseData.entryData);
 				} else {
 					responseData = await sendRequest(
 						process.env.REACT_APP_BACKEND_URL + `/events/${eId}`
 					);
+					setLoadedEvent(responseData.event);
 				}
-				setLoadedEvent(responseData.event);
 			} catch (err) {}
 		};
 		fetechEvents();
 	}, []);
 
+	console.log('loadedEntryData = ', loadedEntryData);
 	// calling EventsList from EventsList.js where it passes EVENTS to child EventsList
 	// just treat the following call as EventsList(items = EVENTS); items is the props
 	// name defined in EventsList
@@ -74,14 +101,25 @@ const Event = props => {
 				</div>
 			)}
 			{/* For club who owns the event, we will go to EditEventItem */}
-			{!isLoading && loadedEvent && clubOwnerRequest && !readOnly && (
-				<EditEventItem event={loadedEvent} />
-			)}
+			{!isLoading &&
+				loadedEvent &&
+				clubOwnerRequest &&
+				!readOnly &&
+				!entryReportManager && <EditEventItem event={loadedEvent} />}
+			{/* For Entry Report readOnly = true && entryReportManager = true */}
+			{!isLoading &&
+				loadedEntryData &&
+				clubOwnerRequest &&
+				readOnly &&
+				entryReportManager && (
+					<EntryReportEventItem entryData={loadedEntryData} />
+				)}
 			{/* For users, clubs don't own the event, and OwnerClub wants to view event, we will go to
 			EventItem */}
 			{!isLoading &&
 				loadedEvent &&
-				(!clubOwnerRequest || (clubOwnerRequest && readOnly)) && (
+				(!clubOwnerRequest ||
+					(clubOwnerRequest && readOnly && !entryReportManager)) && (
 					<EventItem event={loadedEvent} />
 				)}
 		</React.Fragment>

@@ -12,8 +12,8 @@ const ClubEvents = props => {
 	// readoOnly false is for Club EditEvents; true is for Club EventManager View Events and users and non-owner club
 	let readOnly = props.readOnly ? props.readOnly : false;
 	// registration is true is for Registration Manager
-	let registrationReport = props.registrationReport
-		? props.registrationReport
+	let entryReportManager = props.entryReportManager
+		? props.entryReportManager
 		: false;
 
 	const [loadedEvents, setLoadedEvents] = useState();
@@ -43,7 +43,7 @@ const ClubEvents = props => {
 				// non-owner gets only published events
 				if (ownerClubEvent) {
 					// for registration reports, we will only query published events
-					if (registrationReport) {
+					if (entryReportManager) {
 						responseData = await sendRequest(
 							process.env.REACT_APP_BACKEND_URL +
 								`/events/ownerClubPublished/${clubId}`,
@@ -78,7 +78,7 @@ const ClubEvents = props => {
 			}
 		};
 		fetechEvents();
-	}, [sendRequest, clubId, registrationReport]);
+	}, [sendRequest, clubId, entryReportManager]);
 
 	// calling EventsList from EventsList.js where it passes EVENTS to child EventsList
 	// just treat the following call as EventsList(items = EVENTS); items is the props
@@ -99,7 +99,7 @@ const ClubEvents = props => {
 					items={loadedEvents}
 					displayPublished={true}
 					readOnly={readOnly}
-					registrationReport={registrationReport}
+					entryReportManager={entryReportManager}
 				/>
 			)}
 		</React.Fragment>

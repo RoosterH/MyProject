@@ -31,7 +31,12 @@ const EventReportSelector = () => {
 					Please select an event to view registration reports
 				</div>
 			</div>
-			<ClubEvents clubId={clubId} registrationReport={true} />;
+			<ClubEvents
+				clubId={clubId}
+				entryReportManager={true}
+				readOnly={true}
+			/>
+			;
 		</React.Fragment>
 	);
 };

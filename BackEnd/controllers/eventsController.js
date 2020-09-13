@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 
 // for Google Geocode API that converts address to coordinates
 const getCoordinatesForAddress = require('../util/location');
+const Entry = require('../models/entry');
 const Event = require('../models/event');
 const Club = require('../models/club');
 // const mongooseUniqueValidator = require('mongoose-unique-validator');
@@ -296,6 +297,53 @@ const getPublishedEventsByOwnerClubId = async (req, res, next) => {
 			})
 		)
 	});
+};
+
+// GET /api/ownerClubEvent/:eid
+const getEntryReport = async (req, res, next) => {
+	// req.params is getting the eid from url, such as /api/events/:id
+	const eventId = req.params.eid;
+
+	let event;
+	try {
+		event = await Event.findById(eventId);
+	} catch (err) {
+		// this error is displayed if the request to the DB had some issues
+		console.log('err = ', err);
+		const error = new HttpError(
+			'Get event by ID process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'Could not find the event with the provided id',
+			404
+		);
+		return next(error);
+	}
+
+	let entries = event.entries;
+	if (entries.length == 0) {
+		res.status(404).json({
+			entryData: []
+		});
+	}
+
+	let entryData = [];
+	for (let i = 0; i < entries.length; ++i) {
+		let entry = await Entry.findById(entries[i]);
+		entryData.push(entry);
+	}
+
+	console.log('entryData = ', entryData);
+	// convert Mongoose object to a normal js object and get rid of _ of _id using getters: true
+	res.status(200).json({
+		entryData: entryData.map(data => data.toObject({ getters: true }))
+	}); // { event } => { event: event }
 };
 
 // POST /api/events/date/
@@ -902,13 +950,11 @@ const getEventEntryFormAnswer = async (req, res, next) => {
 		}
 	}
 
-	res
-		.status(200)
-		.json({
-			eventName: event.name,
-			entryFormData: entryFormData,
-			entryFormAnswer: answer
-		});
+	res.status(200).json({
+		eventName: event.name,
+		entryFormData: entryFormData,
+		entryFormAnswer: answer
+	});
 };
 
 // export a pointer of the function
@@ -925,3 +971,4 @@ exports.updateEventRegistration = updateEventRegistration;
 exports.getEventsByOwnerClubId = getEventsByOwnerClubId;
 exports.getPublishedEventsByOwnerClubId = getPublishedEventsByOwnerClubId;
 exports.getOwnerClubEvent = getOwnerClubEvent;
+exports.getEntryReport = getEntryReport;
