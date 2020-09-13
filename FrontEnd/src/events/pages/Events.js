@@ -148,7 +148,7 @@ const Events = () => {
 						<Field
 							type="date"
 							name="startDate"
-							placeholder={today}
+							// placeholder={today}
 							min="2020-07-01"
 							max="2020-12-31"
 							className="inline__input date"
@@ -156,9 +156,9 @@ const Events = () => {
 						<Field
 							type="date"
 							name="endDate"
-							placeholder={today}
+							// placeholder={today}
 							min="2020-07-01"
-							max="2020-12-31"
+							max="2021-12-31"
 							className="inline__input date"
 						/>
 						<Field

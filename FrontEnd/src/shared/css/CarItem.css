@@ -1,4 +1,4 @@
-.section-header {
+.caritem-section-header {
 	width: 375px;
 	height: 50px;
 }
@@ -23,7 +23,7 @@
 	color: wheat;
 }
 
-.section-container {
+.caritem-section-container {
 	display: block;
 	position: relative;
 	top: 155px;
@@ -67,36 +67,14 @@
 	overflow: hidden;
 }
 
-.clubname-container {
+.carname-container {
 	display: inline-block;
 	position: absolute;
 	font-size: 14px;
 }
 
-.provider-clubname {
+.provider-carname {
 	color: #197dc2;
-}
-.eventitem-eventtype {
-	display: inline-block;
-	line-height: 21px;
-	padding-top: 8px;
-	font-size: 14px;
-}
-
-.eventtype {
-	color: #197dc2;
-}
-
-.event-pages {
-	/* margin-top: -20px; */
-	margin-top: 0px;
-}
-
-.eventtype-container {
-	font-size: 14px;
-	padding: 10px;
-	position: relative;
-	min-height: 290px;
 }
 
 .page-basic-container {
@@ -248,7 +226,7 @@
 }
 
 @media (min-width: 780px) {
-	.section-header {
+	.caritem-section-header {
 		width: 375px;
 		height: 115px;
 	}
@@ -262,7 +240,7 @@
 		color: wheat;
 	}
 
-	.section-container {
+	.caritem-section-container {
 		display: block;
 		position: relative;
 		top: 75px;

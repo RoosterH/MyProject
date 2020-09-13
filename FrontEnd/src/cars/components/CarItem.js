@@ -140,8 +140,7 @@ const CarItem = props => {
 			{isLoading && <LoadingSpinner asOverlay />}
 			{/* User image and car model*/}
 			<div className="carItem">
-				{/* <div className="event-pages eventtype-page"> */}
-				<section id="header" className="section-header">
+				<section id="header" className="caritem-section-header">
 					<div className="header-container">
 						<div className="logo-container ">
 							{owner && userAuthContext.userImage && (
@@ -159,15 +158,14 @@ const CarItem = props => {
 								</div>
 							)}
 						</div>
-						<div className="clubname-container">
+						<div className="carname-container">
 							{`${props.car.userName}\'s`} &nbsp;
 							{props.car.model} {props.car.trimLevel}
 						</div>
 					</div>
 				</section>
-				{/* </div> */}
 				{/* Car info container */}
-				<div className="section-container">
+				<div className="caritem-section-container">
 					<div className="carinfo-container">
 						<div className="col-xs-12">
 							<div className="clearfix">
