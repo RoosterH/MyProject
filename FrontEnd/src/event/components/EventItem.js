@@ -352,6 +352,21 @@ const EventItem = props => {
 								</Button>
 							)}
 						</div>
+						<div className="col-xs-12">
+							{userRegisteredEvent && (
+								<Link
+									to={{
+										pathname: `/events/entrylist/${eventId}`,
+										state: {
+											displayName: true,
+											eventName: 'GGLC 123',
+											eventId: eventId
+										}
+									}}>
+									Entry List
+								</Link>
+							)}
+						</div>
 					</div>
 				</div>
 

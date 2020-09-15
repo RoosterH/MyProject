@@ -12,7 +12,7 @@ import Button from '../../shared/components/FormElements/Button';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 import { UserAuthContext } from '../../shared/context/auth-context';
 import { FormContext } from '../../shared/context/form-context';
-import EntryReportForUsers from '../../clubDashboard/components/EntryReportForUsers';
+import EntryListForUsers from '../../clubDashboard/components/EntryListForUsers';
 
 import '../../shared/css/EventForm.css';
 
@@ -213,7 +213,7 @@ const SubmitEntry = props => {
 						</Button>
 						<Link
 							to={{
-								pathname: `/events/entrylistforusers/${eventId}`,
+								pathname: `/events/entrylist/${eventId}`,
 								state: {
 									displayName: true,
 									eventName: 'GGLC 123',

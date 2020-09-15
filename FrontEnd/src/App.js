@@ -62,8 +62,8 @@ const EventReportSelector = React.lazy(() =>
 const EditEventSelector = React.lazy(() =>
 	import('./clubDashboard/components/EditEventSelector')
 );
-const EntryReportForUsers = React.lazy(() =>
-	import('./clubDashboard/components/EntryReportForUsers')
+const EntryListForUsers = React.lazy(() =>
+	import('./clubDashboard/components/EntryListForUsers')
 );
 const Events = React.lazy(() => import('./events/pages/Events'));
 const EventPhotos = React.lazy(() =>
@@ -203,8 +203,8 @@ const App = () => {
 					exact
 				/>
 				<Route
-					path="/events/entrylistforusers/:eid"
-					component={EntryReportForUsers}
+					path="/events/entrylist/:eid"
+					component={EntryListForUsers}
 					exact
 				/>
 				<Route path="/events/entry/:carId" exact>
@@ -285,8 +285,8 @@ const App = () => {
 					exact
 				/>
 				<Route
-					path="/events/entrylistforusers/:eid"
-					component={EntryReportForUsers}
+					path="/events/entrylist/:eid"
+					component={EntryListForUsers}
 					exact
 				/>
 				<Route path="/clubs/viewEventSelector/:clubId" exact>
