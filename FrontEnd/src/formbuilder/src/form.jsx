@@ -51,7 +51,6 @@ function HookWrapper({ children }) {
 }
 
 export default class ReactForm extends React.Component {
-	// class form extends React.Component {
 	form;
 
 	// private variable section
@@ -276,26 +275,27 @@ export default class ReactForm extends React.Component {
 		if (errors.length < 1) {
 			const answer_data = this.props;
 			if (answer_data) {
-				try {
-					const answer = this._collectFormData(this.props.data);
-					// we need to use JSON.stringify to send array objects.
-					// FormData with JSON.stringify not working
-					let responseData = await this.sendRQ(
-						process.env.REACT_APP_BACKEND_URL +
-							`/entries/submit/${this.eventId}`,
-						'POST',
-						JSON.stringify({
-							answer: answer
-						}),
-						{
-							'Content-type': 'application/json',
-							// adding JWT to header for authentication
-							// Authorization: 'Bearer ' + storageData.userToken
-							Authorization: 'Bearer ' + this.userToken
-						}
-					);
-					this.props.returnSubmitStatus(responseData.entry);
-				} catch (err) {}
+				// send answer_data back to NewEntryManager, we will send to backend all together in Submit tab
+				this.props.returnFormAnswer(answer_data);
+				// try {
+				// 	const answer = this._collectFormData(this.props.data);
+				// 	// we need to use JSON.stringify to send array objects.
+				// 	// FormData with JSON.stringify not working
+				// 	let responseData = await this.sendRQ(
+				// 		process.env.REACT_APP_BACKEND_URL +
+				// 			`/entries/submit/${this.eventId}`,
+				// 		'POST',
+				// 		JSON.stringify({
+				// 			answer: answer
+				// 		}),
+				// 		{
+				// 			'Content-type': 'application/json',
+				// 			// adding JWT to header for authentication
+				// 			// Authorization: 'Bearer ' + storageData.userToken
+				// 			Authorization: 'Bearer ' + this.userToken
+				// 		}
+				// 	);
+				// } catch (err) {}
 			} else {
 				throw new Error('Submit failed. Please select answers.');
 			}

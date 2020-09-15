@@ -21,7 +21,7 @@ const EventList = props => {
 	if (userAuthContext.userId) {
 		let userData = JSON.parse(localStorage.getItem('userData'));
 		if (userData.userId === userAuthContext.userId) {
-			for (var i = 0; i < userData.userEntries.length; ++i) {
+			for (let i = 0; i < userData.userEntries.length; ++i) {
 				entries.push(userData.userEntries[i]);
 			}
 		}
@@ -29,8 +29,8 @@ const EventList = props => {
 
 	let events = props.items;
 	let signup = new Map();
-	for (var i = 0; i < events.length; ++i) {
-		for (var j = 0; j < entries.length; ++j) {
+	for (let i = 0; i < events.length; ++i) {
+		for (let j = 0; j < entries.length; ++j) {
 			if (entries[j].eventId === events[i].id) {
 				signup[events[i].id] = true;
 			}

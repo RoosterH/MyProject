@@ -172,6 +172,10 @@ const EventRegistration = props => {
 			if (!value) {
 				error = 'Total participants is required.';
 			}
+			let numVal = parseInt(value);
+			if (isNaN(numVal)) {
+				error = 'Please inputer a number.';
+			}
 			return error;
 		}
 	);
@@ -181,6 +185,10 @@ const EventRegistration = props => {
 			let error;
 			if (!value) {
 				error = 'Number of groups is required.';
+			}
+			let numVal = parseInt(value);
+			if (isNaN(numVal)) {
+				error = 'Please inputer a number.';
 			}
 			return error;
 		}
@@ -310,7 +318,7 @@ const EventRegistration = props => {
 
 						<Button
 							type="submit"
-							size="medium"
+							size="medium-block"
 							margin-left="1.5rem"
 							disabled={isSubmitting || !isValid}>
 							SAVE

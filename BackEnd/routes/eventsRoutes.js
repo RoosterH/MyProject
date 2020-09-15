@@ -8,6 +8,7 @@ const moment = require('moment');
 const eventsController = require('../controllers/eventsController');
 const fileUpload = require('../middleware/file-upload');
 const checkClubAuth = require('../middleware/check-clubAuth');
+const checkUserAuth = require('../middleware/check-userAuth');
 
 const router = express.Router();
 
@@ -148,5 +149,14 @@ router.patch(
 );
 
 router.delete('/:eid', eventsController.deleteEvent);
+
+router.use(checkUserAuth);
+
+// get event entry report
+router.post(
+	'/entryreportforusers/:eid',
+	[check('displayName').not().isEmpty()],
+	eventsController.getEntryReportForUsers
+);
 
 module.exports = router;

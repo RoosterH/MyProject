@@ -9,7 +9,7 @@ const EntryReport = props => {
 	for (var i = 0; i < entries.length; ++i) {
 		let entry = {
 			lastname: entries[i].userLastName,
-			name: entries[i].userFirstName
+			firstname: entries[i].userFirstName
 		};
 		entryData.push(entry);
 	}
@@ -18,18 +18,31 @@ const EntryReport = props => {
 		<MaterialTable
 			title="Basic Filtering Preview"
 			columns={[
-				{ title: 'Name', field: 'name' },
 				{ title: 'Last Name', field: 'lastname' },
-				{ title: 'Birth Year', field: 'birthYear', type: 'numeric' },
+				{ title: 'First Name', field: 'firstname' },
+				{ title: 'Car Number', field: 'carnumber' },
+				{ title: 'Car', field: 'car', filtering: false },
 				{
-					title: 'Birth Place',
-					field: 'birthCity',
-					lookup: { 34: 'İstanbul', 63: 'Şanlıurfa' }
+					title: 'Class',
+					field: 'class',
+					lookup: { 0: 'SS', 1: 'AS' }
+				},
+				{
+					title: 'Run Group',
+					field: 'run',
+					lookup: { 0: '1', 1: '2', 2: '3', 3: '4' }
+				},
+
+				{
+					title: 'Worker Group',
+					field: 'worker',
+					lookup: { 0: 'Course1', 1: 'Course2' }
 				}
 			]}
 			data={entryData}
 			options={{
-				filtering: true
+				filtering: true,
+				exportButton: true
 			}}
 		/>
 	);

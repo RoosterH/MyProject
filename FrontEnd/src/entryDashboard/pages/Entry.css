@@ -1,0 +1,148 @@
+.list-header {
+	margin: 1rem;
+}
+
+.h3 {
+	font-size: 16px;
+	font-weight: 400;
+}
+
+.selector-title {
+	font-size: 24px;
+	font-style: bold;
+}
+
+.selector-warning {
+	font-size: 16px;
+	color: rgb(207, 20, 20);
+	font-style: bold;
+}
+
+.eventname {
+	display: inline-block;
+	font-size: 16px;
+	font-weight: 400;
+}
+
+.published {
+	display: inline-block;
+	font-size: 16px;
+	color: rgb(5, 161, 39);
+	font-style: bold;
+
+	display: inline-block;
+	background-color: rgb(177, 245, 192);
+	border: 1px solid transparent;
+	border-color: rgb(84, 236, 117);
+	color: rgb(9, 136, 37);
+	padding: 10px 6px;
+	font-size: 12px;
+	font-weight: 400;
+}
+
+.published-warning {
+	display: inline-block;
+	background-color: #f8d7da;
+	border: 1px solid transparent;
+	border-color: #f5c6cb;
+	color: #721c24;
+	padding: 10px 6px;
+	font-size: 12px;
+	font-weight: 400;
+}
+
+.list-content {
+	margin: 0rem 1rem 1rem 1rem;
+	padding: 40px 0 40px 40px;
+	width: 80%;
+}
+
+.list-content-link {
+	font-size: 12px;
+	font-weight: 500;
+	color: #197dc2;
+}
+
+.list-content-desc {
+	font-size: 12px;
+	font-weight: 300;
+}
+
+.eventmanager {
+	background-color: #fefefe;
+	color: #4a4a4a;
+	font-family: Montserrat, sans-serif;
+	font-size: 12px;
+	font-weight: 400;
+	margin: 0rem 1rem 1rem 1rem;
+}
+
+.dashboard-tabs .nav-tabs {
+	border: 0;
+}
+
+.dashboard-tabs {
+	margin-top: 15px;
+	background-color: #fefefe;
+	color: #4a4a4a;
+	font-family: Montserrat, sans-serif;
+	font-size: 12px;
+	font-weight: 400;
+}
+
+.dashboard-tabs.activity-sections .tab-link {
+	border-radius: 0;
+	margin: 0 15px 0 5px;
+	border-width: 1px 1px 0px 1px;
+	border-color: burlywood;
+	padding: 5px 0;
+	width: 130px;
+	font-size: 12px;
+}
+
+.dashboard-tabs.activity-sections .tab-link:focus {
+	background: #f79321;
+	box-shadow: none;
+	color: #fff;
+}
+
+.dashboard-tabs.activity-sections .tab-link:active {
+	background-color: #f79321;
+	box-shadow: none;
+	color: #fff;
+}
+
+.dashboard-tabs .tab-content {
+	border: 1px solid burlywood;
+	padding: 15px;
+}
+
+.dashboard-tabs .tab-content active {
+	background-color: #f79321;
+	box-shadow: none;
+	color: #fff;
+}
+
+/* New Event Manager */
+.li-tab {
+	display: block;
+	margin: 0 15px 0 15px;
+	border-width: 1px 1px 0px 1px;
+	padding: 5px 0;
+	width: 130px;
+	font-size: 12px;
+	background: rgb(226, 228, 228);
+	text-align: center;
+}
+
+.li-tab_orange {
+	display: block;
+	margin: 0 15px 0 15px;
+	padding: 5px 0;
+	width: 130px;
+	/* height: 1.6rem; */
+	background: orange;
+	font-size: 12px;
+
+	text-align: center;
+}

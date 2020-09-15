@@ -152,34 +152,6 @@ const NewEventManager = () => {
 						<li className={photoClass}>Photos</li>
 						<li className={formBuilderClass}>FormBuilder</li>
 						<li className={registrationClass}>Registration</li>
-						{/* <li>
-							<button
-								className="btn btn-default tab-link"
-								autoFocus
-								onClick={eventInfoClickHandler}>
-								Event Information
-							</button>
-						</li> */}
-						{/* <li className="btn btn-default tab-link" autoFocus> */}
-
-						{/* <li>
-							<button className="btn btn-default tab-link">
-								Photos
-							</button>
-						</li> */}
-
-						{/* <li>
-							<button
-								className="btn btn-default tab-link"
-								onClick={formBuilderClickHandler}>
-								Form Builder
-							</button>
-						</li> */}
-						{/* <li>
-							<button className="btn btn-default tab-link">
-								Video
-							</button>
-						</li> */}
 					</ul>
 					<div className="tab-content">
 						{eventInfo && (

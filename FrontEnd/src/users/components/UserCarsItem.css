@@ -1,0 +1,28 @@
+.carselector-button {
+	background-color: white;
+	border: none;
+	border-width: 0px;
+	border-color: white;
+}
+
+.carselector-button:hover {
+	cursor: pointer;
+	border: none;
+	border-width: 0px;
+	border-color: white;
+	background-color: white;
+}
+
+.carselector-button:active {
+	border: none;
+	background-color: white;
+	border-width: 0px;
+	border-color: white;
+	box-shadow: 0 8px rgb(160, 158, 158);
+	transform: translateY(4px);
+}
+
+/* get rid of button border when focus */
+button:focus {
+	outline: 0;
+}

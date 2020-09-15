@@ -9,6 +9,7 @@ const User = require('../models/user');
 const fileUpload = require('../middleware/file-upload');
 const { request } = require('http');
 const { compare } = require('bcryptjs');
+const { getAllUsers } = require('./usersController');
 
 const errMsg = errors => {
 	var msg;
@@ -85,7 +86,7 @@ const getCarById = async (req, res, next) => {
 // GET /api/cars/user/:uid
 const getCarsByUserId = async (req, res, next) => {
 	const uId = req.params.uid;
-
+	const { active } = req.body;
 	let user;
 	try {
 		user = await User.findById(uId).populate('garage');
@@ -109,11 +110,23 @@ const getCarsByUserId = async (req, res, next) => {
 		return next();
 	}
 
+	let garage = [];
+	if (active) {
+		// only looking for active cars
+		user.garage.map(car => {
+			if (car.active) {
+				garage.push(car);
+			}
+		});
+	} else {
+		garage = user.garage;
+	}
+
 	// check if request is coming from the same person
 	// if not, we need to chectk share setting for each car
 	if (req.userData != uId) {
 		res.status(200).json({
-			cars: user.garage.map(car => {
+			cars: garage.map(car => {
 				if (!car.share) {
 					return car.toObject({
 						getters: true,
@@ -152,7 +165,7 @@ const getCarsByUserId = async (req, res, next) => {
 		});
 	} else {
 		res.status(200).json({
-			cars: user.garage.map(car =>
+			cars: garage.map(car =>
 				car.toObject({
 					getters: true
 				})

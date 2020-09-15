@@ -12,11 +12,13 @@ const Avatar = props => {
 					alt={props.alt}
 					style={{ width: props.width, height: props.width }}
 				/>
+				{/* for pulished events and all cars */}
 				{props.published && (
 					<figcaption className="watermark-text">
 						{props.publishDescription}
 					</figcaption>
 				)}
+				{/* for enrolled event */}
 				{props.signup && (
 					<figcaption className="watermark-text">
 						{props.signupDescription}

@@ -19,6 +19,14 @@ const UserCarsList = props => {
 		);
 	}
 
+	const carSelectorStatus = status => {
+		props.carSelectorStatus(status);
+	};
+
+	const carIdHandler = carId => {
+		props.carIdHandler(carId);
+	};
+
 	return (
 		<ul className="events-list">
 			{props.items.map(car => (
@@ -60,7 +68,9 @@ const UserCarsList = props => {
 					FCompression={car.FCompression}
 					RCompression={car.RCompression}
 					note={car.note}
-					published={props.displayPublished ? car.published : false}
+					carSelector={props.carSelector}
+					carSelectorStatus={carSelectorStatus}
+					carIdHandler={carIdHandler}
 				/>
 			))}
 		</ul>

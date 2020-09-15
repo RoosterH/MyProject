@@ -18,8 +18,28 @@ const errMsg = errors => {
 };
 
 const createEntry = async (req, res, next) => {
+	console.log('in createEntry');
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		const error = new HttpError(
+			`Register event process failed. Please check your data: ${result.array()}`,
+			422
+		);
+		return next(error);
+	}
+
 	// we need to get answer from body
-	const { answer } = req.body;
+	const {
+		carId,
+		carNumber,
+		raceClass,
+		answer,
+		disclaimer
+	} = req.body;
 	if (!answer || answer.length === 0) {
 		const error = new HttpError(
 			'Entry submission failed with empty answer.',
@@ -28,7 +48,7 @@ const createEntry = async (req, res, next) => {
 		return next(error);
 	}
 
-	// Validate clubId exists. If not, sends back an error
+	// Validate userId exists. If not, sends back an error
 	let user;
 	// req.userData is inserted in check-auth.js
 	let userId = req.userData;
@@ -49,7 +69,7 @@ const createEntry = async (req, res, next) => {
 		);
 		return next(error);
 	}
-	// Validate eventId belonging to the found club. If not, sends back an error
+	// Validate event exists, if not send back an error.
 	let event;
 	const eventId = req.params.eid;
 	event = await Event.findById(eventId);
@@ -61,16 +81,19 @@ const createEntry = async (req, res, next) => {
 		return next(error);
 	}
 
+	// check if user has entered the event
 	let entry = await Entry.findOne({
 		eventId: eventId,
 		userId: userId
 	});
 
 	if (entry) {
-		console.log('entry = ', entry);
-		// if entry found, we only need to override the answer
+		// if entry found, we only need to override the previous values
+		entry.carNumber = carNumber;
+		entry.raceClass = raceClass;
 		entry.answer = [];
 		answer.map(data => entry.answer.push(data));
+
 		try {
 			await entry.save();
 		} catch (err) {
@@ -91,6 +114,10 @@ const createEntry = async (req, res, next) => {
 			eventId,
 			eventName: event.name,
 			answer,
+			carId,
+			carNumber,
+			raceClass,
+			disclaimer,
 			time: moment(),
 			published: true
 		});

@@ -11,6 +11,7 @@ import { UserAuthContext } from '../../shared/context/auth-context';
 
 import '../../shared/css/EventForm.css';
 const EventForm = props => {
+	let eId = props.eventId;
 	const userAuthContext = useContext(UserAuthContext);
 	const [formData, setFormData] = useState();
 	const [formAnswer, setFormAnswer] = useState();
@@ -22,12 +23,10 @@ const EventForm = props => {
 		sendRequest,
 		clearError
 	} = useHttpClient();
-	const history = useHistory();
 
 	// Check if userAuthContext.redirectURL is same as the path.
 	// If they are the same meaning it's coming back from re-direction that user click on register event without logging in.
 	// In this case, we want to skip login validation
-	let eId = useParams().id;
 	useUserLoginValidation(`/events/form/${eId}`);
 
 	let location = useLocation();
@@ -51,7 +50,7 @@ const EventForm = props => {
 			window.history.pushState(
 				// props.state,
 				'',
-				`/events/form/${eId}`
+				`/events/newentry/${eId}`
 			);
 		}
 	} else {
@@ -112,22 +111,24 @@ const EventForm = props => {
 		url
 	]);
 
-	const formSubmitted = entry => {
-		if (entry) {
-			setSubmittedEntry(entry);
-			const userData = JSON.parse(localStorage.getItem('userData'));
-			if (userData) {
-				userData.userEntries.push(entry);
-				localStorage.setItem('userData', JSON.stringify(userData));
-			}
+	useEffect(() => {
+		if (submittedEntry) {
+			// return true back to NewEntryManager to move to Submit tab
+			props.eventFormStatus(true);
 		}
+	}, [submittedEntry]);
+
+	const getFormAnswer = answer => {
+		setFormAnswer(answer);
 	};
 
 	useEffect(() => {
-		if (submittedEntry) {
-			// history.push(`/events/${eId}`, [props.location.props]);
+		if (formAnswer) {
+			props.returnFormAnswer(formAnswer);
+			setSubmittedEntry(true);
 		}
-	}, [submittedEntry]);
+	}, [formAnswer, props]);
+
 	return (
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
@@ -138,16 +139,13 @@ const EventForm = props => {
 			)}
 
 			{formData && formData.length > 0 && (
-				// <div className="modal show d-block">
 				<div className="event-formgenerator-container">
-					<div>{eventName} Entry Form </div>
-					<br />
 					<div className="modal-content">
 						<ReactFormGenerator
 							answer_data={formAnswer}
-							action_name="Register"
+							action_name="SUBMIT &amp; CONTINUE"
 							data={formData}
-							returnSubmitStatus={formSubmitted}
+							returnFormAnswer={getFormAnswer}
 						/>
 					</div>
 				</div>

@@ -43,7 +43,6 @@ const Car = () => {
 					{
 						// No need for content-type since body is null,
 						// adding JWT to header for authentication
-						'Content-Type': 'application/json',
 						Authorization: 'Bearer ' + userAuthContext.userToken
 					}
 				);

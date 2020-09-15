@@ -12,7 +12,11 @@ import { useUserLoginValidation } from '../../shared/hooks/userLoginValidation-h
 import '../../shared/css/Events.css';
 
 // Events is called in App.js where the route been defined
-const UserGarage = () => {
+const UserGarage = props => {
+	// check if the caller is CarSelector
+	const carSelector = props.carSelector;
+	const userId = props.userId;
+
 	const [loadedCars, setLoadedCars] = useState();
 	const userAuthContext = useContext(UserAuthContext);
 	const {
@@ -23,14 +27,13 @@ const UserGarage = () => {
 	} = useHttpClient();
 
 	// useParams().{Id} Id need to match what defines in <Route path="/cars/users/:userId" exact>
-	let uId = useParams().userId;
 
 	// We don't need to take care of page refreshing here because <Route path="/cars/users/:userId" exact>
 	// is added even if user is not logged in
 	// If User is not logged in, we will re-direct to user login page.
 	// authentication check. remember current path. We will use it to check if we are in the re-direct loop to
 	// avoid validation loop
-	useUserLoginValidation(`/users/garage/${uId}`);
+	useUserLoginValidation(`/users/garage/${userId}`);
 	let location = useLocation();
 	useEffect(() => {
 		// get current URL path
@@ -46,16 +49,34 @@ const UserGarage = () => {
 	useEffect(() => {
 		const fetechEvents = async () => {
 			try {
-				const responseData = await sendRequest(
-					process.env.REACT_APP_BACKEND_URL + `/cars/users/${uId}`,
-					'GET',
-					null,
-					{ Authorization: 'Bearer ' + userAuthContext.userToken }
-				);
+				let responseData;
+				if (carSelector) {
+					responseData = await sendRequest(
+						process.env.REACT_APP_BACKEND_URL +
+							`/cars/users/${userId}`,
+						'POST',
+						JSON.stringify({ active: true }),
+						{
+							'Content-type': 'application/json',
+							Authorization: 'Bearer ' + userAuthContext.userToken
+						}
+					);
+				} else {
+					responseData = await sendRequest(
+						process.env.REACT_APP_BACKEND_URL +
+							`/cars/users/${userId}`,
+						'POST',
+						JSON.stringify({ active: false }),
+						{
+							'Content-type': 'application/json',
+							Authorization: 'Bearer ' + userAuthContext.userToken
+						}
+					);
+				}
 				setLoadedCars(responseData.cars);
 				// Check who's viewing the garage. If it's from owner, store data under localStorage 'userData'
 				// otherwise store in 'garages' with different userId
-				if (uId === userAuthContext.userId) {
+				if (userId === userAuthContext.userId) {
 					let userData = JSON.parse(localStorage.getItem('userData'));
 					userData.garage = responseData.cars;
 					localStorage.setItem('userData', JSON.stringify(userData));
@@ -64,7 +85,7 @@ const UserGarage = () => {
 					let garages = JSON.parse(localStorage.getItem('garages'))
 						? JSON.parse(localStorage.getItem('garages'))
 						: [];
-					garages.push({ uId: responseData.cars });
+					garages.push({ userId: responseData.cars });
 					localStorage.setItem('garages', JSON.stringify(garages));
 				}
 			} catch (err) {
@@ -72,7 +93,15 @@ const UserGarage = () => {
 			}
 		};
 		fetechEvents();
-	}, [sendRequest, uId, userAuthContext]);
+	}, [sendRequest, userId, userAuthContext]);
+
+	const carSelectorStatus = status => {
+		props.carSelectorStatus(status);
+	};
+
+	const carIdHandler = carId => {
+		props.carIdHandler(carId);
+	};
 
 	// calling EventsList from EventsList.js where it passes EVENTS to child EventsList
 	// just treat the following call as EventsList(items = EVENTS); items is the props
@@ -85,12 +114,29 @@ const UserGarage = () => {
 					<LoadingSpinner />
 				</div>
 			)}
-			{!isLoading && loadedCars && (
-				<UserCarsList items={loadedCars} displayPublished={false} />
+			{!isLoading && loadedCars && !carSelector && (
+				<UserCarsList items={loadedCars} carSelector={false} />
 			)}
-			{!isLoading && !loadedCars && (
+			{!isLoading && loadedCars && carSelector && (
+				<UserCarsList
+					items={loadedCars}
+					carSelector={true}
+					carSelectorStatus={carSelectorStatus}
+					carIdHandler={carIdHandler}
+				/>
+			)}
+			{!isLoading && !loadedCars && !carSelector && (
 				<div>
 					<p> &nbsp; &nbsp; &nbsp;No car in the garage. </p>
+				</div>
+			)}
+			{!isLoading && !loadedCars && carSelector && (
+				<div>
+					<p>
+						{' '}
+						&nbsp; &nbsp; &nbsp;No car in the garage. You must add a
+						car to enter the event.
+					</p>
 				</div>
 			)}
 		</React.Fragment>

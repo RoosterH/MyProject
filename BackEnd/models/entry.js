@@ -26,8 +26,16 @@ const entrySchema = new Schema({
 		ref: 'Event'
 	},
 	eventName: { type: String, required: true },
+	carId: {
+		type: mongoose.Types.ObjectId,
+		required: true,
+		ref: 'Car'
+	},
+	carNumber: { type: String, required: true },
+	raceClass: { type: String, required: true },
 	// event entry answer
 	answer: { type: Array, required: true },
+	disclaimer: { type: Boolean, require: true },
 	time: { type: Date, required: true },
 	published: { type: Boolean, required: true }
 });

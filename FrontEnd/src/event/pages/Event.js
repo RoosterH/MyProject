@@ -88,7 +88,6 @@ const Event = props => {
 		fetechEvents();
 	}, []);
 
-	console.log('loadedEntryData = ', loadedEntryData);
 	// calling EventsList from EventsList.js where it passes EVENTS to child EventsList
 	// just treat the following call as EventsList(items = EVENTS); items is the props
 	// name defined in EventsList

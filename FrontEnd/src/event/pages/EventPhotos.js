@@ -232,7 +232,7 @@ const EventPhotos = props => {
 						/>
 						<Button
 							type="submit"
-							size="medium"
+							size="medium-block"
 							margin-left="1.5rem"
 							disabled={isSubmitting || !isValid}>
 							SAVE

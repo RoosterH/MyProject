@@ -136,8 +136,6 @@ const getOwnerClubEvent = async (req, res, next) => {
 // GET /api/events/club/:cid
 const getEventsByClubId = async (req, res, next) => {
 	const cId = req.params.cid;
-
-	console.log('cId = ', cId);
 	let club;
 	try {
 		club = await Club.findById(cId).populate({
@@ -299,7 +297,7 @@ const getPublishedEventsByOwnerClubId = async (req, res, next) => {
 	});
 };
 
-// GET /api/ownerClubEvent/:eid
+// GET /api/events/entryreport/:eid
 const getEntryReport = async (req, res, next) => {
 	// req.params is getting the eid from url, such as /api/events/:id
 	const eventId = req.params.eid;
@@ -339,7 +337,6 @@ const getEntryReport = async (req, res, next) => {
 		entryData.push(entry);
 	}
 
-	console.log('entryData = ', entryData);
 	// convert Mongoose object to a normal js object and get rid of _ of _id using getters: true
 	res.status(200).json({
 		entryData: entryData.map(data => data.toObject({ getters: true }))
@@ -910,8 +907,9 @@ const deleteEvent = async (req, res, next) => {
 const getEventEntryFormAnswer = async (req, res, next) => {
 	// Validate eventId belonging to the found club. If not, sends back an error
 	const eventId = req.params.eid;
-
 	const userId = req.params.uid;
+
+	console.log('eventId = ', eventId);
 	let event;
 	try {
 		event = await Event.findById(eventId).populate('entries');
@@ -957,6 +955,102 @@ const getEventEntryFormAnswer = async (req, res, next) => {
 	});
 };
 
+// POST /api/events/entryreportforusers/:eid
+const getEntryReportForUsers = async (req, res, next) => {
+	// req.params is getting the eid from url, such as /api/events/:id
+	const eventId = req.params.eid;
+	let event;
+	try {
+		event = await Event.findById(eventId);
+	} catch (err) {
+		console.log('err = ', err);
+		// this error is displayed if the request to the DB had some issues
+		const error = new HttpError(
+			'Cannot find the event for the entry list. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'Could not find the event. Please try later.',
+			404
+		);
+		return next(error);
+	}
+
+	let entries = event.entries;
+	if (entries.length == 0) {
+		res.status(404).json({
+			entryData: []
+		});
+	}
+
+	let entryData = [];
+	for (let i = 0; i < entries.length; ++i) {
+		let entry = await Entry.findById(entries[i]).populate('carId');
+		// add car to entry
+		entry.car =
+			entry.carId.year +
+			entry.carId.make +
+			entry.carId.model +
+			entry.carId.levelTrim;
+		entryData.push(entry);
+	}
+
+	const { displayName } = req.body;
+
+	// convert Mongoose object to a normal js object and get rid of _ of _id using getters: true
+	res.status(200).json({
+		entryData: entryData.map(data => data.toObject({ getters: true }))
+	}); // { event } => { event: event }
+
+	if (displayName) {
+		res.status(200).json({
+			entryData: entry.toObject({
+				getters: true,
+				transform: (doc, ret, opt) => {
+					delete ret['userId'];
+					delete ret['username'];
+					delete ret['clubId'];
+					delete ret['clubName'];
+					delete ret['eventId'];
+					delete ret['eventName'];
+					delete ret['carId'];
+					delete ret['answer'];
+					delete ret['disclaimer'];
+					delete ret['time'];
+					delete ret['published'];
+					return ret;
+				}
+			})
+		});
+	} else {
+		res.status(200).json({
+			entryData: entry.toObject({
+				getters: true,
+				transform: (doc, ret, opt) => {
+					delete ret['userId'];
+					delete ret['userLastName'];
+					delete ret['userFirstName'];
+					delete ret['clubId'];
+					delete ret['clubName'];
+					delete ret['eventId'];
+					delete ret['eventName'];
+					delete ret['carId'];
+					delete ret['answer'];
+					delete ret['disclaimer'];
+					delete ret['time'];
+					delete ret['published'];
+					return ret;
+				}
+			})
+		});
+	}
+};
+
 // export a pointer of the function
 exports.getAllEvents = getAllEvents;
 exports.getEventById = getEventById;
@@ -972,3 +1066,4 @@ exports.getEventsByOwnerClubId = getEventsByOwnerClubId;
 exports.getPublishedEventsByOwnerClubId = getPublishedEventsByOwnerClubId;
 exports.getOwnerClubEvent = getOwnerClubEvent;
 exports.getEntryReport = getEntryReport;
+exports.getEntryReportForUsers = getEntryReportForUsers;

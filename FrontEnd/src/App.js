@@ -32,10 +32,6 @@ const ClubEvents = React.lazy(() =>
 const Error = React.lazy(() => import('./shared/utils/error'));
 // event section
 const Event = React.lazy(() => import('./event/pages/Event'));
-const EventForm = React.lazy(() => import('./event/pages/EventForm'));
-// const EventFormBuilder = React.lazy(() =>
-// 	import('./event/pages/EventFormBuilder')
-// );
 const FormBuilder = React.lazy(() =>
 	import('./event/components/FormBuilder')
 );
@@ -47,6 +43,9 @@ const ClubManager = React.lazy(() =>
 );
 const EventManager = React.lazy(() =>
 	import('./clubDashboard/components/EventManager')
+);
+const NewEntryManager = React.lazy(() =>
+	import('./entryDashboard/pages/NewEntryManager')
 );
 const NewEventManager = React.lazy(() =>
 	import('./clubDashboard/components/NewEventManager')
@@ -60,9 +59,11 @@ const RegistrationManager = React.lazy(() =>
 const EventReportSelector = React.lazy(() =>
 	import('./clubDashboard/components/EventReportSelector')
 );
-
 const EditEventSelector = React.lazy(() =>
 	import('./clubDashboard/components/EditEventSelector')
+);
+const EntryReportForUsers = React.lazy(() =>
+	import('./clubDashboard/components/EntryReportForUsers')
 );
 const Events = React.lazy(() => import('./events/pages/Events'));
 const EventPhotos = React.lazy(() =>
@@ -85,8 +86,8 @@ const UserAuth = React.lazy(() => import('./users/pages/UserAuth'));
 const UserEvents = React.lazy(() =>
 	import('./users/pages/UserEvents')
 );
-const UserGarage = React.lazy(() =>
-	import('./users/pages/UserGarage')
+const UserGarageWrapper = React.lazy(() =>
+	import('./users/pages/UserGarageWrapper')
 );
 const NewCar = React.lazy(() => import('./cars/pages/NewCar'));
 const Car = React.lazy(() => import('./cars/pages/Car'));
@@ -183,8 +184,8 @@ const App = () => {
 				<Route path="/users/events/:userId" exact>
 					<UserEvents />
 				</Route>
-				<Route path="/users/garage/:userId" exact>
-					<UserGarage />
+				<Route path="/users/garagewrapper/:userId" exact>
+					<UserGarageWrapper />
 				</Route>
 				<Route path="/users/cars/new" exact>
 					<NewCar />
@@ -196,8 +197,18 @@ const App = () => {
 					<Car />
 				</Route>
 				<Route path="/events/:id" component={Event} exact />
-				<Route path="/events/form/:id" exact>
-					<EventForm />
+				<Route
+					path="/events/newentry/:id"
+					component={NewEntryManager}
+					exact
+				/>
+				<Route
+					path="/events/entrylistforusers/:eid"
+					component={EntryReportForUsers}
+					exact
+				/>
+				<Route path="/events/entry/:carId" exact>
+					<Car />
 				</Route>
 				<Route path="/error" exact>
 					<Error />
@@ -268,23 +279,27 @@ const App = () => {
 				<Route path="/clubs/editEventManager/" exact>
 					<EditEventManager />
 				</Route>
+				<Route
+					path="/events/newentry/:id"
+					component={NewEntryManager}
+					exact
+				/>
+				<Route
+					path="/events/entrylistforusers/:eid"
+					component={EntryReportForUsers}
+					exact
+				/>
 				<Route path="/clubs/viewEventSelector/:clubId" exact>
 					<ViewEventSelector />
 				</Route>
-
 				<Route path="/events/formbuilder/:id" exact>
 					<FormBuilder />
 				</Route>
-				<Route path="/events/form/:id" exact>
-					<EventForm />
-				</Route>
-
 				<Route path="/users/events/:userId" exact>
 					<UserEvents />
 				</Route>
-
-				<Route path="/users/garage/:userId" exact>
-					<UserGarage />
+				<Route path="/users/garagewrapper/:userId" exact>
+					<UserGarageWrapper />
 				</Route>
 				<Route path="/users/cars/new" exact>
 					<NewCar />

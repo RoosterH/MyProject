@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import moment from 'moment';
 
 // DO NOT REMOVE IT, this is a plugin of moment() for moment().countdown
@@ -326,12 +326,31 @@ const EventItem = props => {
 							</div>
 						</div>
 						<div className="col-xs-12">
-							<Button
-								inverse={!openRegistration}
-								to={`/events/form/${props.event.id}`}
-								size="small-orange">
-								{buttonName}
-							</Button>
+							{buttonName === 'REGISTER EVENT' && (
+								<Link
+									to={{
+										pathname: `/events/newentry/${props.event.id}`,
+										state: {
+											eventName: props.event.name
+										}
+									}}>
+									<Button
+										inverse={!openRegistration}
+										// to={`/events/newentry/${props.event.id}`}
+
+										size="small-orange">
+										{buttonName}
+									</Button>
+								</Link>
+							)}
+							{buttonName === 'MODIFY ENTRY' && (
+								<Button
+									inverse={!openRegistration}
+									to={`/events/newentry/${props.event.id}`}
+									size="small-orange">
+									{buttonName}
+								</Button>
+							)}
 						</div>
 					</div>
 				</div>

@@ -14,11 +14,11 @@ const router = express.Router();
 // need to be authenticated
 router.use(checkUserAuth);
 
+router.post('/users/:uid', carsController.getCarsByUserId);
+
 // pass the pointer of the function, we don't want to execute here.
 // Express will use the pointer to execute the function when it's needed
 router.get('/:cid', carsController.getCarById);
-
-router.get('/users/:uid', carsController.getCarsByUserId);
 
 // only users are able to create an car
 router.post(

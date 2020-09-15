@@ -34,9 +34,12 @@ router.use(checkUserAuth);
 router.post(
 	'/submit/:eid',
 	[
-		(check('clubId').not().isEmpty(),
-		check('eventId').not().isEmpty(),
-		check('answer').not().isEmpty())
+		(check('eventId').not().isEmpty(),
+		check('carId').not().isEmpty(),
+		check('carNumber').not().isEmpty(),
+		check('raceClass').not().isEmpty(),
+		check('answer').not().isEmpty()),
+		check('disclaimer').not().equals(true)
 	],
 	entriesController.createEntry
 );
