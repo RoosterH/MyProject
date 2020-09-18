@@ -230,6 +230,38 @@
 	padding: 0.5rem;
 }
 
+.entryinfo-container {
+	display: inline-block;
+	border: 1px;
+	border-style: ridge;
+	width: 25%;
+	position: relative;
+	top: 7rem;
+	font-size: 14px;
+	padding: 0.5rem;
+}
+
+.entryinfo-container h3 {
+	display: block;
+	color: rgb(219, 21, 21);
+	font-size: 14px;
+	font-weight: 200;
+	display: inline;
+}
+
+.entryinfo-container h3 {
+	font-size: 14px;
+	font-weight: 500;
+	display: inline;
+	margin-right: 0.5rem;
+}
+
+.entryinfo-container h4 {
+	font-size: 12px;
+	font-weight: 400;
+	color: #82888a;
+}
+
 .courseMap-container {
 	display: inline-block;
 	border: 0px;

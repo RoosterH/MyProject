@@ -186,6 +186,10 @@ const EventItem = props => {
 	const [userRegisteredEvent, setUserRegisteredEvent] = useState(
 		false
 	);
+	const [userOnWaitlist, setUserOnWaitlist] = useState(false);
+	const [userOnGroupWaitlist, setUserOnGroupWaitlist] = useState(
+		false
+	);
 
 	// Instead of getting information from backend, trick here is to useLocalStorage.
 	// Once user entered the event, form.jsx returns entry back to EventForm.formSubmitted()
@@ -202,6 +206,12 @@ const EventItem = props => {
 					for (let i = 0; i < userEntries.length; ++i) {
 						if (userEntries[i].eventId === eventId) {
 							setUserRegisteredEvent(true);
+							if (userEntries[i].waitlist) {
+								setUserOnWaitlist(true);
+							}
+							if (userEntries[i].groupWaitlist) {
+								setUserOnGroupWaitlist(true);
+							}
 							setButtonName('MODIFY ENTRY');
 							break;
 						}
@@ -350,20 +360,42 @@ const EventItem = props => {
 								</Button>
 							)}
 						</div>
+					</div>
+					<div className="entryinfo-container">
 						<div className="col-xs-12">
-							{userRegisteredEvent && (
-								<Link
-									to={{
-										pathname: `/events/entrylist/${eventId}`,
-										state: {
-											displayName: true,
-											eventName: props.event.name,
-											eventId: eventId
-										}
-									}}>
-									Entry List
-								</Link>
+							{userOnWaitlist && (
+								<h3>Your are currently on waitlist.</h3>
 							)}
+							<div>
+								{userRegisteredEvent && (
+									<Link
+										to={{
+											pathname: `/events/entrylist/${eventId}`,
+											state: {
+												displayName: true,
+												eventName: props.event.name,
+												eventId: eventId
+											}
+										}}>
+										View Event Entry List
+									</Link>
+								)}
+							</div>
+							<div>
+								{userRegisteredEvent && (
+									<Link
+										to={{
+											pathname: `/events/entrylist/${eventId}`,
+											state: {
+												displayName: true,
+												eventName: props.event.name,
+												eventId: eventId
+											}
+										}}>
+										View Event Result
+									</Link>
+								)}
+							</div>
 						</div>
 					</div>
 				</div>

@@ -21,20 +21,12 @@ const EntryListForUsers = props => {
 	const [entryList, setEntryList] = useState([]);
 	const [waitlist, setWaitlist] = useState([]);
 
-	const classLookup = {
-		0: 'SS',
-		1: 'AS',
-		2: 'BS',
-		3: 'SSP',
-		4: 'SSR'
-	};
+	const [raceClassLookup, setRaceClassLookup] = useState([]);
 	const [runGroupLookup, setRunGroupLookup] = useState([]);
-	const workerGroupLookup = {
-		0: 'Course1',
-		1: 'Course2',
-		2: 'Course3',
-		3: 'Course4'
-	};
+	const [
+		workerAssignmentLookup,
+		setWorkerAssignmentLookup
+	] = useState([]);
 
 	const getMapKey = (val, myMap) => {
 		let answer;
@@ -59,37 +51,76 @@ const EntryListForUsers = props => {
 						Authorization: 'Bearer ' + userAuthContext.userToken
 					}
 				);
-				console.log('responseData = ', responseData);
 
-				let runGroupOptions = responseData.runGroupOptions;
+				console.log('responseData = ', responseData);
 				let options = [];
+				let raceClassOptions = responseData.raceClassOptions;
+				for (var i = 0; i < raceClassOptions.length; ++i) {
+					let keyName = String(i);
+					options[keyName] = raceClassOptions[i];
+				}
+				console.log('raceClassOptions option = ', options);
+				setRaceClassLookup(options);
+
+				options = [];
+				let runGroupOptions = responseData.runGroupOptions;
 				for (var i = 0; i < runGroupOptions.length; ++i) {
 					let keyName = String(i);
 					options[keyName] = runGroupOptions[i];
 				}
+				console.log('runGroupOptions option = ', options);
 				setRunGroupLookup(options);
-				console.log('runGroupLookup = ', runGroupLookup);
 
-				// compose entry list
+				options = [];
+				let workerAssignmentOptions = responseData.workerAssignments;
+				for (var i = 0; i < workerAssignmentOptions.length; ++i) {
+					let keyName = String(i);
+					options[keyName] = workerAssignmentOptions[i];
+				}
+				console.log('assignment option = ', options);
+				setWorkerAssignmentLookup(options);
+
+				// compose entry list from all the entries
 				let entryData = [];
 				let entries = responseData.entryData;
 				for (var i = 0; i < entries.length; ++i) {
-					console.log('entry = ', entries[i]);
 					let entry;
 					if (displayName) {
 						entry = {
 							lastName: entries[i].userLastName,
 							firstName: entries[i].userFirstName[0] + '.',
+							raceClass: getMapKey(
+								entries[i].raceClass,
+								raceClassLookup
+							),
 							carNumber: entries[i].carNumber,
-							raceClass: getMapKey(entries[i].raceClass, classLookup),
-							car: entries[i].car
+							car: entries[i].car,
+							runGroup: getMapKey(
+								entries[i].runGroup,
+								runGroupLookup
+							),
+							workerAssignment: getMapKey(
+								entries[i].workerAssignment,
+								workerAssignmentLookup
+							)
 						};
 					} else {
 						entry = {
 							userName: entries[i].userName,
 							carNumber: entries[i].carNumber,
-							raceClass: getMapKey(entries[i].raceClass, classLookup),
-							car: entries[i].car
+							raceClass: getMapKey(
+								entries[i].raceClass,
+								raceClassLookup
+							),
+							car: entries[i].car,
+							runGroup: getMapKey(
+								entries[i].runGroup,
+								runGroupLookup
+							),
+							workerAssignment: getMapKey(
+								entries[i].workerAssignment,
+								workerAssignmentLookup
+							)
 						};
 					}
 					entryData.push(entry);
@@ -101,6 +132,14 @@ const EntryListForUsers = props => {
 				let waitlist = responseData.waitlistData;
 				for (var i = 0; i < waitlist.length; ++i) {
 					let entry;
+					console.log(
+						'waitlist[i].runGroup = ',
+						waitlist[i].runGroup
+					);
+					console.log(
+						'runGroupLookup[waitlist[i].runGroup], = ',
+						runGroupLookup[waitlist[i].runGroup]
+					);
 					if (displayName) {
 						entry = {
 							lastName: waitlist[i].userLastName,
@@ -108,9 +147,17 @@ const EntryListForUsers = props => {
 							carNumber: waitlist[i].carNumber,
 							raceClass: getMapKey(
 								waitlist[i].raceClass,
-								classLookup
+								raceClassLookup
 							),
-							car: waitlist[i].car
+							car: waitlist[i].car,
+							runGroup: getMapKey(
+								entries[i].runGroup,
+								runGroupLookup
+							),
+							workerAssignment: getMapKey(
+								entries[i].workerAssignment,
+								workerAssignmentLookup
+							)
 						};
 					} else {
 						entry = {
@@ -118,9 +165,17 @@ const EntryListForUsers = props => {
 							carNumber: waitlist[i].carNumber,
 							raceClass: getMapKey(
 								waitlist[i].raceClass,
-								classLookup
+								raceClassLookup
 							),
-							car: waitlist[i].car
+							car: waitlist[i].car,
+							runGroup: getMapKey(
+								entries[i].runGroup,
+								runGroupLookup
+							),
+							workerAssignment: getMapKey(
+								entries[i].workerAssignment,
+								workerAssignmentLookup
+							)
 						};
 					}
 					waitlistData.push(entry);
@@ -130,6 +185,8 @@ const EntryListForUsers = props => {
 		};
 		fetchEntries();
 	}, [sendRequest, setEntryList]);
+
+	console.log('runGroup[1] = ', runGroupLookup[1]);
 
 	return (
 		<React.Fragment>
@@ -159,7 +216,7 @@ const EntryListForUsers = props => {
 							{
 								title: 'Race Class',
 								field: 'raceClass',
-								lookup: classLookup
+								lookup: raceClassLookup
 							},
 							{
 								title: 'Run Group',
@@ -169,8 +226,8 @@ const EntryListForUsers = props => {
 
 							{
 								title: 'Worker Group',
-								field: 'workerGroup',
-								lookup: workerGroupLookup
+								field: 'workerAssignment',
+								lookup: workerAssignmentLookup
 							}
 						]}
 						data={entryList}
@@ -199,18 +256,20 @@ const EntryListForUsers = props => {
 							{
 								title: 'Race Class',
 								field: 'raceClass',
-								lookup: classLookup,
+								lookup: raceClassLookup,
 								filtering: false
 							},
 							{
 								title: 'Run Group',
 								field: 'runGroup',
+								lookup: runGroupLookup,
 								filtering: false
 							},
 
 							{
 								title: 'Worker Group',
 								field: 'workerGroup',
+								lookup: workerAssignmentLookup,
 								filtering: false
 							}
 						]}
@@ -236,7 +295,7 @@ const EntryListForUsers = props => {
 							{
 								title: 'Race Class',
 								field: 'raceClass',
-								lookup: classLookup
+								lookup: raceClassLookup
 							},
 							{
 								title: 'Run Group',
@@ -247,7 +306,7 @@ const EntryListForUsers = props => {
 							{
 								title: 'Worker Group',
 								field: 'workerGroup',
-								lookup: workerGroupLookup
+								lookup: workerAssignmentLookup
 							}
 						]}
 						data={entryList}
@@ -270,7 +329,7 @@ const EntryListForUsers = props => {
 							{
 								title: 'Race Class',
 								field: 'raceClass',
-								lookup: classLookup
+								lookup: raceClassLookup
 							},
 							{
 								title: 'Run Group',
@@ -280,7 +339,7 @@ const EntryListForUsers = props => {
 							{
 								title: 'Worker Group',
 								field: 'workerGroup',
-								lookup: workerGroupLookup
+								lookup: workerAssignmentLookup
 							}
 						]}
 						data={waitlist}
