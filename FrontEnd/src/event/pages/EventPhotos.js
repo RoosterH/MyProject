@@ -27,9 +27,9 @@ const EventPhotos = props => {
 	const [contButton, setContButton] = useState(false);
 	// contButtonStatus is the return value back to NewEventManger, set to true @ CONTINUE button onClick()
 	const [contStatus, setContinueStatus] = useState(false);
-	const continueHandler = () => {
-		setContinueStatus(true);
-	};
+	// const continueHandler = () => {
+	// 	setContinueStatus(true);
+	// };
 
 	// return true back to NewEventManger to move to next stage
 	useEffect(() => {
@@ -138,16 +138,19 @@ const EventPhotos = props => {
 				}
 			);
 			setOKLeavePage(true);
-			setContButton(true);
-			// Redirect the club to a diffrent page
-			// history.push(`/events/club/${clubAuthContext.clubId}`);
+			// setContButton(true);
+			setContinueStatus(true);
 		} catch (err) {}
 	};
 
 	const validateImageSize = value => {
+		console.log('value = ', value);
 		let error;
 		if (value && value.size > 1500000) {
 			error = 'File size needs to be smaller than 1.5MB';
+		}
+		if (value === undefined || !value) {
+			error = 'Please upload an event image.';
 		}
 		return error;
 	};
@@ -197,11 +200,6 @@ const EventPhotos = props => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
-								// if (event.target.value) {
-								// 	setImageOK(false);
-								// } else {
-								// 	setImageOK(true);
-								// }
 							}}
 							labelStyle="event-form__label"
 							inputStyle="event-form__field-select"
@@ -235,16 +233,16 @@ const EventPhotos = props => {
 							size="medium-block"
 							margin-left="1.5rem"
 							disabled={isSubmitting || !isValid}>
-							SAVE
+							SAVE &amp; CONTINUE
 						</Button>
-						<Button
+						{/* <Button
 							type="button"
 							size="medium"
 							margin-left="1.5rem"
 							disabled={!contButton}
 							onClick={continueHandler}>
 							Continue
-						</Button>
+						</Button> */}
 						<NavigationPrompt
 							afterConfirm={() => {
 								formContext.setIsInsideForm(false);

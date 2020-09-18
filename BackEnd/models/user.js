@@ -20,18 +20,10 @@ const userSchema = new Schema({
 	// because a user could have multiple events so we need to use array. [] means array
 	// using ref as a foreing key referring to Event
 	entries: [
-		{
-			type: mongoose.Types.ObjectId,
-			required: true,
-			ref: 'Entry'
-		}
+		{ type: mongoose.Types.ObjectId, required: true, ref: 'Entry' }
 	],
 	garage: [
-		{
-			type: mongoose.Types.ObjectId,
-			required: true,
-			ref: 'Car'
-		}
+		{ type: mongoose.Types.ObjectId, required: true, ref: 'Car' }
 	]
 });
 

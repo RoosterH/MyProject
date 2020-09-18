@@ -13,6 +13,7 @@ const Club = require('../models/club');
 // const mongooseUniqueValidator = require('mongoose-unique-validator');
 const fileUpload = require('../middleware/file-upload');
 const { min } = require('moment');
+const entry = require('../models/entry');
 
 const errMsg = errors => {
 	var msg;
@@ -29,7 +30,7 @@ const getAllEvents = async (req, res, next) => {
 	try {
 		events = await Event.find(
 			{},
-			'-entryFormData -entries -waitList -totalCap -totalEntries -numGroups -capDistribution -groupEntries'
+			'-entryFormData -entries -waitlist -totalCap -totalEntries -numGroups -capDistribution -groupEntries'
 		).sort({
 			startDate: 1,
 			endDate: 1
@@ -62,7 +63,7 @@ const getEventById = async (req, res, next) => {
 	try {
 		event = await Event.findById(
 			eventId,
-			'-entryFormData -entries -waitList -totalCap -totalEntries -numGroups -capDistribution -groupEntries'
+			'-entryFormData -entries -waitlist -totalCap -totalEntries -numGroups -capDistribution -groupEntries'
 		);
 	} catch (err) {
 		// this error is displayed if the request to the DB had some issues
@@ -90,7 +91,7 @@ const getEventById = async (req, res, next) => {
 			transform: (doc, ret, opt) => {
 				delete ret['entryFormData'];
 				delete ret['entries'];
-				delete ret['waitList'];
+				delete ret['waitlist'];
 				delete ret['totalCap'];
 				delete ret['totalEntries'];
 				delete ret['numGroups'];
@@ -176,7 +177,7 @@ const getEventsByClubId = async (req, res, next) => {
 					delete ret['clubImage'];
 					delete ret['entryFormData'];
 					delete ret['entries'];
-					delete ret['waitList'];
+					delete ret['waitlist'];
 					delete ret['totalCap'];
 					delete ret['totalEntries'];
 					delete ret['numGroups'];
@@ -229,7 +230,7 @@ const getEventsByOwnerClubId = async (req, res, next) => {
 				transform: (doc, ret, opt) => {
 					delete ret['entryFormData'];
 					delete ret['entries'];
-					delete ret['waitList'];
+					delete ret['waitlist'];
 					delete ret['totalCap'];
 					delete ret['totalEntries'];
 					delete ret['numGroups'];
@@ -284,7 +285,7 @@ const getPublishedEventsByOwnerClubId = async (req, res, next) => {
 				transform: (doc, ret, opt) => {
 					delete ret['entryFormData'];
 					delete ret['entries'];
-					delete ret['waitList'];
+					delete ret['waitlist'];
 					delete ret['totalCap'];
 					delete ret['totalEntries'];
 					delete ret['numGroups'];
@@ -325,7 +326,7 @@ const getEntryReport = async (req, res, next) => {
 	}
 
 	let entries = event.entries;
-	if (entries.length == 0) {
+	if (entries.length === 0) {
 		res.status(404).json({
 			entryData: []
 		});
@@ -355,7 +356,7 @@ const getEventsByDate = async (req, res, next) => {
 				startDate: { $gte: startDate, $lte: endDate },
 				published: true
 			},
-			'-entryFormData -entries -waitList -totalCap -totalEntries -numGroups -capDistribution -groupEntries'
+			'-entryFormData -entries -waitlist -totalCap -totalEntries -numGroups -capDistribution -groupEntries'
 		).sort({
 			endDate: 1
 		});
@@ -468,7 +469,12 @@ const createEvent = async (req, res, next) => {
 		published: false,
 		entryFormData: [],
 		entries: [],
-		waitList: []
+		waitlist: [],
+		totalEntries: 0,
+		numGroups: 0,
+		capDistribution: false,
+		runGroupOption: [],
+		workerOptions: []
 	});
 
 	try {
@@ -688,8 +694,9 @@ const updateEventRegistration = async (req, res, next) => {
 	// if capDistribution is true, we will create numGroups groups.
 	// Each group can only have totalCap / numGroups participants
 	if (capDistribution) {
+		// event.runGroupEntries = Array(parseInt(numGroups));
 		for (let i = 0; i < numGroups; ++i) {
-			event.groupEntries.push(0);
+			event.runGroupEntries.push(undefined);
 		}
 	}
 
@@ -909,7 +916,6 @@ const getEventEntryFormAnswer = async (req, res, next) => {
 	const eventId = req.params.eid;
 	const userId = req.params.uid;
 
-	console.log('eventId = ', eventId);
 	let event;
 	try {
 		event = await Event.findById(eventId).populate('entries');
@@ -981,73 +987,196 @@ const getEntryReportForUsers = async (req, res, next) => {
 		return next(error);
 	}
 
+	// get entires
 	let entries = event.entries;
-	if (entries.length == 0) {
+	// if there is no entry, should not have a waitlist, either.
+	if (entries.length === 0) {
 		res.status(404).json({
-			entryData: []
+			entryData: [],
+			waitlist: []
 		});
 	}
-
 	let entryData = [];
 	for (let i = 0; i < entries.length; ++i) {
 		let entry = await Entry.findById(entries[i]).populate('carId');
 		// add car to entry
-		entry.car =
+		let car =
 			entry.carId.year +
+			' ' +
 			entry.carId.make +
-			entry.carId.model +
-			entry.carId.levelTrim;
+			' ' +
+			entry.carId.model;
+		if (entry.carId.trimLevel != undefined) {
+			car += ' ' + entry.carId.trimLevel;
+		}
+		// use {strict:false} to add undefined attribute in schema to existing json obj
+		entry.set('car', car, { strict: false });
 		entryData.push(entry);
 	}
 
-	const { displayName } = req.body;
+	// get waitlist
+	let waitlist = event.waitlist;
+	let waitlistData = [];
+	for (let i = 0; i < waitlist.length; ++i) {
+		let entry = await Entry.findById(waitlist[i]).populate('carId');
+		// add car to entry
+		let car =
+			entry.carId.year +
+			' ' +
+			entry.carId.make +
+			' ' +
+			entry.carId.model;
+		if (entry.carId.trimLevel != undefined) {
+			car += ' ' + entry.carId.trimLevel;
+		}
+		// use {strict:false} to add undefined attribute in schema to existing json obj
+		entry.set('car', car, { strict: false });
+		waitlistData.push(entry);
+	}
 
+	const { displayName } = req.body;
 	// convert Mongoose object to a normal js object and get rid of _ of _id using getters: true
-	res.status(200).json({
-		entryData: entryData.map(data => data.toObject({ getters: true }))
-	}); // { event } => { event: event }
+	// res.status(200).json({
+	// 	entryData: entryData.map(data => data.toObject({ getters: true }))
+	// }); // { event } => { event: event }
 
 	if (displayName) {
-		res.status(200).json({
-			entryData: entry.toObject({
-				getters: true,
-				transform: (doc, ret, opt) => {
-					delete ret['userId'];
-					delete ret['username'];
-					delete ret['clubId'];
-					delete ret['clubName'];
-					delete ret['eventId'];
-					delete ret['eventName'];
-					delete ret['carId'];
-					delete ret['answer'];
-					delete ret['disclaimer'];
-					delete ret['time'];
-					delete ret['published'];
-					return ret;
-				}
-			})
-		});
+		if (waitlistData.length === 0) {
+			res.status(200).json({
+				entryData: entryData.map(data =>
+					data.toObject({
+						getters: true,
+						transform: (doc, ret, opt) => {
+							delete ret['userId'];
+							delete ret['userName'];
+							delete ret['clubId'];
+							delete ret['clubName'];
+							delete ret['eventId'];
+							delete ret['eventName'];
+							delete ret['carId'];
+							delete ret['disclaimer'];
+							delete ret['time'];
+							delete ret['published'];
+							return ret;
+						}
+					})
+				),
+				waitlistData: [],
+				runGroupOptions: event.runGroupOptions
+			});
+		} else {
+			res.status(200).json({
+				entryData: entryData.map(data =>
+					data.toObject({
+						getters: true,
+						transform: (doc, ret, opt) => {
+							delete ret['userId'];
+							// delete ret['userName'];
+							delete ret['clubId'];
+							delete ret['clubName'];
+							delete ret['eventId'];
+							delete ret['eventName'];
+							delete ret['carId'];
+							delete ret['disclaimer'];
+							delete ret['time'];
+							delete ret['published'];
+							return ret;
+						}
+					})
+				),
+				waitlistData: waitlistData.map(data =>
+					data.toObject({
+						getters: true,
+						transform: (doc, ret, opt) => {
+							delete ret['userId'];
+							// delete ret['userName'];
+							delete ret['clubId'];
+							delete ret['clubName'];
+							delete ret['eventId'];
+							delete ret['eventName'];
+							delete ret['carId'];
+							delete ret['disclaimer'];
+							delete ret['time'];
+							delete ret['published'];
+							return ret;
+						}
+					})
+				),
+				runGroupOptions: event.runGroupOptions
+			});
+		}
 	} else {
-		res.status(200).json({
-			entryData: entry.toObject({
-				getters: true,
-				transform: (doc, ret, opt) => {
-					delete ret['userId'];
-					delete ret['userLastName'];
-					delete ret['userFirstName'];
-					delete ret['clubId'];
-					delete ret['clubName'];
-					delete ret['eventId'];
-					delete ret['eventName'];
-					delete ret['carId'];
-					delete ret['answer'];
-					delete ret['disclaimer'];
-					delete ret['time'];
-					delete ret['published'];
-					return ret;
-				}
-			})
-		});
+		//!displayName
+		if (waitlistData.length === 0) {
+			res.status(200).json({
+				entryData: entryData.map(data =>
+					data.toObject({
+						getters: true,
+						transform: (doc, ret, opt) => {
+							delete ret['userId'];
+							delete ret['userLastName'];
+							delete ret['userFirstName'];
+							delete ret['clubId'];
+							delete ret['clubName'];
+							delete ret['eventId'];
+							delete ret['eventName'];
+							delete ret['carId'];
+							delete ret['answer'];
+							delete ret['disclaimer'];
+							delete ret['time'];
+							delete ret['published'];
+							return ret;
+						}
+					})
+				),
+				waitlistData: [],
+				runGroupOptions: event.runGroupOptions
+			});
+		} else {
+			res.status(200).json({
+				entryData: entryData.map(data =>
+					data.toObject({
+						getters: true,
+						transform: (doc, ret, opt) => {
+							delete ret['userId'];
+							delete ret['userLastName'];
+							delete ret['userFirstName'];
+							delete ret['clubId'];
+							delete ret['clubName'];
+							delete ret['eventId'];
+							delete ret['eventName'];
+							delete ret['carId'];
+							delete ret['answer'];
+							delete ret['disclaimer'];
+							delete ret['time'];
+							delete ret['published'];
+							return ret;
+						}
+					})
+				),
+				waitlistData: waitlistData.map(data =>
+					data.toObject({
+						getters: true,
+						transform: (doc, ret, opt) => {
+							delete ret['userId'];
+							delete ret['userLastName'];
+							delete ret['userFirstName'];
+							delete ret['clubId'];
+							delete ret['clubName'];
+							delete ret['eventId'];
+							delete ret['eventName'];
+							delete ret['carId'];
+							delete ret['answer'];
+							delete ret['disclaimer'];
+							delete ret['time'];
+							delete ret['published'];
+							return ret;
+						}
+					})
+				),
+				runGroupOptions: event.runGroupOptions
+			});
+		}
 	}
 };
 

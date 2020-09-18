@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form, Formik, ErrorMessage } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
 
@@ -27,10 +27,11 @@ const EventRegistration = props => {
 	const clubAuthContext = useContext(ClubAuthContext);
 	const formContext = useContext(FormContext);
 
-	// contButton controls when to enable CONTINUE button, set to true after submitHandler() succeeds
-	const [contButton, setContButton] = useState(false);
-	// continueStatus controls when to return props.newEventStatus back to NewEventManager
 	const [continueStatus, setContinueStatus] = useState(false);
+	// publishButton controls when to enable CONTINUE button, set to true after saveHandler() succeeds
+	const [publishButton, setPublishButton] = useState(false);
+	// set PUBLISH button name
+	const [publishBtnName, setPublishBtnName] = useState('PUBLISH');
 
 	// this is the return function that passes finishing status back to NewEventManager
 	useEffect(() => {
@@ -70,7 +71,7 @@ const EventRegistration = props => {
 
 	const [totalCap, setTotalCap] = useState('');
 	const [numGroups, setNumGroups] = useState('');
-	const [capDistribution, setCapDistribution] = useState('');
+	const [capDistribution, setCapDistribution] = useState(false);
 
 	// initialize local storage
 	// Get the existing data
@@ -107,7 +108,7 @@ const EventRegistration = props => {
 		);
 		eventFormData['totalCap'] = '';
 		eventFormData['numGroups'] = '';
-		eventFormData['capDistribution'] = '';
+		eventFormData['capDistribution'] = false;
 		localStorage.setItem(
 			'eventFormData',
 			JSON.stringify(eventFormData)
@@ -146,9 +147,8 @@ const EventRegistration = props => {
 	};
 
 	const history = useHistory();
-	const submitHandler = async (values, actions) => {
+	const saveHandler = async (values, actions) => {
 		try {
-			console.log('values = ', values);
 			console.log(
 				'capDistributionClicked = ',
 				capDistributionClicked
@@ -160,7 +160,7 @@ const EventRegistration = props => {
 				JSON.stringify({
 					totalCap: values.totalCap,
 					numGroups: values.numGroups,
-					capDistribution: capDistributionClicked
+					capDistribution: values.capDistribution
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -169,9 +169,8 @@ const EventRegistration = props => {
 				}
 			);
 			setOKLeavePage(true);
-			// Redirect the club to a diffrent page
-			// history.push(`/events/club/${clubAuthContext.clubId}`);
-			setContButton(true);
+			setContinueStatus(true);
+			setPublishButton(true);
 		} catch (err) {}
 	};
 
@@ -203,6 +202,32 @@ const EventRegistration = props => {
 			return error;
 		}
 	);
+
+	// const [
+	// 	validateCapDistribution,
+	// 	setValidateCapDistribution
+	// ] = useState(() => values => {
+	// 	let error;
+	// 	if (!values.capDistribution) {
+	// 		return error;
+	// 	}
+
+	// 	if (values.totalCap === '') {
+	// 		console.log('totalCap first');
+	// 		error = 'You must enter Total Participants first.';
+	// 	}
+	// 	if (values.numGroups === '') {
+	// 		console.log('totalCap first');
+	// 		error += 'You must enter Number of Groups first.';
+	// 	}
+	// 	if (!(parseInt(values.totalCap) / parseInt(values.numGroups))
+	// 			.isInteger
+	// 	) {
+	// 		error =
+	// 			'Please make sure (Total Participants(/(Number of Groups) can be evenly distributed.';
+	// 	}
+	// 	return error;
+	// });
 	/***** End of Form Validation *****/
 
 	const publishHandler = async () => {
@@ -219,7 +244,8 @@ const EventRegistration = props => {
 					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
-			history.push(`/clubs/clubManager`);
+			setPublishButton(false);
+			setPublishBtnName('PUBLISHED');
 		} catch (err) {}
 	};
 
@@ -234,7 +260,7 @@ const EventRegistration = props => {
 				enableReinitialize={true}
 				initialValues={initialValues}
 				onSubmit={(values, actions) => {
-					submitHandler(values);
+					saveHandler(values);
 					if (!actions.isSubmitting) {
 						setValidateTotalCap(() => value => {
 							let error;
@@ -314,17 +340,29 @@ const EventRegistration = props => {
 							</div>
 						)}
 						<label className="event-form__checkbox">
-							{/* Field does not work for manual toggling */}
-							<input
-								type="checkbox"
+							<Field
 								id="capDistribution"
 								name="capDistribution"
-								onChange={togglecapDistribution}
+								type="checkbox"
+								// validate={validateCapDistribution(values)}
+								onBlur={event => {
+									handleBlur(event);
+									setOKLeavePage(false);
+								}}
 							/>
 							&nbsp; Check the box if you want to evenly distribute
 							total participant number to each group.
 						</label>
-
+						{/* error message not working */}
+						{/* {touched.capDistribution && errors.capDistribution && (
+							<div className="event-form__field-error">
+								{errors.capDistribution}
+							</div>
+						)}
+						<ErrorMessage
+							name="capDistribution"
+							className="event-form__field-error-quarter"
+						/> */}
 						<Button
 							type="submit"
 							size="medium-block"
@@ -336,9 +374,9 @@ const EventRegistration = props => {
 							type="button"
 							size="medium"
 							margin-left="1.5rem"
-							disabled={!contButton}
+							disabled={!publishButton}
 							onClick={publishHandler}>
-							PUBLISH
+							{publishBtnName}
 						</Button>
 						<NavigationPrompt
 							afterConfirm={() => {

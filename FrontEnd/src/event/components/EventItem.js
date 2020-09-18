@@ -335,9 +335,7 @@ const EventItem = props => {
 										}
 									}}>
 									<Button
-										inverse={!openRegistration}
-										// to={`/events/newentry/${props.event.id}`}
-
+										disabled={!openRegistration}
 										size="small-orange">
 										{buttonName}
 									</Button>
@@ -345,7 +343,7 @@ const EventItem = props => {
 							)}
 							{buttonName === 'MODIFY ENTRY' && (
 								<Button
-									inverse={!openRegistration}
+									disabled={!openRegistration}
 									to={`/events/newentry/${props.event.id}`}
 									size="small-orange">
 									{buttonName}
@@ -359,7 +357,7 @@ const EventItem = props => {
 										pathname: `/events/entrylist/${eventId}`,
 										state: {
 											displayName: true,
-											eventName: 'GGLC 123',
+											eventName: props.event.name,
 											eventId: eventId
 										}
 									}}>

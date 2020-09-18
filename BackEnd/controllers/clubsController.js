@@ -496,9 +496,21 @@ const createEventForm = async (req, res, next) => {
 	// it won't impact performace by much.
 	if (entryFormData && entryFormData.length > 0) {
 		event.entryFormData = [];
-		entryFormData.map(data => event.entryFormData.push(data));
+		entryFormData.map(data => {
+			event.entryFormData.push(data);
+			console.log('data = ', data);
+			// form analysis here
+			let [fieldName, choices] = formAnalysis(data);
+			console.log('fieldName = ', fieldName);
+			console.log('choices = ', choices);
+			if (fieldName === 'RunGroupSingle') {
+				event.runGroupOptions = choices;
+			}
+		});
 		// whenever entry form gets changed, always set published to false
 		event.published = false;
+
+		// save to template if flag is true
 		if (saveTemplate) {
 			club.entryFormTemplate = [];
 			entryFormData.map(data => club.entryFormTemplate.push(data));
@@ -591,6 +603,39 @@ const publishEvent = async (req, res, next) => {
 		);
 		return next(error);
 	}
+};
+
+// Form analysis
+const formAnalysis = data => {
+	// Form field name is defined in frontend FormBuilder.js
+	// "RunGroupSingle-" Race Group prefix for Single Choice Radiobutton
+	// field_name: "RunGroupSingle-12EDB3DA-484C-4ECB-BB32-C3AE969A2D2F"
+	let parseName = data.field_name.split('-');
+	console.log('parseName = ', parseName);
+	let fieldPrefix = parseName[0];
+	console.log('fieldPrefix = ', fieldPrefix);
+	let choices = [];
+	if (parseName[0] === 'RunGroupSingle') {
+		console.log('inside fieldPrefix = ');
+		// get the options
+		// format of the
+		// options: Array
+		//    0: Object
+		//       value: "0"
+		//       text: "Morning Session 1"
+		//       key: "raceRadioOption_0"
+		// we will use {value: text} to compose our map
+		// ex: {0: "Morning Session 1"}
+		let options = data.options;
+		for (var i = 0; i < options.length; ++i) {
+			let option = options[i];
+			// build up option map
+			let value = option['text'];
+			console.log('value = ', value);
+			choices.push(value);
+		}
+	}
+	return [fieldPrefix, choices];
 };
 
 exports.getAllClubs = getAllClubs;

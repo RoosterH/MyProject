@@ -165,6 +165,21 @@
 	background: #bebcba;
 }
 
+.button--medium-block {
+	display: block;
+	padding: 0.2rem 0.2rem 0.2rem 0.2rem;
+	font-size: medium;
+	font-family: 'Montserrat', sans-serif;
+	background: transparent;
+	color: #106daf;
+	width: 10rem;
+	margin: 1rem 2rem 2rem 1.5rem;
+}
+.button--medium-block--inverse {
+	color: white;
+	background: #bebcba;
+}
+
 .button--small-block {
 	display: block;
 	padding: 0.2rem 0.2rem 0.2rem 0.2rem;

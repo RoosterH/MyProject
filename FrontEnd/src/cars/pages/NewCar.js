@@ -356,7 +356,7 @@ const NewCar = setFieldValue => {
 			formData.append('note', values.note);
 			formData.append('image', values.image);
 
-			await sendRequest(
+			let responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + '/cars',
 				'POST',
 				formData,
@@ -365,9 +365,10 @@ const NewCar = setFieldValue => {
 					Authorization: 'Bearer ' + userAuthContext.userToken
 				}
 			);
+			console.log('responseData = ', responseData);
 			setOKLeavePage(true);
 			// Redirect the club to a diffrent page
-			history.push(`/users/garage/${userAuthContext.userId}`);
+			history.push(`/users/garagewrapper/${userAuthContext.userId}`);
 		} catch (err) {}
 	};
 

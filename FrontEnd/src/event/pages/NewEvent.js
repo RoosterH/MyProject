@@ -28,14 +28,14 @@ const NewEvent = props => {
 	const formContext = useContext(FormContext);
 
 	// contButton controls when to enable CONTINUE button, set to true after submitHandler() succeeds
-	const [contButton, setContButton] = useState(false);
+	// const [contButton, setContButton] = useState(false);
 	// continueStatus controls when to return props.newEventStatus back to NewEventManager
 	const [continueStatus, setContinueStatus] = useState(false);
 	const [eventId, setEventId] = useState();
 
-	const continueHandler = () => {
-		setContinueStatus(true);
-	};
+	// const continueHandler = () => {
+	// 	setContinueStatus(true);
+	// };
 	// this is the return function that passes finishing status back to NewEventManager
 	useEffect(() => {
 		props.newEventStatus(continueStatus);
@@ -243,10 +243,9 @@ const NewEvent = props => {
 				}
 			);
 			setOKLeavePage(true);
-			// Redirect the club to a diffrent page
-			// history.push(`/events/club/${clubAuthContext.clubId}`);
-			setContButton(true);
 			setEventId(responseData.event.id);
+			// move to next stage
+			setContinueStatus(true);
 		} catch (err) {}
 	};
 
@@ -700,55 +699,21 @@ const NewEvent = props => {
 								{errors.instruction}
 							</div>
 						)}
-						{/* <Field
-							id="image"
-							name="image"
-							title="image"
-							component={ImageUploader}
-							validate={validateImageSize}
-							setFieldValue={setFieldValue}
-							errorMessage={errors.image ? errors.image : ''}
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-							}}
-							labelStyle="event-form__label"
-							inputStyle="event-form__field-select"
-							previewStyle="image-upload__preview"
-							errorStyle="event-form__field-error"
-						/>
-						<Field
-							id="courseMap"
-							name="courseMap"
-							title="courseMap"
-							component={ImageUploader}
-							validate={validateCourseMapSize}
-							setFieldValue={setFieldValue}
-							errorMessage={errors.courseMap ? errors.courseMap : ''}
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-							}}
-							labelStyle="event-form__label"
-							inputStyle="event-form__field-select"
-							previewStyle="image-upload__preview"
-							errorStyle="event-form__field-error"
-						/> */}
 						<Button
 							type="submit"
 							size="medium"
 							margin-left="1.5rem"
 							disabled={isSubmitting || !isValid}>
-							SAVE
+							SAVE &amp; CONTINUE
 						</Button>
-						<Button
+						{/* <Button
 							type="button"
 							size="medium"
 							margin-left="1.5rem"
 							disabled={!contButton}
 							onClick={continueHandler}>
 							CONTINUE
-						</Button>
+						</Button> */}
 						<NavigationPrompt
 							afterConfirm={() => {
 								formContext.setIsInsideForm(false);

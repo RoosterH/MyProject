@@ -276,7 +276,8 @@ export default class ReactForm extends React.Component {
 			const answer_data = this.props;
 			if (answer_data) {
 				// send answer_data back to NewEntryManager, we will send to backend all together in Submit tab
-				this.props.returnFormAnswer(answer_data);
+				const answer = this._collectFormData(this.props.data);
+				this.props.returnFormAnswer(answer);
 				// try {
 				// 	const answer = this._collectFormData(this.props.data);
 				// 	// we need to use JSON.stringify to send array objects.

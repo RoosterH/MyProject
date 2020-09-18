@@ -18,6 +18,7 @@ import '../../shared/css/EventForm.css';
 
 const SubmitEntry = props => {
 	let eventId = props.eventId;
+	let eventName = props.eventName;
 	let carId = props.carId;
 	let carNumber = props.carNumber;
 	let raceClass = props.raceClass;
@@ -216,7 +217,7 @@ const SubmitEntry = props => {
 								pathname: `/events/entrylist/${eventId}`,
 								state: {
 									displayName: true,
-									eventName: 'GGLC 123',
+									eventName: eventName,
 									eventId: eventId
 								}
 							}}>

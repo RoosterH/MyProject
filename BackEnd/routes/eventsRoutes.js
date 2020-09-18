@@ -8,7 +8,7 @@ const moment = require('moment');
 const eventsController = require('../controllers/eventsController');
 const fileUpload = require('../middleware/file-upload');
 const checkClubAuth = require('../middleware/check-clubAuth');
-const checkUserAuth = require('../middleware/check-userAuth');
+const checkUserAuth = require('../middleware/check-clubAuth');
 
 const router = express.Router();
 

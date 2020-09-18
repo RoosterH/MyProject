@@ -54,7 +54,6 @@ const ImageUploader = props => {
 							alt="Existing file"
 							// ondrag={() => props.onDrag()}
 						/>
-						}
 					</div>
 				</React.Fragment>
 			)}

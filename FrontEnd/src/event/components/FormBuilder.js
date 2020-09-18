@@ -168,10 +168,10 @@ const FormBuilder = props => {
 		{
 			key: 'RadioButtons',
 			canHaveAnswer: true,
-			name: 'Race Session Single Selection',
+			name: 'Run Group Single Selection',
 			icon: 'far fa-dot-circle',
-			label: '<strong>Registration Options</strong>',
-			field_name: 'RaceSessionSingle-',
+			label: '<strong>Run Group</strong>',
+			field_name: 'RunGroupSingle-',
 			required: true,
 			options: [
 				{
@@ -204,10 +204,10 @@ const FormBuilder = props => {
 		{
 			key: 'Checkboxes',
 			canHaveAnswer: true,
-			name: 'Race Session Multiple Selection',
+			name: 'Run Group Multiple Selections',
 			icon: 'far fa-check-square',
-			label: '<strong>Registration Options</strong>',
-			field_name: 'RaceSessionMultiple-',
+			label: '<strong>Run Group</strong>',
+			field_name: 'RunGroupMultiple-',
 			required: true,
 			options: [
 				{
@@ -234,6 +234,42 @@ const FormBuilder = props => {
 					value: '4',
 					text: 'Afternoon Session 3',
 					key: `raceCheckboxOption_4`
+				}
+			]
+		},
+		{
+			key: 'RadioButtons',
+			canHaveAnswer: true,
+			name: 'Work Assignment',
+			icon: 'far fa-dot-circle',
+			label: '<strong>Work Assignment</strong>',
+			field_name: 'WorkerAssignment-',
+			required: true,
+			options: [
+				{
+					value: '0',
+					text: 'Course Worker',
+					key: `workerRadioOption_0`
+				},
+				{
+					value: '1',
+					text: 'Starter',
+					key: `workerRadioOption_1`
+				},
+				{
+					value: '2',
+					text: 'Timing Slip',
+					key: `workerRadioOption_2`
+				},
+				{
+					value: '3',
+					text: 'Timing Trailer',
+					key: `workerRadioOption_3`
+				},
+				{
+					value: '4',
+					text: 'Tech Inspection',
+					key: `workerRadioOption_4`
 				}
 			]
 		},
@@ -269,42 +305,6 @@ const FormBuilder = props => {
 			]
 		},
 		{
-			key: 'RadioButtons',
-			canHaveAnswer: true,
-			name: 'Worker Signup',
-			icon: 'far fa-dot-circle',
-			label: '<strong>Worker Signup</strong>',
-			field_name: 'WorkerGroup-',
-			required: true,
-			options: [
-				{
-					value: '0',
-					text: 'Course Worker',
-					key: `workerRadioOption_0`
-				},
-				{
-					value: '1',
-					text: 'Course Setup',
-					key: `workerRadioOption_1`
-				},
-				{
-					value: '2',
-					text: 'Timing',
-					key: `workerRadioOption_2`
-				},
-				{
-					value: '3',
-					text: 'Morning Gate',
-					key: `workerRadioOption_3`
-				},
-				{
-					value: '4',
-					text: 'Afternoon Gate',
-					key: `workerRadioOption_4`
-				}
-			]
-		},
-		{
 			key: 'ParagraphCheckbox',
 			canHaveAnswer: true,
 			name: 'Event Waiver',
@@ -326,12 +326,13 @@ const FormBuilder = props => {
 		{
 			key: 'ParagraphCheckbox',
 			canHaveAnswer: true,
-			name: 'Disclaimer',
+			name: 'Cancellation Refund Policy',
 			static: true,
 			icon: 'far fa-check-square',
-			label: '<strong>Disclaimer</strong>',
-			content: 'Disclaimer...',
-			field_name: 'Disclaimer-',
+			label: '<strong>Cancellation and Refund Policy</strong>',
+			content:
+				'Cancellation must be made one week before event starts to get full refund.',
+			field_name: 'Cancellation-',
 			required: true,
 			options: [
 				{

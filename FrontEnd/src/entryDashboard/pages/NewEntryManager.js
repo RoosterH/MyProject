@@ -229,6 +229,7 @@ const NewEntryManager = props => {
 							<SubmitEntry
 								submitStatus={SubmitHandler}
 								eventId={eventId}
+								eventName={eventName}
 								carId={carId}
 								carNumber={carNumber}
 								raceClass={raceClass}

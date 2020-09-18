@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
@@ -12,6 +12,7 @@ import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-h
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
+import Modal from '../../shared/components/UIElements/Modal';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 
 import { useHttpClient } from '../../shared/hooks/http-hook';
@@ -21,12 +22,23 @@ import { FormContext } from '../../shared/context/form-context';
 import '../../shared/css/EventForm.css';
 
 const EventRegistration = props => {
+	const history = useHistory();
 	let eventId = props.event.id;
 	const [initialized, setInitialized] = useState(false);
 	const clubAuthContext = useContext(ClubAuthContext);
 	const formContext = useContext(FormContext);
+	const [showSaveBtn, setShowSaveBtn] = useState(false);
 	const [published, setPublished] = useState(props.event.published);
 	const [publishBtnName, setPublishBtnName] = useState('PUBLISH');
+
+	const [openDeleteModal, setOpenDeleteModal] = useState(false);
+	const [showDELModal, setShowDELModal] = useState(false);
+	const openDELHandler = () => {
+		setShowDELModal(true);
+	};
+	const closeDELHandler = () => {
+		setShowDELModal(false);
+	};
 
 	useEffect(() => {
 		if (published) {
@@ -151,7 +163,7 @@ const EventRegistration = props => {
 				JSON.stringify({
 					totalCap: values.totalCap,
 					numGroups: values.numGroups,
-					capDistribution: capDistributionClicked
+					capDistribution: values.capDistribution
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -161,6 +173,7 @@ const EventRegistration = props => {
 			);
 			setOKLeavePage(true);
 			setPublished(false);
+			setShowSaveBtn(false);
 			props.returnNewEvent(responseData.event);
 		} catch (err) {}
 	};
@@ -214,6 +227,24 @@ const EventRegistration = props => {
 		} catch (err) {}
 	};
 
+	const deleteHandler = async () => {
+		try {
+			let responseData = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`,
+				'DELETE',
+				null,
+				{
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
+				}
+			);
+			console.log('responseData = ', responseData.message);
+			// after deleting event, forward to eventManager, we do not want to send null event back
+			// even we have a callback from EditEventManager
+			history.push('/clubs/eventManager/');
+		} catch (err) {}
+		setShowDELModal(false);
+	};
+
 	const eventForm = values => (
 		<div className="event-form">
 			<div className="event-form-header">
@@ -253,6 +284,7 @@ const EventRegistration = props => {
 				}}>
 				{({
 					values,
+					dirty,
 					errors,
 					isSubmitting,
 					isValid,
@@ -277,6 +309,7 @@ const EventRegistration = props => {
 								handleBlur(event);
 								updateEventFormData('totalCap', event.target.value);
 								setOKLeavePage(false);
+								setShowSaveBtn(true);
 							}}
 						/>
 						{touched.totalCap && errors.totalCap && (
@@ -298,6 +331,7 @@ const EventRegistration = props => {
 								handleBlur(event);
 								updateEventFormData('numGroups', event.target.value);
 								setOKLeavePage(false);
+								setShowSaveBtn(true);
 							}}></Field>
 						{touched.numGroups && errors.numGroups && (
 							<div className="event-form__field-error_quarter">
@@ -305,31 +339,43 @@ const EventRegistration = props => {
 							</div>
 						)}
 						<label className="event-form__checkbox">
-							{/* Field does not work for manual toggling */}
-							<input
-								type="checkbox"
+							<Field
 								id="capDistribution"
 								name="capDistribution"
-								onChange={togglecapDistribution}
+								type="checkbox"
+								onBlur={event => {
+									handleBlur(event);
+									setOKLeavePage(false);
+									setShowSaveBtn(true);
+								}}
 							/>
 							&nbsp; Check the box if you want to evenly distribute
 							total participant number to each group.
 						</label>
-
 						<Button
 							type="submit"
-							size="medium-block"
+							size="medium"
 							margin-left="1.5rem"
-							disabled={isSubmitting || !isValid}>
+							disabled={
+								isSubmitting || (!isValid && dirty) || !showSaveBtn
+							}>
 							SAVE
 						</Button>
 						<Button
 							type="button"
 							size="medium"
 							margin-left="1.5rem"
-							disabled={published}
+							disabled={published || showSaveBtn}
 							onClick={publishHandler}>
 							{publishBtnName}
+						</Button>
+						<Button
+							type="button"
+							size="medium"
+							margin-left="1.5rem"
+							disabled={published}
+							onClick={openDELHandler}>
+							DELETE
 						</Button>
 						<NavigationPrompt
 							afterConfirm={() => {
@@ -385,6 +431,30 @@ const EventRegistration = props => {
 
 	return (
 		<React.Fragment>
+			{showDELModal && (
+				<Modal
+					className="modal-delete"
+					show={showDELModal}
+					contentClass="event-item__modal-delete"
+					onCancel={closeDELHandler}
+					header="Warning!"
+					footerClass="event-item__modal-actions"
+					footer={
+						<React.Fragment>
+							<Button inverse onClick={closeDELHandler}>
+								CANCEL
+							</Button>
+							<Button danger onClick={deleteHandler}>
+								DELETE
+							</Button>
+						</React.Fragment>
+					}>
+					<p className="modal__content">
+						Do you really want to delete {props.event.name}? It cannot
+						be recovered after deletion.
+					</p>
+				</Modal>
+			)}
 			<ErrorModal error={error} onClear={clearError} />
 			{isLoading && (
 				<div className="center">

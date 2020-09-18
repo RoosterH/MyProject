@@ -14,6 +14,7 @@ const entrySchema = new Schema({
 	},
 	userLastName: { type: String, required: true },
 	userFirstName: { type: String, required: true },
+	userName: { type: String, required: true },
 	clubId: {
 		type: mongoose.Types.ObjectId,
 		required: true,
@@ -37,7 +38,9 @@ const entrySchema = new Schema({
 	answer: { type: Array, required: true },
 	disclaimer: { type: Boolean, require: true },
 	time: { type: Date, required: true },
-	published: { type: Boolean, required: true }
+	published: { type: Boolean, required: true },
+	waitlist: { type: Boolean, required: true },
+	groupWaitList: { type: Boolean, require: true }
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

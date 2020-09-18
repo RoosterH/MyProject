@@ -19,6 +19,8 @@ const EntryListForUsers = props => {
 		clearError
 	} = useHttpClient();
 	const [entryList, setEntryList] = useState([]);
+	const [waitlist, setWaitlist] = useState([]);
+
 	const classLookup = {
 		0: 'SS',
 		1: 'AS',
@@ -26,7 +28,7 @@ const EntryListForUsers = props => {
 		3: 'SSP',
 		4: 'SSR'
 	};
-	const runGroupLookup = { 0: '1', 1: '2', 2: '3', 3: '4' };
+	const [runGroupLookup, setRunGroupLookup] = useState([]);
 	const workerGroupLookup = {
 		0: 'Course1',
 		1: 'Course2',
@@ -37,9 +39,7 @@ const EntryListForUsers = props => {
 	const getMapKey = (val, myMap) => {
 		let answer;
 		Object.keys(myMap).map(key => {
-			console.log('key = ', key);
 			if (myMap[key] === val) {
-				console.log('key2 = ', key);
 				answer = key;
 			}
 		});
@@ -59,8 +59,18 @@ const EntryListForUsers = props => {
 						Authorization: 'Bearer ' + userAuthContext.userToken
 					}
 				);
-
 				console.log('responseData = ', responseData);
+
+				let runGroupOptions = responseData.runGroupOptions;
+				let options = [];
+				for (var i = 0; i < runGroupOptions.length; ++i) {
+					let keyName = String(i);
+					options[keyName] = runGroupOptions[i];
+				}
+				setRunGroupLookup(options);
+				console.log('runGroupLookup = ', runGroupLookup);
+
+				// compose entry list
 				let entryData = [];
 				let entries = responseData.entryData;
 				for (var i = 0; i < entries.length; ++i) {
@@ -85,6 +95,37 @@ const EntryListForUsers = props => {
 					entryData.push(entry);
 				}
 				setEntryList(entryData);
+
+				// compose waitlist
+				let waitlistData = [];
+				let waitlist = responseData.waitlistData;
+				for (var i = 0; i < waitlist.length; ++i) {
+					let entry;
+					if (displayName) {
+						entry = {
+							lastName: waitlist[i].userLastName,
+							firstName: waitlist[i].userFirstName[0] + '.',
+							carNumber: waitlist[i].carNumber,
+							raceClass: getMapKey(
+								waitlist[i].raceClass,
+								classLookup
+							),
+							car: waitlist[i].car
+						};
+					} else {
+						entry = {
+							userName: waitlist[i].userName,
+							carNumber: waitlist[i].carNumber,
+							raceClass: getMapKey(
+								waitlist[i].raceClass,
+								classLookup
+							),
+							car: waitlist[i].car
+						};
+					}
+					waitlistData.push(entry);
+				}
+				setWaitlist(waitlistData);
 			} catch (err) {}
 		};
 		fetchEntries();
@@ -101,7 +142,7 @@ const EntryListForUsers = props => {
 			<div className="entrylist-table">
 				{displayName && (
 					<MaterialTable
-						title={{ eventName } + 'Entry List'}
+						title={`${eventName} Entry List`}
 						columns={[
 							{ title: 'Last Name', field: 'lastName' },
 							{
@@ -139,37 +180,112 @@ const EntryListForUsers = props => {
 						}}
 					/>
 				)}
-				{!displayName && (
+				{displayName && waitlist !== [] && (
 					<MaterialTable
-						title={{ eventName } + 'Entry List'}
+						title={`${eventName} Waitlist`}
 						columns={[
-							{ title: 'User Name', field: 'username' },
+							{ title: 'Last Name', field: 'lastName' },
 							{
-								title: 'Car Number',
-								field: 'carnumber',
+								title: 'First Name',
+								field: 'firstName',
 								filtering: false
 							},
-							{ title: 'Car', field: 'car', filtering: false },
 							{
-								title: 'Class',
-								field: 'class',
-								lookup: { classLookup }
+								title: 'Car Number',
+								field: 'carNumber',
+								filtering: false
+							},
+							{ title: 'Car', field: 'car' },
+							{
+								title: 'Race Class',
+								field: 'raceClass',
+								lookup: classLookup,
+								filtering: false
 							},
 							{
 								title: 'Run Group',
-								field: 'run',
-								lookup: { runGroupLookup }
+								field: 'runGroup',
+								filtering: false
 							},
 
 							{
 								title: 'Worker Group',
-								field: 'worker',
-								lookup: { workerGroupLookup }
+								field: 'workerGroup',
+								filtering: false
+							}
+						]}
+						data={waitlist}
+						options={{
+							filtering: false,
+							sorting: false,
+							exportButton: true
+						}}
+					/>
+				)}
+				{!displayName && (
+					<MaterialTable
+						title={`${eventName} Entry List`}
+						columns={[
+							{ title: 'User Name', field: 'userName' },
+							{
+								title: 'Car Number',
+								field: 'carNumber',
+								filtering: false
+							},
+							{ title: 'Car', field: 'car', filtering: false },
+							{
+								title: 'Race Class',
+								field: 'raceClass',
+								lookup: classLookup
+							},
+							{
+								title: 'Run Group',
+								field: 'runGroup',
+								lookup: runGroupLookup
+							},
+
+							{
+								title: 'Worker Group',
+								field: 'workerGroup',
+								lookup: workerGroupLookup
 							}
 						]}
 						data={entryList}
 						options={{
 							filtering: true,
+							exportButton: true
+						}}
+					/>
+				)}
+				{!displayName && waitlist !== [] && (
+					<MaterialTable
+						title={`${eventName} Waitlist`}
+						columns={[
+							{ title: 'User Name', field: 'userName' },
+							{
+								title: 'Car Number',
+								field: 'carNumber'
+							},
+							{ title: 'Car', field: 'car' },
+							{
+								title: 'Race Class',
+								field: 'raceClass',
+								lookup: classLookup
+							},
+							{
+								title: 'Run Group',
+								field: 'runGroup',
+								lookup: runGroupLookup
+							},
+							{
+								title: 'Worker Group',
+								field: 'workerGroup',
+								lookup: workerGroupLookup
+							}
+						]}
+						data={waitlist}
+						options={{
+							sorting: false,
 							exportButton: true
 						}}
 					/>

@@ -169,6 +169,7 @@ const UpdateEventPhotos = props => {
 					}
 				}}>
 				{({
+					dirty,
 					values,
 					errors,
 					isSubmitting,
@@ -216,7 +217,7 @@ const UpdateEventPhotos = props => {
 							type="submit"
 							size="medium-block"
 							margin-left="1.5rem"
-							disabled={isSubmitting || !isValid}>
+							disabled={isSubmitting || (!isValid && dirty)}>
 							SAVE
 						</Button>
 						<NavigationPrompt
