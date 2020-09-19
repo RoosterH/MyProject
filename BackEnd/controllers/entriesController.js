@@ -18,8 +18,8 @@ const errMsg = errors => {
 	return msg;
 };
 
+// include both create and update entry
 const createEntry = async (req, res, next) => {
-	console.log('in createEntry');
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		const errorFormatter = ({ value, msg, param, location }) => {
@@ -108,10 +108,36 @@ const createEntry = async (req, res, next) => {
 
 	// check if run group is full
 	let groupFull = false;
-	let runGroup = getRunGroup(answer);
-	if (runGroup === -1) {
+	let [runGroupIndex, runGroup] = parseAnswer(
+		event.runGroupOptions,
+		answer,
+		'RunGroup'
+	);
+	if (runGroupIndex === -1) {
 		const error = new HttpError(
-			'Event registration answer invalid.',
+			'Event registration answer invalid @run group. ',
+			400
+		);
+		return next(error);
+	}
+
+	// let raceClass = parseAnswer(answer, 'RaceClass');
+	// if (raceClass === -1) {
+	// 	const error = new HttpError(
+	// 		'Event registration answer invalid @race class.',
+	// 		400
+	// 	);
+	// 	return next(error);
+	// }
+
+	let [workerAssignmentIndex, workerAssignment] = parseAnswer(
+		event.workerAssignments,
+		answer,
+		'WorkerAssignment'
+	);
+	if (workerAssignment === -1) {
+		const error = new HttpError(
+			'Event registration answer invalid @worker assignment.',
 			400
 		);
 		return next(error);
@@ -120,7 +146,7 @@ const createEntry = async (req, res, next) => {
 	// check group cap to see if the run gorup is full
 	if (event.capDistribution) {
 		let capPerGroup = Math.floor(event.totalCap / event.numGroups);
-		if (event.runGroupEntries[runGroup].length >= capPerGroup) {
+		if (event.runGroupEntries[runGroupIndex].length >= capPerGroup) {
 			groupFull = true;
 		}
 	}
@@ -151,7 +177,7 @@ const createEntry = async (req, res, next) => {
 			// We don't want to re-enter the event, instead giving an error message.
 			// Because drop an entry to waitlist is very bad.
 			const error = new HttpError(
-				`${event.runGroupOptions[runGroup]} is full. You are still in the old run group.  If you cannot make this event, please cancel it.`,
+				`${event.runGroupOptions[runGroupIndex]} is full. You are still in the old run group.  If you cannot make this event, please cancel it.`,
 				304
 			);
 			return next(error);
@@ -160,6 +186,8 @@ const createEntry = async (req, res, next) => {
 		// if entry found, we only need to override the previous values
 		entry.carNumber = carNumber;
 		entry.raceClass = raceClass;
+		entry.workerAssignment = workerAssignment;
+		entry.runGroup = runGroup;
 		entry.answer = [];
 		answer.map(data => entry.answer.push(data));
 
@@ -178,8 +206,8 @@ const createEntry = async (req, res, next) => {
 		entry = new Entry({
 			userId,
 			userName: user.userName,
-			userLastName: user.lastname,
-			userFirstName: user.firstname,
+			userLastName: user.Lastname,
+			userFirstName: user.Firstname,
 			clubId: event.clubId,
 			clubName: event.clubName,
 			eventId,
@@ -192,7 +220,9 @@ const createEntry = async (req, res, next) => {
 			time: moment(),
 			published: true,
 			waitlist: eventFull || groupFull,
-			groupWaitlist: groupFull
+			groupWaitlist: groupFull,
+			runGroup: runGroup,
+			workerAssignment: workerAssignment
 		});
 		try {
 			const session = await mongoose.startSession();
@@ -208,18 +238,9 @@ const createEntry = async (req, res, next) => {
 			// update totalEntries number
 			event.totalEntries++;
 
+			// ! problem the most recent push userId will be stored as an array
 			// update run group entries
-			console.log(
-				'event.runGroupEntries[runGroup] 2 = ',
-				event.runGroupEntries[runGroup]
-			);
-			console.log('userId = ', userId);
-			event.runGroupEntries[runGroup].push(userId);
-
-			console.log(
-				'event.runGroupEntries[runGroup] 3 = ',
-				event.runGroupEntries[runGroup]
-			);
+			event.runGroupEntries[runGroupIndex].push(userId);
 
 			await event.save({ session: session });
 
@@ -250,7 +271,7 @@ const createEntry = async (req, res, next) => {
 	}
 	if (groupFull) {
 		const error = new HttpError(
-			`${event.runGroupOptions[runGroup]} is full. You are on the waitlist. You may try to register for another run group or wait for the club to notify yuo if a spot is available.`,
+			`${event.runGroupOptions[runGroupIndex]} is full. You are on the waitlist. You may try to register for another run group or wait for the club to notify yuo if a spot is available.`,
 			202
 		);
 		return next(error);
@@ -258,7 +279,7 @@ const createEntry = async (req, res, next) => {
 	res.status(200).json({ entry: entry.toObject({ getters: true }) });
 };
 
-const getRunGroup = answer => {
+const parseAnswer = (options, answer, fieldName) => {
 	// entry answer format:
 	// answer: Array
 	//   0: object
@@ -271,7 +292,8 @@ const getRunGroup = answer => {
 		console.log('name = ', name);
 		let splitName = name.split('-');
 		console.log('splitName = ', splitName);
-		let index = splitName[0].indexOf('RunGroup');
+		// let index = splitName[0].indexOf('RunGroup');
+		let index = splitName[0].indexOf(fieldName);
 		console.log('index = ', index);
 		if (index === 0) {
 			console.log('inside index  ');
@@ -279,9 +301,9 @@ const getRunGroup = answer => {
 			// parse string "raceRadioOption_1"
 			res = ansOpt.split('_');
 			console.log('res = ', res[1]);
-			return res[1];
+			return [res[1], options[res[1]]];
 		}
 	}
-	return -1;
+	return [-1, null];
 };
 exports.createEntry = createEntry;

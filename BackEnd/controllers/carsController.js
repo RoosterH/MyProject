@@ -254,7 +254,7 @@ const createCar = async (req, res, next) => {
 	let imagePath = req.files.image[0].path;
 	const newCar = new Car({
 		userId: userId,
-		userName: user.username,
+		userName: user.userName,
 		active: true,
 		year,
 		make,

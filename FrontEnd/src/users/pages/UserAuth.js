@@ -50,7 +50,7 @@ const UserAuth = () => {
 					// for re-direction, we need to set login information to be able to send request to backend
 					userAuthContext.userLogin(
 						responseData.userId,
-						responseData.username,
+						responseData.userName,
 						responseData.token,
 						'',
 						responseData.entries,
@@ -70,7 +70,7 @@ const UserAuth = () => {
 					// id is from {getters: true}
 					userAuthContext.userLogin(
 						responseData.userId,
-						responseData.username,
+						responseData.userName,
 						responseData.token,
 						'', //expirationDate will be defined in userAuth-hook
 						responseData.entries,
@@ -95,9 +95,9 @@ const UserAuth = () => {
 
 				// FormData() is a browser API. We can append text or binary data to FormData
 				const formData = new FormData();
-				formData.append('username', values.username);
-				formData.append('lastname', values.lastname);
-				formData.append('firstname', values.firstname);
+				formData.append('username', values.userName);
+				formData.append('lastname', values.lastName);
+				formData.append('firstname', values.firstName);
 				formData.append('email', values.email);
 				formData.append('password', values.password);
 				formData.append(
@@ -127,9 +127,9 @@ const UserAuth = () => {
 
 	// Formik section
 	const initialValues = {
-		username: '',
-		lastname: '',
-		firstname: '',
+		userName: '',
+		lastName: '',
+		firstName: '',
 		email: '',
 		image: undefined,
 		password: '',

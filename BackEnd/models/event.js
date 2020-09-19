@@ -50,6 +50,8 @@ const eventSchema = new Schema({
 	numGroups: { type: Number, required: true },
 	// if true, we will create an array groupEntries with numGroup elements. Each element value cannot exceed totalCap / numGroups.
 	capDistribution: { type: Boolean, required: true },
+	// Race class options defined by club in the event entry form
+	raceClassOptions: [{ type: String, requird: true }],
 	// Run group options defined by club in the event entry form
 	runGroupOptions: [{ type: String, requird: true }],
 	// Users per run group
@@ -63,9 +65,9 @@ const eventSchema = new Schema({
 		]
 	],
 	// Worker group options defined by club in the event entry form. No need to define workGroupEntries.
-	WorkerOptions: { type: [String], required: true },
+	workerAssignments: { type: [String], required: true },
 	// Lunction
-	LunchOptions: { type: [String] }
+	lunchOptions: { type: [String] }
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

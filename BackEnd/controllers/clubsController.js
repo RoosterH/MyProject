@@ -8,6 +8,7 @@ const Club = require('../models/club');
 const Event = require('../models/event');
 
 const config = require('../Config/Config');
+const e = require('express');
 const JWT_PRIVATE_KEY = config.JWT_PRIVATE_KEY;
 
 // GET /api/clubs/
@@ -444,6 +445,7 @@ const getEventForm = async (req, res, next) => {
 	res.status(200).json(entryFormData);
 };
 
+// this includes create and update event form
 const createEventForm = async (req, res, next) => {
 	// we need to get entryFormData from body
 	const { entryFormData, saveTemplate } = req.body;
@@ -498,13 +500,14 @@ const createEventForm = async (req, res, next) => {
 		event.entryFormData = [];
 		entryFormData.map(data => {
 			event.entryFormData.push(data);
-			console.log('data = ', data);
 			// form analysis here
 			let [fieldName, choices] = formAnalysis(data);
-			console.log('fieldName = ', fieldName);
-			console.log('choices = ', choices);
 			if (fieldName === 'RunGroupSingle') {
 				event.runGroupOptions = choices;
+			} else if (fieldName === 'RaceClass') {
+				event.raceClassOptions = choices;
+			} else if (fieldName === 'WorkerAssignment') {
+				event.workerAssignments = choices;
 			}
 		});
 		// whenever entry form gets changed, always set published to false
@@ -616,7 +619,6 @@ const formAnalysis = data => {
 	console.log('fieldPrefix = ', fieldPrefix);
 	let choices = [];
 	if (parseName[0] === 'RunGroupSingle') {
-		console.log('inside fieldPrefix = ');
 		// get the options
 		// format of the
 		// options: Array
@@ -631,7 +633,22 @@ const formAnalysis = data => {
 			let option = options[i];
 			// build up option map
 			let value = option['text'];
-			console.log('value = ', value);
+			choices.push(value);
+		}
+	} else if (parseName[0] === 'RaceClass') {
+		let options = data.options;
+		for (var i = 0; i < options.length; ++i) {
+			let option = options[i];
+			// build up option map
+			let value = option['text'];
+			choices.push(value);
+		}
+	} else if (parseName[0] === 'WorkerAssignment') {
+		let options = data.options;
+		for (var i = 0; i < options.length; ++i) {
+			let option = options[i];
+			// build up option map
+			let value = option['text'];
 			choices.push(value);
 		}
 	}

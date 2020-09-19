@@ -228,6 +228,7 @@ const EventRegistration = props => {
 	};
 
 	const deleteHandler = async () => {
+		setShowDELModal(false);
 		try {
 			let responseData = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`,
@@ -237,12 +238,12 @@ const EventRegistration = props => {
 					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
-			console.log('responseData = ', responseData.message);
 			// after deleting event, forward to eventManager, we do not want to send null event back
 			// even we have a callback from EditEventManager
-			history.push('/clubs/eventManager/');
+			history.push(
+				`/clubs/editEventSelector/${clubAuthContext.clubId}`
+			);
 		} catch (err) {}
-		setShowDELModal(false);
 	};
 
 	const eventForm = values => (

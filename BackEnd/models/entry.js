@@ -40,7 +40,11 @@ const entrySchema = new Schema({
 	time: { type: Date, required: true },
 	published: { type: Boolean, required: true },
 	waitlist: { type: Boolean, required: true },
-	groupWaitList: { type: Boolean, require: true }
+	groupWaitlist: { type: Boolean, require: true },
+	// the following section fields are parsed from answer
+	runGroup: { type: String, required: true },
+	workerAssignment: { type: String, required: true },
+	lunchOption: { type: String }
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

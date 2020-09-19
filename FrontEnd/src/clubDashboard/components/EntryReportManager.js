@@ -8,7 +8,7 @@ import './ClubManager.css';
 
 const EntryReportManager = props => {
 	console.log('props = ', props);
-	let entryData = props.entryData;
+	let entryReportData = props.entryReportData;
 	// entryReport controls what to display in Tab Content
 	const [entryReport, setEntryReport] = useState(false);
 	// entryReportClass contorls className used for Button
@@ -113,7 +113,9 @@ const EntryReportManager = props => {
 						</Button>
 					</ul>
 					<div className="tab-content">
-						{entryReport && <EntryReport entryData={entryData} />}
+						{entryReport && (
+							<EntryReport entryReportData={entryReportData} />
+						)}
 						{photo && <UpdateEventPhotos />}
 						{formBuilder && <UpdateFormBuilder />}
 						{registration && <UpdateEventRegistration />}

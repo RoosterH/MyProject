@@ -21,21 +21,38 @@ const EntryListForUsers = props => {
 	const [entryList, setEntryList] = useState([]);
 	const [waitlist, setWaitlist] = useState([]);
 
-	const [raceClassLookup, setRaceClassLookup] = useState([]);
-	const [runGroupLookup, setRunGroupLookup] = useState([]);
+	const [raceClassLookup, setRaceClassLookup] = useState();
+	let raceClasses = [];
+
+	const [runGroupLookup, setRunGroupLookup] = useState();
+	let runGroups = [];
+
 	const [
 		workerAssignmentLookup,
 		setWorkerAssignmentLookup
-	] = useState([]);
+	] = useState();
+	let workerAssignments = [];
 
+	// return index of matched value
 	const getMapKey = (val, myMap) => {
 		let answer;
-		Object.keys(myMap).map(key => {
-			if (myMap[key] === val) {
-				answer = key;
+		for (var i = 0; i < myMap.length; ++i) {
+			if (myMap[i] === val) {
+				answer = i;
+				break;
 			}
-		});
+		}
 		return answer;
+	};
+
+	// returns a map
+	const convert2Lookup = options => {
+		//lookup format- lookup: { 34: 'İstanbul', 63: 'Şanlıurfa' },
+		let lookupMap = {};
+		for (var i = 0; i < options.length; ++i) {
+			lookupMap[i] = options[i];
+		}
+		return lookupMap;
 	};
 
 	useEffect(() => {
@@ -52,35 +69,24 @@ const EntryListForUsers = props => {
 					}
 				);
 
-				console.log('responseData = ', responseData);
-				let options = [];
-				let raceClassOptions = responseData.raceClassOptions;
-				for (var i = 0; i < raceClassOptions.length; ++i) {
-					let keyName = String(i);
-					options[keyName] = raceClassOptions[i];
-				}
-				console.log('raceClassOptions option = ', options);
-				setRaceClassLookup(options);
+				//***********  construct lookups ************//
+				// responseData.raceClassOptions is ["SS", "AS", "BS", ...]
+				raceClasses = responseData.raceClassOptions;
+				let obj = {};
+				obj = convert2Lookup(raceClasses);
+				setRaceClassLookup(obj);
 
-				options = [];
-				let runGroupOptions = responseData.runGroupOptions;
-				for (var i = 0; i < runGroupOptions.length; ++i) {
-					let keyName = String(i);
-					options[keyName] = runGroupOptions[i];
-				}
-				console.log('runGroupOptions option = ', options);
-				setRunGroupLookup(options);
+				runGroups = responseData.runGroupOptions;
+				obj = {};
+				obj = convert2Lookup(runGroups);
+				setRunGroupLookup(obj);
 
-				options = [];
-				let workerAssignmentOptions = responseData.workerAssignments;
-				for (var i = 0; i < workerAssignmentOptions.length; ++i) {
-					let keyName = String(i);
-					options[keyName] = workerAssignmentOptions[i];
-				}
-				console.log('assignment option = ', options);
-				setWorkerAssignmentLookup(options);
+				workerAssignments = responseData.workerAssignments;
+				obj = [];
+				obj = convert2Lookup(workerAssignments);
+				setWorkerAssignmentLookup(obj);
 
-				// compose entry list from all the entries
+				//*************** compose entry list from all the entries ************/
 				let entryData = [];
 				let entries = responseData.entryData;
 				for (var i = 0; i < entries.length; ++i) {
@@ -89,37 +95,26 @@ const EntryListForUsers = props => {
 						entry = {
 							lastName: entries[i].userLastName,
 							firstName: entries[i].userFirstName[0] + '.',
-							raceClass: getMapKey(
-								entries[i].raceClass,
-								raceClassLookup
-							),
+							// for lookup field, we need to provide key in lookup array, we use index as key
+							raceClass: getMapKey(entries[i].raceClass, raceClasses),
 							carNumber: entries[i].carNumber,
 							car: entries[i].car,
-							runGroup: getMapKey(
-								entries[i].runGroup,
-								runGroupLookup
-							),
+							runGroup: getMapKey(entries[i].runGroup, runGroups),
 							workerAssignment: getMapKey(
 								entries[i].workerAssignment,
-								workerAssignmentLookup
+								workerAssignments
 							)
 						};
 					} else {
 						entry = {
 							userName: entries[i].userName,
 							carNumber: entries[i].carNumber,
-							raceClass: getMapKey(
-								entries[i].raceClass,
-								raceClassLookup
-							),
+							raceClass: getMapKey(entries[i].raceClass, raceClasses),
 							car: entries[i].car,
-							runGroup: getMapKey(
-								entries[i].runGroup,
-								runGroupLookup
-							),
+							runGroup: getMapKey(entries[i].runGroup, runGroups),
 							workerAssignment: getMapKey(
 								entries[i].workerAssignment,
-								workerAssignmentLookup
+								workerAssignments
 							)
 						};
 					}
@@ -127,19 +122,11 @@ const EntryListForUsers = props => {
 				}
 				setEntryList(entryData);
 
-				// compose waitlist
+				//************ compose waitlist ***************//
 				let waitlistData = [];
 				let waitlist = responseData.waitlistData;
 				for (var i = 0; i < waitlist.length; ++i) {
 					let entry;
-					console.log(
-						'waitlist[i].runGroup = ',
-						waitlist[i].runGroup
-					);
-					console.log(
-						'runGroupLookup[waitlist[i].runGroup], = ',
-						runGroupLookup[waitlist[i].runGroup]
-					);
 					if (displayName) {
 						entry = {
 							lastName: waitlist[i].userLastName,
@@ -147,7 +134,7 @@ const EntryListForUsers = props => {
 							carNumber: waitlist[i].carNumber,
 							raceClass: getMapKey(
 								waitlist[i].raceClass,
-								raceClassLookup
+								raceClasses
 							),
 							car: waitlist[i].car,
 							runGroup: getMapKey(
@@ -165,7 +152,7 @@ const EntryListForUsers = props => {
 							carNumber: waitlist[i].carNumber,
 							raceClass: getMapKey(
 								waitlist[i].raceClass,
-								raceClassLookup
+								raceClasses
 							),
 							car: waitlist[i].car,
 							runGroup: getMapKey(
@@ -185,8 +172,6 @@ const EntryListForUsers = props => {
 		};
 		fetchEntries();
 	}, [sendRequest, setEntryList]);
-
-	console.log('runGroup[1] = ', runGroupLookup[1]);
 
 	return (
 		<React.Fragment>
@@ -223,7 +208,6 @@ const EntryListForUsers = props => {
 								field: 'runGroup',
 								lookup: runGroupLookup
 							},
-
 							{
 								title: 'Worker Group',
 								field: 'workerAssignment',
@@ -265,7 +249,6 @@ const EntryListForUsers = props => {
 								lookup: runGroupLookup,
 								filtering: false
 							},
-
 							{
 								title: 'Worker Group',
 								field: 'workerGroup',

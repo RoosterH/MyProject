@@ -20,9 +20,9 @@ router.post(
 	'/signup',
 	fileUpload.single('image'),
 	[
-		check('username').not().isEmpty(),
-		check('lastname').not().isEmpty(),
-		check('firstname').not().isEmpty(),
+		check('userName').not().isEmpty(),
+		check('lastName').not().isEmpty(),
+		check('firstName').not().isEmpty(),
 		check('email').normalizeEmail().isEmail(),
 		check('password').isLength({ min: 6 }),
 		check('passwordValidation').isLength({ min: 6 })
@@ -47,7 +47,7 @@ router.post('/logout', usersController.logoutUser);
 router.patch(
 	'/:uid',
 	[
-		check('username').not().isEmpty(),
+		check('userName').not().isEmpty(),
 		check('email').normalizeEmail().isEmail(),
 		check('password').isLength({ min: 6 })
 	],

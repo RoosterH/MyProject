@@ -76,7 +76,7 @@ const Event = props => {
 						}
 					);
 					setClubOwnerRequest(true);
-					setLoadedEntryData(responseData.entryData);
+					setLoadedEntryData(responseData);
 				} else {
 					responseData = await sendRequest(
 						process.env.REACT_APP_BACKEND_URL + `/events/${eId}`
@@ -111,7 +111,7 @@ const Event = props => {
 				clubOwnerRequest &&
 				readOnly &&
 				entryReportManager && (
-					<EntryReportEventItem entryData={loadedEntryData} />
+					<EntryReportEventItem entryReportData={loadedEntryData} />
 				)}
 			{/* For users, clubs don't own the event, and OwnerClub wants to view event, we will go to
 			EventItem */}

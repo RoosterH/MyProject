@@ -5,9 +5,9 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
 	// uniquie: true meaning create an index for this property for fast query
-	username: { type: String, required: true },
-	lastname: { type: String, required: true },
-	firstname: { type: String, required: true },
+	userName: { type: String, required: true },
+	lastName: { type: String, required: true },
+	firstName: { type: String, required: true },
 	email: {
 		type: String,
 		required: true,

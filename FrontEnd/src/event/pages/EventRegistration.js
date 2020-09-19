@@ -149,10 +149,6 @@ const EventRegistration = props => {
 	const history = useHistory();
 	const saveHandler = async (values, actions) => {
 		try {
-			console.log(
-				'capDistributionClicked = ',
-				capDistributionClicked
-			);
 			await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
 					`/events/registration/${eventId}`,
@@ -171,6 +167,7 @@ const EventRegistration = props => {
 			setOKLeavePage(true);
 			setContinueStatus(true);
 			setPublishButton(true);
+			props.saveStatus(true);
 		} catch (err) {}
 	};
 

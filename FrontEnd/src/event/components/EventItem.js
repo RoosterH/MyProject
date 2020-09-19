@@ -361,13 +361,14 @@ const EventItem = props => {
 							)}
 						</div>
 					</div>
-					<div className="entryinfo-container">
-						<div className="col-xs-12">
-							{userOnWaitlist && (
-								<h3>Your are currently on waitlist.</h3>
-							)}
-							<div>
-								{userRegisteredEvent && (
+					{userRegisteredEvent && (
+						<div className="entryinfo-container">
+							<div className="col-xs-12">
+								{userOnWaitlist && (
+									<h3>Your are currently on waitlist.</h3>
+								)}
+
+								<div>
 									<Link
 										to={{
 											pathname: `/events/entrylist/${eventId}`,
@@ -379,10 +380,8 @@ const EventItem = props => {
 										}}>
 										View Event Entry List
 									</Link>
-								)}
-							</div>
-							<div>
-								{userRegisteredEvent && (
+								</div>
+								<div>
 									<Link
 										to={{
 											pathname: `/events/entrylist/${eventId}`,
@@ -394,10 +393,10 @@ const EventItem = props => {
 										}}>
 										View Event Result
 									</Link>
-								)}
+								</div>
 							</div>
 						</div>
-					</div>
+					)}
 				</div>
 
 				<div className="section-container">

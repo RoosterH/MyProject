@@ -16,7 +16,7 @@ const getAllUsers = async (req, res, next) => {
 	let users;
 	try {
 		// we don't want to return password field
-		users = await User.find({}, '-password').sort({ username: 1 });
+		users = await User.find({}, '-password').sort({ userName: 1 });
 	} catch (err) {
 		const error = new HttpError(
 			'Get all users process failed. Please try again later.',
@@ -74,9 +74,9 @@ const createUser = async (req, res, next) => {
 	}
 
 	const {
-		username,
-		lastname,
-		firstname,
+		userName,
+		lastName,
+		firstName,
 		email,
 		password,
 		passwordValidation
@@ -122,9 +122,9 @@ const createUser = async (req, res, next) => {
 	}
 
 	const newUser = new User({
-		username,
-		lastname,
-		firstname,
+		userName,
+		lastName,
+		firstName,
 		email,
 		image: req.file.path,
 		password: hashedPassword,
@@ -163,9 +163,9 @@ const createUser = async (req, res, next) => {
 
 	res.status(201).json({
 		userId: newUser.id,
-		username: newUser.username,
-		lastname: newUser.lastname,
-		firstname: newUser.firstname,
+		userName: newUser.userName,
+		lastName: newUser.lastName,
+		firstName: newUser.firstName,
 		email: newUser.email,
 		token: token,
 		entries: [],
@@ -175,7 +175,7 @@ const createUser = async (req, res, next) => {
 
 // POST '/api/users/login'
 const loginUser = async (req, res, next) => {
-	const { username, email, password } = req.body;
+	const { userName, email, password } = req.body;
 
 	// validation to make sure email does not exist in our DB
 	let existingUser;
@@ -242,7 +242,7 @@ const loginUser = async (req, res, next) => {
 
 	res.status(200).json({
 		userId: existingUser.id,
-		username: existingUser.username,
+		userName: existingUser.userName,
 		email: existingUser.email,
 		token: token,
 		entries: existingUser.entries,
@@ -267,7 +267,7 @@ const updateUser = async (req, res, next) => {
 		return next(error);
 	}
 
-	const { username, password, email } = req.body;
+	const { userName, password, email } = req.body;
 	const userId = req.userData; // use userId from token instead of getting it from url to avoid hacking
 
 	let user;
@@ -290,7 +290,7 @@ const updateUser = async (req, res, next) => {
 	}
 
 	// update user info
-	user.username = username;
+	user.userName = userName;
 	user.password = password;
 	user.email = email;
 
@@ -346,7 +346,7 @@ const deleteUser = async (req, res, next) => {
 		return next(error);
 	}
 
-	let userName = user.username;
+	let userName = user.userName;
 	// We do not want to delete all the associated events with users.
 	// Instead we will be assiging the associated userId to our dummy user (MySeatTime).
 	try {

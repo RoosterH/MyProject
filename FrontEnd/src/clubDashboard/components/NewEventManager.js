@@ -17,7 +17,7 @@ const NewEventManager = () => {
 	const [registrationClass, setRegistrationClass] = useState(
 		'li-tab'
 	);
-	const [percentage, setPercentage] = useState('25');
+	const [percentage, setPercentage] = useState('0');
 
 	const eventInfoClickHandler = () => {
 		setEventInfo(true);
@@ -28,7 +28,7 @@ const NewEventManager = () => {
 		setFormBuilderClass('li-tab');
 		setRegistration(false);
 		setRegistrationClass('li-tab');
-		setPercentage('25');
+		setPercentage('0');
 	};
 	const photoClickHandler = () => {
 		setEventInfo(false);
@@ -39,7 +39,7 @@ const NewEventManager = () => {
 		setFormBuilderClass('li-tab');
 		setRegistration(false);
 		setRegistrationClass('li-tab');
-		setPercentage('50');
+		setPercentage('25');
 	};
 	const formBuilderClickHandler = () => {
 		setEventInfo(false);
@@ -50,7 +50,7 @@ const NewEventManager = () => {
 		setFormBuilderClass('li-tab_orange');
 		setRegistration(false);
 		setRegistrationClass('li-tab');
-		setPercentage('75');
+		setPercentage('50');
 	};
 	const registrationClickHandler = () => {
 		setEventInfo(false);
@@ -61,6 +61,9 @@ const NewEventManager = () => {
 		setFormBuilderClass('li-tab');
 		setRegistration(true);
 		setRegistrationClass('li-tab_orange');
+		setPercentage('75');
+	};
+	const saveClickHandler = () => {
 		setPercentage('100');
 	};
 
@@ -126,6 +129,18 @@ const NewEventManager = () => {
 		}
 	}, [registrationStatus, registrationClickHandler]);
 
+	const [saveStatus, setSaveStatus] = useState(false);
+	const saveHandler = status => {
+		if (status) {
+			setSaveStatus(status);
+		}
+	};
+	useEffect(() => {
+		if (saveStatus) {
+			saveClickHandler();
+		}
+	}, [saveStatus, saveClickHandler]);
+
 	return (
 		<React.Fragment>
 			<div className="list-header clearfix">
@@ -175,6 +190,7 @@ const NewEventManager = () => {
 						{registration && (
 							<EventRegistration
 								registrationStatus={RegistrationHandler}
+								saveStatus={saveHandler}
 								eventId={eventId}
 							/>
 						)}

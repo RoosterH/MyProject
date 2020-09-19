@@ -302,15 +302,14 @@ const getPublishedEventsByOwnerClubId = async (req, res, next) => {
 const getEntryReport = async (req, res, next) => {
 	// req.params is getting the eid from url, such as /api/events/:id
 	const eventId = req.params.eid;
-
 	let event;
 	try {
 		event = await Event.findById(eventId);
 	} catch (err) {
-		// this error is displayed if the request to the DB had some issues
 		console.log('err = ', err);
+		// this error is displayed if the request to the DB had some issues
 		const error = new HttpError(
-			'Get event by ID process failed. Please try again later.',
+			'Cannot find the event for the entry list. Please try again later.',
 			500
 		);
 		return next(error);
@@ -319,29 +318,127 @@ const getEntryReport = async (req, res, next) => {
 	// this error is for DB not be able to find the event with provided ID
 	if (!event) {
 		const error = new HttpError(
-			'Could not find the event with the provided id',
+			'Could not find the event. Please try later.',
 			404
 		);
 		return next(error);
 	}
 
+	// get entires
 	let entries = event.entries;
+	// if there is no entry, should not have a waitlist, either.
 	if (entries.length === 0) {
 		res.status(404).json({
-			entryData: []
+			entryData: [],
+			waitlist: []
 		});
 	}
-
 	let entryData = [];
 	for (let i = 0; i < entries.length; ++i) {
-		let entry = await Entry.findById(entries[i]);
+		let entry = await Entry.findById(entries[i]).populate('carId');
+		// add car to entry
+		let car =
+			entry.carId.year +
+			' ' +
+			entry.carId.make +
+			' ' +
+			entry.carId.model;
+		if (entry.carId.trimLevel != undefined) {
+			car += ' ' + entry.carId.trimLevel;
+		}
+		// use {strict:false} to add undefined attribute in schema to existing json obj
+		entry.set('car', car, { strict: false });
 		entryData.push(entry);
 	}
 
-	// convert Mongoose object to a normal js object and get rid of _ of _id using getters: true
-	res.status(200).json({
-		entryData: entryData.map(data => data.toObject({ getters: true }))
-	}); // { event } => { event: event }
+	// get waitlist
+	let waitlist = event.waitlist;
+	let waitlistData = [];
+	for (let i = 0; i < waitlist.length; ++i) {
+		let entry = await Entry.findById(waitlist[i]).populate('carId');
+		// add car to entry
+		let car =
+			entry.carId.year +
+			' ' +
+			entry.carId.make +
+			' ' +
+			entry.carId.model;
+		if (entry.carId.trimLevel != undefined) {
+			car += ' ' + entry.carId.trimLevel;
+		}
+		// use {strict:false} to add undefined attribute in schema to existing json obj
+		entry.set('car', car, { strict: false });
+		waitlistData.push(entry);
+	}
+
+	if (waitlistData.length === 0) {
+		res.status(200).json({
+			entryData: entryData.map(data =>
+				data.toObject({
+					getters: true,
+					transform: (doc, ret, opt) => {
+						delete ret['userId'];
+						delete ret['userName'];
+						delete ret['clubId'];
+						delete ret['clubName'];
+						delete ret['eventId'];
+						delete ret['eventName'];
+						delete ret['carId'];
+						delete ret['disclaimer'];
+						delete ret['time'];
+						delete ret['published'];
+						return ret;
+					}
+				})
+			),
+			waitlistData: [],
+			raceClassOptions: event.raceClassOptions,
+			runGroupOptions: event.runGroupOptions,
+			workerAssignments: event.workerAssignments
+		});
+	} else {
+		res.status(200).json({
+			entryData: entryData.map(data =>
+				data.toObject({
+					getters: true,
+					transform: (doc, ret, opt) => {
+						delete ret['userId'];
+						// delete ret['userName'];
+						delete ret['clubId'];
+						delete ret['clubName'];
+						delete ret['eventId'];
+						delete ret['eventName'];
+						delete ret['carId'];
+						delete ret['disclaimer'];
+						delete ret['time'];
+						delete ret['published'];
+						return ret;
+					}
+				})
+			),
+			waitlistData: waitlistData.map(data =>
+				data.toObject({
+					getters: true,
+					transform: (doc, ret, opt) => {
+						delete ret['userId'];
+						// delete ret['userName'];
+						delete ret['clubId'];
+						delete ret['clubName'];
+						delete ret['eventId'];
+						delete ret['eventName'];
+						delete ret['carId'];
+						delete ret['disclaimer'];
+						delete ret['time'];
+						delete ret['published'];
+						return ret;
+					}
+				})
+			),
+			raceClassOptions: event.raceClassOptions,
+			runGroupOptions: event.runGroupOptions,
+			workerAssignments: event.workerAssignments
+		});
+	}
 };
 
 // POST /api/events/date/
@@ -473,8 +570,9 @@ const createEvent = async (req, res, next) => {
 		totalEntries: 0,
 		numGroups: 0,
 		capDistribution: false,
-		runGroupOption: [],
-		workerOptions: []
+		raceClassOptions: [],
+		runGroupOptions: [],
+		workerAssignments: []
 	});
 
 	try {
@@ -1062,7 +1160,9 @@ const getEntryReportForUsers = async (req, res, next) => {
 					})
 				),
 				waitlistData: [],
-				runGroupOptions: event.runGroupOptions
+				raceClassOptions: event.raceClassOptions,
+				runGroupOptions: event.runGroupOptions,
+				workerAssignments: event.workerAssignments
 			});
 		} else {
 			res.status(200).json({
@@ -1102,7 +1202,9 @@ const getEntryReportForUsers = async (req, res, next) => {
 						}
 					})
 				),
-				runGroupOptions: event.runGroupOptions
+				raceClassOptions: event.raceClassOptions,
+				runGroupOptions: event.runGroupOptions,
+				workerAssignments: event.workerAssignments
 			});
 		}
 	} else {
@@ -1130,7 +1232,9 @@ const getEntryReportForUsers = async (req, res, next) => {
 					})
 				),
 				waitlistData: [],
-				runGroupOptions: event.runGroupOptions
+				raceClassOptions: event.raceClassOptions,
+				runGroupOptions: event.runGroupOptions,
+				workerAssignments: event.workerAssignments
 			});
 		} else {
 			res.status(200).json({
@@ -1174,7 +1278,9 @@ const getEntryReportForUsers = async (req, res, next) => {
 						}
 					})
 				),
-				runGroupOptions: event.runGroupOptions
+				raceClassOptions: event.raceClassOptions,
+				runGroupOptions: event.runGroupOptions,
+				workerAssignments: event.workerAssignments
 			});
 		}
 	}
