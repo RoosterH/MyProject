@@ -35,7 +35,11 @@ const ClubAuth = () => {
 		if (isLoginMode) {
 			try {
 				// use custom hook. send login request to Backend
-				const responseData = await sendRequest(
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL + '/clubs/login',
 					'POST',
 					JSON.stringify({

@@ -28,6 +28,7 @@ const Event = props => {
 
 	const [clubOwnerRequest, setClubOwnerRequest] = useState(false);
 	const [loadedEvent, setLoadedEvent] = useState();
+	const [loadedEventName, setLoadedEventName] = useState();
 	const [loadedEntryData, setLoadedEntryData] = useState();
 	const {
 		isLoading,
@@ -44,12 +45,17 @@ const Event = props => {
 	useEffect(() => {
 		const fetechEvents = async () => {
 			try {
-				let responseData;
+				let responseData, responseStatus, responseMessage;
 				if (
 					clubId === clubAuthContext.clubId &&
 					!entryReportManager
 				) {
-					responseData = await sendRequest(
+					// this route is for owner club to query an owned event
+					[
+						responseData,
+						responseStatus,
+						responseMessage
+					] = await sendRequest(
 						process.env.REACT_APP_BACKEND_URL +
 							`/events/ownerClubEvent/${eId}`,
 						'GET',
@@ -65,7 +71,12 @@ const Event = props => {
 					clubId === clubAuthContext.clubId &&
 					entryReportManager
 				) {
-					responseData = await sendRequest(
+					// This route is for owner club to query entry report
+					[
+						responseData,
+						responseStatus,
+						responseMessage
+					] = await sendRequest(
 						process.env.REACT_APP_BACKEND_URL +
 							`/events/entryreport/${eId}`,
 						'GET',
@@ -78,7 +89,12 @@ const Event = props => {
 					setClubOwnerRequest(true);
 					setLoadedEntryData(responseData);
 				} else {
-					responseData = await sendRequest(
+					// this route is to query an event from users
+					[
+						responseData,
+						responseStatus,
+						responseMessage
+					] = await sendRequest(
 						process.env.REACT_APP_BACKEND_URL + `/events/${eId}`
 					);
 					setLoadedEvent(responseData.event);

@@ -46,7 +46,11 @@ const UserEvents = () => {
 	useEffect(() => {
 		const fetechEvents = async () => {
 			try {
-				const responseData = await sendRequest(
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL + `/users/events/${uId}`,
 					'GET',
 					null,

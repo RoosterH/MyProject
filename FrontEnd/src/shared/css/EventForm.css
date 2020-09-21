@@ -273,6 +273,11 @@
 	font-weight: bold;
 }
 
+.event-form-errmsg {
+	font-weight: bold;
+	color: #b10101;
+}
+
 .event-form__coursemap {
 	display: block;
 }

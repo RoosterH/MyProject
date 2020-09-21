@@ -42,6 +42,7 @@ const eventSchema = new Schema({
 	waitlist: [
 		{ type: mongoose.Types.ObjectId, required: true, ref: 'Entry' }
 	],
+	full: { type: Boolean },
 	// Total entries allowed in an event
 	totalCap: { type: Number },
 	// Number of entries
@@ -54,16 +55,20 @@ const eventSchema = new Schema({
 	raceClassOptions: [{ type: String, requird: true }],
 	// Run group options defined by club in the event entry form
 	runGroupOptions: [{ type: String, requird: true }],
+	// Run Group number of entries
+	runGroupNumEntries: [{ type: Number, required: true }],
+
+	// ! not working in MongoDB. userId will be stored in an array
 	// Users per run group
-	runGroupEntries: [
-		[
-			{
-				type: mongoose.Types.ObjectId,
-				ref: 'User',
-				require: true
-			}
-		]
-	],
+	// runGroupEntries: [
+	// 	[
+	// 		{
+	// 			type: mongoose.Types.ObjectId,
+	// 			ref: 'User',
+	// 			require: true
+	// 		}
+	// 	]
+	// ],
 	// Worker group options defined by club in the event entry form. No need to define workGroupEntries.
 	workerAssignments: { type: [String], required: true },
 	// Lunction

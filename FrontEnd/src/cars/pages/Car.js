@@ -36,7 +36,11 @@ const Car = () => {
 
 		const fetchCar = async () => {
 			try {
-				const responseData = await sendRequest(
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL + `/cars/${cId}`,
 					'GET',
 					null,

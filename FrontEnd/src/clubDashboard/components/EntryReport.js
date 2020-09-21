@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import MaterialTable from 'material-table';
+import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
 const EntryReport = props => {
-	console.log('props = ', props);
-	let entries = props.entryReportData;
+	// entries are the user entries
+	let entries = props.entryReportData.entryData;
+	let eventName = props.entryReportData.eventName;
+	const [showLoading, setShowLoading] = useState(true);
+
+	// entryList and waitList are the data passing to Material-Table
 	const [entryList, setEntryList] = useState();
 	const [waitlist, setWaitlist] = useState();
 
@@ -61,6 +66,7 @@ const EntryReport = props => {
 
 		//*************** compose entry list from all the entries ************/
 		let entryData = [];
+
 		for (var i = 0; i < entries.length; ++i) {
 			let entry = {
 				lastName: entries[i].userLastName,
@@ -101,18 +107,28 @@ const EntryReport = props => {
 			waitlistDataArray.push(entry);
 		}
 		setWaitlist(waitlistDataArray);
+		setShowLoading(false);
 	}, []);
 	return (
 		<React.Fragment>
-			{/* <ErrorModal error={error} onClear={clearError} />
-		{isLoading && (
-			<div className="center">
-				<LoadingSpinner />
-			</div>
-		)} */}
 			<div className="entrylist-table">
 				<MaterialTable
-					// title={`${eventName} Entry List`}
+					title={`${eventName} Entry List`}
+					isLoading={showLoading}
+					components={{
+						OverlayLoading: props => (
+							<div className="center">
+								<LoadingSpinner />
+							</div>
+						)
+					}}
+					style={{
+						border: '2px solid gray',
+						maxWidth: '1450px',
+						overflow: 'scroll',
+						marginTop: '10px',
+						marginLeft: '20px'
+					}}
 					columns={[
 						{ title: 'Last Name', field: 'lastName' },
 						{
@@ -150,7 +166,14 @@ const EntryReport = props => {
 				/>
 
 				<MaterialTable
-					// title={`${eventName} Waitlist`}
+					title={`${eventName} Waitlist`}
+					style={{
+						border: '2px solid gray',
+						maxWidth: '1450px',
+						overflow: 'scroll',
+						marginTop: '10px',
+						marginLeft: '20px'
+					}}
 					columns={[
 						{ title: 'Last Name', field: 'lastName' },
 						{

@@ -34,7 +34,11 @@ const UserAuth = () => {
 		if (isLoginMode) {
 			try {
 				// use custom hook. send login request to Backend
-				const responseData = await sendRequest(
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL + '/users/login',
 					'POST',
 					JSON.stringify({
@@ -95,9 +99,9 @@ const UserAuth = () => {
 
 				// FormData() is a browser API. We can append text or binary data to FormData
 				const formData = new FormData();
-				formData.append('username', values.userName);
-				formData.append('lastname', values.lastName);
-				formData.append('firstname', values.firstName);
+				formData.append('userName', values.userName);
+				formData.append('lastName', values.lastName);
+				formData.append('firstName', values.firstName);
 				formData.append('email', values.email);
 				formData.append('password', values.password);
 				formData.append(
@@ -261,53 +265,53 @@ const UserAuth = () => {
 				}) => (
 					<Form className="auth-from-container">
 						<div>
-							<label htmlFor="username" className="auth-form-label">
+							<label htmlFor="userName" className="auth-form-label">
 								User Name
 							</label>
 							<Field
-								id="username"
-								name="username"
+								id="userName"
+								name="userName"
 								type="text"
 								validate={validateUserName}
 								className="auth-form-input"
 							/>
-							{touched.username && errors.username && (
+							{touched.userName && errors.userName && (
 								<div className="auth-form-error">
-									{errors.username}
+									{errors.userName}
 								</div>
 							)}
 						</div>
 						<div>
-							<label htmlFor="lastname" className="auth-form-label">
+							<label htmlFor="lastName" className="auth-form-label">
 								Last Name
 							</label>
 							<Field
-								id="lastname"
-								name="lastname"
+								id="lastName"
+								name="lastName"
 								type="text"
 								validate={validateLastName}
 								className="auth-form-input"
 							/>
-							{touched.lastname && errors.lastname && (
+							{touched.lastName && errors.lastName && (
 								<div className="auth-form-error">
-									{errors.lastname}
+									{errors.lastName}
 								</div>
 							)}
 						</div>
 						<div>
-							<label htmlFor="firstname" className="auth-form-label">
+							<label htmlFor="firstName" className="auth-form-label">
 								First Name
 							</label>
 							<Field
-								id="firstname"
-								name="firstname"
+								id="firstName"
+								name="firstName"
 								type="text"
 								validate={validateFirstName}
 								className="auth-form-input"
 							/>
-							{touched.firstname && errors.firstname && (
+							{touched.firstName && errors.firstName && (
 								<div className="auth-form-error">
-									{errors.firstname}
+									{errors.firstName}
 								</div>
 							)}
 						</div>

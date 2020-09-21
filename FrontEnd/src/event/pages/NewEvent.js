@@ -233,7 +233,11 @@ const NewEvent = props => {
 			formData.append('instruction', values.instruction);
 			// formData.append('image', values.image);
 			// formData.append('courseMap', values.courseMap);
-			const responseData = await sendRequest(
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + '/events',
 				'POST',
 				formData,

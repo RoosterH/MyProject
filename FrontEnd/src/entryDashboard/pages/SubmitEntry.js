@@ -34,6 +34,7 @@ const SubmitEntry = props => {
 	const [initialized, setInitialized] = useState(false);
 	const userAuthContext = useContext(UserAuthContext);
 	const formContext = useContext(FormContext);
+	const [fullMessage, setFullMessage] = useState('');
 
 	// continueStatus controls when to return props.newEventStatus back to NewEventManager
 	const [continueStatus, setContinueStatus] = useState(false);
@@ -126,10 +127,13 @@ const SubmitEntry = props => {
 		let disclaimer = values.disclaimer;
 
 		try {
-			console.log('in submit');
 			// we need to use JSON.stringify to send array objects.
 			// FormData with JSON.stringify not working
-			let responseData = await sendRequest(
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
 					`/entries/submit/${eventId}`,
 				'POST',
@@ -147,13 +151,27 @@ const SubmitEntry = props => {
 					Authorization: 'Bearer ' + userAuthContext.userToken
 				}
 			);
+
 			console.log('responseData = ', responseData);
+			console.log('responseStatus = ', responseStatus);
+			console.log('responseMessage = ', responseMessage);
 			if (responseData.entry) {
+				// add entry to localStrorage, in EventItem.js, we look for entries from there
+				// to identify entry status. This is for performance boost.
 				const userData = JSON.parse(localStorage.getItem('userData'));
+				console.log('userData = ', userData);
 				if (userData) {
 					userData.userEntries.push(responseData.entry);
 					localStorage.setItem('userData', JSON.stringify(userData));
 				}
+				// add entry to userAuthContext to have data persistency.
+				userAuthContext.userEntries.push(responseData.entry);
+			}
+
+			if (responseStatus === 202) {
+				console.log('inside 202');
+				// either group is full or event is full
+				setFullMessage(responseMessage);
 			}
 		} catch (err) {
 			console.log('err = ', err);
@@ -229,7 +247,9 @@ const SubmitEntry = props => {
 								VIEW EVENT ENTRY LIST
 							</Button>
 						</Link>
-
+						<div className="event-form-errmsg">
+							{fullMessage && <p> {fullMessage} </p>}
+						</div>
 						<NavigationPrompt
 							afterConfirm={() => {
 								formContext.setIsInsideForm(false);

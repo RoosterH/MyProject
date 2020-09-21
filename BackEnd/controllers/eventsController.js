@@ -10,6 +10,7 @@ const getCoordinatesForAddress = require('../util/location');
 const Entry = require('../models/entry');
 const Event = require('../models/event');
 const Club = require('../models/club');
+
 // const mongooseUniqueValidator = require('mongoose-unique-validator');
 const fileUpload = require('../middleware/file-upload');
 const { min } = require('moment');
@@ -178,6 +179,7 @@ const getEventsByClubId = async (req, res, next) => {
 					delete ret['entryFormData'];
 					delete ret['entries'];
 					delete ret['waitlist'];
+					delete ret['full'];
 					delete ret['totalCap'];
 					delete ret['totalEntries'];
 					delete ret['numGroups'];
@@ -231,6 +233,7 @@ const getEventsByOwnerClubId = async (req, res, next) => {
 					delete ret['entryFormData'];
 					delete ret['entries'];
 					delete ret['waitlist'];
+					delete ret['full'];
 					delete ret['totalCap'];
 					delete ret['totalEntries'];
 					delete ret['numGroups'];
@@ -287,6 +290,7 @@ const getPublishedEventsByOwnerClubId = async (req, res, next) => {
 					delete ret['entries'];
 					delete ret['waitlist'];
 					delete ret['totalCap'];
+					delete ret['full'];
 					delete ret['totalEntries'];
 					delete ret['numGroups'];
 					delete ret['capDistribution'];
@@ -298,7 +302,7 @@ const getPublishedEventsByOwnerClubId = async (req, res, next) => {
 	});
 };
 
-// GET /api/events/entryreport/:eid
+// GET /api/events/entryreport/:eid - this is for Club
 const getEntryReport = async (req, res, next) => {
 	// req.params is getting the eid from url, such as /api/events/:id
 	const eventId = req.params.eid;
@@ -373,6 +377,7 @@ const getEntryReport = async (req, res, next) => {
 
 	if (waitlistData.length === 0) {
 		res.status(200).json({
+			eventName: event.name,
 			entryData: entryData.map(data =>
 				data.toObject({
 					getters: true,
@@ -398,6 +403,7 @@ const getEntryReport = async (req, res, next) => {
 		});
 	} else {
 		res.status(200).json({
+			eventName: event.name,
 			entryData: entryData.map(data =>
 				data.toObject({
 					getters: true,
@@ -453,7 +459,7 @@ const getEventsByDate = async (req, res, next) => {
 				startDate: { $gte: startDate, $lte: endDate },
 				published: true
 			},
-			'-entryFormData -entries -waitlist -totalCap -totalEntries -numGroups -capDistribution -groupEntries'
+			'-entryFormData -entries -waitlist -full -totalCap -totalEntries -numGroups -capDistribution -groupEntries -published'
 		).sort({
 			endDate: 1
 		});
@@ -719,6 +725,7 @@ const updateEventPhotos = async (req, res, next) => {
 	}
 };
 
+// This is called on both first and update EventRegistration
 // PATCH /api/events/registration/:eid
 const updateEventRegistration = async (req, res, next) => {
 	const eventId = req.params.eid;
@@ -784,6 +791,10 @@ const updateEventRegistration = async (req, res, next) => {
 
 	const { totalCap, numGroups, capDistribution } = req.body;
 	event.totalCap = totalCap;
+	if (totalCap !== undefined || totalCap !== 0) {
+		event.full = false;
+	}
+
 	event.numGroups = numGroups;
 	event.capDistribution = capDistribution;
 	// set published to false to force re-publish
@@ -792,9 +803,13 @@ const updateEventRegistration = async (req, res, next) => {
 	// if capDistribution is true, we will create numGroups groups.
 	// Each group can only have totalCap / numGroups participants
 	if (capDistribution) {
-		// event.runGroupEntries = Array(parseInt(numGroups));
+		//! this does not work as MongoDB will store userId in an array
+		// for (let i = 0; i < numGroups; ++i) {
+		// 	event.runGroupEntries.push(undefined);
+		// }
+		// run group is named starting from 0 so there is no problem to match with index
 		for (let i = 0; i < numGroups; ++i) {
-			event.runGroupEntries.push(undefined);
+			event.runGroupNumEntries.push(0);
 		}
 	}
 

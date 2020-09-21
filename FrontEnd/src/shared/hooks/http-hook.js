@@ -61,10 +61,11 @@ export const useHttpClient = () => {
 				if (!response.ok) {
 					throw new Error(responseData.message);
 				}
-
 				setIsLoading(false);
 
-				return responseData;
+				// if response.status === 202, this is for user entry either in group waitlist or event waitlist.
+				// we need to show the message to users
+				return [responseData, response.status, responseData.message];
 			} catch (err) {
 				setError(err.message);
 				setIsLoading(false);

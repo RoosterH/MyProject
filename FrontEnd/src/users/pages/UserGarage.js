@@ -49,9 +49,14 @@ const UserGarage = props => {
 	useEffect(() => {
 		const fetechEvents = async () => {
 			try {
-				let responseData;
+				let responseData, responseStatus, responseMessage;
+
 				if (carSelector) {
-					responseData = await sendRequest(
+					[
+						responseData,
+						responseStatus,
+						responseMessage
+					] = await sendRequest(
 						process.env.REACT_APP_BACKEND_URL +
 							`/cars/users/${userId}`,
 						'POST',
@@ -62,7 +67,11 @@ const UserGarage = props => {
 						}
 					);
 				} else {
-					responseData = await sendRequest(
+					[
+						responseData,
+						responseStatus,
+						responseMessage
+					] = await sendRequest(
 						process.env.REACT_APP_BACKEND_URL +
 							`/cars/users/${userId}`,
 						'POST',

@@ -77,7 +77,11 @@ const EventForm = props => {
 		let mounted = true;
 		const fetchForm = async () => {
 			try {
-				const responseData = await sendRequest(
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
 					// process.env.REACT_APP_BACKEND_URL + `/events/form/${eId}`,
 					process.env.REACT_APP_BACKEND_URL + url,
 					'GET',

@@ -23,8 +23,11 @@ const EntryFormBar = (eid, isSaved) => {
 		eventEntryForm = eventEntryForm ? JSON.parse(eventEntryForm) : {};
 
 		try {
-			console.log('in bar');
-			let responseData = await sendRequest(
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + `/clubs/form/${eid}`,
 				'POST',
 				JSON.stringify({

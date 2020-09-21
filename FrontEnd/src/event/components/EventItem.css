@@ -235,8 +235,8 @@
 	border: 1px;
 	border-style: ridge;
 	width: 25%;
-	position: relative;
-	top: 7rem;
+	position: absolute;
+	top: 26rem;
 	font-size: 14px;
 	padding: 0.5rem;
 }

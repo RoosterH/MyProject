@@ -87,7 +87,11 @@ const Events = () => {
 						try {
 							// the request needs to match backend clubsRoutes /signup route
 							// With fromData, headers cannot be {Content-Type: application/json}
-							const responseData = await sendRequest(
+							const [
+								responseData,
+								responseStatus,
+								responseMessage
+							] = await sendRequest(
 								process.env.REACT_APP_BACKEND_URL + '/events/date',
 								'POST',
 								JSON.stringify({

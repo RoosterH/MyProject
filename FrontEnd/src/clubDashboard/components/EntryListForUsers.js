@@ -10,6 +10,7 @@ const EntryListForUsers = props => {
 	let displayName = props.location.state.displayName;
 	let eventName = props.location.state.eventName;
 	let eventId = props.location.state.eventId;
+	const [showLoading, setShowLoading] = useState(true);
 
 	const userAuthContext = useContext(UserAuthContext);
 	const {
@@ -58,7 +59,11 @@ const EntryListForUsers = props => {
 	useEffect(() => {
 		const fetchEntries = async () => {
 			try {
-				let responseData = await sendRequest(
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL +
 						`/events/entryreportforusers/${eventId}`,
 					'POST',
@@ -95,9 +100,9 @@ const EntryListForUsers = props => {
 						entry = {
 							lastName: entries[i].userLastName,
 							firstName: entries[i].userFirstName[0] + '.',
+							carNumber: entries[i].carNumber,
 							// for lookup field, we need to provide key in lookup array, we use index as key
 							raceClass: getMapKey(entries[i].raceClass, raceClasses),
-							carNumber: entries[i].carNumber,
 							car: entries[i].car,
 							runGroup: getMapKey(entries[i].runGroup, runGroups),
 							workerAssignment: getMapKey(
@@ -137,13 +142,10 @@ const EntryListForUsers = props => {
 								raceClasses
 							),
 							car: waitlist[i].car,
-							runGroup: getMapKey(
-								entries[i].runGroup,
-								runGroupLookup
-							),
+							runGroup: getMapKey(entries[i].runGroup, runGroups),
 							workerAssignment: getMapKey(
 								entries[i].workerAssignment,
-								workerAssignmentLookup
+								workerAssignments
 							)
 						};
 					} else {
@@ -155,19 +157,17 @@ const EntryListForUsers = props => {
 								raceClasses
 							),
 							car: waitlist[i].car,
-							runGroup: getMapKey(
-								entries[i].runGroup,
-								runGroupLookup
-							),
+							runGroup: getMapKey(entries[i].runGroup, runGroups),
 							workerAssignment: getMapKey(
 								entries[i].workerAssignment,
-								workerAssignmentLookup
+								workerAssignments
 							)
 						};
 					}
 					waitlistData.push(entry);
 				}
 				setWaitlist(waitlistData);
+				setShowLoading(false);
 			} catch (err) {}
 		};
 		fetchEntries();
@@ -185,6 +185,21 @@ const EntryListForUsers = props => {
 				{displayName && (
 					<MaterialTable
 						title={`${eventName} Entry List`}
+						isLoading={showLoading}
+						components={{
+							OverlayLoading: props => (
+								<div className="center">
+									<LoadingSpinner />
+								</div>
+							)
+						}}
+						style={{
+							border: '2px solid gray',
+							maxWidth: '1450px',
+							overflow: 'scroll',
+							marginTop: '10px',
+							marginLeft: '20px'
+						}}
 						columns={[
 							{ title: 'Last Name', field: 'lastName' },
 							{
@@ -224,6 +239,13 @@ const EntryListForUsers = props => {
 				{displayName && waitlist !== [] && (
 					<MaterialTable
 						title={`${eventName} Waitlist`}
+						style={{
+							border: '2px solid gray',
+							maxWidth: '1450px',
+							overflow: 'scroll',
+							marginTop: '10px',
+							marginLeft: '20px'
+						}}
 						columns={[
 							{ title: 'Last Name', field: 'lastName' },
 							{
@@ -236,7 +258,7 @@ const EntryListForUsers = props => {
 								field: 'carNumber',
 								filtering: false
 							},
-							{ title: 'Car', field: 'car' },
+							{ title: 'Car', field: 'car', filtering: false },
 							{
 								title: 'Race Class',
 								field: 'raceClass',
@@ -251,7 +273,7 @@ const EntryListForUsers = props => {
 							},
 							{
 								title: 'Worker Group',
-								field: 'workerGroup',
+								field: 'workerAssignment',
 								lookup: workerAssignmentLookup,
 								filtering: false
 							}
@@ -288,7 +310,7 @@ const EntryListForUsers = props => {
 
 							{
 								title: 'Worker Group',
-								field: 'workerGroup',
+								field: 'workerAssignment',
 								lookup: workerAssignmentLookup
 							}
 						]}
@@ -321,7 +343,7 @@ const EntryListForUsers = props => {
 							},
 							{
 								title: 'Worker Group',
-								field: 'workerGroup',
+								field: 'workerAssignment',
 								lookup: workerAssignmentLookup
 							}
 						]}

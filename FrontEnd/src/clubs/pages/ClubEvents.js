@@ -38,13 +38,20 @@ const ClubEvents = props => {
 		const fetechEvents = async () => {
 			try {
 				let responseData;
+				let responseStatus;
+				let responseMessage;
+
 				// For ownerClubEvent, use different route that will get all events owned by the club
 				// ownerClubEvent gets all events, published/unpublished
 				// non-owner gets only published events
 				if (ownerClubEvent) {
 					// for registration reports, we will only query published events
 					if (entryReportManager) {
-						responseData = await sendRequest(
+						[
+							responseData,
+							responseStatus,
+							responseMessage
+						] = await sendRequest(
 							process.env.REACT_APP_BACKEND_URL +
 								`/events/ownerClubPublished/${clubId}`,
 							'GET',
@@ -54,7 +61,11 @@ const ClubEvents = props => {
 							}
 						);
 					} else {
-						responseData = await sendRequest(
+						[
+							responseData,
+							responseStatus,
+							responseMessage
+						] = await sendRequest(
 							process.env.REACT_APP_BACKEND_URL +
 								`/events/ownerClub/${clubId}`,
 							'GET',
@@ -65,9 +76,12 @@ const ClubEvents = props => {
 						);
 					}
 				} else {
-					console.log('clubId = ', clubId);
 					// This route only gets published events
-					responseData = await sendRequest(
+					[
+						responseData,
+						responseStatus,
+						responseMessage
+					] = await sendRequest(
 						process.env.REACT_APP_BACKEND_URL +
 							`/events/club/${clubId}`
 					);

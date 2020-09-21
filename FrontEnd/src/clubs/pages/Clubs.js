@@ -22,7 +22,11 @@ const Clubs = () => {
 		const fetchClubs = async () => {
 			try {
 				// send GET request to backend
-				const responseData = await sendRequest(
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL + '/clubs'
 				);
 

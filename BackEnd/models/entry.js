@@ -41,7 +41,10 @@ const entrySchema = new Schema({
 	published: { type: Boolean, required: true },
 	waitlist: { type: Boolean, required: true },
 	groupWaitlist: { type: Boolean, require: true },
+
 	// the following section fields are parsed from answer
+	// the value we store is the answer optoin value
+	// such as: "raceRadioOption_1", we store 1
 	runGroup: { type: String, required: true },
 	workerAssignment: { type: String, required: true },
 	lunchOption: { type: String }

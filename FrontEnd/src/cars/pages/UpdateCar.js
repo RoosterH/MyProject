@@ -107,8 +107,11 @@ const UpdateCar = setFieldValue => {
 		console.log('in queryCar1');
 		const queryCar = async () => {
 			try {
-				console.log('in queryCar');
-				const responseData = await sendRequest(
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL + `/cars/${carId}`,
 					'GET',
 					null,

@@ -156,7 +156,11 @@ const EventRegistration = props => {
 
 	const saveHandler = async (values, actions) => {
 		try {
-			const responseData = await sendRequest(
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
 					`/events/registration/${eventId}`,
 				'PATCH',
@@ -210,7 +214,11 @@ const EventRegistration = props => {
 
 	const publishHandler = async () => {
 		try {
-			let responseData = await sendRequest(
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
 					`/clubs/publish/${eventId}`,
 				'PATCH',
@@ -230,7 +238,11 @@ const EventRegistration = props => {
 	const deleteHandler = async () => {
 		setShowDELModal(false);
 		try {
-			let responseData = await sendRequest(
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + `/events/${eventId}`,
 				'DELETE',
 				null,

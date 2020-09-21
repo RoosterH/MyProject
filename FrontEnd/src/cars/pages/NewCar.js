@@ -356,7 +356,11 @@ const NewCar = setFieldValue => {
 			formData.append('note', values.note);
 			formData.append('image', values.image);
 
-			let responseData = await sendRequest(
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + '/cars',
 				'POST',
 				formData,

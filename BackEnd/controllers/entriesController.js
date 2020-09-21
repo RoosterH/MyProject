@@ -9,6 +9,7 @@ const Event = require('../models/event');
 const Entry = require('../models/entry');
 const User = require('../models/user');
 const e = require('express');
+const { toNamespacedPath } = require('path');
 
 const errMsg = errors => {
 	var msg;
@@ -20,6 +21,28 @@ const errMsg = errors => {
 
 // include both create and update entry
 const createEntry = async (req, res, next) => {
+	// Validate userId exists. If not, sends back an error
+	let user;
+	// req.userData is inserted in check-auth.js
+	let userId = req.userData;
+	try {
+		user = await User.findById(userId);
+	} catch (err) {
+		const error = new HttpError(
+			'Entry form submission process failed during user validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!user) {
+		const error = new HttpError(
+			'Entry form submission faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		const errorFormatter = ({ value, msg, param, location }) => {
@@ -50,27 +73,10 @@ const createEntry = async (req, res, next) => {
 		return next(error);
 	}
 
-	// Validate userId exists. If not, sends back an error
-	let user;
-	// req.userData is inserted in check-auth.js
-	let userId = req.userData;
-	try {
-		user = await User.findById(userId);
-	} catch (err) {
-		const error = new HttpError(
-			'Entry form submission process failed during user validation. Please try again later.',
-			500
-		);
-		return next(error);
-	}
+	// ! ************ Future Implementation Use Mutex ************ !//
+	// ! To avoid race condition, querying number of entries and group entries need to wait till
+	// ! previous event.save() done.
 
-	if (!user) {
-		const error = new HttpError(
-			'Entry form submission faied with unauthorized request. Forgot to login?',
-			404
-		);
-		return next(error);
-	}
 	// Validate event exists, if not send back an error.
 	let event;
 	const eventId = req.params.eid;
@@ -83,42 +89,47 @@ const createEntry = async (req, res, next) => {
 		return next(error);
 	}
 
+	// todo: auto bump waitlist once entry drops out from entry list
 	// check if event is already full
 	// 2 conditions here:
 	// 1. total entries >= event.topCap
-	// 2. event.waitlist.length > 0, reason for this is if waitlist is open, we want to put all the future
-	//    entries to waitlist. This is to avoid someone cancels the entry and there is a waitlist. Since we
-	//    are not bumping entry from waitlist, we need to add all future entries to waitlist.
+	// 2. event.full flag. In this case, total.entries could be < event.totalCap because someone canceled
+	//    the entry and removed from entry list.  We do not do auto bump yet so we will leave it as is.
+	//    we cannot use event.waitlist.length > 0, reason for it is because we also put group wait list entries
+	//    to waitlist even though event is not full.
 	let eventFull = false;
-
-	if (
-		event.totalEntries >= event.totalCap ||
-		event.waitlist.length > 0
-	) {
+	if (event.totalEntries >= event.totalCap || event.full) {
 		console.log('event is full');
 		eventFull = true;
 	}
 
+	//********* This section is for parsing entry form answers **********//
 	// entry answer format:
 	// answer: Array
 	//   0: object
 	//      name: "RunGroupSingle-12EDB3DA-484C-4ECB-BB32-C3AE969A2D2F"
 	//      value: Array
 	//         0: "raceRadioOption_1"
-
-	// check if run group is full
 	let groupFull = false;
-	let [runGroupIndex, runGroup] = parseAnswer(
+	// runGroupAnsChoice is the 1 from => 0: "raceRadioOption_1"
+	let [runGroupAnsChoice, runGroup] = parseAnswer(
 		event.runGroupOptions,
 		answer,
 		'RunGroup'
 	);
-	if (runGroupIndex === -1) {
+	if (runGroupAnsChoice === -1) {
 		const error = new HttpError(
 			'Event registration answer invalid @run group. ',
 			400
 		);
 		return next(error);
+	}
+	// check group cap to see if the run gorup is full
+	if (event.capDistribution) {
+		let capPerGroup = Math.floor(event.totalCap / event.numGroups);
+		if (event.runGroupNumEntries[runGroupAnsChoice] === capPerGroup) {
+			groupFull = true;
+		}
 	}
 
 	// let raceClass = parseAnswer(answer, 'RaceClass');
@@ -130,7 +141,7 @@ const createEntry = async (req, res, next) => {
 	// 	return next(error);
 	// }
 
-	let [workerAssignmentIndex, workerAssignment] = parseAnswer(
+	let [workerAssignmentAnsChoice, workerAssignment] = parseAnswer(
 		event.workerAssignments,
 		answer,
 		'WorkerAssignment'
@@ -143,14 +154,6 @@ const createEntry = async (req, res, next) => {
 		return next(error);
 	}
 
-	// check group cap to see if the run gorup is full
-	if (event.capDistribution) {
-		let capPerGroup = Math.floor(event.totalCap / event.numGroups);
-		if (event.runGroupEntries[runGroupIndex].length >= capPerGroup) {
-			groupFull = true;
-		}
-	}
-
 	// check if user has entered the event
 	let entry = await Entry.findOne({
 		eventId: eventId,
@@ -158,8 +161,10 @@ const createEntry = async (req, res, next) => {
 	});
 
 	if (entry) {
-		console.log('in entry route');
+		// flag to decide if event needs to be saved
+		let eventUpdate = false;
 		// check if the previous entry was on the group waitlist
+		// if entry.groupWaitlist  == true, entry.waitlist must be also true
 		if (
 			entry.waitlist &&
 			entry.groupWaitlist &&
@@ -172,18 +177,31 @@ const createEntry = async (req, res, next) => {
 			event.waitlist.splice(index, 1);
 			// put in entries
 			event.entries.push(entry);
-		} else if (!entry.waitlist && groupFull) {
+			// we have checked current entry run group is different from previous entry run group
+			let oldGroup = event.runGroupNumEntries[entry.runGroup];
+			let newGroup = event.runGroupNumEntries[runGroup];
+			// use set to set array value => array.set(index, value)
+			event.runGroupNumEntries.set(entry.runGroup, --oldGroup);
+			event.runGroupNumEntries.set(runGroup, ++newGroup);
+			// update entry status
+			entry.waitlist = false;
+			entry.groupWaitlist = false;
+		} else if (
+			!entry.waitlist &&
+			groupFull &&
+			entry.runGroup !== runGroupAnsChoice
+		) {
 			// if previous entry was good but now the new group is full.
 			// We don't want to re-enter the event, instead giving an error message.
 			// Because drop an entry to waitlist is very bad.
 			const error = new HttpError(
-				`${event.runGroupOptions[runGroupIndex]} is full. You are still in the old run group.  If you cannot make this event, please cancel it.`,
+				`${event.runGroupOptions[runGroupAnsChoice]} is full. You are still registed in ${entry.runGroup} run group.  Please try a different group or cancel the registration if you cannot make it.`,
 				304
 			);
 			return next(error);
 		}
 
-		// if entry found, we only need to override the previous values
+		// if entry found, we need to override the previous values
 		entry.carNumber = carNumber;
 		entry.raceClass = raceClass;
 		entry.workerAssignment = workerAssignment;
@@ -192,7 +210,15 @@ const createEntry = async (req, res, next) => {
 		answer.map(data => entry.answer.push(data));
 
 		try {
-			await entry.save();
+			if (eventUpdate) {
+				const session = await mongoose.startSession();
+				session.startTransaction();
+				await event.save({ session: session });
+				await entry.save({ session: session });
+				await session.commitTransaction();
+			} else {
+				await entry.save();
+			}
 		} catch (err) {
 			const error = new HttpError(
 				'Event registration connecting with DB failed. Please try again later.',
@@ -201,13 +227,13 @@ const createEntry = async (req, res, next) => {
 			return next(error);
 		}
 	} else {
-		console.log('Not in entry route');
+		// !entry
 		// entry not found, create a new entry and store the entryId to event and user
 		entry = new Entry({
 			userId,
 			userName: user.userName,
-			userLastName: user.Lastname,
-			userFirstName: user.Firstname,
+			userLastName: user.lastName,
+			userFirstName: user.firstName,
 			clubId: event.clubId,
 			clubName: event.clubName,
 			eventId,
@@ -235,12 +261,18 @@ const createEntry = async (req, res, next) => {
 			} else {
 				event.entries.push(entry);
 			}
-			// update totalEntries number
+			// update totalEntries number no matter it's on entry list or waitlist
 			event.totalEntries++;
 
-			// ! problem the most recent push userId will be stored as an array
-			// update run group entries
-			event.runGroupEntries[runGroupIndex].push(userId);
+			if (event.totalEntries === event.totalCap) {
+				event.full = true;
+			}
+
+			// update runGroup entry number
+			if (!groupFull) {
+				let numEntries = event.runGroupNumEntries[runGroupAnsChoice];
+				event.runGroupNumEntries.set(runGroupAnsChoice, ++numEntries);
+			}
 
 			await event.save({ session: session });
 
@@ -263,20 +295,21 @@ const createEntry = async (req, res, next) => {
 	}
 
 	if (eventFull) {
-		const error = new HttpError(
-			'Event is full. You are on the waitlist. Event club will notify yuo if there is a spot available.',
-			202
-		);
-		return next(error);
+		res.status(202).json({
+			entry: entry.toObject({ getters: true }),
+			message:
+				'Event is full. You are on the waitlist. Event club will notify you if there is a spot available.'
+		});
+	} else if (groupFull) {
+		res.status(202).json({
+			entry: entry.toObject({ getters: true }),
+			message: `${event.runGroupOptions[runGroupAnsChoice]} is full. You are on the waitlist. You may try to register for another run group or wait for the club to notify you if a spot is available.`
+		});
+	} else {
+		res
+			.status(200)
+			.json({ entry: entry.toObject({ getters: true }) });
 	}
-	if (groupFull) {
-		const error = new HttpError(
-			`${event.runGroupOptions[runGroupIndex]} is full. You are on the waitlist. You may try to register for another run group or wait for the club to notify yuo if a spot is available.`,
-			202
-		);
-		return next(error);
-	}
-	res.status(200).json({ entry: entry.toObject({ getters: true }) });
 };
 
 const parseAnswer = (options, answer, fieldName) => {
@@ -289,18 +322,14 @@ const parseAnswer = (options, answer, fieldName) => {
 
 	for (let i = 0; i < answer.length; ++i) {
 		let name = answer[i].name;
-		console.log('name = ', name);
 		let splitName = name.split('-');
-		console.log('splitName = ', splitName);
-		// let index = splitName[0].indexOf('RunGroup');
+		// fieldName is 'RunGroup'
 		let index = splitName[0].indexOf(fieldName);
-		console.log('index = ', index);
+		// index must be 0 because "RunGroupSingle"
 		if (index === 0) {
-			console.log('inside index  ');
 			let ansOpt = answer[i].value[0];
 			// parse string "raceRadioOption_1"
 			res = ansOpt.split('_');
-			console.log('res = ', res[1]);
 			return [res[1], options[res[1]]];
 		}
 	}

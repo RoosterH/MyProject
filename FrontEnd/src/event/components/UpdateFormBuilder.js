@@ -108,7 +108,11 @@ const FormBuilder = props => {
 		}
 
 		try {
-			const responseData = await sendRequest(
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + `/clubs/form/${eventId}`,
 				'POST',
 				JSON.stringify({
@@ -130,39 +134,6 @@ const FormBuilder = props => {
 			console.log('err = ', err);
 		}
 	};
-
-	// getResponseData is a callback function that returns responseData to its caller
-	// const onLoad = getResponseData => {
-	// 	// GET event form from server
-	// 	let responseData;
-	// 	const fetchForm = async () => {
-	// 		try {
-	// 			responseData = await sendRequest(
-	// 				process.env.REACT_APP_BACKEND_URL +
-	// 					`/clubs/form/${eventId}`,
-	// 				'GET',
-	// 				null,
-	// 				{
-	// 					// adding JWT to header for authentication, JWT contains clubId
-	// 					Authorization: 'Bearer ' + clubAuthContext.clubToken
-	// 				}
-	// 			);
-	// 			if (responseData) {
-	// 				getResponseData(responseData);
-	// 				setPublished(responseData.published);
-	// 				setUnsavedData(responseData);
-	// 				// save the from data got from backend to localstorage
-	// 				localStorage.setItem(
-	// 					'eventEntryForm',
-	// 					JSON.stringify(responseData)
-	// 				);
-	// 			}
-	// 		} catch (err) {
-	// 			console.log('err = ', err);
-	// 		}
-	// 	};
-	// 	return fetchForm();
-	// };
 
 	const onLoad = getResponseData => {
 		getResponseData(props.event.entryFormData);
