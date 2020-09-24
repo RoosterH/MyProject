@@ -196,7 +196,6 @@ const EntryListForUsers = props => {
 						style={{
 							border: '2px solid gray',
 							maxWidth: '1450px',
-							overflow: 'scroll',
 							marginTop: '10px',
 							marginLeft: '20px'
 						}}

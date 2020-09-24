@@ -38,6 +38,7 @@ const entrySchema = new Schema({
 	answer: { type: Array, required: true },
 	disclaimer: { type: Boolean, require: true },
 	time: { type: Date, required: true },
+	// not used right now. this is intended for loading unfished-entry
 	published: { type: Boolean, required: true },
 	waitlist: { type: Boolean, required: true },
 	groupWaitlist: { type: Boolean, require: true },

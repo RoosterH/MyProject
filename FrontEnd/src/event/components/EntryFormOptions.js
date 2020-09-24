@@ -317,5 +317,116 @@ export const EntryFormOptions = () => [
 		label: 'Placeholder Label',
 		field_name: 'checkboxes_',
 		options: []
+	},
+	{
+		key: 'MultipleRadioButtonGroup',
+		canHaveAnswer: true,
+		name: 'Lunch Menu',
+		icon: 'far fa-dot-circle',
+		label: '<strong>Lunch Selection</strong>',
+		static: true,
+		required: true,
+		nested: true,
+		options: [
+			{
+				key: 'RadioButtons',
+				canHaveAnswer: true,
+				name: 'Lunch Options',
+				label: '<strong>Lunch Selection</strong>',
+				field_name: 'Lunch-',
+				required: true,
+				options: [
+					{
+						value: '10',
+						text: 'Hamburger $10',
+						key: `lunchRadioOption_0`
+					},
+					{
+						value: '8',
+						text: 'Sandwitch $8',
+						key: `lunchRadioOption_1`
+					},
+					{
+						value: '8',
+						text: 'Veggie Sandwitch $8',
+						key: `lunchRadioOption_2`
+					},
+					{
+						value: '0',
+						text: 'No lunch',
+						key: `lunchRadioOption_3`
+					}
+				]
+			},
+			{
+				key: 'RadioButtons',
+				canHaveAnswer: true,
+				name: 'Lunch Options',
+				label: '<strong>Lunch Selection</strong>',
+				field_name: 'Lunch-',
+				required: true,
+				options: [
+					{
+						value: '1',
+						text: 'Hamburger $10',
+						key: `lunchRadioOption_0`
+					},
+					{
+						value: '2',
+						text: 'Sandwitch $8',
+						key: `lunchRadioOption_1`
+					},
+					{
+						value: '3',
+						text: 'Veggie Sandwitch $8',
+						key: `lunchRadioOption_2`
+					},
+					{
+						value: '4',
+						text: 'No lunch',
+						key: `lunchRadioOption_3`
+					}
+				]
+			}
+		]
 	}
+
+	// {
+	// 	key: 'MultipleRadioButtonGroup',
+	// 	canHaveAnswer: true,
+	// 	name: 'Lunch Menu',
+	// 	icon: 'far fa-dot-circle',
+	// 	label: '<strong>Lunch Selection</strong>',
+	// 	static: true,
+	// 	required: true,
+
+	// 	options: [
+	// 		{
+	// 			label: '<strong>Day 1</strong>',
+	// 			field_name: 'Lunch-',
+	// 			options: [
+	// 				{
+	// 					value: '10',
+	// 					text: 'Hamburger $10',
+	// 					key: `lunchRadioOption_0`
+	// 				},
+	// 				{
+	// 					value: '8',
+	// 					text: 'Sandwitch $8',
+	// 					key: `lunchRadioOption_1`
+	// 				},
+	// 				{
+	// 					value: '8',
+	// 					text: 'Veggie Sandwitch $8',
+	// 					key: `lunchRadioOption_2`
+	// 				},
+	// 				{
+	// 					value: '0',
+	// 					text: 'No lunch',
+	// 					key: `lunchRadioOption_3`
+	// 				}
+	// 			]
+	// 		}
+	// 	]
+	// }
 ];

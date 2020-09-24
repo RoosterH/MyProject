@@ -294,6 +294,17 @@ export default class Toolbar extends React.Component {
 				label: 'Placeholder Label',
 				field_name: 'paragraphcheckbox_',
 				options: []
+			},
+			{
+				key: 'MultipleRadioButtonGroup',
+				canHaveAnswer: true,
+				name: 'Lunch Menu',
+				icon: 'far fa-dot-circle',
+				label: '<strong>Lunch Selection</strong>',
+				static: true,
+				required: true,
+				nested: true,
+				options: []
 			}
 		];
 	}
@@ -305,7 +316,8 @@ export default class Toolbar extends React.Component {
 			text: item.name,
 			static: item.static,
 			required: item.required ? item.required : false,
-			showDescription: item.showDescription
+			showDescription: item.showDescription,
+			nested: item.nested
 		};
 
 		if (this.props.showDescription === true && !item.static) {

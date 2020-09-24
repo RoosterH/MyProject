@@ -24,8 +24,11 @@ const cardSource = {
 const cardTarget = {
 	hover(props, monitor, component) {
 		const item = monitor.getItem();
+		// console.log('item = ', item);
 		const dragIndex = item.index;
+		// console.log('dragIndex = ', dragIndex);
 		const hoverIndex = props.index;
+		// console.log('hoverIndex = ', hoverIndex);
 
 		// Don't replace items with themselves
 		if (dragIndex === hoverIndex) {
@@ -33,6 +36,7 @@ const cardTarget = {
 		}
 		if (dragIndex === -1) {
 			item.index = hoverIndex;
+			// console.log('item.data = ', item.data);
 			props.insertCard(item.onCreate(item.data), hoverIndex);
 		}
 

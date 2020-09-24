@@ -257,15 +257,17 @@ const createEntry = async (req, res, next) => {
 
 			// if event or group is full, put in wailist; otherwise put in entries
 			if (eventFull || groupFull) {
+				console.log('in waitlist');
 				event.waitlist.push(entry);
 			} else {
 				event.entries.push(entry);
 			}
-			// update totalEntries number no matter it's on entry list or waitlist
-			event.totalEntries++;
-
-			if (event.totalEntries === event.totalCap) {
-				event.full = true;
+			// update totalEntries number when neither event nor group is full
+			if (!groupFull && !eventFull) {
+				event.totalEntries++;
+				if (event.totalEntries === event.totalCap) {
+					event.full = true;
+				}
 			}
 
 			// update runGroup entry number
@@ -303,7 +305,7 @@ const createEntry = async (req, res, next) => {
 	} else if (groupFull) {
 		res.status(202).json({
 			entry: entry.toObject({ getters: true }),
-			message: `${event.runGroupOptions[runGroupAnsChoice]} is full. You are on the waitlist. You may try to register for another run group or wait for the club to notify you if a spot is available.`
+			message: `${event.runGroupOptions[runGroupAnsChoice]} is full. You are on the waitlist. You may try to register for another run group or wait for the event organizer to notify you when a spot is available.`
 		});
 	} else {
 		res

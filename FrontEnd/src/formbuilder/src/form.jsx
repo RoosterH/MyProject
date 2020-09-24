@@ -22,7 +22,8 @@ const {
 	Signature,
 	Download,
 	Camera,
-	ParagraphCheckbox
+	ParagraphCheckbox,
+	MultipleRadioButtonGroup
 } = FormElements;
 
 // This is the technique used to call hook in the class using Render Props.
@@ -140,7 +141,8 @@ export default class ReactForm extends React.Component {
 			if (
 				item.element === 'Checkboxes' ||
 				item.element === 'RadioButtons' ||
-				item.element === 'ParagraphCheckbox'
+				item.element === 'ParagraphCheckbox' ||
+				item.element === 'MultipleRadionButtonGroup'
 			) {
 				item.options.forEach(option => {
 					const $option = ReactDOM.findDOMNode(
@@ -177,7 +179,8 @@ export default class ReactForm extends React.Component {
 			if (
 				item.element === 'Checkboxes' ||
 				item.element === 'RadioButtons' ||
-				item.element === 'ParagraphCheckbox'
+				item.element === 'ParagraphCheckbox' ||
+				item.element === 'MultipleRadioButtonGroup'
 			) {
 				let checked_options = 0;
 				item.options.forEach(option => {
@@ -215,7 +218,8 @@ export default class ReactForm extends React.Component {
 		if (
 			item.element === 'Checkboxes' ||
 			item.element === 'RadioButtons' ||
-			item.element === 'ParagraphCheckbox'
+			item.element === 'ParagraphCheckbox' ||
+			item.element === 'MultipleRadioButtonGroup'
 		) {
 			const checked_options = [];
 			item.options.forEach(option => {
@@ -428,6 +432,19 @@ export default class ReactForm extends React.Component {
 							defaultValue={this._optionsDefaultValue(item)}
 						/>
 					);
+				case 'MultipleRadioButtonGroup':
+					return (
+						<MultipleRadioButtonGroup
+							ref={c => (this.inputs[item.field_name] = c)}
+							read_only={this.props.read_only}
+							handleChange={this.handleChange}
+							mutable={true}
+							key={`form_${item.id}`}
+							data={item}
+							defaultValue={this._optionsDefaultValue(item)}
+						/>
+					);
+
 				case 'Image':
 					return (
 						<Image

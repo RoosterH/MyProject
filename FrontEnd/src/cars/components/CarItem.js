@@ -188,8 +188,8 @@ const CarItem = props => {
 									{props.car.tireRearDiameter}
 								</h4>
 							</div>
-							<div className="eventimage-basic-container">
-								<div className="eventimage-container">
+							<div className="carimage-basic-container">
+								<div className="carimage-container">
 									<img
 										src={
 											process.env.REACT_APP_ASSET_URL +

@@ -1178,6 +1178,152 @@ class ParagraphCheckbox extends React.Component {
 	}
 }
 
+class MultipleRadioButtonGroup extends React.Component {
+	constructor(props) {
+		super(props);
+		this.options = {};
+		console.log('props = ', props);
+	}
+
+	render() {
+		// Header Section
+		// const headerClasses = `dynamic-input ${this.props.data.element}-input`;
+
+		let classNames = 'static';
+		if (this.props.data.bold) {
+			classNames += ' bold';
+		}
+		if (this.props.data.italic) {
+			classNames += ' italic';
+		}
+
+		const self = this;
+		classNames = 'custom-control custom-radio';
+		if (this.props.data.inline) {
+			classNames += ' option-inline';
+		}
+
+		let baseClasses = 'SortableItem rfb-item';
+		if (this.props.data.pageBreakBefore) {
+			baseClasses += ' alwaysbreak';
+		}
+		console.log(
+			'this.props.data.options = ',
+			this.props.data.options
+		);
+		console.log(
+			'this.props.data.content = ',
+			this.props.data.content
+		);
+
+		return (
+			<React.Fragment>
+				<div className={baseClasses}>
+					<ComponentHeader {...this.props} />
+					<h3
+						className={classNames}
+						dangerouslySetInnerHTML={{
+							__html: myxss.process(this.props.data.content)
+						}}
+					/>
+					{/* <div className="form-group">
+						<ComponentLabel className="form-label" {...this.props} /> */}
+					{this.props.data.options.map(option => {
+						console.log('option = ', option);
+						// option.map(opt => {
+						const this_key = `preview_${option.key}`;
+						const props = {};
+						props.name = self.props.data.field_name;
+						props.type = 'radio';
+						props.value = option.value;
+						if (self.props.mutable) {
+							props.defaultChecked =
+								self.props.defaultValue !== null &&
+								self.props.defaultValue !== undefined &&
+								(self.props.defaultValue.indexOf(option.key) > -1 ||
+									self.props.defaultValue.indexOf(option.value) > -1);
+						}
+						if (this.props.read_only) {
+							props.disabled = 'disabled';
+						}
+
+						return (
+							<div className="form-group">
+								<ComponentLabel
+									className="form-label"
+									{...this.props}
+								/>
+								<div className={classNames} key={this_key}>
+									<input
+										id={'fid_' + this_key}
+										className="custom-control-input"
+										ref={c => {
+											if (c && self.props.mutable) {
+												self.options[`child_ref_${option.key}`] = c;
+											}
+										}}
+										{...props}
+									/>
+									{option.options.map(opt => {
+										const this_key = `preview_${opt.key}`;
+										const props = {};
+										props.name = option.field_name;
+										props.type = 'radio';
+										props.value = opt.value;
+										console.log('props.name = ', props.name);
+										console.log('props.value = ', opt.value);
+										if (self.props.mutable) {
+											props.defaultChecked =
+												self.props.defaultValue !== null &&
+												self.props.defaultValue !== undefined &&
+												(self.props.defaultValue.indexOf(opt.key) >
+													-1 ||
+													self.props.defaultValue.indexOf(opt.value) >
+														-1);
+										}
+										if (this.props.read_only) {
+											props.disabled = 'disabled';
+										}
+										console.log('option.key = ', option.key);
+										return (
+											<div className={classNames} key={this_key}>
+												<input
+													id={'fid_' + this_key}
+													className="custom-control-input"
+													ref={c => {
+														if (c && self.props.mutable) {
+															self.options.options[
+																`child_ref_${option.key}`
+															] = c;
+														}
+													}}
+													{...props}
+												/>
+												<label
+													className="custom-control-label"
+													htmlFor={'fid_' + this_key}>
+													{opt.text}
+												</label>
+											</div>
+										);
+									})}
+
+									<label
+										className="custom-control-label"
+										htmlFor={'fid_' + this_key}>
+										{option.text}
+									</label>
+								</div>
+							</div>
+						);
+					})}
+					{/* </div> */}
+				</div>
+			</React.Fragment>
+		);
+	}
+}
+
 FormElements.Header = Header;
 FormElements.Paragraph = Paragraph;
 FormElements.Label = Label;
@@ -1198,5 +1344,6 @@ FormElements.Download = Download;
 FormElements.Camera = Camera;
 FormElements.Range = Range;
 FormElements.ParagraphCheckbox = ParagraphCheckbox;
+FormElements.MultipleRadioButtonGroup = MultipleRadioButtonGroup;
 
 export default FormElements;

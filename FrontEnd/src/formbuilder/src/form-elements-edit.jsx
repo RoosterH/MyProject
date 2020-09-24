@@ -10,7 +10,9 @@ import draftToHtml from 'draftjs-to-html';
 import { Editor } from 'react-draft-wysiwyg';
 
 import DynamicOptionList from './dynamic-option-list';
+import DynamicOptionListForGroup from './dynamic-option-group';
 import { get } from './stores/requests';
+
 import ID from './UUID';
 
 const toolbar = {
@@ -38,6 +40,7 @@ const toolbar = {
 export default class FormElementsEdit extends React.Component {
 	constructor(props) {
 		super(props);
+		console.log('props = ', props);
 		this.state = {
 			element: this.props.element,
 			data: this.props.data,
@@ -77,8 +80,13 @@ export default class FormElementsEdit extends React.Component {
 			.replace(/<\/p>/g, '')
 			.replace(/(?:\r\n|\r|\n)/g, ' ');
 		const this_element = this.state.element;
+		console.log('this.state = ', this.state);
+		console.log('this_element = ', this_element);
 		this_element[property] = html;
 
+		console.log('html = ', html);
+		console.log('this_element2 = ', this_element);
+		console.log('this_element[property] = ', this_element[property]);
 		this.setState({
 			element: this_element,
 			dirty: true
@@ -89,6 +97,11 @@ export default class FormElementsEdit extends React.Component {
 		const this_element = this.state.element;
 		// to prevent ajax calls with no change
 		if (this.state.dirty) {
+			console.log(
+				'this.props.updateElement = ',
+				this.props.updateElement
+			);
+			console.log('this.props.preview = ', this.props.preview);
 			this.props.updateElement.call(this.props.preview, this_element);
 			this.setState({ dirty: false });
 		}
@@ -131,6 +144,109 @@ export default class FormElementsEdit extends React.Component {
 	// 		});
 	// 	}
 	// }
+
+	create(item) {
+		const elementOptions = {
+			id: ID.uuid(),
+			element: item.element || item.key,
+			text: item.name,
+			static: item.static,
+			required: item.required ? item.required : false,
+			showDescription: item.showDescription,
+			nested: item.nested
+		};
+
+		if (this.props.showDescription === true && !item.static) {
+			elementOptions.showDescription = true;
+		}
+
+		if (item.static) {
+			elementOptions.bold = false;
+			elementOptions.italic = false;
+		}
+
+		if (item.canHaveAnswer) {
+			elementOptions.canHaveAnswer = item.canHaveAnswer;
+		}
+
+		if (item.canReadOnly) {
+			elementOptions.readOnly = false;
+		}
+
+		if (item.canDefaultToday) {
+			elementOptions.defaultToday = false;
+		}
+
+		if (item.content) {
+			elementOptions.content = item.content;
+		}
+
+		if (item.href) {
+			elementOptions.href = item.href;
+		}
+
+		elementOptions.canHavePageBreakBefore =
+			item.canHavePageBreakBefore !== false;
+		elementOptions.canHaveAlternateForm =
+			item.canHaveAlternateForm !== false;
+		elementOptions.canHaveDisplayHorizontal =
+			item.canHaveDisplayHorizontal !== false;
+		elementOptions.canHaveOptionCorrect =
+			item.canHaveOptionCorrect !== false;
+		elementOptions.canHaveOptionValue =
+			item.canHaveOptionValue !== false;
+		elementOptions.canPopulateFromApi =
+			item.canPopulateFromApi !== false;
+
+		if (item.key === 'Image') {
+			elementOptions.src = item.src;
+		}
+
+		if (item.key === 'DatePicker') {
+			elementOptions.dateFormat = item.dateFormat;
+			elementOptions.timeFormat = item.timeFormat;
+			elementOptions.showTimeSelect = item.showTimeSelect;
+			elementOptions.showTimeSelectOnly = item.showTimeSelectOnly;
+		}
+
+		if (item.key === 'Download') {
+			elementOptions._href = item._href;
+			elementOptions.file_path = item.file_path;
+		}
+
+		if (item.key === 'Range') {
+			elementOptions.step = item.step;
+			elementOptions.default_value = item.default_value;
+			elementOptions.min_value = item.min_value;
+			elementOptions.max_value = item.max_value;
+			elementOptions.min_label = item.min_label;
+			elementOptions.max_label = item.max_label;
+		}
+
+		if (item.defaultValue) {
+			elementOptions.defaultValue = item.defaultValue;
+		}
+
+		if (item.field_name) {
+			elementOptions.field_name = item.field_name + ID.uuid();
+		}
+
+		if (item.label) {
+			elementOptions.label = item.label;
+		}
+
+		// we only want to use default item option if it's not defined
+		if (item.options) {
+			// if (item.options.length === 0) {
+			// 	elementOptions.options = Toolbar._defaultItemOptions(
+			// 		elementOptions.element
+			// 	);
+			// } else {
+			elementOptions.options = item.options;
+			// }
+		}
+		return elementOptions;
+	}
 
 	render() {
 		if (this.state.dirty) {
@@ -196,7 +312,8 @@ export default class FormElementsEdit extends React.Component {
 			canHaveAlternateForm,
 			canHaveDisplayHorizontal,
 			canHaveOptionCorrect,
-			canHaveOptionValue
+			canHaveOptionValue,
+			nested
 		} = this.props.element;
 
 		const this_files = this.props.files.length
@@ -220,6 +337,12 @@ export default class FormElementsEdit extends React.Component {
 			editorState = this.convertFromHTML(this.props.element.label);
 		}
 
+		console.log('this.state.element = ', this.state.element);
+		console.log(
+			'this.state.element.element = ',
+			this.state.element.element
+		);
+		console.log('this.editElementProp = ', this.editElementProp);
 		return (
 			<div>
 				<div className="clearfix">
@@ -902,7 +1025,7 @@ export default class FormElementsEdit extends React.Component {
 							</div>
 						</div>
 					)} */}
-				{this.props.element.hasOwnProperty('options') && (
+				{!nested && this.props.element.hasOwnProperty('options') && (
 					<DynamicOptionList
 						showCorrectColumn={this.props.showCorrectColumn}
 						canHaveOptionCorrect={canHaveOptionCorrect}
@@ -914,6 +1037,67 @@ export default class FormElementsEdit extends React.Component {
 						key={this.props.element.options.length}
 					/>
 				)}
+
+				{nested &&
+					this.props.element.hasOwnProperty('options') &&
+					this.props.element.options.map(opt => {
+						let elementOption = this.create(opt);
+						console.log('elementOption = ', elementOption);
+
+						const this_checked = elementOption.hasOwnProperty(
+							'required'
+						)
+							? opt.required
+							: false;
+						const this_read_only = elementOption.hasOwnProperty(
+							'readOnly'
+						)
+							? opt.readOnly
+							: false;
+						const this_default_today = elementOption.hasOwnProperty(
+							'defaultToday'
+						)
+							? opt.defaultToday
+							: false;
+						const this_show_time_select = elementOption.hasOwnProperty(
+							'showTimeSelect'
+						)
+							? opt.showTimeSelect
+							: false;
+						const this_show_time_select_only = elementOption.hasOwnProperty(
+							'showTimeSelectOnly'
+						)
+							? opt.showTimeSelectOnly
+							: false;
+						const this_checked_inline = elementOption.hasOwnProperty(
+							'inline'
+						)
+							? opt.inline
+							: false;
+
+						const this_checked_page_break = elementOption.hasOwnProperty(
+							'pageBreakBefore'
+						)
+							? opt.pageBreakBefore
+							: false;
+
+						console.log('nested');
+						console.log('opt = ', opt);
+						return (
+							<DynamicOptionListForGroup
+								showCorrectColumn={elementOption.showCorrectColumn}
+								canHaveOptionCorrect={
+									elementOption.canHaveOptionCorrect
+								}
+								canHaveOptionValue={elementOption.canHaveOptionValue}
+								data={this.props.preview.state.data}
+								updateElement={elementOption.updateElement}
+								preview={elementOption.preview}
+								element={elementOption}
+								key={elementOption.options.length}
+							/>
+						);
+					})}
 			</div>
 		);
 	}

@@ -87,28 +87,28 @@ const EntryReport = props => {
 		setEntryList(entryData);
 
 		//************ compose waitlist ***************//
-		let waitlistDataArray = [];
-		let waitlistData = props.entryReportData.waitlistData;
-		for (var i = 0; i < waitlistData.length; ++i) {
+		let waitlistData = [];
+		let waitlist = props.entryReportData.waitlistData;
+		for (var i = 0; i < waitlist.length; ++i) {
 			let entry;
 			entry = {
-				lastName: waitlistData[i].userLastName,
-				firstName: waitlistData[i].userFirstName[0] + '.',
-				carNumber: waitlistData[i].carNumber,
-				raceClass: getMapKey(waitlistData[i].raceClass, raceClasses),
+				lastName: waitlist[i].userLastName,
+				firstName: waitlist[i].userFirstName,
+				carNumber: waitlist[i].carNumber,
+				raceClass: getMapKey(waitlist[i].raceClass, raceClasses),
 				car: waitlist[i].car,
-				runGroup: getMapKey(entries[i].runGroup, runGroupLookup),
+				runGroup: getMapKey(entries[i].runGroup, runGroups),
 				workerAssignment: getMapKey(
 					entries[i].workerAssignment,
-					workerAssignmentLookup
+					workerAssignments
 				)
 			};
-
-			waitlistDataArray.push(entry);
+			waitlistData.push(entry);
 		}
-		setWaitlist(waitlistDataArray);
+		setWaitlist(waitlistData);
 		setShowLoading(false);
 	}, []);
+
 	return (
 		<React.Fragment>
 			<div className="entrylist-table">
@@ -125,7 +125,6 @@ const EntryReport = props => {
 					style={{
 						border: '2px solid gray',
 						maxWidth: '1450px',
-						overflow: 'scroll',
 						marginTop: '10px',
 						marginLeft: '20px'
 					}}
@@ -201,7 +200,7 @@ const EntryReport = props => {
 						},
 						{
 							title: 'Worker Group',
-							field: 'workerGroup',
+							field: 'workerAssignment',
 							lookup: workerAssignmentLookup,
 							filtering: false
 						}

@@ -22,7 +22,8 @@ const {
 	Download,
 	Camera,
 	Range,
-	ParagraphCheckbox
+	ParagraphCheckbox,
+	MultipleRadioButtonGroup
 } = BaseFormElements;
 
 const FormElements = {};
@@ -48,5 +49,8 @@ FormElements.Camera = SortableElement(Camera);
 FormElements.Range = SortableElement(Range);
 FormElements.PlaceHolder = SortableElement(PlaceHolder);
 FormElements.ParagraphCheckbox = SortableElement(ParagraphCheckbox);
+FormElements.MultipleRadioButtonGroup = SortableElement(
+	MultipleRadioButtonGroup
+);
 
 export default FormElements;

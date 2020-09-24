@@ -8,6 +8,7 @@ import ID from './UUID';
 export default class DynamicOptionList extends React.Component {
 	constructor(props) {
 		super(props);
+		console.log('this.props = ', this.props);
 		this.state = {
 			element: this.props.element,
 			data: this.props.data,
@@ -20,6 +21,7 @@ export default class DynamicOptionList extends React.Component {
 	}
 
 	editOption(option_index, e) {
+		console.log('I am in editOption');
 		const this_element = this.state.element;
 		const val =
 			this_element.options[option_index].value !==
@@ -36,6 +38,7 @@ export default class DynamicOptionList extends React.Component {
 	}
 
 	editValue(option_index, e) {
+		console.log('I am in editValue');
 		const this_element = this.state.element;
 		const val =
 			e.target.value === ''
@@ -50,7 +53,12 @@ export default class DynamicOptionList extends React.Component {
 
 	// eslint-disable-next-line no-unused-vars
 	editOptionCorrect(option_index, e) {
+		console.log('I am in editOptionCorrect');
 		const this_element = this.state.element;
+		console.log(
+			'this_element.options[option_index] = ',
+			this_element.options[option_index]
+		);
 		if (
 			this_element.options[option_index].hasOwnProperty('correct')
 		) {
@@ -58,11 +66,14 @@ export default class DynamicOptionList extends React.Component {
 		} else {
 			this_element.options[option_index].correct = true;
 		}
+		console.log('dynamic-option-list this_elemnt = ', this_element);
 		this.setState({ element: this_element });
+
 		this.props.updateElement.call(this.props.preview, this_element);
 	}
 
 	updateOption() {
+		console.log('I am in updateOption');
 		const this_element = this.state.element;
 		// to prevent ajax calls with no change
 		if (this.state.dirty) {
@@ -72,8 +83,10 @@ export default class DynamicOptionList extends React.Component {
 	}
 
 	addOption(index) {
+		console.log('I am in addOption');
 		console.log('index = ', index);
 		console.log('element = ', this.state.element.options[0].key);
+		console.log('this.props = ', this.props);
 		let optionsLength = this.state.element.options.length;
 		let key;
 		if (this.state.element.options[0].key.split('_').length > 0) {
@@ -92,6 +105,7 @@ export default class DynamicOptionList extends React.Component {
 	}
 
 	removeOption(index) {
+		console.log('I am in removeOption');
 		console.log('remove index = ', index);
 		const this_element = this.state.element;
 		this_element.options.splice(index, 1);
@@ -124,6 +138,9 @@ export default class DynamicOptionList extends React.Component {
 						</div>
 					</li>
 					{this.props.element.options.map((option, index) => {
+						// this is the place that handles adding options: [ ]
+						console.log('option = ', option);
+						console.log('index = ', index);
 						const this_key = `edit_${option.key}`;
 						const val =
 							option.value !== this._setValue(option.text)

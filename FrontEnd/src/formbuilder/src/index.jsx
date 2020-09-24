@@ -87,6 +87,7 @@ class ReactFormBuilder extends React.Component {
 								editMode={this.state.editMode}
 								variables={this.props.variables}
 								editElement={this.state.editElement}
+								nested={this.state.nested}
 							/>
 							<Toolbar {...toolbarProps} />
 						</div>

@@ -7,6 +7,7 @@ import update from 'immutability-helper';
 import store from './stores/store';
 import FormElementsEdit from './form-elements-edit';
 import SortableFormElements from './sortable-form-elements';
+import { couldStartTrivia } from 'typescript';
 
 const { PlaceHolder } = SortableFormElements;
 
@@ -14,7 +15,7 @@ export default class Preview extends React.Component {
 	_isMounted = false;
 	constructor(props) {
 		super(props);
-
+		console.log('props = ', props);
 		const { onLoad, onPost } = props;
 		store.setExternalHandler(onLoad, onPost);
 
@@ -76,6 +77,7 @@ export default class Preview extends React.Component {
 	}
 
 	updateElement(element) {
+		console.log('in updateElement');
 		const { data } = this.state;
 		let found = false;
 
@@ -103,7 +105,9 @@ export default class Preview extends React.Component {
 			return;
 		}
 
+		console.log('data = ', data);
 		data.forEach(item => {
+			console.log('item = ', item);
 			if (
 				item &&
 				item.readOnly &&
@@ -127,6 +131,7 @@ export default class Preview extends React.Component {
 	}
 
 	insertCard(item, hoverIndex) {
+		console.log('item = ', item);
 		const { data } = this.state;
 		data.splice(hoverIndex, 0, item);
 		this.saveData(item, hoverIndex, hoverIndex);
@@ -158,6 +163,7 @@ export default class Preview extends React.Component {
 	}
 
 	getElement(item, index) {
+		console.log('in getElement item = ', item);
 		const SortableFormElement = SortableFormElements[item.element];
 		return (
 			<SortableFormElement
@@ -184,6 +190,7 @@ export default class Preview extends React.Component {
 			classes += ' is-editing';
 		}
 		const data = this.state.data.filter(x => !!x);
+		console.log('data = ', data);
 		const items = data.map((item, index) =>
 			this.getElement(item, index)
 		);
