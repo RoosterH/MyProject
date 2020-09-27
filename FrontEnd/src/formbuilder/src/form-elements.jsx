@@ -33,6 +33,7 @@ const myxss = new xss.FilterXSS({
 });
 
 const ComponentLabel = props => {
+	// This displays component label on the Form as well as "Requred" label
 	const hasRequiredLabel =
 		props.data.hasOwnProperty('required') &&
 		props.data.required === true &&
@@ -55,10 +56,26 @@ const ComponentLabel = props => {
 	);
 };
 
+const GroupComponentLabel = props => {
+	console.log('group props = ', props);
+	// This displays group option label on the Form
+	return (
+		<label className={props.className || ''}>
+			<span
+				className={props.spanClassName || ''}
+				dangerouslySetInnerHTML={{
+					__html: myxss.process(props.props.label)
+				}}
+			/>
+		</label>
+	);
+};
+
 const ComponentHeader = props => {
 	if (props.mutable) {
 		return null;
 	}
+	console.log('ComponentHeader props = ', props);
 	return (
 		<div>
 			{props.data.pageBreakBefore && (
@@ -725,6 +742,8 @@ class RadioButtons extends React.Component {
 						props.name = self.props.data.field_name;
 						props.type = 'radio';
 						props.value = option.value;
+						console.log('radio mutable = ', self.props.mutable);
+						console.log('radio props = ', self.props);
 						if (self.props.mutable) {
 							props.defaultChecked =
 								self.props.defaultValue !== null &&
@@ -1220,104 +1239,117 @@ class MultipleRadioButtonGroup extends React.Component {
 			<React.Fragment>
 				<div className={baseClasses}>
 					<ComponentHeader {...this.props} />
+					{/* this is when hovering on top of the item, it shows "Lunch Selection" which
+					comes from name: */}
 					<h3
 						className={classNames}
 						dangerouslySetInnerHTML={{
 							__html: myxss.process(this.props.data.content)
 						}}
 					/>
-					{/* <div className="form-group">
-						<ComponentLabel className="form-label" {...this.props} /> */}
-					{this.props.data.options.map(option => {
-						console.log('option = ', option);
-						// option.map(opt => {
-						const this_key = `preview_${option.key}`;
-						const props = {};
-						props.name = self.props.data.field_name;
-						props.type = 'radio';
-						props.value = option.value;
-						if (self.props.mutable) {
-							props.defaultChecked =
-								self.props.defaultValue !== null &&
-								self.props.defaultValue !== undefined &&
-								(self.props.defaultValue.indexOf(option.key) > -1 ||
-									self.props.defaultValue.indexOf(option.value) > -1);
-						}
-						if (this.props.read_only) {
-							props.disabled = 'disabled';
-						}
-
-						return (
-							<div className="form-group">
-								<ComponentLabel
-									className="form-label"
-									{...this.props}
-								/>
-								<div className={classNames} key={this_key}>
-									<input
-										id={'fid_' + this_key}
-										className="custom-control-input"
-										ref={c => {
-											if (c && self.props.mutable) {
-												self.options[`child_ref_${option.key}`] = c;
-											}
-										}}
-										{...props}
+					<div className="form-group">
+						{/* Label for the Group  */}
+						<ComponentLabel className="form-label" {...this.props} />
+						{this.props.data.options.map((option, index) => {
+							console.log('option = ', option);
+							const this_key = `preview_${option.key}`;
+							console.log('this_key = ', this_key);
+							const props = {};
+							// props.name = self.props.data.field_name;
+							props.name = option.field_name;
+							props.type = 'radio';
+							props.value = option.value;
+							if (self.props.mutable) {
+								props.defaultChecked =
+									self.props.defaultValue !== null &&
+									self.props.defaultValue !== undefined &&
+									(self.props.defaultValue.indexOf(option.key) > -1 ||
+										self.props.defaultValue.indexOf(option.value) >
+											-1);
+							}
+							if (this.props.read_only) {
+								props.disabled = 'disabled';
+							}
+							return (
+								// need to have key for distinct <div> because of map
+								<div className="form-group" key={props.name}>
+									{/* label for each option under group */}
+									<GroupComponentLabel
+										className="form-label"
+										props={option}
 									/>
-									{option.options.map(opt => {
-										const this_key = `preview_${opt.key}`;
-										const props = {};
-										props.name = option.field_name;
-										props.type = 'radio';
-										props.value = opt.value;
-										console.log('props.name = ', props.name);
-										console.log('props.value = ', opt.value);
-										if (self.props.mutable) {
-											props.defaultChecked =
-												self.props.defaultValue !== null &&
-												self.props.defaultValue !== undefined &&
-												(self.props.defaultValue.indexOf(opt.key) >
-													-1 ||
-													self.props.defaultValue.indexOf(opt.value) >
-														-1);
-										}
-										if (this.props.read_only) {
-											props.disabled = 'disabled';
-										}
-										console.log('option.key = ', option.key);
-										return (
-											<div className={classNames} key={this_key}>
-												<input
-													id={'fid_' + this_key}
-													className="custom-control-input"
-													ref={c => {
-														if (c && self.props.mutable) {
-															self.options.options[
-																`child_ref_${option.key}`
-															] = c;
-														}
-													}}
-													{...props}
-												/>
-												<label
-													className="custom-control-label"
-													htmlFor={'fid_' + this_key}>
-													{opt.text}
-												</label>
-											</div>
-										);
-									})}
+									<div className={classNames}>
+										<input
+											id={'fid_' + this_key}
+											className="custom-control-input"
+											ref={c => {
+												if (c && self.props.mutable) {
+													self.options[`child_ref_${option.key}`] = c;
+												}
+											}}
+											{...props}
+										/>
+										{/* rendering Radio Button Choice Options */}
+										{option.options.map((opt, index) => {
+											const this_key = `preview_${opt.key}`;
+											const props = {};
+											props.name = option.field_name;
+											props.type = 'radio';
+											props.value = opt.value;
+											console.log('self.props = ', self.props);
+											console.log('opt = ', opt);
+											console.log('1273 props.name = ', props.name);
+											console.log('props.value = ', opt.value);
 
-									<label
-										className="custom-control-label"
-										htmlFor={'fid_' + this_key}>
-										{option.text}
-									</label>
+											if (self.props.mutable) {
+												console.log('mutable true');
+												props.defaultChecked =
+													self.props.defaultValue !== null &&
+													self.props.defaultValue !== undefined &&
+													(self.props.defaultValue.indexOf(opt.key) >
+														-1 ||
+														self.props.defaultValue.indexOf(
+															opt.value
+														) > -1);
+											}
+											if (this.props.read_only) {
+												props.disabled = 'disabled';
+											}
+											console.log('key = ', this_key + index);
+
+											return (
+												<div className={classNames} key={this_key}>
+													<input
+														id={'fid_' + this_key}
+														className="custom-control-input"
+														ref={c => {
+															console.log('c = ', c);
+															if (c && self.props.mutable) {
+																console.log(
+																	' 1296 self.options = ',
+																	self.options
+																);
+																self.options.options[
+																	`child_ref_${opt.key}`
+																] = c;
+															}
+														}}
+														{...props}
+													/>
+													{/* this displays option choice for each gorup item such as "Hamburger $1" */}
+													<label
+														className="custom-control-label"
+														htmlFor={'fid_' + this_key}>
+														{opt.text}
+													</label>
+												</div>
+											);
+										})}
+									</div>
 								</div>
-							</div>
-						);
-					})}
-					{/* </div> */}
+							);
+						})}
+					</div>
 				</div>
 			</React.Fragment>
 		);

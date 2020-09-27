@@ -53,6 +53,7 @@ export default class FormElementsEdit extends React.Component {
 	}
 
 	editElementProp(elemProperty, targProperty, e) {
+		console.log('editElementProp');
 		// elemProperty could be content or label
 		// targProperty could be value or checked
 		const this_element = this.state.element;
@@ -71,14 +72,24 @@ export default class FormElementsEdit extends React.Component {
 		);
 	}
 
+	// index: index number of the Editor in the component
+	// property: field where Editor is such as "label"
+	// editorContent: EditorState (Editor Object), we can use editorContent.getCurrentContent() to get current
+	//  content in the editor
 	onEditorStateChange(index, property, editorContent) {
-		// const html = draftToHtml(convertToRaw(editorContent.getCurrentContent())).replace(/<p>/g, '<div>').replace(/<\/p>/g, '</div>');
+		console.log('onEditStateChange');
+		console.log('property = ', property);
+		console.log('index = ', index);
+		console.log('editorContent = ', editorContent);
+
+		// html is something like <strong>Registration Options</strong>
 		const html = draftToHtml(
 			convertToRaw(editorContent.getCurrentContent())
 		)
 			.replace(/<p>/g, '')
 			.replace(/<\/p>/g, '')
 			.replace(/(?:\r\n|\r|\n)/g, ' ');
+
 		const this_element = this.state.element;
 		console.log('this.state = ', this.state);
 		console.log('this_element = ', this_element);
@@ -94,6 +105,7 @@ export default class FormElementsEdit extends React.Component {
 	}
 
 	updateElement() {
+		console.log('updateElement');
 		const this_element = this.state.element;
 		// to prevent ajax calls with no change
 		if (this.state.dirty) {
@@ -102,12 +114,14 @@ export default class FormElementsEdit extends React.Component {
 				this.props.updateElement
 			);
 			console.log('this.props.preview = ', this.props.preview);
+			// calls this.props.preview.updateElement
 			this.props.updateElement.call(this.props.preview, this_element);
 			this.setState({ dirty: false });
 		}
 	}
 
 	convertFromHTML(content) {
+		console.log('convertFromHTML');
 		const newContent = convertFromHTML(content);
 		if (
 			!newContent.contentBlocks ||
@@ -326,14 +340,19 @@ export default class FormElementsEdit extends React.Component {
 			this_files.unshift({ id: '', file_name: '' });
 		}
 
+		// this.props.element is the option entity such as "RadioButton", "MultipleRadioButtonGroup"
+		// get current text for text editor, we will use it to set as default text of Editor
 		let editorState;
 		if (this.props.element.hasOwnProperty('name')) {
+			console.log('name = ', this.props.element.name);
 			editorState = this.convertFromHTML(this.props.element.name);
 		}
 		if (this.props.element.hasOwnProperty('content')) {
+			console.log('content = ', this.props.element.content);
 			editorState = this.convertFromHTML(this.props.element.content);
 		}
 		if (this.props.element.hasOwnProperty('label')) {
+			console.log('label = ', this.props.element.label);
 			editorState = this.convertFromHTML(this.props.element.label);
 		}
 
@@ -343,6 +362,29 @@ export default class FormElementsEdit extends React.Component {
 			this.state.element.element
 		);
 		console.log('this.editElementProp = ', this.editElementProp);
+
+		// deal with nested option such as MultipleRadioButtonGroup options,
+		// each option of nested option, we need to create an object
+		if (nested) {
+			let optionComponents = [];
+			this.props.element.options.map(opt => {
+				// We only create the object if opt.text is unavailable.
+				// Because create(item) will add "text", if opt.text is there meaning it's been
+				// created
+				if (!opt.text) {
+					console.log('371 opt = ', opt);
+					// Create option as an component because here option is also a component,
+					// so it has all the componenet info.
+					let elementOption = this.create(opt);
+					console.log('elementOption = ', elementOption);
+					optionComponents.push(elementOption);
+				} else {
+					optionComponents.push(opt);
+				}
+			});
+			this.props.element.options = optionComponents;
+		}
+
 		return (
 			<div>
 				<div className="clearfix">
@@ -575,7 +617,8 @@ export default class FormElementsEdit extends React.Component {
 					</div>
 				)}
 				{/* this section is for Radioboxes or Checkboxes */}
-				{this.props.element.hasOwnProperty('label') &&
+				{!nested &&
+					this.props.element.hasOwnProperty('label') &&
 					!this.props.element.hasOwnProperty('content') && (
 						<div className="form-group">
 							<label>Display Label</label>
@@ -1038,63 +1081,71 @@ export default class FormElementsEdit extends React.Component {
 					/>
 				)}
 
+				{/* the following 2 sections are for MultipleRadioGroup, we define nested = true as we have nested option structur */}
+				{/***** this section is for Group Title *****/}
+				{nested && this.props.element.hasOwnProperty('options') && (
+					<div className="form-group">
+						<label>Display Label</label>
+						<Editor
+							toolbar={toolbar}
+							defaultEditorState={editorState}
+							onBlur={this.updateElement.bind(this)}
+							onEditorStateChange={this.onEditorStateChange.bind(
+								this,
+								0,
+								'label'
+							)}
+							stripPastedStyles={true}
+							placeholder="Please enter label"
+						/>
+						<br />
+						<div className="custom-control custom-checkbox">
+							<input
+								id="is-required"
+								className="custom-control-input"
+								type="checkbox"
+								checked={this_checked}
+								value={true}
+								onChange={this.editElementProp.bind(
+									this,
+									'required',
+									'checked'
+								)}
+							/>
+							<label
+								className="custom-control-label"
+								htmlFor="is-required">
+								Required
+							</label>
+						</div>
+					</div>
+				)}
+
+				{/***** this section is for Group options *****/}
 				{nested &&
 					this.props.element.hasOwnProperty('options') &&
-					this.props.element.options.map(opt => {
-						let elementOption = this.create(opt);
-						console.log('elementOption = ', elementOption);
-
-						const this_checked = elementOption.hasOwnProperty(
-							'required'
-						)
-							? opt.required
-							: false;
-						const this_read_only = elementOption.hasOwnProperty(
-							'readOnly'
-						)
-							? opt.readOnly
-							: false;
-						const this_default_today = elementOption.hasOwnProperty(
-							'defaultToday'
-						)
-							? opt.defaultToday
-							: false;
-						const this_show_time_select = elementOption.hasOwnProperty(
-							'showTimeSelect'
-						)
-							? opt.showTimeSelect
-							: false;
-						const this_show_time_select_only = elementOption.hasOwnProperty(
-							'showTimeSelectOnly'
-						)
-							? opt.showTimeSelectOnly
-							: false;
-						const this_checked_inline = elementOption.hasOwnProperty(
-							'inline'
-						)
-							? opt.inline
-							: false;
-
-						const this_checked_page_break = elementOption.hasOwnProperty(
-							'pageBreakBefore'
-						)
-							? opt.pageBreakBefore
-							: false;
-
-						console.log('nested');
+					this.props.element.options.map((opt, index) => {
 						console.log('opt = ', opt);
+						console.log(
+							'1122 this.props.preview.state.data = ',
+							this.props.preview.state.data
+						);
+						// this.props.element.options contains radioButton groups object such as "Day 1 Lunch" and "Day 2 Lunch"
 						return (
+							// data, updateElement and preview are from parent because this is
+							// an option not a main component which we don't create neither
+							// for it
 							<DynamicOptionListForGroup
-								showCorrectColumn={elementOption.showCorrectColumn}
-								canHaveOptionCorrect={
-									elementOption.canHaveOptionCorrect
-								}
-								canHaveOptionValue={elementOption.canHaveOptionValue}
+								key={opt.id}
+								showCorrectColumn={opt.showCorrectColumn}
+								canHaveOptionCorrect={opt.canHaveOptionCorrect}
+								canHaveOptionValue={opt.canHaveOptionValue}
 								data={this.props.preview.state.data}
-								updateElement={elementOption.updateElement}
-								preview={elementOption.preview}
-								element={elementOption}
-								key={elementOption.options.length}
+								updateElement={this.props.updateElement}
+								preview={this.props.preview}
+								element={opt}
+								index={index}
+								parent={this.props.element}
 							/>
 						);
 					})}

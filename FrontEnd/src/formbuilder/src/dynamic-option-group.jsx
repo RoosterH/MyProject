@@ -49,16 +49,12 @@ export default class DynamicOptionGroup extends React.Component {
 		this.state = {
 			element: this.props.element,
 			data: this.props.data,
-			dirty: false
+			dirty: false,
+			index: this.props.index,
+			parent: this.props.parent
 		};
-		// const {
-		// 	canHavePageBreakBefore,
-		// 	canHaveAlternateForm,
-		// 	canHaveDisplayHorizontal,
-		// 	canHaveOptionCorrect,
-		// 	canHaveOptionValue,
-		// 	nested
-		// } = this.props.element;
+
+		console.log('57 this.state = ', this.state);
 	}
 
 	_setValue(text) {
@@ -168,10 +164,25 @@ export default class DynamicOptionGroup extends React.Component {
 
 	updateElement() {
 		const this_element = this.state.element;
+		console.log('this_element = ', this_element);
 		// to prevent ajax calls with no change
 		console.log('this.props.preview = ', this.props.preview);
+		console.log('this.props.parent = ', this.props.parent);
+		const { options } = this.state.parent;
+		console.log('options = ', options);
+		for (let i = 0; i < options.length; ++i) {
+			if (this_element.id === options[i].id) {
+				options[i] = this_element;
+				console.log('parent 2 = ', this.state.parent);
+				break;
+			}
+		}
 		if (this.state.dirty) {
-			this.props.updateElement.call(this.props.preview, this_element);
+			// this.props.updateElement.call(this.props.preview, this_element);
+			this.props.updateElement.call(
+				this.props.preview,
+				this.state.parent
+			);
 			this.setState({ dirty: false });
 		}
 	}
@@ -201,15 +212,19 @@ export default class DynamicOptionGroup extends React.Component {
 			.replace(/<\/p>/g, '')
 			.replace(/(?:\r\n|\r|\n)/g, ' ');
 		const this_element = this.state.element;
+
+		console.log('html = ', html);
 		console.log('this.state = ', this.state);
 		console.log('this_element = ', this_element);
 
+		console.log('property = ', property);
 		this_element[property] = html;
-
+		this_element['text'] = html;
 		this.setState({
 			element: this_element,
 			dirty: true
 		});
+		console.log('this.state = ', this.state);
 	}
 
 	render() {
@@ -225,21 +240,50 @@ export default class DynamicOptionGroup extends React.Component {
 			? this.props.inline
 			: false;
 
+		console.log('this.props in 228 = ', this.props);
+
 		let editorState;
-		if (this.props.hasOwnProperty('name')) {
-			console.log('this.props = ', this.props);
+		if (this.props.element.hasOwnProperty('name')) {
+			console.log('name this.props = ', this.props);
 			editorState = this.convertFromHTML(this.props.element.name);
 		}
-		if (this.props.hasOwnProperty('content')) {
+		if (this.props.element.hasOwnProperty('content')) {
+			console.log('content this.props = ', this.props);
 			editorState = this.convertFromHTML(this.props.element.content);
 		}
-		if (this.props.hasOwnProperty('label')) {
+		if (this.props.element.hasOwnProperty('label')) {
+			console.log('label this.props = ', this.props);
+			editorState = this.convertFromHTML(this.props.element.label);
+		}
+		if (this.props.element.label) {
+			console.log('label2 this.props = ', this.props.element.label);
 			editorState = this.convertFromHTML(this.props.element.label);
 		}
 
+		console.log('ALL this.props = ', this.props);
+		console.log('editorState = ', editorState);
 		return (
 			<div className="form-group">
 				<label>Display Label</label>
+				<div className="col-sm-3">
+					<div className="dynamic-options-actions-buttons">
+						<button
+							onClick={this.addOption.bind(this, this.state.index)}
+							className="btn btn-success">
+							<i className="fas fa-plus-circle"></i>
+						</button>
+						{this.state.index > 0 && (
+							<button
+								onClick={this.removeOption.bind(
+									this,
+									this.state.index
+								)}
+								className="btn btn-danger">
+								<i className="fas fa-minus-circle"></i>
+							</button>
+						)}
+					</div>
+				</div>
 				<Editor
 					toolbar={toolbar}
 					defaultEditorState={editorState}
@@ -251,44 +295,8 @@ export default class DynamicOptionGroup extends React.Component {
 					)}
 					stripPastedStyles={true}
 					placeholder="Please enter label"
-					editorClassName="rdw-editor-label"
+					// editorClassName="rdw-editor-label"
 				/>
-				<br />
-				{/* <label className="control-label">Content:</label> */}
-				{/* <Editor
-					toolbar={toolbar}
-					defaultEditorState={this.convertFromHTML(
-						this.props.element.content
-					)}
-					onBlur={this.updateElement.bind(this)}
-					onEditorStateChange={this.onEditorStateChange.bind(
-						this,
-						0,
-						'content'
-					)}
-					stripPastedStyles={true}
-					editorClassName="rdw-editor-content"
-				/> */}
-				<br />
-				{/* <div className="custom-control custom-checkbox">
-					<input
-						id="is-required"
-						className="custom-control-input"
-						type="checkbox"
-						checked={this_checked}
-						value={true}
-						onChange={this.editElementProp.bind(
-							this,
-							'required',
-							'checked'
-						)}
-					/>
-					<label
-						className="custom-control-label"
-						htmlFor="is-required">
-						Required
-					</label>
-				</div> */}
 				{(this.state.element.element === 'RadioButtons' ||
 					this.state.element.element === 'Checkboxes') && (
 					// canHaveDisplayHorizontal &&
@@ -305,18 +313,23 @@ export default class DynamicOptionGroup extends React.Component {
 								'checked'
 							)}
 						/>
+
 						<DynamicOptionList
 							showCorrectColumn={this.props.element.showCorrectColumn}
 							canHaveOptionCorrect={
-								this.props.element.canHaveOptionCorrect
+								this.state.element.canHaveOptionCorrect
 							}
 							canHaveOptionValue={
-								this.props.element.canHaveOptionValue
+								this.state.element.canHaveOptionValue
 							}
-							// data={this.props.element.preview.state.data}
-							updateElement={this.props.element.updateElement}
-							preview={this.props.element.preview}
-							element={this.props.element}
+							// data can be obtained from parent of this_element
+							// we will just get from parent
+							data={this.props.data}
+							// updateElement and preview are from parents, because this
+							// is an option not a main component
+							updateElement={this.props.updateElement}
+							preview={this.props.preview}
+							element={this.state.element}
 							key={this.props.element.options.length}
 						/>
 

@@ -321,7 +321,7 @@ export const EntryFormOptions = () => [
 	{
 		key: 'MultipleRadioButtonGroup',
 		canHaveAnswer: true,
-		name: 'Lunch Menu',
+		name: 'Lunch Selection',
 		icon: 'far fa-dot-circle',
 		label: '<strong>Lunch Selection</strong>',
 		static: true,
@@ -331,10 +331,11 @@ export const EntryFormOptions = () => [
 			{
 				key: 'RadioButtons',
 				canHaveAnswer: true,
-				name: 'Lunch Options',
-				label: '<strong>Lunch Selection</strong>',
-				field_name: 'Lunch-',
+				name: 'Day 1',
+				label: '<strong>Day 1</strong>',
+				field_name: 'Lunch1-',
 				required: true,
+				static: true,
 				options: [
 					{
 						value: '10',
@@ -361,30 +362,31 @@ export const EntryFormOptions = () => [
 			{
 				key: 'RadioButtons',
 				canHaveAnswer: true,
-				name: 'Lunch Options',
-				label: '<strong>Lunch Selection</strong>',
-				field_name: 'Lunch-',
+				name: 'Day 2',
+				label: '<strong>Day 2</strong>',
+				field_name: 'Lunch2-',
 				required: true,
+				static: true,
 				options: [
 					{
 						value: '1',
-						text: 'Hamburger $10',
-						key: `lunchRadioOption_0`
+						text: 'Hamburger $1',
+						key: `lunchRadioOption2_0`
 					},
 					{
 						value: '2',
-						text: 'Sandwitch $8',
-						key: `lunchRadioOption_1`
+						text: 'Sandwitch $2',
+						key: `lunchRadioOption2_1`
 					},
 					{
 						value: '3',
-						text: 'Veggie Sandwitch $8',
-						key: `lunchRadioOption_2`
+						text: 'Veggie Sandwitch $3',
+						key: `lunchRadioOption2_2`
 					},
 					{
 						value: '4',
 						text: 'No lunch',
-						key: `lunchRadioOption_3`
+						key: `lunchRadioOption2_3`
 					}
 				]
 			}

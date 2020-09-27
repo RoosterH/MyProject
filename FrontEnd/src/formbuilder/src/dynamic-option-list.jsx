@@ -93,6 +93,7 @@ export default class DynamicOptionList extends React.Component {
 			let optionKey = this.state.element.options[0].key;
 			let optionName = optionKey.split('_')[0];
 			key = optionName + '_' + ID.uuid();
+			console.log('key = ', key);
 		}
 
 		const this_element = this.state.element;

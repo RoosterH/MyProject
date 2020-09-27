@@ -8,6 +8,7 @@ import store from './stores/store';
 import FormElementsEdit from './form-elements-edit';
 import SortableFormElements from './sortable-form-elements';
 import { couldStartTrivia } from 'typescript';
+import { connect } from 'formik';
 
 const { PlaceHolder } = SortableFormElements;
 
@@ -33,14 +34,18 @@ export default class Preview extends React.Component {
 	}
 
 	componentWillReceiveProps(nextProps) {
+		console.log('componentWillReceiveProps');
 		if (this.props.data !== nextProps.data) {
+			console.log('nextProps.data = ', nextProps.data);
 			store.dispatch('updateOrder', nextProps.data);
 		}
 	}
 
 	componentDidMount() {
+		console.log('componentDidMount');
 		this._isMounted = true;
 		const { data, url, saveUrl } = this.props;
+		console.log('componentDidMount data = ', data);
 		store.dispatch('load', {
 			loadUrl: url,
 			saveUrl,
@@ -55,6 +60,7 @@ export default class Preview extends React.Component {
 	}
 
 	editModeOff = e => {
+		console.log('editModeOff');
 		if (
 			this.editForm.current &&
 			!this.editForm.current.contains(e.target)
@@ -64,7 +70,9 @@ export default class Preview extends React.Component {
 	};
 
 	manualEditModeOff = () => {
+		console.log('in manualEditOff ');
 		const { editElement } = this.props;
+		console.log('editElement = ', editElement);
 		if (editElement && editElement.dirty) {
 			editElement.dirty = false;
 			this.updateElement(editElement);
@@ -73,14 +81,20 @@ export default class Preview extends React.Component {
 	};
 
 	_setValue(text) {
+		console.log('_setValue');
 		return text.replace(/[^A-Z0-9]+/gi, '_').toLowerCase();
 	}
 
+	// element: the component that needs to be updated
 	updateElement(element) {
 		console.log('in updateElement');
+		// this.state is the array that has all the components on the form
 		const { data } = this.state;
+		console.log('preview updateElement data = ', data);
 		let found = false;
 
+		// loop through all the components matching ID with element.id
+		// if matches, update the component with new element
 		for (let i = 0, len = data.length; i < len; i++) {
 			if (element.id === data[i].id) {
 				data[i] = element;
@@ -91,11 +105,13 @@ export default class Preview extends React.Component {
 
 		if (found) {
 			this.seq = this.seq > 100000 ? 0 : this.seq + 1;
+			// change the state tree
 			store.dispatch('updateOrder', data);
 		}
 	}
 
 	_onChange(data) {
+		console.log('_onChange');
 		if (!this._isMounted) {
 			return;
 		}
@@ -131,6 +147,7 @@ export default class Preview extends React.Component {
 	}
 
 	insertCard(item, hoverIndex) {
+		console.log('insertCard');
 		console.log('item = ', item);
 		const { data } = this.state;
 		data.splice(hoverIndex, 0, item);
@@ -138,6 +155,7 @@ export default class Preview extends React.Component {
 	}
 
 	moveCard(dragIndex, hoverIndex) {
+		console.log('moveCard');
 		const { data } = this.state;
 		const dragCard = data[dragIndex];
 		this.saveData(dragCard, dragIndex, hoverIndex);
@@ -149,6 +167,7 @@ export default class Preview extends React.Component {
 	}
 
 	saveData(dragCard, dragIndex, hoverIndex) {
+		console.log('saveData');
 		const newData = update(this.state, {
 			data: {
 				$splice: [
@@ -165,6 +184,10 @@ export default class Preview extends React.Component {
 	getElement(item, index) {
 		console.log('in getElement item = ', item);
 		const SortableFormElement = SortableFormElements[item.element];
+		console.log('item id = ', item.id);
+		console.log('index = ', index);
+		console.log('this.moveCard = ', this.moveCard);
+		console.log('this.insertCard = ', this.insertCard);
 		return (
 			<SortableFormElement
 				id={item.id}
@@ -191,9 +214,10 @@ export default class Preview extends React.Component {
 		}
 		const data = this.state.data.filter(x => !!x);
 		console.log('data = ', data);
-		const items = data.map((item, index) =>
-			this.getElement(item, index)
-		);
+		const items = data.map((item, index) => {
+			console.log('item = ', item);
+			return this.getElement(item, index);
+		});
 		return (
 			<div className={classes}>
 				<div className="edit-form" ref={this.editForm}>
