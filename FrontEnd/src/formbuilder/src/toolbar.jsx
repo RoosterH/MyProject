@@ -304,7 +304,17 @@ export default class Toolbar extends React.Component {
 				static: true,
 				required: true,
 				nested: true,
-				options: []
+				options: [
+					{
+						key: 'RadioButtons',
+						canHaveAnswer: true,
+						name: 'Day 1',
+						label: '<strong>Day 1</strong>',
+						field_name: 'Lunch1-',
+						static: true,
+						options: []
+					}
+				]
 			}
 		];
 	}

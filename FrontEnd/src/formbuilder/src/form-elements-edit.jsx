@@ -1125,7 +1125,7 @@ export default class FormElementsEdit extends React.Component {
 				{nested &&
 					this.props.element.hasOwnProperty('options') &&
 					this.props.element.options.map((opt, index) => {
-						console.log('opt = ', opt);
+						console.log('1128 opt = ', opt);
 						console.log(
 							'1122 this.props.preview.state.data = ',
 							this.props.preview.state.data

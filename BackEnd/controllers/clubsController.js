@@ -610,6 +610,12 @@ const publishEvent = async (req, res, next) => {
 
 // Form analysis
 const formAnalysis = data => {
+	//! @todo Multiple Day MultipleRadioButtonGroup
+	// maybe for lunch options, race group and worker assignment should stay the same across the event
+	if (!data.field_name) {
+		return [null, null];
+	}
+
 	// Form field name is defined in frontend FormBuilder.js
 	// "RunGroupSingle-" Race Group prefix for Single Choice Radiobutton
 	// field_name: "RunGroupSingle-12EDB3DA-484C-4ECB-BB32-C3AE969A2D2F"

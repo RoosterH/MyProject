@@ -762,6 +762,8 @@ class RadioButtons extends React.Component {
 									className="custom-control-input"
 									ref={c => {
 										if (c && self.props.mutable) {
+											console.log('Radio c = ', c);
+											console.log('self.options = ', self.options);
 											self.options[`child_ref_${option.key}`] = c;
 										}
 									}}
@@ -1201,6 +1203,8 @@ class MultipleRadioButtonGroup extends React.Component {
 	constructor(props) {
 		super(props);
 		this.options = {};
+		// this.options.options = {};
+		this.inputField = React.createRef();
 		console.log('props = ', props);
 	}
 
@@ -1285,6 +1289,9 @@ class MultipleRadioButtonGroup extends React.Component {
 											ref={c => {
 												if (c && self.props.mutable) {
 													self.options[`child_ref_${option.key}`] = c;
+													self.options[
+														`child_ref_${option.key}`
+													].options = {};
 												}
 											}}
 											{...props}
@@ -1329,8 +1336,10 @@ class MultipleRadioButtonGroup extends React.Component {
 																	' 1296 self.options = ',
 																	self.options
 																);
-																self.options.options[
-																	`child_ref_${opt.key}`
+																self.options[
+																	`child_ref_${option.key}`
+																].options[
+																	`child_ref_${option.key}_${opt.key}`
 																] = c;
 															}
 														}}

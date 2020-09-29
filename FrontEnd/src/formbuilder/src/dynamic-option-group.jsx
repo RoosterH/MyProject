@@ -136,30 +136,43 @@ export default class DynamicOptionGroup extends React.Component {
 	}
 
 	addOption(index) {
+		console.log('in addOption');
 		console.log('index = ', index);
-		console.log('element = ', this.state.element.options[0].key);
-		let optionsLength = this.state.element.options.length;
-		let key;
-		if (this.state.element.options[0].key.split('_').length > 0) {
-			let optionKey = this.state.element.options[0].key;
-			let optionName = optionKey.split('_')[0];
-			key = optionName + '_' + ID.uuid();
-		}
+		console.log('parent = ', this.props.parent);
+		console.log('element = ', this.state.element);
 
-		const this_element = this.state.element;
-		this_element.options.splice(index + 1, 0, {
-			value: '',
-			text: '',
-			key: key ? key : ID.uuid()
-		});
-		this.props.updateElement.call(this.props.preview, this_element);
+		// adding a Radio Button to parent Group
+		// Make a copy of this.state.element and modify properties
+		// We need to use Deep Copy to make sure all the information is disconnected
+		// between this.state.element and newItem
+		let newItem = JSON.parse(JSON.stringify(this.state.element));
+
+		// parse parent text such as: "Lunch Selection"
+		// get rid of SPACE in parent text + uuid
+		newItem.field_name =
+			this.props.parent.text.split(' ').join('') + '_' + ID.uuid();
+		newItem.id = ID.uuid();
+		newItem.parentId = this.props.parent.id;
+
+		this.props.parent.options.splice(index + 1, 0, newItem);
+		console.log('this.props.parent = ', this.props.parent);
+
+		this.props.updateElement.call(
+			this.props.preview,
+			this.props.parent
+		);
 	}
 
 	removeOption(index) {
 		console.log('remove index = ', index);
 		const this_element = this.state.element;
-		this_element.options.splice(index, 1);
-		this.props.updateElement.call(this.props.preview, this_element);
+		console.log('this_element = ', this_element);
+		// splice parent.options
+		this.props.parent.options.splice(index, 1);
+		this.props.updateElement.call(
+			this.props.preview,
+			this.props.parent
+		);
 	}
 
 	updateElement() {
@@ -264,26 +277,23 @@ export default class DynamicOptionGroup extends React.Component {
 		console.log('editorState = ', editorState);
 		return (
 			<div className="form-group">
-				<label>Display Label</label>
-				<div className="col-sm-3">
-					<div className="dynamic-options-actions-buttons">
-						<button
-							onClick={this.addOption.bind(this, this.state.index)}
-							className="btn btn-success">
-							<i className="fas fa-plus-circle"></i>
-						</button>
-						{this.state.index > 0 && (
-							<button
-								onClick={this.removeOption.bind(
-									this,
-									this.state.index
-								)}
-								className="btn btn-danger">
-								<i className="fas fa-minus-circle"></i>
-							</button>
-						)}
-					</div>
-				</div>
+				<label>Display Label &nbsp; &nbsp; &nbsp; &nbsp;</label>
+				{/* <div className="col-sm-3">
+					<div className="dynamic-options-actions-buttons"> */}
+				<button
+					onClick={this.addOption.bind(this, this.state.index)}
+					className="btn btn-success">
+					<i className="fas fa-plus-circle"></i>
+				</button>
+				{this.state.index > 0 && (
+					<button
+						onClick={this.removeOption.bind(this, this.state.index)}
+						className="btn btn-danger">
+						<i className="fas fa-minus-circle"></i>
+					</button>
+				)}
+				{/* </div>
+				</div> */}
 				<Editor
 					toolbar={toolbar}
 					defaultEditorState={editorState}
@@ -331,6 +341,7 @@ export default class DynamicOptionGroup extends React.Component {
 							preview={this.props.preview}
 							element={this.state.element}
 							key={this.props.element.options.length}
+							parent={this.props.parent}
 						/>
 
 						<label

@@ -74,6 +74,7 @@ export default class Preview extends React.Component {
 		const { editElement } = this.props;
 		console.log('editElement = ', editElement);
 		if (editElement && editElement.dirty) {
+			console.log('77 editElement dirty = ');
 			editElement.dirty = false;
 			this.updateElement(editElement);
 		}
@@ -88,6 +89,7 @@ export default class Preview extends React.Component {
 	// element: the component that needs to be updated
 	updateElement(element) {
 		console.log('in updateElement');
+		console.log('element = ', element);
 		// this.state is the array that has all the components on the form
 		const { data } = this.state;
 		console.log('preview updateElement data = ', data);
@@ -98,9 +100,31 @@ export default class Preview extends React.Component {
 		for (let i = 0, len = data.length; i < len; i++) {
 			if (element.id === data[i].id) {
 				data[i] = element;
+				console.log('found updateElement');
 				found = true;
 				break;
 			}
+
+			// else if (element.parentId === data[i].id) {
+			// 	console.log('Found parent');
+			// 	console.log('i = ', i);
+			// 	// for nested component, to add a new RadioButtons option
+			// 	// element is the RadioButtons
+			// 	data[i].options.push(element);
+			// 	console.log('data = ', data);
+			// 	found = true;
+			// 	break;
+			// } else if (data[i].nested) {
+			// 	// for nested component, we need to match its option items with
+			// 	// elment because element could be option component.
+			// 	for (let j = 0; j < data[i].options.length; ++j) {
+			// 		if (data[i].options[j].id === element.id) {
+			// 			data[i].options[j] = element;
+			// 			found = true;
+			// 			break;
+			// 		}
+			// 	}
+			// }
 		}
 
 		if (found) {
@@ -208,6 +232,10 @@ export default class Preview extends React.Component {
 	}
 
 	render() {
+		console.log(
+			'235 this.props.editElement = ',
+			this.props.editElement
+		);
 		let classes = this.props.className;
 		if (this.props.editMode) {
 			classes += ' is-editing';

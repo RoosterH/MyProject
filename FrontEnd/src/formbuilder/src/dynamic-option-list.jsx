@@ -12,7 +12,8 @@ export default class DynamicOptionList extends React.Component {
 		this.state = {
 			element: this.props.element,
 			data: this.props.data,
-			dirty: false
+			dirty: false,
+			parent: this.props.parent
 		};
 	}
 
@@ -77,7 +78,15 @@ export default class DynamicOptionList extends React.Component {
 		const this_element = this.state.element;
 		// to prevent ajax calls with no change
 		if (this.state.dirty) {
-			this.props.updateElement.call(this.props.preview, this_element);
+			console.log('in dirty');
+			console.log('this.props.preview = ', this.props.preview);
+			console.log('this_element = ', this_element);
+			console.log('this.props.parent = ', this.props.parent);
+			//this.props.updateElement.call(this.props.preview, this_element);
+			this.props.updateElement.call(
+				this.props.preview,
+				this.props.parent
+			);
 			this.setState({ dirty: false });
 		}
 	}

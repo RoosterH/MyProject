@@ -37,10 +37,11 @@ const Event = props => {
 		clearError
 	} = useHttpClient();
 
-	// 2 different routes here.
+	// 3 different routes here.
 	// 1. Request from owner club for the event, backend returns all the event information for furture editing.
 	//    This avoids multiple requests to the backend.
-	// 2. The other is the general request.  This request will get limited info from backend.
+	// 2. Owner club gets event entry report
+	// 3. The other is the general request.  This request will get limited info from backend.
 	// *** No dependency here as intended.  This is to avoid re-renderng in EditEventManager to send request to backend again
 	useEffect(() => {
 		const fetechEvents = async () => {
