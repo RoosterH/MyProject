@@ -311,6 +311,7 @@ export default class DynamicOptionGroup extends React.Component {
 					this.state.element.element === 'Checkboxes') && (
 					// canHaveDisplayHorizontal &&
 					<div className="custom-control custom-checkbox">
+						{/* this input is for Display Horizontally */}
 						<input
 							id="display-horizontal"
 							className="custom-control-input"

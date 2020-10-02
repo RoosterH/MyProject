@@ -71,6 +71,7 @@ export default class ReactForm extends React.Component {
 
 	// convert provided answers
 	_convert(answers) {
+		console.log('_convert ');
 		if (Array.isArray(answers)) {
 			const result = {};
 			answers.forEach(x => {
@@ -86,6 +87,7 @@ export default class ReactForm extends React.Component {
 	}
 
 	_getDefaultValue(item) {
+		console.log('_getDefaultValue ');
 		if (item.field_name && this.answerData) {
 			return this.answerData[item.field_name];
 		}
@@ -93,6 +95,7 @@ export default class ReactForm extends React.Component {
 	}
 
 	_optionsDefaultValue(item) {
+		console.log('_optionsDefaultValue ');
 		const defaultValue = this._getDefaultValue(item);
 		if (defaultValue) {
 			return defaultValue;
@@ -111,6 +114,7 @@ export default class ReactForm extends React.Component {
 	}
 
 	_getItemValue(item, ref) {
+		console.log('_getItemValue ');
 		let $item = {
 			element: item.element,
 			value: ''
@@ -126,6 +130,7 @@ export default class ReactForm extends React.Component {
 				? ref.state.img.replace('data:image/png;base64,', '')
 				: '';
 		} else if (ref && ref.inputField) {
+			console.log('I am in ref & ref.inputField');
 			$item = ReactDOM.findDOMNode(ref.inputField.current);
 			if (typeof $item.value === 'string') {
 				$item.value = $item.value.trim();
@@ -135,6 +140,7 @@ export default class ReactForm extends React.Component {
 	}
 
 	_isIncorrect(item) {
+		console.log('_isIncorrect ');
 		let incorrect = false;
 		if (item.canHaveAnswer) {
 			const ref = this.inputs[item.field_name];
@@ -173,15 +179,15 @@ export default class ReactForm extends React.Component {
 	}
 
 	_isInvalid(item) {
+		console.log('_isInvalid ');
 		let invalid = false;
 		if (item.required === true) {
-			const ref = this.inputs[item.field_name];
 			if (
 				item.element === 'Checkboxes' ||
 				item.element === 'RadioButtons' ||
-				item.element === 'ParagraphCheckbox' ||
-				item.element === 'MultipleRadioButtonGroup'
+				item.element === 'ParagraphCheckbox'
 			) {
+				const ref = this.inputs[item.field_name];
 				let checked_options = 0;
 				item.options.forEach(option => {
 					const $option = ReactDOM.findDOMNode(
@@ -195,7 +201,46 @@ export default class ReactForm extends React.Component {
 					// errors.push(item.label + ' is required!');
 					invalid = true;
 				}
+			} else if (item.element === 'MultipleRadioButtonGroup') {
+				console.log(
+					'MultipleRadioButtonGroup this.inputs = ',
+					this.inputs
+				);
+				console.log('item = ', item);
+
+				// ***** HACK ****** //
+				// Becuase we don't have a field_name for parent Group,  so
+				// we use item.options[0].field_name to get information.
+				// group is the MultipleRadioButtonGroup not the child option
+				let group = this.inputs[item.options[0].field_name];
+				console.log('group = ', group);
+
+				// group.options contains all the children RadioButtons choices
+				// group.props.data.options has RadioButons
+				// 1. Get each RadioButtons with its ref of choice options
+				//    The way to get ref of choices is to get the key
+				//    "child_ref_undefined_" + choice key
+
+				// The number of the checked choices must match the number of
+				// group.props.data.options
+				let checked_options = true;
+				group.props.data.options.forEach(option => {
+					let optionValid = false;
+					option.options.forEach(opt => {
+						let key = 'child_ref_undefined_' + opt.key;
+						optionValid |= group.options[key].checked;
+						console.log('key = ', key);
+						console.log('checked = ', group.options[key].checked);
+						console.log('optionValid = ', optionValid);
+					});
+					checked_options &= optionValid;
+				});
+
+				if (!checked_options) {
+					invalid = true;
+				}
 			} else {
+				const ref = this.inputs[item.field_name];
 				const $item = this._getItemValue(item, ref);
 				if (item.element === 'Rating') {
 					if ($item.value === 0) {
@@ -213,17 +258,25 @@ export default class ReactForm extends React.Component {
 	}
 
 	_collect(item) {
-		const itemData = { name: item.field_name };
+		let itemDataArray = [];
+		console.log('_collect ');
 		const ref = this.inputs[item.field_name];
 		if (
 			item.element === 'Checkboxes' ||
 			item.element === 'RadioButtons' ||
-			item.element === 'ParagraphCheckbox' ||
-			item.element === 'MultipleRadioButtonGroup'
+			item.element === 'ParagraphCheckbox'
 		) {
+			const itemData = { name: item.field_name };
+			console.log('_collect item.element = ', item.element);
 			const checked_options = [];
 			item.options.forEach(option => {
 				const $option = ReactDOM.findDOMNode(
+					ref.options[`child_ref_${option.key}`]
+				);
+				console.log('$option = ', $option);
+				console.log('option = ', option);
+				console.log(
+					'ref.option[child_ref_${option.key}] = ',
 					ref.options[`child_ref_${option.key}`]
 				);
 				if ($option.checked) {
@@ -231,20 +284,64 @@ export default class ReactForm extends React.Component {
 				}
 			});
 			itemData.value = checked_options;
+			itemDataArray.push(itemData);
+			console.log('itemData = ', itemData);
+		} else if (item.element === 'MultipleRadioButtonGroup') {
+			console.log(
+				'MultipleRadioButtonGroup this.inputs = ',
+				this.inputs
+			);
+			console.log('item = ', item);
+
+			// ***** HACK ****** //
+			// Becuase we don't have a field_name for parent Group,  so
+			// we use item.options[0].field_name to get information.
+			// group is the MultipleRadioButtonGroup not the child option
+			let group = this.inputs[item.options[0].field_name];
+			console.log('group = ', group);
+
+			// group.options contains all the children RadioButtons choices
+			// group.props.data.options has RadioButons
+			// 1. Get each RadioButtons with its ref of choice options
+			//    The way to get ref of choices is to get the key
+			//    "child_ref_undefined_" + choice key
+
+			// The number of the checked choices must match the number of
+			// group.props.data.options
+
+			group.props.data.options.forEach(option => {
+				let itemData = {};
+				let checked_options = [];
+				option.options.forEach(opt => {
+					let key = 'child_ref_undefined_' + opt.key;
+					if (group.options[key].checked) {
+						checked_options.push(opt.key);
+					}
+				});
+				itemData.name = option.field_name;
+				itemData.value = checked_options;
+				itemDataArray.push(itemData);
+			});
 		} else {
+			const itemData = { name: item.field_name };
 			if (!ref) return null;
 			itemData.value = this._getItemValue(item, ref).value;
+			itemDataArray.push(itemData);
 		}
-		return itemData;
+		return itemDataArray;
 	}
 
 	_collectFormData(data) {
+		console.log('_collectFormData ');
 		const formData = [];
 		data.forEach(item => {
 			const item_data = this._collect(item);
-			if (item_data) {
-				formData.push(item_data);
-			}
+			item_data.map(data => {
+				formData.push(data);
+			});
+			// if (item_data) {
+			// 	formData.push(item_data);
+			// }
 		});
 		return formData;
 	}
@@ -308,6 +405,7 @@ export default class ReactForm extends React.Component {
 	}
 
 	validateForm() {
+		console.log('validateForm');
 		const errors = [];
 		let data_items = this.props.data;
 		if (this.props.display_short) {
@@ -337,7 +435,10 @@ export default class ReactForm extends React.Component {
 	}
 
 	getInputElement(item) {
+		console.log('getInputElement');
+		console.log('item = ', item);
 		const Input = FormElements[item.element];
+		console.log('Input = ', Input);
 		return (
 			<Input
 				handleChange={this.handleChange}
@@ -351,7 +452,25 @@ export default class ReactForm extends React.Component {
 		);
 	}
 
+	getMultipleInputElement(item) {
+		console.log('getMultipleInputElement');
+		console.log('item = ', item);
+		const Input = FormElements[item.element];
+		return (
+			<Input
+				handleChange={this.handleChange}
+				ref={c => (this.inputs[item.options[0].field_name] = c)}
+				mutable={true}
+				key={`form_${item.id}`}
+				data={item}
+				read_only={this.props.read_only}
+				defaultValue={this._getDefaultValue(item)}
+			/>
+		);
+	}
+
 	getSimpleElement(item) {
+		console.log('getSimpleElement');
 		const Element = FormElements[item.element];
 		return (
 			<Element mutable={true} key={`form_${item.id}`} data={item} />
@@ -433,18 +552,12 @@ export default class ReactForm extends React.Component {
 						/>
 					);
 				case 'MultipleRadioButtonGroup':
-					return (
-						<MultipleRadioButtonGroup
-							ref={c => (this.inputs[item.field_name] = c)}
-							read_only={this.props.read_only}
-							handleChange={this.handleChange}
-							mutable={true}
-							key={`form_${item.id}`}
-							data={item}
-							defaultValue={this._optionsDefaultValue(item)}
-						/>
-					);
+					console.log('inside MultipleRadioButtonGroup');
+					console.log('this.inputs = ', this.inputs);
+					console.log('item = ', item);
+					console.log('item.id = ', item.id);
 
+					return this.getMultipleInputElement(item);
 				case 'Image':
 					return (
 						<Image

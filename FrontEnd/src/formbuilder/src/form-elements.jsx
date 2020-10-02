@@ -1204,14 +1204,15 @@ class MultipleRadioButtonGroup extends React.Component {
 		super(props);
 		this.options = {};
 		// this.options.options = {};
-		this.inputField = React.createRef();
+		// this.inputField = React.createRef();
 		console.log('props = ', props);
+		console.log('1209 this.options = ', this.options);
 	}
 
 	render() {
 		// Header Section
 		// const headerClasses = `dynamic-input ${this.props.data.element}-input`;
-
+		console.log('this.options = ', this.options);
 		let classNames = 'static';
 		if (this.props.data.bold) {
 			classNames += ' bold';
@@ -1256,7 +1257,10 @@ class MultipleRadioButtonGroup extends React.Component {
 						<ComponentLabel className="form-label" {...this.props} />
 						{this.props.data.options.map((option, index) => {
 							console.log('option = ', option);
-							const this_key = `preview_${option.key}`;
+							// To create form we will use key, to regenerate form we will use field_name.
+							const this_key = option.key
+								? `preview_${option.key}`
+								: `preview_${option.field_name}`;
 							console.log('this_key = ', this_key);
 							const props = {};
 							// props.name = self.props.data.field_name;
@@ -1283,7 +1287,7 @@ class MultipleRadioButtonGroup extends React.Component {
 										props={option}
 									/>
 									<div className={classNames}>
-										<input
+										{/* <input
 											id={'fid_' + this_key}
 											className="custom-control-input"
 											ref={c => {
@@ -1295,29 +1299,46 @@ class MultipleRadioButtonGroup extends React.Component {
 												}
 											}}
 											{...props}
-										/>
+										/> */}
 										{/* rendering Radio Button Choice Options */}
 										{option.options.map((opt, index) => {
+											// this_key = preview_lunchRadioOption_1
 											const this_key = `preview_${opt.key}`;
+											console.log('this_key 1305 = ', this_key);
 											const props = {};
 											props.name = option.field_name;
 											props.type = 'radio';
 											props.value = opt.value;
+
 											console.log('self.props = ', self.props);
+											console.log('1312 props.name = ', props.name);
 											console.log('opt = ', opt);
-											console.log('1273 props.name = ', props.name);
 											console.log('props.value = ', opt.value);
 
+											// self.props => "MultipleRadioButtonGroup" big component information
+											// props.name = "Lunch2-8FA19AEA-7166-4CDC-8463-4150B1F56941"
+											// opt = {value: "1", text: "Hamburger $1", key: "lunchRadioOption2_0"}
 											if (self.props.mutable) {
 												console.log('mutable true');
+												let key = opt.key ? opt.key : opt.field_name;
+												console.log('opt.key = ', opt.key);
+												console.log(
+													'opt.field_name = ',
+													opt.field_name
+												);
+												console.log('key = ', key);
 												props.defaultChecked =
 													self.props.defaultValue !== null &&
 													self.props.defaultValue !== undefined &&
-													(self.props.defaultValue.indexOf(opt.key) >
+													(self.props.defaultValue.indexOf(key) >
 														-1 ||
 														self.props.defaultValue.indexOf(
 															opt.value
 														) > -1);
+												console.log(
+													'defaultChecked = ',
+													props.defaultChecked
+												);
 											}
 											if (this.props.read_only) {
 												props.disabled = 'disabled';
@@ -1331,14 +1352,15 @@ class MultipleRadioButtonGroup extends React.Component {
 														className="custom-control-input"
 														ref={c => {
 															console.log('c = ', c);
+															let optionKey = option.key
+																? option.key
+																: option.field_name;
 															if (c && self.props.mutable) {
 																console.log(
-																	' 1296 self.options = ',
+																	' 1359 self.options = ',
 																	self.options
 																);
 																self.options[
-																	`child_ref_${option.key}`
-																].options[
 																	`child_ref_${option.key}_${opt.key}`
 																] = c;
 															}
