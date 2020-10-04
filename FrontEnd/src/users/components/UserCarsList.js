@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Button from '../../shared/components/FormElements/Button';
 import Card from '../../shared/components/UIElements/Card';
@@ -25,6 +25,10 @@ const UserCarsList = props => {
 
 	const carIdHandler = carId => {
 		props.carIdHandler(carId);
+	};
+
+	const getNewEntry = entry => {
+		props.getNewEntry(entry);
 	};
 
 	return (
@@ -71,6 +75,9 @@ const UserCarsList = props => {
 					carSelector={props.carSelector}
 					carSelectorStatus={carSelectorStatus}
 					carIdHandler={carIdHandler}
+					isEntryCar={props.entryCarId === car.id}
+					entryId={props.entryId}
+					getNewEntry={getNewEntry}
 				/>
 			))}
 		</ul>

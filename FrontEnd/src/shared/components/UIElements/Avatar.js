@@ -1,12 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import './Avatar.css';
 
 const Avatar = props => {
+	console.log('in Avatar');
+	const [className, setClassName] = useState('watermark');
+	useEffect(() => {
+		if (props.publishDescription === 'RETIRED') {
+			setClassName('watermark-retired');
+		}
+	}, [props.publishDescription, setClassName]);
+
 	return (
 		// props.className determines which css to use
 		<div className={`${props.className}`} style={props.style}>
-			<figure className="watermark">
+			<figure className={`${className}`}>
 				<img
 					src={props.image}
 					alt={props.alt}

@@ -16,6 +16,7 @@ const UserGarage = props => {
 	// check if the caller is CarSelector
 	const carSelector = props.carSelector;
 	const userId = props.userId;
+	const entryCarId = props.entryCarId;
 
 	const [loadedCars, setLoadedCars] = useState();
 	const userAuthContext = useContext(UserAuthContext);
@@ -25,6 +26,10 @@ const UserGarage = props => {
 		sendRequest,
 		clearError
 	} = useHttpClient();
+
+	const getNewEntry = entry => {
+		props.getNewEntry(entry);
+	};
 
 	// useParams().{Id} Id need to match what defines in <Route path="/cars/users/:userId" exact>
 
@@ -102,7 +107,7 @@ const UserGarage = props => {
 			}
 		};
 		fetechEvents();
-	}, [sendRequest, userId, userAuthContext]);
+	}, [sendRequest, userId, userAuthContext, setLoadedCars]);
 
 	const carSelectorStatus = status => {
 		props.carSelectorStatus(status);
@@ -132,6 +137,9 @@ const UserGarage = props => {
 					carSelector={true}
 					carSelectorStatus={carSelectorStatus}
 					carIdHandler={carIdHandler}
+					entryCarId={entryCarId}
+					entryId={props.entryId}
+					getNewEntry={getNewEntry}
 				/>
 			)}
 			{!isLoading && !loadedCars && !carSelector && (

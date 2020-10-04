@@ -34,16 +34,21 @@ router.use(checkUserAuth);
 router.post(
 	'/submit/:eid',
 	[
-		(check('eventId').not().isEmpty(),
+		check('eventId').not().isEmpty(),
 		check('carId').not().isEmpty(),
 		check('carNumber').not().isEmpty(),
 		check('raceClass').not().isEmpty(),
-		check('answer').not().isEmpty()),
+		check('answer').not().isEmpty(),
 		check('disclaimer').not().equals(true)
 	],
 	entriesController.createEntry
 );
 
+router.patch(
+	'/car/:entryId',
+	[check('carId').not().isEmpty()],
+	entriesController.changeCar
+);
 // router.delete('/:eid', eventsController.deleteEvent);
 
 module.exports = router;

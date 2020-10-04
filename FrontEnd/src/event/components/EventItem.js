@@ -339,7 +339,7 @@ const EventItem = props => {
 							{buttonName === 'REGISTER EVENT' && (
 								<Link
 									to={{
-										pathname: `/events/newentry/${props.event.id}`,
+										pathname: `/events/newEntryManager/${props.event.id}`,
 										state: {
 											eventName: props.event.name
 										}
@@ -352,12 +352,17 @@ const EventItem = props => {
 								</Link>
 							)}
 							{buttonName === 'MODIFY ENTRY' && (
-								<Button
-									disabled={!openRegistration}
-									to={`/events/newentry/${props.event.id}`}
-									size="small-orange">
-									{buttonName}
-								</Button>
+								<Link
+									to={{
+										pathname: `/events/editEntryManager/${props.event.id}`,
+										state: { eventName: props.event.name }
+									}}>
+									<Button
+										disabled={!openRegistration}
+										size="small-orange">
+										{buttonName}
+									</Button>
+								</Link>
 							)}
 						</div>
 					</div>

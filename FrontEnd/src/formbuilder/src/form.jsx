@@ -308,7 +308,6 @@ export default class ReactForm extends React.Component {
 
 			// The number of the checked choices must match the number of
 			// group.props.data.options
-
 			group.props.data.options.forEach(option => {
 				let itemData = {};
 				let checked_options = [];

@@ -42,6 +42,9 @@ router.get('/garage/:uid', carsController.getCarsByUserId);
 // GET user events
 router.get('/events/:uid', usersController.getEvents);
 
+// get event entry
+router.get('/entry/:eid', usersController.getEntry);
+
 router.post('/logout', usersController.logoutUser);
 
 router.patch(

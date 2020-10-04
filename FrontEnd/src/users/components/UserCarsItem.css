@@ -22,6 +22,21 @@
 	transform: translateY(4px);
 }
 
+.pickedcar-button {
+	background-color: white;
+	border: none;
+	border-width: 0px;
+	border-color: white;
+}
+
+.pickedcar-button:hover {
+	cursor: default;
+	border: none;
+	border-width: 0px;
+	border-color: white;
+	background-color: white;
+}
+
 /* get rid of button border when focus */
 button:focus {
 	outline: 0;

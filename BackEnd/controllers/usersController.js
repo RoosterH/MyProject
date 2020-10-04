@@ -456,6 +456,41 @@ const getEvents = async (req, res, next) => {
 	});
 };
 
+const getEntry = async (req, res, next) => {
+	const eId = req.params.eid;
+	let uId = req.userData;
+
+	let entry;
+	try {
+		// populate allows us to access a document in another collection
+		// and to work with data in that existing document
+		entry = await Entry.findOne({
+			userId: uId,
+			eventId: eId
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'Get user entry process failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!entry) {
+		const error = new HttpError(
+			'Could not find entry for this user.',
+			404
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		entry: entry.toObject({
+			getters: true
+		})
+	});
+};
+
 exports.getAllUsers = getAllUsers;
 exports.getUserById = getUserById;
 exports.createUser = createUser;
@@ -464,3 +499,4 @@ exports.updateUser = updateUser;
 exports.deleteUser = deleteUser;
 exports.logoutUser = logoutUser;
 exports.getEvents = getEvents;
+exports.getEntry = getEntry;

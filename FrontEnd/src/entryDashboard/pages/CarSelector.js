@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import UserGarage from '../../users/pages/UserGarage';
@@ -6,9 +6,21 @@ import { UserAuthContext } from '../../shared/context/auth-context';
 
 import './Entry.css';
 
-// Calling ClubEvents
+// CarSelector is called when user is entering an event that needs to pick up a car
 const CarSelector = props => {
 	let userId = props.userId;
+	// entryCarId is the car that is picked for the entry
+	let entryCarId = props.entryCarId;
+
+	const [instructionMsg, setInstructionMsg] = useState(
+		'Please Select A Car'
+	);
+	useEffect(() => {
+		if (entryCarId) {
+			setInstructionMsg('Please Pick A Car to Change Your Ride');
+		}
+	}, [entryCarId, setInstructionMsg]);
+
 	const userAuthContext = useContext(UserAuthContext);
 	if (
 		!userAuthContext ||
@@ -17,9 +29,8 @@ const CarSelector = props => {
 	) {
 		return (
 			<div className="list-header clearfix">
-				<div className="selector-title">
-					Not authorized to access garage
-				</div>
+				{/* <div className="selector-title"> */}
+				<div className="h3">Not authorized to access garage</div>
 			</div>
 		);
 	}
@@ -36,10 +47,14 @@ const CarSelector = props => {
 		props.carIdHandler(carId);
 	};
 
+	const getNewEntry = entry => {
+		props.getNewEntry(entry);
+	};
 	return (
 		<React.Fragment>
 			<div className="list-header clearfix">
-				<div className="selector-title">Select a car</div>
+				{/* <div className="selector-title">Select a car</div> */}
+				<div className="h3">{instructionMsg}</div>
 			</div>
 			<UserGarage
 				carSelector={true}
@@ -47,6 +62,9 @@ const CarSelector = props => {
 				getCarId={getCarId}
 				carSelectorStatus={carSelectorStatus}
 				carIdHandler={carIdHandler}
+				entryCarId={entryCarId}
+				entryId={props.entryId}
+				getNewEntry={getNewEntry}
 			/>
 		</React.Fragment>
 	);

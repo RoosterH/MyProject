@@ -213,8 +213,9 @@ const createEntry = async (req, res, next) => {
 			if (eventUpdate) {
 				const session = await mongoose.startSession();
 				session.startTransaction();
-				await event.save({ session: session });
+				// save entry first because entry has less requests than event
 				await entry.save({ session: session });
+				await event.save({ session: session });
 				await session.commitTransaction();
 			} else {
 				await entry.save();
@@ -337,4 +338,48 @@ const parseAnswer = (options, answer, fieldName) => {
 	}
 	return [-1, null];
 };
+
+const changeCar = async (req, res, next) => {
+	const entryId = req.params.entryId;
+	const userId = req.userData;
+
+	let entry;
+	try {
+		entry = await Entry.findOne({
+			_id: entryId,
+			userId: userId
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'Change car process failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!entry) {
+		console.log('entry not found');
+		const error = new HttpError(
+			'Could not find entry to change car.',
+			404
+		);
+		return next(error);
+	}
+
+	const { carId } = req.body;
+	entry.carId = carId;
+
+	try {
+		await entry.save();
+	} catch (err) {
+		const error = new HttpError(
+			'entry update car connecting with DB failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	res.status(200).json({ entry: entry.toObject({ getters: true }) });
+};
+
 exports.createEntry = createEntry;
+exports.changeCar = changeCar;

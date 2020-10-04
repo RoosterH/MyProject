@@ -196,7 +196,7 @@ const CarItem = props => {
 											`/${props.car.image}`
 										}
 										alt={props.car.model}
-										className="eventimage-container-img"
+										className="carimage-container-img"
 									/>
 								</div>
 							</div>

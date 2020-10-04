@@ -5,6 +5,7 @@ import UpdateFormBuilder from '../../event/components/UpdateFormBuilder';
 import UpdateEventPhotos from '../../event/pages/UpdateEventPhotos';
 import UpdateEventRegistration from '../../event/pages/UpdateEventRegistration';
 import Button from '../../shared/components/FormElements/Button';
+
 import './ClubManager.css';
 
 const EditEventManager = props => {

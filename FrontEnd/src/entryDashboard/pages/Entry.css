@@ -2,13 +2,18 @@
 	margin: 1rem;
 }
 
+.h3-heavy {
+	font-size: 16px;
+	font-weight: 600;
+}
+
 .h3 {
 	font-size: 16px;
 	font-weight: 400;
 }
 
 .selector-title {
-	font-size: 24px;
+	font-size: 14px;
 	font-style: bold;
 }
 
