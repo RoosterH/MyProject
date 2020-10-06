@@ -221,6 +221,7 @@ const NewEntryManager = props => {
 						{form && (
 							<EventForm
 								eventId={eventId}
+								editingMode={false}
 								eventFormStatus={formHandler}
 								returnFormAnswer={getFormAnswer}
 							/>

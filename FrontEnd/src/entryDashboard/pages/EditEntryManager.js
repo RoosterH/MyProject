@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 
 import Button from '../../shared/components/FormElements/Button';
 import CarSelector from './CarSelector';
-import Classification from './Classification';
+import EditClassification from './EditClassification';
 import EventForm from '../../event/pages/EventForm';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
@@ -38,6 +38,8 @@ const EditEntryManager = props => {
 	const [entry, setEntry] = useState();
 	const [entryId, setEntryId] = useState();
 	const [entryCarId, setEntryCarId] = useState();
+	const [carNumber, setCarNumber] = useState();
+	const [raceClass, setRaceClass] = useState();
 
 	// get entry data from backend, whenever we modify the entry information, we need to update it
 	// so each tab does not need to retrieve entry information again
@@ -65,6 +67,8 @@ const EditEntryManager = props => {
 			setEntry(responseData.entry);
 			setEntryCarId(responseData.entry.carId);
 			setEntryId(responseData.entry.id);
+			setCarNumber(responseData.entry.carNumber);
+			setRaceClass(responseData.entry.raceClass);
 		};
 		getEntry();
 	}, [setEntry, setEntryCarId, sendRequest, userAuthContext]);
@@ -84,9 +88,7 @@ const EditEntryManager = props => {
 	}
 
 	// collect information from each tab, we will send them to backend via SUBMIT tab
-	const [carId, setCarId] = useState();
-	const [carNumber, setCarNumber] = useState();
-	const [raceClass, setRaceClass] = useState();
+	// const [carId, setCarId] = useState();
 	const [formAnswer, setFormAnswer] = useState();
 
 	const [carSelector, setCarSelector] = useState(false);
@@ -161,50 +163,38 @@ const EditEntryManager = props => {
 		carSelectorClickHandler();
 	}
 
-	// getting continue status back from <NewEvent />
-	const [carSelectorStatus, setCarSelectorStatus] = useState(false);
-	const carSelectorHandler = status => {
-		if (status) {
-			// set newEventStatus to true
-			setCarSelectorStatus(true);
-		}
-	};
-	const carIDHandler = cId => {
-		setCarId(cId);
-	};
-	useEffect(() => {
-		// if carSelectorStatus is true, move to the next stage => classification.
-		if (carSelectorStatus) {
-			classificationClickHandler();
-		}
-	}, [carSelectorStatus, classificationClickHandler]);
+	// // getting continue status back from <NewEvent />
+	// const [carSelectorStatus, setCarSelectorStatus] = useState(false);
+	// const carSelectorHandler = status => {
+	// 	if (status) {
+	// 		// set newEventStatus to true
+	// 		setCarSelectorStatus(true);
+	// 	}
+	// };
+	// const carIDHandler = cId => {
+	// 	setCarId(cId);
+	// };
+	// useEffect(() => {
+	// 	// if carSelectorStatus is true, move to the next stage => classification.
+	// 	if (carSelectorStatus) {
+	// 		classificationClickHandler();
+	// 	}
+	// }, [carSelectorStatus, classificationClickHandler]);
 
-	// getting continue status back from <NumberClass />
-	const [classificationStatus, setClassificationStatus] = useState(
-		false
-	);
-	const classificationHandler = status => {
-		if (status) {
-			setClassificationStatus(true);
-		}
-	};
-	useEffect(() => {
-		if (classificationStatus) {
-			formClickHandler();
-		}
-	}, [classificationStatus, formClickHandler]);
-
-	const carNumberHandler = number => {
-		if (number) {
-			setCarNumber(number);
-		}
-	};
-
-	const raceClassHandler = rclass => {
-		if (rclass) {
-			setRaceClass(rclass);
-		}
-	};
+	// // getting continue status back from <NumberClass />
+	// const [classificationStatus, setClassificationStatus] = useState(
+	// 	false
+	// );
+	// const classificationHandler = status => {
+	// 	if (status) {
+	// 		setClassificationStatus(true);
+	// 	}
+	// };
+	// useEffect(() => {
+	// 	if (classificationStatus) {
+	// 		formClickHandler();
+	// 	}
+	// }, [classificationStatus, formClickHandler]);
 
 	// getting continue status back from <Form />
 	const [formStatus, setFormStatus] = useState(false);
@@ -223,18 +213,18 @@ const EditEntryManager = props => {
 		setFormAnswer(answer);
 	};
 
-	// getting continue status back from <EventForm />
-	const [submitStatus, setSubmitStatus] = useState(false);
-	const SubmitHandler = status => {
-		if (status) {
-			setSubmitStatus(status);
-		}
-	};
-	useEffect(() => {
-		if (submitStatus) {
-			finishHandler();
-		}
-	}, [submitStatus, submitClickHandler]);
+	// // getting continue status back from <EventForm />
+	// const [submitStatus, setSubmitStatus] = useState(false);
+	// const SubmitHandler = status => {
+	// 	if (status) {
+	// 		setSubmitStatus(status);
+	// 	}
+	// };
+	// useEffect(() => {
+	// 	if (submitStatus) {
+	// 		finishHandler();
+	// 	}
+	// }, [submitStatus, submitClickHandler]);
 
 	return (
 		<React.Fragment>
@@ -281,37 +271,37 @@ const EditEntryManager = props => {
 					<div className="tab-content">
 						{carSelector && (
 							<CarSelector
-								userId={userId}
-								carSelectorStatus={carSelectorHandler}
-								carIdHandler={carIDHandler}
-								entryCarId={entryCarId}
 								entryId={entryId}
+								userId={userId}
+								// carSelectorStatus={carSelectorHandler}
+								// carIdHandler={carIDHandler}
+								entryCarId={entryCarId}
 								getNewEntry={getNewEntry}
 							/>
 						)}
 						{classification && (
-							<Classification
-								classificationStatus={classificationHandler}
-								carNumberHandler={carNumberHandler}
-								raceClassHandler={raceClassHandler}
+							<EditClassification
+								// classificationStatus={classificationHandler}
+								entryId={entryId}
+								userId={userId}
+								carNumber={carNumber}
+								raceClass={raceClass}
+								getNewEntry={getNewEntry}
 							/>
 						)}
 						{form && (
 							<EventForm
 								eventId={eventId}
-								eventFormStatus={formHandler}
-								returnFormAnswer={getFormAnswer}
+								editingMode={true}
+								getNewEntry={getNewEntry}
 							/>
 						)}
 						{submit && (
 							<SubmitEntry
-								submitStatus={SubmitHandler}
+								// submitStatus={SubmitHandler}
 								eventId={eventId}
 								eventName={eventName}
-								carId={carId}
-								carNumber={carNumber}
-								raceClass={raceClass}
-								formAnswer={formAnswer}
+								getNewEntry={getNewEntry}
 							/>
 						)}
 					</div>

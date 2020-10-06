@@ -12,11 +12,14 @@ import { UserAuthContext } from '../../shared/context/auth-context';
 import '../../shared/css/EventForm.css';
 const EventForm = props => {
 	let eId = props.eventId;
+	let editingMode = props.editingMode;
+
 	const userAuthContext = useContext(UserAuthContext);
 	const [formData, setFormData] = useState();
 	const [formAnswer, setFormAnswer] = useState();
 	const [eventName, setEventName] = useState();
 	const [submittedEntry, setSubmittedEntry] = useState(false);
+	const [newEntry, setNewEntry] = useState();
 	const {
 		isLoading,
 		error,
@@ -91,10 +94,13 @@ const EventForm = props => {
 						Authorization: 'Bearer ' + userAuthContext.userToken
 					}
 				);
+				console.log('responseData = ', responseData);
 				if (responseData) {
 					setEventName(responseData.eventName);
-					setFormAnswer(responseData.entryFormAnswer);
+					setNewEntry(responseData.entry);
+					setFormAnswer(responseData.entry.answer);
 					setFormData(responseData.entryFormData);
+					console.log('answer = ', responseData.entry.answer);
 				}
 			} catch (err) {
 				console.log('err = ', err);
@@ -116,22 +122,24 @@ const EventForm = props => {
 	]);
 
 	useEffect(() => {
-		if (submittedEntry) {
+		if (!editingMode && submittedEntry) {
 			// return true back to NewEntryManager to move to Submit tab
 			props.eventFormStatus(true);
+		} else if (editingMode && newEntry) {
+			props.getNewEntry(newEntry);
 		}
-	}, [submittedEntry]);
+	}, [submittedEntry, editingMode, newEntry]);
 
 	const getFormAnswer = answer => {
 		setFormAnswer(answer);
 	};
 
 	useEffect(() => {
-		if (formAnswer) {
+		if (!editingMode && formAnswer) {
 			props.returnFormAnswer(formAnswer);
 			setSubmittedEntry(true);
 		}
-	}, [formAnswer, props]);
+	}, [formAnswer, props.returnFormAnswer, editingMode]);
 
 	return (
 		<React.Fragment>

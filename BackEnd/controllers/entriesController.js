@@ -381,5 +381,49 @@ const changeCar = async (req, res, next) => {
 	res.status(200).json({ entry: entry.toObject({ getters: true }) });
 };
 
+const changeClassNumber = async (req, res, next) => {
+	const entryId = req.params.entryId;
+	const userId = req.userData;
+
+	let entry;
+	try {
+		entry = await Entry.findOne({
+			_id: entryId,
+			userId: userId
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'Change class process failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!entry) {
+		console.log('entry not found');
+		const error = new HttpError(
+			'Could not find entry to change class.',
+			404
+		);
+		return next(error);
+	}
+
+	const { carNumber, raceClass } = req.body;
+	entry.carNumber = carNumber;
+	entry.raceClass = raceClass;
+
+	try {
+		await entry.save();
+	} catch (err) {
+		const error = new HttpError(
+			'entry update class connecting with DB failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	res.status(200).json({ entry: entry.toObject({ getters: true }) });
+};
+
 exports.createEntry = createEntry;
 exports.changeCar = changeCar;
+exports.changeClassNumber = changeClassNumber;

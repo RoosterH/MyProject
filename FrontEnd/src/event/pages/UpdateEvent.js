@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import { useParams, useHistory, useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
 import * as Yup from 'yup';
@@ -11,7 +11,6 @@ import Card from '../../shared/components/UIElements/Card';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
-import ImageUploader from '../../shared/components/FormElements/ImageUploader';
 import Modal from '../../shared/components/UIElements/Modal';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 import { useHttpClient } from '../../shared/hooks/http-hook';

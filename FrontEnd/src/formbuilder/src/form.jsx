@@ -94,6 +94,7 @@ export default class ReactForm extends React.Component {
 		return null;
 	}
 
+	// get default values for Checkboxes and Paragraphcheckbox
 	_optionsDefaultValue(item) {
 		console.log('_optionsDefaultValue ');
 		const defaultValue = this._getDefaultValue(item);
@@ -451,10 +452,29 @@ export default class ReactForm extends React.Component {
 		);
 	}
 
+	_getMultipleInputDefaultValues(item) {
+		let answers = [];
+		console.log('this.answerData = ', this.answerData);
+		item.options.forEach(option => {
+			let optAnswer = {};
+			if (option.field_name && this.answerData) {
+				if (this.answerData[option.field_name]) {
+					optAnswer[option.field_name] = this.answerData[
+						option.field_name
+					][0];
+					answers.push(optAnswer);
+				}
+			}
+		});
+		console.log('464 answers = ', answers);
+		return answers;
+	}
+
 	getMultipleInputElement(item) {
 		console.log('getMultipleInputElement');
 		console.log('item = ', item);
 		const Input = FormElements[item.element];
+
 		return (
 			<Input
 				handleChange={this.handleChange}
@@ -463,7 +483,7 @@ export default class ReactForm extends React.Component {
 				key={`form_${item.id}`}
 				data={item}
 				read_only={this.props.read_only}
-				defaultValue={this._getDefaultValue(item)}
+				defaultValue={this._getMultipleInputDefaultValues(item)}
 			/>
 		);
 	}

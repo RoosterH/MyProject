@@ -6,7 +6,7 @@ import { useHttpClient } from '../../shared/hooks/http-hook';
 
 import EventItem from '../components/EventItem';
 import EditEventItem from '../components/EditEventItem';
-import EntryReportManager from '../components/EntryReportEventItem';
+// import EntryReportManager from '../components/EntryReportEventItem';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import EntryReportEventItem from '../components/EntryReportEventItem';
 

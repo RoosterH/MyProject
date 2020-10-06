@@ -1035,7 +1035,7 @@ const getEventEntryFormAnswer = async (req, res, next) => {
 	} catch (err) {
 		// this error is displayed if the request to the DB had some issues
 		const error = new HttpError(
-			'Get EventForm for club process failed. Please try again later.',
+			'getEventEntryFormAnswerprocess failed. Please try again later.',
 			500
 		);
 		return next(error);
@@ -1061,16 +1061,43 @@ const getEventEntryFormAnswer = async (req, res, next) => {
 
 	// look for user's entries
 	let answer = null;
-	for (let i = 0; i < event.entries.length; ++i) {
-		if (event.entries[i].userId.toString() === userId) {
-			answer = event.entries[i].answer;
-		}
+	// for (let i = 0; i < event.entries.length; ++i) {
+	// 	if (event.entries[i].userId.toString() === userId) {
+	// 		answer = event.entries[i].answer;
+	// 	}
+	// }
+
+	console.log('userId = ', userId);
+	console.log('eventId = ', eventId);
+
+	let entry;
+	try {
+		entry = await Entry.findOne({ userId: userId, eventId: eventId });
+	} catch (err) {
+		const error = new HttpError(
+			'getEventEntryFormAnswer entry process failed. Please try again later',
+			500
+		);
+		return next(error);
 	}
+
+	if (!entry) {
+		console.log('entry not found');
+		const error = new HttpError(
+			'Could not find entry in getEventEntryFormAnswer.',
+			404
+		);
+		return next(error);
+	}
+
+	console.log('entry = ', entry);
 
 	res.status(200).json({
 		eventName: event.name,
 		entryFormData: entryFormData,
-		entryFormAnswer: answer
+		entry: entry.toObject({
+			getters: true
+		})
 	});
 };
 

@@ -49,6 +49,16 @@ router.patch(
 	[check('carId').not().isEmpty()],
 	entriesController.changeCar
 );
+
+router.patch(
+	'/classNumber/:entryId',
+	[
+		check('carNumber').not().isEmpty(),
+		check('raceClass').not().isEmpty()
+	],
+	entriesController.changeClassNumber
+);
+
 // router.delete('/:eid', eventsController.deleteEvent);
 
 module.exports = router;

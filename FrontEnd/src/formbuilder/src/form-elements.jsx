@@ -1203,6 +1203,15 @@ class MultipleRadioButtonGroup extends React.Component {
 	constructor(props) {
 		super(props);
 		this.options = {};
+		console.log('props.defaultValue = ', props.defaultValue);
+
+		this.defaultValue = {};
+
+		props.defaultValue.map(option => {
+			let key = Object.keys(option);
+			this.defaultValue[key] = option[key];
+		});
+		console.log('this.defaultValue = ', this.defaultValue);
 		// this.options.options = {};
 		// this.inputField = React.createRef();
 		console.log('props = ', props);
@@ -1212,7 +1221,6 @@ class MultipleRadioButtonGroup extends React.Component {
 	render() {
 		// Header Section
 		// const headerClasses = `dynamic-input ${this.props.data.element}-input`;
-		console.log('this.options = ', this.options);
 		let classNames = 'static';
 		if (this.props.data.bold) {
 			classNames += ' bold';
@@ -1326,20 +1334,36 @@ class MultipleRadioButtonGroup extends React.Component {
 													'opt.field_name = ',
 													opt.field_name
 												);
+
+												// props.defaultChecked =
+												// 	self.props.defaultValue !== null &&
+												// 	self.props.defaultValue !== undefined &&
+												// 	(self.props.defaultValue.indexOf(key) >
+												// 		-1 ||
+												// 		self.props.defaultValue.indexOf(
+												// 			opt.value
+												// 		) > -1);
+												// console.log(
+												// 	'defaultChecked = ',
+												// 	props.defaultChecked
+												// );
+
+												console.log(
+													'this.defaultValue[option.field_name]  = ',
+													this.defaultValue[props.name]
+												);
 												console.log('key = ', key);
 												props.defaultChecked =
-													self.props.defaultValue !== null &&
-													self.props.defaultValue !== undefined &&
-													(self.props.defaultValue.indexOf(key) >
-														-1 ||
-														self.props.defaultValue.indexOf(
-															opt.value
-														) > -1);
+													this.defaultValue !== null &&
+													this.defaultValue !== undefined &&
+													this.defaultValue[props.name] === key;
+
 												console.log(
-													'defaultChecked = ',
+													'props.defaultChecked = ',
 													props.defaultChecked
 												);
 											}
+
 											if (this.props.read_only) {
 												props.disabled = 'disabled';
 											}

@@ -1,40 +1,34 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
-import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
 
 // import { EditorState } from 'draft-js';
 // import { RichEditorExample } from '../components/RichEditor';
-import 'draft-js/dist/Draft.css';
+// import 'draft-js/dist/Draft.css';
 
 import Button from '../../shared/components/FormElements/Button';
+import ErrorModal from '../../shared/components/UIElements/ErrorModal';
+import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
+import { useHttpClient } from '../../shared/hooks/http-hook';
 import { UserAuthContext } from '../../shared/context/auth-context';
 import { FormContext } from '../../shared/context/form-context';
 
 import '../../shared/css/EventForm.css';
 
-const Classification = props => {
-	const [initialized, setInitialized] = useState(false);
+const EditClassification = props => {
+	const {
+		isLoading,
+		error,
+		sendRequest,
+		clearError
+	} = useHttpClient();
+
 	const userAuthContext = useContext(UserAuthContext);
 	const formContext = useContext(FormContext);
 
-	// continueStatus controls when to return props.newEventStatus back to NewEventManager
-	const [continueStatus, setContinueStatus] = useState(false);
-	const [formValues, setFormValues] = useState();
-
 	// this is the return function that passes finishing status back to NewEventManager
-	useEffect(() => {
-		if (continueStatus) {
-			props.classificationStatus(continueStatus);
-			if (formValues !== undefined && formValues) {
-				props.carNumberHandler(formValues.carNumber);
-				props.raceClassHandler(formValues.raceClass);
-			}
-		}
-	}, [continueStatus, props, formValues]);
-
 	useEffect(() => {
 		let mounted = true;
 		if (mounted) {
@@ -56,65 +50,11 @@ const Classification = props => {
 		}
 	}, [location, userAuthContext]);
 
-	const [carNumber, setCarNumber] = useState('');
-	const [raceClass, setRaceClass] = useState('');
-
-	// initialize local storage
-	// Get the existing data
-	var eventFormData = localStorage.getItem('eventFormData');
-
-	// If no existing data, create an array; otherwise retrieve it
-	eventFormData = eventFormData ? JSON.parse(eventFormData) : {};
-
 	const [OKLeavePage, setOKLeavePage] = useState(true);
-	// local storage gets the higest priority
-	// get from localStorage
-	if (
-		!initialized &&
-		eventFormData &&
-		moment(eventFormData.expirationDate) > moment()
-	) {
-		setInitialized(true);
-		// Form data
-		if (eventFormData.carNumber) {
-			setCarNumber(eventFormData.carNumber);
-		}
-		if (eventFormData.raceClass) {
-			setRaceClass(eventFormData.raceClass);
-		}
-	} else if (!initialized) {
-		setInitialized(true);
-		// initialize localStorage
-		eventFormData['expirationDate'] = moment(
-			moment().add(1, 'days'),
-			moment.ISO_8601
-		);
-		eventFormData['carNumber'] = '';
-		eventFormData['raceGroup'] = '';
-		localStorage.setItem(
-			'eventFormData',
-			JSON.stringify(eventFormData)
-		);
-	}
-
-	const removeEventFormData = () => {
-		localStorage.removeItem('eventFormData');
-	};
 
 	const initialValues = {
-		carNumber: carNumber,
-		raceClass: raceClass
-	};
-
-	const updateEventFormData = (key, value) => {
-		const storageData = JSON.parse(
-			localStorage.getItem('eventFormData')
-		);
-		storageData[key] = value;
-		localStorage.setItem(
-			'eventFormData',
-			JSON.stringify(storageData)
-		);
+		carNumber: props.carNumber,
+		raceClass: props.raceClass
 	};
 
 	/***** Form Validation Section  *****/
@@ -143,10 +83,43 @@ const Classification = props => {
 	);
 	/***** End of Form Validation *****/
 
-	const submitHandler = values => {
-		// return back to NewEntryManager
-		setContinueStatus(true);
-		setFormValues(values);
+	if (
+		!userAuthContext ||
+		!userAuthContext.userId ||
+		userAuthContext.userId !== props.userId
+	) {
+		return (
+			<div className="list-header clearfix">
+				{/* <div className="selector-title"> */}
+				<div className="h3">Not authorized to access garage</div>
+			</div>
+		);
+	}
+
+	const submitHandler = async values => {
+		try {
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL +
+					`/entries/classNumber/${props.entryId}`,
+				'PATCH',
+				JSON.stringify({
+					carNumber: values.carNumber,
+					raceClass: values.raceClass
+				}),
+				{
+					'Content-Type': 'application/json',
+					// adding JWT to header for authentication, JWT contains clubId
+					Authorization: 'Bearer ' + userAuthContext.userToken
+				}
+			);
+
+			console.log('responseData = ', responseData);
+			props.getNewEntry(responseData.entry);
+		} catch (err) {}
 	};
 
 	const eventForm = values => (
@@ -187,7 +160,6 @@ const Classification = props => {
 							onBlur={event => {
 								// without handBlure(event) touched.name will not work
 								handleBlur(event);
-								updateEventFormData('carNumber', event.target.value);
 								setOKLeavePage(false);
 							}}
 						/>
@@ -209,7 +181,6 @@ const Classification = props => {
 							validate={validateRaceClass}
 							onBlur={event => {
 								handleBlur(event);
-								updateEventFormData('raceClass', event.target.value);
 								setOKLeavePage(false);
 							}}></Field>
 						{touched.raceClass && errors.raceClass && (
@@ -222,12 +193,11 @@ const Classification = props => {
 							size="small-block"
 							margin-left="1.5rem"
 							disabled={isSubmitting || !(isValid && dirty)}>
-							SAVE &amp; CONTINUE
+							Submit Changes
 						</Button>
 						<NavigationPrompt
 							afterConfirm={() => {
 								formContext.setIsInsideForm(false);
-								removeEventFormData();
 							}}
 							// Confirm navigation if going to a path that does not start with current path.
 							// We don't want to confirm navigation when OKLeavePage === true and redirect to '/clubs/auth' due to
@@ -235,7 +205,6 @@ const Classification = props => {
 							when={(crntLocation, nextLocation) => {
 								if (OKLeavePage) {
 									formContext.setIsInsideForm(false);
-									removeEventFormData();
 									return false;
 								} else {
 									// nextLocation.pathname !== '/clubs/auth' &&  --- adding this line causing state update on an
@@ -276,7 +245,17 @@ const Classification = props => {
 		</div>
 	);
 
-	return <React.Fragment>{eventForm()}</React.Fragment>;
+	return (
+		<React.Fragment>
+			<ErrorModal error={error} onClear={clearError} />
+			{isLoading && (
+				<div className="center">
+					<LoadingSpinner />
+				</div>
+			)}
+			{eventForm()}
+		</React.Fragment>
+	);
 };
 
-export default Classification;
+export default EditClassification;
