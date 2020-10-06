@@ -47,7 +47,7 @@ router.post(
 router.patch(
 	'/car/:entryId',
 	[check('carId').not().isEmpty()],
-	entriesController.changeCar
+	entriesController.updateCar
 );
 
 router.patch(
@@ -56,7 +56,13 @@ router.patch(
 		check('carNumber').not().isEmpty(),
 		check('raceClass').not().isEmpty()
 	],
-	entriesController.changeClassNumber
+	entriesController.updateClassNumber
+);
+
+router.patch(
+	'/formAnswer/:entryId',
+	[check('formAnswer').not().isEmpty()],
+	entriesController.updateFormAnswer
 );
 
 // router.delete('/:eid', eventsController.deleteEvent);

@@ -339,7 +339,7 @@ const parseAnswer = (options, answer, fieldName) => {
 	return [-1, null];
 };
 
-const changeCar = async (req, res, next) => {
+const updateCar = async (req, res, next) => {
 	const entryId = req.params.entryId;
 	const userId = req.userData;
 
@@ -351,7 +351,7 @@ const changeCar = async (req, res, next) => {
 		});
 	} catch (err) {
 		const error = new HttpError(
-			'Change car process failed. Please try again later',
+			'Update car process failed. Please try again later',
 			500
 		);
 		return next(error);
@@ -360,7 +360,7 @@ const changeCar = async (req, res, next) => {
 	if (!entry) {
 		console.log('entry not found');
 		const error = new HttpError(
-			'Could not find entry to change car.',
+			'Could not find entry to update car.',
 			404
 		);
 		return next(error);
@@ -373,7 +373,7 @@ const changeCar = async (req, res, next) => {
 		await entry.save();
 	} catch (err) {
 		const error = new HttpError(
-			'entry update car connecting with DB failed. Please try again later.',
+			'Entry update car connecting with DB failed. Please try again later.',
 			500
 		);
 		return next(error);
@@ -381,7 +381,7 @@ const changeCar = async (req, res, next) => {
 	res.status(200).json({ entry: entry.toObject({ getters: true }) });
 };
 
-const changeClassNumber = async (req, res, next) => {
+const updateClassNumber = async (req, res, next) => {
 	const entryId = req.params.entryId;
 	const userId = req.userData;
 
@@ -393,7 +393,7 @@ const changeClassNumber = async (req, res, next) => {
 		});
 	} catch (err) {
 		const error = new HttpError(
-			'Change class process failed. Please try again later',
+			'Update class process failed. Please try again later',
 			500
 		);
 		return next(error);
@@ -402,7 +402,7 @@ const changeClassNumber = async (req, res, next) => {
 	if (!entry) {
 		console.log('entry not found');
 		const error = new HttpError(
-			'Could not find entry to change class.',
+			'Could not find entry to update race class/car number.',
 			404
 		);
 		return next(error);
@@ -416,7 +416,54 @@ const changeClassNumber = async (req, res, next) => {
 		await entry.save();
 	} catch (err) {
 		const error = new HttpError(
-			'entry update class connecting with DB failed. Please try again later.',
+			'Entry update class connecting with DB failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	res.status(200).json({ entry: entry.toObject({ getters: true }) });
+};
+
+const updateFormAnswer = async (req, res, next) => {
+	const entryId = req.params.entryId;
+	const userId = req.userData;
+
+	console.log('entryId = ', entryId);
+	console.log('userId = ', userId);
+	let entry;
+	try {
+		entry = await Entry.findOne({
+			_id: entryId,
+			userId: userId
+		});
+	} catch (err) {
+		console.log('err1 = ', err);
+		const error = new HttpError(
+			'Update form answer process failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!entry) {
+		console.log('entry not found');
+		const error = new HttpError(
+			'Could not find entry to update form answer.',
+			404
+		);
+		return next(error);
+	}
+
+	const { answer } = req.body;
+	entry.answer = answer;
+
+	try {
+		await entry.save();
+		console.log('entry = entry');
+	} catch (err) {
+		console.log('err 2 =', err);
+		const error = new HttpError(
+			'Entry update form answer connecting with DB failed. Please try again later.',
 			500
 		);
 		return next(error);
@@ -425,5 +472,6 @@ const changeClassNumber = async (req, res, next) => {
 };
 
 exports.createEntry = createEntry;
-exports.changeCar = changeCar;
-exports.changeClassNumber = changeClassNumber;
+exports.updateCar = updateCar;
+exports.updateClassNumber = updateClassNumber;
+exports.updateFormAnswer = updateFormAnswer;

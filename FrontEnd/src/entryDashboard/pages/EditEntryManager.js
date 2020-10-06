@@ -289,8 +289,10 @@ const EditEntryManager = props => {
 								getNewEntry={getNewEntry}
 							/>
 						)}
+						{/* editingMode is to indicate request from EditEntryManager not NewNewEntryManager */}
 						{form && (
 							<EventForm
+								entryId={entryId}
 								eventId={eventId}
 								editingMode={true}
 								getNewEntry={getNewEntry}

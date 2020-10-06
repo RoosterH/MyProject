@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import ReactDOM from 'react-dom';
 import { useParams } from 'react-router-dom';
 
+import Button from '../../shared/components/FormElements/Button';
 import { EventEmitter } from 'fbemitter';
 import FormValidator from './form-validator';
 import FormElements from './form-elements';
@@ -67,6 +68,11 @@ export default class ReactForm extends React.Component {
 		super(props);
 		this.answerData = this._convert(props.answer_data);
 		this.emitter = new EventEmitter();
+		this.entryId = props.entryId;
+		this.editingMode = props.editingMode;
+		this.getNewEntry = newEntry => {
+			props.getNewEntry(newEntry);
+		};
 	}
 
 	// convert provided answers
@@ -378,26 +384,32 @@ export default class ReactForm extends React.Component {
 			if (answer_data) {
 				// send answer_data back to NewEntryManager, we will send to backend all together in Submit tab
 				const answer = this._collectFormData(this.props.data);
-				this.props.returnFormAnswer(answer);
-				// try {
-				// 	const answer = this._collectFormData(this.props.data);
-				// 	// we need to use JSON.stringify to send array objects.
-				// 	// FormData with JSON.stringify not working
-				// 	let responseData = await this.sendRQ(
-				// 		process.env.REACT_APP_BACKEND_URL +
-				// 			`/entries/submit/${this.eventId}`,
-				// 		'POST',
-				// 		JSON.stringify({
-				// 			answer: answer
-				// 		}),
-				// 		{
-				// 			'Content-type': 'application/json',
-				// 			// adding JWT to header for authentication
-				// 			// Authorization: 'Bearer ' + storageData.userToken
-				// 			Authorization: 'Bearer ' + this.userToken
-				// 		}
-				// 	);
-				// } catch (err) {}
+				// editinMode meaning we are in EditEntryManager
+				if (this.editingMode) {
+					try {
+						const answer = this._collectFormData(this.props.data);
+						// we need to use JSON.stringify to send array objects.
+						// FormData with JSON.stringify not working
+						let responseData = await this.sendRQ(
+							process.env.REACT_APP_BACKEND_URL +
+								`/entries/formAnswer/${this.entryId}`,
+							'PATCH',
+							JSON.stringify({
+								answer: answer
+							}),
+							{
+								'Content-type': 'application/json',
+								// adding JWT to header for authentication
+								// Authorization: 'Bearer ' + storageData.userToken
+								Authorization: 'Bearer ' + this.userToken
+							}
+						);
+						this.getNewEntry(responseData.entry);
+					} catch (err) {}
+				} else {
+					// this route is for NewEntryManager
+					this.props.returnFormAnswer(answer);
+				}
 			} else {
 				throw new Error('Submit failed. Please select answers.');
 			}
@@ -690,11 +702,17 @@ export default class ReactForm extends React.Component {
 							{items}
 							<div className="btn-toolbar">
 								{!this.props.hide_actions && (
-									<input
+									// <input
+									// 	type="submit"
+									// 	className="btn btn-school btn-big"
+									// 	value={actionName}
+									// />
+									<Button
 										type="submit"
-										className="btn btn-school btn-big"
-										value={actionName}
-									/>
+										size="medium"
+										margin-left="1.5rem">
+										{actionName}
+									</Button>
 								)}
 								{!this.props.hide_actions && this.props.back_action && (
 									<a

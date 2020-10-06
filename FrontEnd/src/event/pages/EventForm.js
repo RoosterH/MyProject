@@ -12,6 +12,7 @@ import { UserAuthContext } from '../../shared/context/auth-context';
 import '../../shared/css/EventForm.css';
 const EventForm = props => {
 	let eId = props.eventId;
+	let entryId = props.entryId;
 	let editingMode = props.editingMode;
 
 	const userAuthContext = useContext(UserAuthContext);
@@ -26,6 +27,10 @@ const EventForm = props => {
 		sendRequest,
 		clearError
 	} = useHttpClient();
+
+	const getNewEntry = newEntry => {
+		props.getNewEntry(newEntry);
+	};
 
 	// Check if userAuthContext.redirectURL is same as the path.
 	// If they are the same meaning it's coming back from re-direction that user click on register event without logging in.
@@ -158,6 +163,9 @@ const EventForm = props => {
 							action_name="SUBMIT &amp; CONTINUE"
 							data={formData}
 							returnFormAnswer={getFormAnswer}
+							entryId={entryId}
+							editingMode={editingMode}
+							getNewEntry={getNewEntry}
 						/>
 					</div>
 				</div>
