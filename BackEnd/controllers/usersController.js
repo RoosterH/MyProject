@@ -358,6 +358,8 @@ const deleteUser = async (req, res, next) => {
 			process.env.DUMMY_CLUBID
 		);
 		// transfer all the events to dummy user so the events won't be deleted
+		// user has fewer requests than event so we want to execute it first to avoid locking event for longer time
+		await user.remove({ session: session });
 		await user.events.map(async event => {
 			// assign the event userId to dummyUser since we are deleting the original user
 			event.userId = dummyUserId;
@@ -376,8 +378,6 @@ const deleteUser = async (req, res, next) => {
 			dummyUser.events.push(event);
 			await dummyUser.save({ session: session });
 		});
-
-		await user.remove({ session: session });
 		await session.commitTransaction();
 	} catch (err) {
 		const error = new HttpError(
@@ -491,6 +491,115 @@ const getEntry = async (req, res, next) => {
 	});
 };
 
+// /api/users/form/:eid
+const getEventEntryForm = async (req, res, next) => {
+	// Validate eventId belonging to the found club. If not, sends back an error
+	const eventId = req.params.eid;
+
+	let event;
+	try {
+		event = await Event.findById(eventId).populate('entries');
+	} catch (err) {
+		// this error is displayed if the request to the DB had some issues
+		const error = new HttpError(
+			'getEventEntryFormAnswerprocess failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'Could not complete retrieving event form with provided event id',
+			404
+		);
+		return next(error);
+	}
+
+	let entryFormData = event.entryFormData;
+	if (!entryFormData || entryFormData.length === 0) {
+		const error = new HttpError(
+			'Could not find the entry form. Please report to club.',
+			404
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		eventName: event.name,
+		entryFormData: entryFormData
+	});
+};
+
+// /api/users/formWithAnswer/:eid
+const getEventEntryFormWithAnswer = async (req, res, next) => {
+	// Validate eventId belonging to the found club. If not, sends back an error
+	const eventId = req.params.eid;
+	const userId = req.userData;
+
+	let event;
+	try {
+		event = await Event.findById(eventId).populate('entries');
+	} catch (err) {
+		// this error is displayed if the request to the DB had some issues
+		const error = new HttpError(
+			'getEventEntryFormAnswerprocess failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'Could not complete retrieving event form with provided event id',
+			404
+		);
+		return next(error);
+	}
+
+	let entryFormData = event.entryFormData;
+	if (!entryFormData || entryFormData.length === 0) {
+		const error = new HttpError(
+			'Could not find the entry form. Please report to club.',
+			404
+		);
+		return next(error);
+	}
+
+	// look for user's entries
+	let entry;
+	try {
+		entry = await Entry.findOne({ userId: userId, eventId: eventId });
+	} catch (err) {
+		const error = new HttpError(
+			'getEventEntryFormAnswer entry process failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!entry) {
+		console.log('entry not found');
+		const error = new HttpError(
+			'Could not find entry in getEventEntryFormWithAnswer.',
+			404
+		);
+		return next(error);
+	}
+
+	console.log('entry = ', entry);
+
+	res.status(200).json({
+		eventName: event.name,
+		entryFormData: entryFormData,
+		entry: entry.toObject({
+			getters: true
+		})
+	});
+};
+
 exports.getAllUsers = getAllUsers;
 exports.getUserById = getUserById;
 exports.createUser = createUser;
@@ -500,3 +609,5 @@ exports.deleteUser = deleteUser;
 exports.logoutUser = logoutUser;
 exports.getEvents = getEvents;
 exports.getEntry = getEntry;
+exports.getEventEntryForm = getEventEntryForm;
+exports.getEventEntryFormWithAnswer = getEventEntryFormWithAnswer;

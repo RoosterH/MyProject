@@ -37,6 +37,15 @@ router.post('/login', usersController.loginUser);
 // need to be authenticated
 router.use(checkUserAuth);
 
+// get event entry form
+router.get('/form/:eid', usersController.getEventEntryForm);
+
+// get event entry form and answer
+router.get(
+	'/formWithAnswer/:eid',
+	usersController.getEventEntryFormWithAnswer
+);
+
 router.get('/garage/:uid', carsController.getCarsByUserId);
 
 // GET user events

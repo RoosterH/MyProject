@@ -256,6 +256,10 @@ const createEntry = async (req, res, next) => {
 			session.startTransaction();
 			await entry.save({ session: session });
 
+			// store newEntry to user.envents array
+			user.entries.push(entry);
+			await user.save({ session: session });
+
 			// if event or group is full, put in wailist; otherwise put in entries
 			if (eventFull || groupFull) {
 				console.log('in waitlist');
@@ -276,14 +280,7 @@ const createEntry = async (req, res, next) => {
 				let numEntries = event.runGroupNumEntries[runGroupAnsChoice];
 				event.runGroupNumEntries.set(runGroupAnsChoice, ++numEntries);
 			}
-
 			await event.save({ session: session });
-
-			console.log('final event= ', event);
-
-			// store newEntry to user.envents array
-			user.entries.push(entry);
-			await user.save({ session: session });
 
 			// only all tasks succeed, we commit the transaction
 			await session.commitTransaction();

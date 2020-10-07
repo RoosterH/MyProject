@@ -61,12 +61,6 @@ router.get(
 	eventsController.getOwnerClubEvent
 );
 
-// get event entry form and answer
-router.get(
-	'/form/:eid/:uid',
-	eventsController.getEventEntryFormAnswer
-);
-
 // get event entry report
 router.get('/entryreport/:eid', eventsController.getEntryReport);
 

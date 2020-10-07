@@ -1023,84 +1023,6 @@ const deleteEvent = async (req, res, next) => {
 	res.status(200).json({ message: `Event: ${event.name} deleted` });
 };
 
-// /api/events/form/:eid/:uid
-const getEventEntryFormAnswer = async (req, res, next) => {
-	// Validate eventId belonging to the found club. If not, sends back an error
-	const eventId = req.params.eid;
-	const userId = req.params.uid;
-
-	let event;
-	try {
-		event = await Event.findById(eventId).populate('entries');
-	} catch (err) {
-		// this error is displayed if the request to the DB had some issues
-		const error = new HttpError(
-			'getEventEntryFormAnswerprocess failed. Please try again later.',
-			500
-		);
-		return next(error);
-	}
-
-	// this error is for DB not be able to find the event with provided ID
-	if (!event) {
-		const error = new HttpError(
-			'Could not complete retrieving event form with provided event id',
-			404
-		);
-		return next(error);
-	}
-
-	let entryFormData = event.entryFormData;
-	if (!entryFormData || entryFormData.length === 0) {
-		const error = new HttpError(
-			'Could not find the entry form. Please report to club.',
-			404
-		);
-		return next(error);
-	}
-
-	// look for user's entries
-	let answer = null;
-	// for (let i = 0; i < event.entries.length; ++i) {
-	// 	if (event.entries[i].userId.toString() === userId) {
-	// 		answer = event.entries[i].answer;
-	// 	}
-	// }
-
-	console.log('userId = ', userId);
-	console.log('eventId = ', eventId);
-
-	let entry;
-	try {
-		entry = await Entry.findOne({ userId: userId, eventId: eventId });
-	} catch (err) {
-		const error = new HttpError(
-			'getEventEntryFormAnswer entry process failed. Please try again later',
-			500
-		);
-		return next(error);
-	}
-
-	if (!entry) {
-		console.log('entry not found');
-		const error = new HttpError(
-			'Could not find entry in getEventEntryFormAnswer.',
-			404
-		);
-		return next(error);
-	}
-
-	console.log('entry = ', entry);
-
-	res.status(200).json({
-		eventName: event.name,
-		entryFormData: entryFormData,
-		entry: entry.toObject({
-			getters: true
-		})
-	});
-};
-
 // POST /api/events/entryreportforusers/:eid
 const getEntryReportForUsers = async (req, res, next) => {
 	// req.params is getting the eid from url, such as /api/events/:id
@@ -1336,7 +1258,6 @@ exports.getEventsByDate = getEventsByDate;
 exports.createEvent = createEvent;
 exports.updateEvent = updateEvent;
 exports.deleteEvent = deleteEvent;
-exports.getEventEntryFormAnswer = getEventEntryFormAnswer;
 exports.updateEventPhotos = updateEventPhotos;
 exports.updateEventRegistration = updateEventRegistration;
 exports.getEventsByOwnerClubId = getEventsByOwnerClubId;

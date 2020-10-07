@@ -30,11 +30,10 @@ router.use(checkUserAuth);
 // get event entry form
 // router.get('/form/submit/:eid', eventsController.getEventEntryForm);
 
-// only clubs are able to create an event
+// submit entry
 router.post(
 	'/submit/:eid',
 	[
-		check('eventId').not().isEmpty(),
 		check('carId').not().isEmpty(),
 		check('carNumber').not().isEmpty(),
 		check('raceClass').not().isEmpty(),
