@@ -209,6 +209,7 @@ const NewEntryManager = props => {
 								userId={userId}
 								carSelectorStatus={carSelectorHandler}
 								carIdHandler={carIDHandler}
+								isNewEntry={true}
 							/>
 						)}
 						{classification && (
@@ -235,6 +236,7 @@ const NewEntryManager = props => {
 								carNumber={carNumber}
 								raceClass={raceClass}
 								formAnswer={formAnswer}
+								editingMode={false}
 							/>
 						)}
 					</div>

@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import { ReactFormGenerator } from '../../formbuilder/src/index';
@@ -73,39 +73,61 @@ const EventForm = props => {
 		);
 	}
 
-	// combine eId and uId to send to backend,
-	// url is /events/form/:eId/:uId
-	let url = '/events/form/' + eId;
-	const storageData = JSON.parse(localStorage.getItem('userData'));
-	if (storageData && storageData.userId) {
-		url += '/' + storageData.userId;
-	}
+	// // combine eId and uId to send to backend,
+	// // url is /events/form/:eId/:uId
+	// let url = '/events/form/' + eId;
+	// const storageData = JSON.parse(localStorage.getItem('userData'));
+	// if (storageData && storageData.userId) {
+	// 	url += '/' + storageData.userId;
+	// }
 
 	useEffect(() => {
 		let mounted = true;
 		const fetchForm = async () => {
 			try {
-				const [
-					responseData,
-					responseStatus,
-					responseMessage
-				] = await sendRequest(
-					// process.env.REACT_APP_BACKEND_URL + `/events/form/${eId}`,
-					process.env.REACT_APP_BACKEND_URL + url,
-					'GET',
-					null,
-					{
-						// adding JWT to header for authentication, JWT contains clubId
-						Authorization: 'Bearer ' + userAuthContext.userToken
+				if (editingMode) {
+					const [
+						responseData,
+						responseStatus,
+						responseMessage
+					] = await sendRequest(
+						// process.env.REACT_APP_BACKEND_URL + `/events/form/${eId}`,
+						process.env.REACT_APP_BACKEND_URL +
+							`/users/formWithAnswer/${eId}`,
+						'GET',
+						null,
+						{
+							// adding JWT to header for authentication, JWT contains clubId
+							Authorization: 'Bearer ' + userAuthContext.userToken
+						}
+					);
+					console.log('responseData = ', responseData);
+					if (responseData) {
+						setEventName(responseData.eventName);
+						setNewEntry(responseData.entry);
+						setFormAnswer(responseData.entry.answer);
+						setFormData(responseData.entryFormData);
+						console.log('answer = ', responseData.entry.answer);
 					}
-				);
-				console.log('responseData = ', responseData);
-				if (responseData) {
-					setEventName(responseData.eventName);
-					setNewEntry(responseData.entry);
-					setFormAnswer(responseData.entry.answer);
-					setFormData(responseData.entryFormData);
-					console.log('answer = ', responseData.entry.answer);
+				} else {
+					const [
+						responseData,
+						responseStatus,
+						responseMessage
+					] = await sendRequest(
+						process.env.REACT_APP_BACKEND_URL + `/users/form/${eId}`,
+						'GET',
+						null,
+						{
+							// adding JWT to header for authentication, JWT contains clubId
+							Authorization: 'Bearer ' + userAuthContext.userToken
+						}
+					);
+					console.log('responseData = ', responseData);
+					if (responseData) {
+						setEventName(responseData.eventName);
+						setFormData(responseData.entryFormData);
+					}
 				}
 			} catch (err) {
 				console.log('err = ', err);
@@ -123,7 +145,7 @@ const EventForm = props => {
 		setEventName,
 		setFormData,
 		setFormAnswer,
-		url
+		editingMode
 	]);
 
 	useEffect(() => {
@@ -160,7 +182,9 @@ const EventForm = props => {
 					<div className="modal-content">
 						<ReactFormGenerator
 							answer_data={formAnswer}
-							action_name="SUBMIT &amp; CONTINUE"
+							action_name={
+								editingMode ? 'SUBMIT' : 'SUBMIT &amp; CONTINUE'
+							}
 							data={formData}
 							returnFormAnswer={getFormAnswer}
 							entryId={entryId}

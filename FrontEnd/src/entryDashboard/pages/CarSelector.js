@@ -11,6 +11,8 @@ const CarSelector = props => {
 	let userId = props.userId;
 	// entryCarId is the car that is picked for the entry
 	let entryCarId = props.entryCarId;
+	// flag to indicate the route is from newEntryManager
+	let isNewEntry = props.isNewEntry;
 
 	const [instructionMsg, setInstructionMsg] = useState(
 		'Please Select A Car'
@@ -47,6 +49,7 @@ const CarSelector = props => {
 		props.carIdHandler(carId);
 	};
 
+	// callback to get new entry from child, this is for EditEntryManager
 	const getNewEntry = entry => {
 		props.getNewEntry(entry);
 	};
@@ -62,6 +65,7 @@ const CarSelector = props => {
 				getCarId={getCarId}
 				carSelectorStatus={carSelectorStatus}
 				carIdHandler={carIdHandler}
+				isNewEntry={isNewEntry}
 				entryCarId={entryCarId}
 				entryId={props.entryId}
 				getNewEntry={getNewEntry}

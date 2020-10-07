@@ -23,6 +23,7 @@ const SubmitEntry = props => {
 	let carNumber = props.carNumber;
 	let raceClass = props.raceClass;
 	let formAnswer = props.formAnswer;
+	const editingMode = props.editingMode;
 
 	const {
 		isLoading,
@@ -108,7 +109,7 @@ const SubmitEntry = props => {
 	};
 
 	const initialValues = {
-		disclaimer: false
+		acceptDisclaimer: editingMode ? true : false
 	};
 
 	const [validateDisclaimer, setValidateDisclaimer] = useState(
@@ -124,7 +125,7 @@ const SubmitEntry = props => {
 	const submitHandler = async values => {
 		// return back to NewEntryManager
 		setContinueStatus(true);
-		let disclaimer = values.disclaimer;
+		let disclaimer = values.acceptDisclaimer;
 
 		try {
 			// we need to use JSON.stringify to send array objects.
@@ -204,10 +205,13 @@ const SubmitEntry = props => {
 					<Form className="event-form-container">
 						<label className="event-form__checkbox">
 							MySeatTime waiver <br />
-							By registering for this event, you acknowledge that
-							MySeatTime.com makes no refunds of any kind. View the
-							MySeatTime.com terms for details.{' '}
+							By registering for this event, you acknowledge that all
+							the charges are handled by event organizers.
+							MySeatTime.com does not handle transaction thus makes no
+							refunds of any kind. View the MySeatTime.com terms for
+							details.{' '}
 						</label>
+						<br />
 						<br />
 						<br />
 						<label className="event-form__checkbox">
@@ -218,15 +222,20 @@ const SubmitEntry = props => {
 								onBlur={event => {
 									handleBlur(event);
 								}}
+								disabled={editingMode}
 							/>
-							&nbsp; I accept the cancellation terms and conditions.
+							&nbsp; I accept the charge and cancellation terms and
+							conditions.
 						</label>
 						<Button
 							type="submit"
 							size="small-block"
 							margin-left="1.5rem"
 							disabled={
-								isSubmitting || !(isValid && dirty) || submitted
+								isSubmitting ||
+								!(isValid && dirty) ||
+								submitted ||
+								editingMode
 							}>
 							SUBMIT
 						</Button>

@@ -422,10 +422,11 @@ const EventItem = props => {
 										</a>
 									</div>
 									<div id="description" className="collapse show">
-										<p>
-											{props.event.description}
-											<br></br>
-										</p>
+										<div
+											dangerouslySetInnerHTML={{
+												__html: props.event.description
+											}}></div>
+										<br />
 									</div>
 								</div>
 							</div>
@@ -474,10 +475,11 @@ const EventItem = props => {
 										</a>
 									</div>
 									<div id="instruction" className="collapse show">
-										<p>
-											{props.event.instruction}
-											<br></br>
-										</p>
+										<div
+											dangerouslySetInnerHTML={{
+												__html: props.event.instruction
+											}}></div>
+										<br />
 									</div>
 								</div>
 							</div>

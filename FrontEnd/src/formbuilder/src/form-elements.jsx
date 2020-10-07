@@ -1207,10 +1207,13 @@ class MultipleRadioButtonGroup extends React.Component {
 
 		this.defaultValue = {};
 
-		props.defaultValue.map(option => {
-			let key = Object.keys(option);
-			this.defaultValue[key] = option[key];
-		});
+		// defaultValue is only available when we are loading user answers
+		if (props.defaultValue) {
+			props.defaultValue.map(option => {
+				let key = Object.keys(option);
+				this.defaultValue[key] = option[key];
+			});
+		}
 		console.log('this.defaultValue = ', this.defaultValue);
 		// this.options.options = {};
 		// this.inputField = React.createRef();

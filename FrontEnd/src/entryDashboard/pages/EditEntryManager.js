@@ -163,39 +163,6 @@ const EditEntryManager = props => {
 		carSelectorClickHandler();
 	}
 
-	// // getting continue status back from <NewEvent />
-	// const [carSelectorStatus, setCarSelectorStatus] = useState(false);
-	// const carSelectorHandler = status => {
-	// 	if (status) {
-	// 		// set newEventStatus to true
-	// 		setCarSelectorStatus(true);
-	// 	}
-	// };
-	// const carIDHandler = cId => {
-	// 	setCarId(cId);
-	// };
-	// useEffect(() => {
-	// 	// if carSelectorStatus is true, move to the next stage => classification.
-	// 	if (carSelectorStatus) {
-	// 		classificationClickHandler();
-	// 	}
-	// }, [carSelectorStatus, classificationClickHandler]);
-
-	// // getting continue status back from <NumberClass />
-	// const [classificationStatus, setClassificationStatus] = useState(
-	// 	false
-	// );
-	// const classificationHandler = status => {
-	// 	if (status) {
-	// 		setClassificationStatus(true);
-	// 	}
-	// };
-	// useEffect(() => {
-	// 	if (classificationStatus) {
-	// 		formClickHandler();
-	// 	}
-	// }, [classificationStatus, formClickHandler]);
-
 	// getting continue status back from <Form />
 	const [formStatus, setFormStatus] = useState(false);
 	const formHandler = status => {
@@ -212,19 +179,6 @@ const EditEntryManager = props => {
 	const getFormAnswer = answer => {
 		setFormAnswer(answer);
 	};
-
-	// // getting continue status back from <EventForm />
-	// const [submitStatus, setSubmitStatus] = useState(false);
-	// const SubmitHandler = status => {
-	// 	if (status) {
-	// 		setSubmitStatus(status);
-	// 	}
-	// };
-	// useEffect(() => {
-	// 	if (submitStatus) {
-	// 		finishHandler();
-	// 	}
-	// }, [submitStatus, submitClickHandler]);
 
 	return (
 		<React.Fragment>
@@ -273,15 +227,13 @@ const EditEntryManager = props => {
 							<CarSelector
 								entryId={entryId}
 								userId={userId}
-								// carSelectorStatus={carSelectorHandler}
-								// carIdHandler={carIDHandler}
+								isNewEntry={false}
 								entryCarId={entryCarId}
 								getNewEntry={getNewEntry}
 							/>
 						)}
 						{classification && (
 							<EditClassification
-								// classificationStatus={classificationHandler}
 								entryId={entryId}
 								userId={userId}
 								carNumber={carNumber}
@@ -300,7 +252,7 @@ const EditEntryManager = props => {
 						)}
 						{submit && (
 							<SubmitEntry
-								// submitStatus={SubmitHandler}
+								editingMode={true}
 								eventId={eventId}
 								eventName={eventName}
 								getNewEntry={getNewEntry}

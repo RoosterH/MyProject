@@ -17,6 +17,7 @@ const UserGarage = props => {
 	const carSelector = props.carSelector;
 	const userId = props.userId;
 	const entryCarId = props.entryCarId;
+	const isNewEntry = props.isNewEntry;
 
 	const [loadedCars, setLoadedCars] = useState();
 	const userAuthContext = useContext(UserAuthContext);
@@ -137,6 +138,7 @@ const UserGarage = props => {
 					carSelector={true}
 					carSelectorStatus={carSelectorStatus}
 					carIdHandler={carIdHandler}
+					isNewEntry={isNewEntry}
 					entryCarId={entryCarId}
 					entryId={props.entryId}
 					getNewEntry={getNewEntry}

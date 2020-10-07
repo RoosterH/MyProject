@@ -95,7 +95,7 @@ const UserCarsItem = props => {
 				)}
 				{/* <Link to={`/users/cars/${props.id}`}> */}
 				{/* Create buttion for selecting a car to enter an event */}
-				{carSelector && props.isEntryCar === undefined && (
+				{carSelector && props.isNewEntry && (
 					<button
 						className="carselector-button"
 						onClick={submitHandler}>
@@ -121,7 +121,7 @@ const UserCarsItem = props => {
 					</button>
 				)}
 				{/* This is the car been entered to the event. We don't want to create a link for it*/}
-				{carSelector && props.isEntryCar && (
+				{carSelector && props.isEntryCar && !props.isNewEntry && (
 					<button className="pickedcar-button">
 						<div className="events-item__image">
 							<Avatar
@@ -144,7 +144,7 @@ const UserCarsItem = props => {
 						</div>
 					</button>
 				)}
-				{carSelector && !props.isEntryCar && (
+				{carSelector && !props.isEntryCar && !props.isNewEntry && (
 					<button
 						className="carselector-button"
 						onClick={changeCarHandler}>

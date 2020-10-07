@@ -334,7 +334,6 @@ export const EntryFormOptions = () => [
 				name: 'Day 1',
 				label: '<strong>Day 1</strong>',
 				field_name: 'Lunch1-',
-				required: true,
 				static: true,
 				options: [
 					{
@@ -365,7 +364,6 @@ export const EntryFormOptions = () => [
 				name: 'Day 2',
 				label: '<strong>Day 2</strong>',
 				field_name: 'Lunch2-',
-				required: true,
 				static: true,
 				options: [
 					{
@@ -387,6 +385,88 @@ export const EntryFormOptions = () => [
 						value: '4',
 						text: 'No lunch',
 						key: `lunchRadioOption2_3`
+					}
+				]
+			}
+		]
+	},
+	{
+		key: 'MultipleRadioButtonGroup',
+		canHaveAnswer: true,
+		name: 'Run Group Selection',
+		icon: 'far fa-dot-circle',
+		label: '<strong>Run Group Selection</strong>',
+		static: true,
+		required: true,
+		nested: true,
+		options: [
+			{
+				key: 'RadioButtons',
+				canHaveAnswer: true,
+				name: 'Day 1',
+				label: '<strong>Day 1</strong>',
+				field_name: 'RunGroup1-',
+				static: true,
+				options: [
+					{
+						value: '0',
+						text: 'Morning Group 1',
+						key: `RunGroupRadioOption1_0`
+					},
+					{
+						value: '1',
+						text: 'Morning Group 2',
+						key: `RunGroupRadioOption1_1`
+					},
+					{
+						value: '2',
+						text: 'Afternoon Group 1',
+						key: `RunGroupRadioOption1_2`
+					},
+					{
+						value: '3',
+						text: 'Afternoon Group 2',
+						key: `RunGroupRadioOption1_3`
+					},
+					{
+						value: '4',
+						text: 'Afternoon Group 3',
+						key: `RunGroupRadioOption1_4`
+					}
+				]
+			},
+			{
+				key: 'RadioButtons',
+				canHaveAnswer: true,
+				name: 'Day 2',
+				label: '<strong>Day 2</strong>',
+				field_name: 'Lunch2-',
+				static: true,
+				options: [
+					{
+						value: '0',
+						text: 'Morning Group 1',
+						key: `RunGroupRadioOption2_0`
+					},
+					{
+						value: '1',
+						text: 'Morning Group 2',
+						key: `RunGroupRadioOption2_1`
+					},
+					{
+						value: '2',
+						text: 'Afternoon Group 1',
+						key: `RunGroupRadioOption2_2`
+					},
+					{
+						value: '3',
+						text: 'Afternoon Group 2',
+						key: `RunGroupRadioOption2_3`
+					},
+					{
+						value: '4',
+						text: 'Afternoon Group 3',
+						key: `RunGroupRadioOption2_4`
 					}
 				]
 			}

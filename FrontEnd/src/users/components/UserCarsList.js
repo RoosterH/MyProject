@@ -76,6 +76,7 @@ const UserCarsList = props => {
 					carSelectorStatus={carSelectorStatus}
 					carIdHandler={carIdHandler}
 					isEntryCar={props.entryCarId === car.id}
+					isNewEntry={props.isNewEntry}
 					entryId={props.entryId}
 					getNewEntry={getNewEntry}
 				/>
