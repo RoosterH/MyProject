@@ -1387,6 +1387,10 @@ class MultipleRadioButtonGroup extends React.Component {
 																	' 1359 self.options = ',
 																	self.options
 																);
+																console.log(
+																	'1390 key = ',
+																	`child_ref_${option.key}_${opt.key}`
+																);
 																self.options[
 																	`child_ref_${option.key}_${opt.key}`
 																] = c;

@@ -21,7 +21,7 @@ import { FormContext } from '../../shared/context/form-context';
 
 import '../../shared/css/EventForm.css';
 
-const EventRegistration = props => {
+const UpdateEventRegistration = props => {
 	const history = useHistory();
 	let eventId = props.event.id;
 	const [initialized, setInitialized] = useState(false);
@@ -131,7 +131,8 @@ const EventRegistration = props => {
 		// editorState: new EditorState.createEmpty(),
 		totalCap: props.event.totalCap,
 		numGroups: props.event.numGroups,
-		capDistribution: props.event.capDistribution
+		capDistribution: props.event.capDistribution,
+		multiDayEvent: props.event.multiDayEvent
 	};
 
 	const updateEventFormData = (key, value) => {
@@ -167,7 +168,8 @@ const EventRegistration = props => {
 				JSON.stringify({
 					totalCap: values.totalCap,
 					numGroups: values.numGroups,
-					capDistribution: values.capDistribution
+					capDistribution: values.capDistribution,
+					multiDayEvent: values.multiDayEvent
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -365,6 +367,22 @@ const EventRegistration = props => {
 							&nbsp; Check the box if you want to evenly distribute
 							total participant number to each group.
 						</label>
+						{props.event.multiDayEvent && (
+							<label className="event-form__checkbox">
+								<Field
+									id="multiDayEvent"
+									name="multiDayEvent"
+									type="checkbox"
+									onBlur={event => {
+										handleBlur(event);
+										setOKLeavePage(false);
+									}}
+									disabled={true}
+								/>
+								&nbsp; You are creating a multiple day event. Please
+								check the box if each day represent a single event.
+							</label>
+						)}
 						<Button
 							type="submit"
 							size="medium"
@@ -479,4 +497,4 @@ const EventRegistration = props => {
 	);
 };
 
-export default EventRegistration;
+export default UpdateEventRegistration;

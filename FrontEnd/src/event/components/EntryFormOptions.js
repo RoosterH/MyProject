@@ -318,6 +318,178 @@ export const EntryFormOptions = () => [
 		field_name: 'checkboxes_',
 		options: []
 	},
+	// ****** MultipleRadioButtonGroup ******//
+	// We concat names to get field_name, field_name must be uniqute for all MultipleRadioButtonGroup
+	// for example: field_name: LunchSelectionDay1- is from
+	// "Lunch Selection" + "Day 1"
+	// For option key, we add indeix number after field_name such as
+	// option key: LunchSelectionDay1_0 is index 0 of
+	// field_name: LunchSelectionDay1
+	{
+		key: 'MultipleRadioButtonGroup',
+		canHaveAnswer: true,
+		name: 'Run Groups For Multiple Days Event',
+		icon: 'far fa-dot-circle',
+		label: '<strong>Run Groups for Multiple Day Event</strong>',
+		static: true,
+		required: true,
+		nested: true,
+		options: [
+			{
+				key: 'RadioButtons',
+				canHaveAnswer: true,
+				name: 'Day 1',
+				label: '<strong>Day 1</strong>',
+				field_name: 'RunGroupsForMultipleDaysEventDay1-',
+				static: true,
+				options: [
+					{
+						value: '0',
+						text: 'Morning Group 1',
+						key: `RunGroupsForMultipleDaysEventDay1_0`
+					},
+					{
+						value: '1',
+						text: 'Morning Group 2',
+						key: `RunGroupsForMultipleDaysEventDay1_1`
+					},
+					{
+						value: '2',
+						text: 'Afternoon Group 1',
+						key: `RunGroupsForMultipleDaysEventDay1_2`
+					},
+					{
+						value: '3',
+						text: 'Afternoon Group 2',
+						key: `RunGroupsForMultipleDaysEventDay1_3`
+					},
+					{
+						value: '4',
+						text: 'Afternoon Group 3',
+						key: `RunGroupsForMultipleDaysEventDay1_4`
+					}
+				]
+			},
+			{
+				key: 'RadioButtons',
+				canHaveAnswer: true,
+				name: 'Day 2',
+				label: '<strong>Day 2</strong>',
+				field_name: 'RunGroupsForMultipleDaysEventDay2-',
+				static: true,
+				options: [
+					{
+						value: '0',
+						text: 'Morning Group 1',
+						key: `RunGroupsForMultipleDaysEventDay2_0`
+					},
+					{
+						value: '1',
+						text: 'Morning Group 2',
+						key: `RunGroupsForMultipleDaysEventDay2_1`
+					},
+					{
+						value: '2',
+						text: 'Afternoon Group 1',
+						key: `RunGroupsForMultipleDaysEventDay2_2`
+					},
+					{
+						value: '3',
+						text: 'Afternoon Group 2',
+						key: `RunGroupsForMultipleDaysEventDay2_3`
+					},
+					{
+						value: '4',
+						text: 'Afternoon Group 3',
+						key: `RunGroupsForMultipleDaysEventDay2_4`
+					}
+				]
+			}
+		]
+	},
+	{
+		key: 'MultipleRadioButtonGroup',
+		canHaveAnswer: true,
+		name: 'Worker Assignments For Multiple Days Event',
+		icon: 'far fa-dot-circle',
+		label:
+			'<strong>Worker Assignments for Multiple Day Event</strong>',
+		static: true,
+		required: true,
+		nested: true,
+		options: [
+			{
+				key: 'RadioButtons',
+				canHaveAnswer: true,
+				name: 'Day 1',
+				label: '<strong>Day 1</strong>',
+				field_name: 'WorkerAssignmentsForMultipleDaysEventDay1-',
+				static: true,
+				options: [
+					{
+						value: '0',
+						text: 'Course Worker',
+						key: `WorkerAssignmentsForMultipleDaysEventDay1_0`
+					},
+					{
+						value: '1',
+						text: 'Starter',
+						key: `WorkerAssignmentsForMultipleDaysEventDay1_1`
+					},
+					{
+						value: '2',
+						text: 'Timing Slip',
+						key: `WorkerAssignmentsForMultipleDaysEventDay1_2`
+					},
+					{
+						value: '3',
+						text: 'Timing Trailer',
+						key: `WorkerAssignmentsForMultipleDaysEventDay1_3`
+					},
+					{
+						value: '4',
+						text: 'Tech Inspection',
+						key: `WorkerAssignmentsForMultipleDaysEventDay1_4`
+					}
+				]
+			},
+			{
+				key: 'RadioButtons',
+				canHaveAnswer: true,
+				name: 'Day 2',
+				label: '<strong>Day 2</strong>',
+				field_name: 'WorkerAssignmentsForMultipleDaysEventDay2-',
+				static: true,
+				options: [
+					{
+						value: '0',
+						text: 'Course Worker',
+						key: `WorkerAssignmentsForMultipleDaysEventDay2_0`
+					},
+					{
+						value: '1',
+						text: 'Starter',
+						key: `WorkerAssignmentsForMultipleDaysEventDay2_1`
+					},
+					{
+						value: '2',
+						text: 'Timing Slip',
+						key: `WorkerAssignmentsForMultipleDaysEventDay2_2`
+					},
+					{
+						value: '3',
+						text: 'Timing Trailer',
+						key: `WorkerAssignmentsForMultipleDaysEventDay2_3`
+					},
+					{
+						value: '4',
+						text: 'Tech Inspection',
+						key: `WorkerAssignmentsForMultipleDaysEventDay2_4`
+					}
+				]
+			}
+		]
+	},
 	{
 		key: 'MultipleRadioButtonGroup',
 		canHaveAnswer: true,
@@ -333,28 +505,28 @@ export const EntryFormOptions = () => [
 				canHaveAnswer: true,
 				name: 'Day 1',
 				label: '<strong>Day 1</strong>',
-				field_name: 'Lunch1-',
+				field_name: 'LunchSelectionDay1-',
 				static: true,
 				options: [
 					{
 						value: '10',
 						text: 'Hamburger $10',
-						key: `lunchRadioOption_0`
+						key: `LunchSelectionDay1_0`
 					},
 					{
 						value: '8',
 						text: 'Sandwitch $8',
-						key: `lunchRadioOption_1`
+						key: `LunchSelectionDay1_1`
 					},
 					{
 						value: '8',
 						text: 'Veggie Sandwitch $8',
-						key: `lunchRadioOption_2`
+						key: `LunchSelectionDay1_2`
 					},
 					{
 						value: '0',
 						text: 'No lunch',
-						key: `lunchRadioOption_3`
+						key: `LunchSelectionDay1_3`
 					}
 				]
 			},
@@ -363,116 +535,33 @@ export const EntryFormOptions = () => [
 				canHaveAnswer: true,
 				name: 'Day 2',
 				label: '<strong>Day 2</strong>',
-				field_name: 'Lunch2-',
+				field_name: 'LunchSelectionDay2-',
 				static: true,
 				options: [
 					{
 						value: '1',
 						text: 'Hamburger $1',
-						key: `lunchRadioOption2_0`
+						key: `LunchSelectionDay2_0`
 					},
 					{
 						value: '2',
 						text: 'Sandwitch $2',
-						key: `lunchRadioOption2_1`
+						key: `LunchSelectionDay2_1`
 					},
 					{
 						value: '3',
 						text: 'Veggie Sandwitch $3',
-						key: `lunchRadioOption2_2`
+						key: `LunchSelectionDay2_2`
 					},
 					{
 						value: '4',
 						text: 'No lunch',
-						key: `lunchRadioOption2_3`
-					}
-				]
-			}
-		]
-	},
-	{
-		key: 'MultipleRadioButtonGroup',
-		canHaveAnswer: true,
-		name: 'Run Group Selection',
-		icon: 'far fa-dot-circle',
-		label: '<strong>Run Group Selection</strong>',
-		static: true,
-		required: true,
-		nested: true,
-		options: [
-			{
-				key: 'RadioButtons',
-				canHaveAnswer: true,
-				name: 'Day 1',
-				label: '<strong>Day 1</strong>',
-				field_name: 'RunGroup1-',
-				static: true,
-				options: [
-					{
-						value: '0',
-						text: 'Morning Group 1',
-						key: `RunGroupRadioOption1_0`
-					},
-					{
-						value: '1',
-						text: 'Morning Group 2',
-						key: `RunGroupRadioOption1_1`
-					},
-					{
-						value: '2',
-						text: 'Afternoon Group 1',
-						key: `RunGroupRadioOption1_2`
-					},
-					{
-						value: '3',
-						text: 'Afternoon Group 2',
-						key: `RunGroupRadioOption1_3`
-					},
-					{
-						value: '4',
-						text: 'Afternoon Group 3',
-						key: `RunGroupRadioOption1_4`
-					}
-				]
-			},
-			{
-				key: 'RadioButtons',
-				canHaveAnswer: true,
-				name: 'Day 2',
-				label: '<strong>Day 2</strong>',
-				field_name: 'Lunch2-',
-				static: true,
-				options: [
-					{
-						value: '0',
-						text: 'Morning Group 1',
-						key: `RunGroupRadioOption2_0`
-					},
-					{
-						value: '1',
-						text: 'Morning Group 2',
-						key: `RunGroupRadioOption2_1`
-					},
-					{
-						value: '2',
-						text: 'Afternoon Group 1',
-						key: `RunGroupRadioOption2_2`
-					},
-					{
-						value: '3',
-						text: 'Afternoon Group 2',
-						key: `RunGroupRadioOption2_3`
-					},
-					{
-						value: '4',
-						text: 'Afternoon Group 3',
-						key: `RunGroupRadioOption2_4`
+						key: `LunchSelectionDay2_3`
 					}
 				]
 			}
 		]
 	}
-
 	// {
 	// 	key: 'MultipleRadioButtonGroup',
 	// 	canHaveAnswer: true,

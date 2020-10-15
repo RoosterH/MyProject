@@ -10,6 +10,8 @@ const Entry = require('../models/entry');
 const User = require('../models/user');
 const e = require('express');
 const { toNamespacedPath } = require('path');
+const { deflateSync } = require('zlib');
+const { findOneAndUpdate } = require('../models/event');
 
 const errMsg = errors => {
 	var msg;
@@ -89,6 +91,37 @@ const createEntry = async (req, res, next) => {
 		return next(error);
 	}
 
+	let multiDayEvent = event.multiDayEvent;
+	// validation to make sure all the field array lengths are the same
+	if (
+		event.entries.length !== event.waitlist.length ||
+		event.entries.length !== event.full.length ||
+		event.entries.length !== event.runGroupOptions.length ||
+		event.entries.length !== event.runGroupNumEntries.length ||
+		event.entries.length !== event.totalEntries.length
+	) {
+		console.log('event.entries.length = ', event.entries.length);
+		console.log('event.waitlist.length = ', event.waitlist.length);
+		console.log('event.full.length = ', event.full.length);
+		console.log(
+			'event.runGroupOptions.length = ',
+			event.runGroupOptions.length
+		);
+		console.log(
+			'event.runGroupNumEntries.length = ',
+			event.runGroupNumEntries.length
+		);
+		console.log('event.totalEntries = ', event.totalEntries);
+
+		const error = new HttpError(
+			'Entry submission process internal failure array length not the same.',
+			500
+		);
+		return next(error);
+	}
+	// find how many days
+	let days = event.entries.length;
+
 	// todo: auto bump waitlist once entry drops out from entry list
 	// check if event is already full
 	// 2 conditions here:
@@ -97,10 +130,14 @@ const createEntry = async (req, res, next) => {
 	//    the entry and removed from entry list.  We do not do auto bump yet so we will leave it as is.
 	//    we cannot use event.waitlist.length > 0, reason for it is because we also put group wait list entries
 	//    to waitlist even though event is not full.
-	let eventFull = false;
-	if (event.totalEntries >= event.totalCap || event.full) {
-		console.log('event is full');
-		eventFull = true;
+	let eventFull = [];
+	for (let i = 0; i < days; ++i) {
+		if (event.totalEntries[i] >= event.totalCap || event.full[i]) {
+			console.log('event day is full = ', i);
+			eventFull.push(true);
+		} else {
+			eventFull.push(false);
+		}
 	}
 
 	//********* This section is for parsing entry form answers **********//
@@ -110,25 +147,42 @@ const createEntry = async (req, res, next) => {
 	//      name: "RunGroupSingle-12EDB3DA-484C-4ECB-BB32-C3AE969A2D2F"
 	//      value: Array
 	//         0: "raceRadioOption_1"
-	let groupFull = false;
-	// runGroupAnsChoice is the 1 from => 0: "raceRadioOption_1"
-	let [runGroupAnsChoice, runGroup] = parseAnswer(
+	// let groupFull = false;
+	let groupFull = [];
+
+	console.log('137 event.runGroupOptions = ', event.runGroupOptions);
+	// runGroupAnsChoices is the answer index for each day, i.e., index 1 is extracted from => 0: "raceRadioOption_1"
+	// runGroups
+	let [runGroupAnsChoices, runGroupAnsTexts] = parseAnswer(
 		event.runGroupOptions,
 		answer,
 		'RunGroup'
 	);
-	if (runGroupAnsChoice === -1) {
+
+	// ! need to support single day selection for multiple day event
+	if (runGroupAnsChoices.length === 0) {
+		console.log('164');
 		const error = new HttpError(
 			'Event registration answer invalid @run group. ',
 			400
 		);
 		return next(error);
 	}
+
 	// check group cap to see if the run gorup is full
 	if (event.capDistribution) {
 		let capPerGroup = Math.floor(event.totalCap / event.numGroups);
-		if (event.runGroupNumEntries[runGroupAnsChoice] === capPerGroup) {
-			groupFull = true;
+		for (let i = 0; i < days; ++i) {
+			if (
+				// event.runGroupNumEntries[i][j] is a 2-D array, i for day, j for group
+				// runGroupAnsChoices[i] is the answer for i day
+				event.runGroupNumEntries[i][runGroupAnsChoices[i]] ===
+				capPerGroup
+			) {
+				groupFull.push(true);
+			} else {
+				groupFull.push(false);
+			}
 		}
 	}
 
@@ -141,12 +195,15 @@ const createEntry = async (req, res, next) => {
 	// 	return next(error);
 	// }
 
-	let [workerAssignmentAnsChoice, workerAssignment] = parseAnswer(
+	let [
+		workerAssignmentAnsChoices,
+		workerAssignmentAnsTexts
+	] = parseAnswer(
 		event.workerAssignments,
 		answer,
 		'WorkerAssignment'
 	);
-	if (workerAssignment === -1) {
+	if (workerAssignmentAnsChoices.length === 0) {
 		const error = new HttpError(
 			'Event registration answer invalid @worker assignment.',
 			400
@@ -191,6 +248,7 @@ const createEntry = async (req, res, next) => {
 			groupFull &&
 			entry.runGroup !== runGroupAnsChoice
 		) {
+			console.log('250');
 			// if previous entry was good but now the new group is full.
 			// We don't want to re-enter the event, instead giving an error message.
 			// Because drop an entry to waitlist is very bad.
@@ -221,6 +279,7 @@ const createEntry = async (req, res, next) => {
 				await entry.save();
 			}
 		} catch (err) {
+			console.log('280');
 			const error = new HttpError(
 				'Event registration connecting with DB failed. Please try again later.',
 				500
@@ -230,6 +289,12 @@ const createEntry = async (req, res, next) => {
 	} else {
 		// !entry
 		// entry not found, create a new entry and store the entryId to event and user
+		let waitlist = [];
+		for (let i = 0; i < eventFull.length; ++i) {
+			// either event or group is full, entry will be on the waitilist
+			waitlist.push(eventFull[i] || groupFull[i]);
+		}
+
 		entry = new Entry({
 			userId,
 			userName: user.userName,
@@ -246,46 +311,92 @@ const createEntry = async (req, res, next) => {
 			disclaimer,
 			time: moment(),
 			published: true,
-			waitlist: eventFull || groupFull,
+			waitlist: waitlist,
 			groupWaitlist: groupFull,
-			runGroup: runGroup,
-			workerAssignment: workerAssignment
+			runGroup: runGroupAnsTexts,
+			workerAssignment: workerAssignmentAnsTexts
 		});
+		console.log('entry = ', entry);
 		try {
 			const session = await mongoose.startSession();
 			session.startTransaction();
+			console.log('321');
 			await entry.save({ session: session });
 
 			// store newEntry to user.envents array
 			user.entries.push(entry);
-			await user.save({ session: session });
 
+			await user.save({ session: session });
+			console.log('330');
 			// if event or group is full, put in wailist; otherwise put in entries
-			if (eventFull || groupFull) {
-				console.log('in waitlist');
-				event.waitlist.push(entry);
-			} else {
-				event.entries.push(entry);
-			}
-			// update totalEntries number when neither event nor group is full
-			if (!groupFull && !eventFull) {
-				event.totalEntries++;
-				if (event.totalEntries === event.totalCap) {
-					event.full = true;
+			for (let i = 0; i < days; ++i) {
+				if (eventFull[i] || groupFull[i]) {
+					// event.waitlist[i].push(entry);
+					let currentWaitlist = event.waitlist[i];
+					currentWaitlist.push(entry);
+					event.waitlist.set(i, currentWaitlist);
+				} else {
+					// event.entries[i].push(entry);
+					let currentEntries = event.entries[i];
+					currentEntries.push(entry);
+					event.entries.set(i, currentEntries);
 				}
 			}
-
-			// update runGroup entry number
-			if (!groupFull) {
-				let numEntries = event.runGroupNumEntries[runGroupAnsChoice];
-				event.runGroupNumEntries.set(runGroupAnsChoice, ++numEntries);
+			console.log('345');
+			// update totalEntries number when neither event nor group is full
+			for (let i = 0; i < days; ++i) {
+				let numEntries = event.totalEntries[i];
+				// event.totalEntries[i]++;
+				event.totalEntries.set(i, ++numEntries);
+				if (event.totalEntries[i] === event.totalCap) {
+					// event.full[i] = true;
+					event.full.set(i, true);
+				}
 			}
+			console.log('354');
+			// update runGroup entry number
+			for (let i = 0; i < days; ++i) {
+				if (!groupFull[i]) {
+					console.log(
+						'1: event.runGroupNumEntries[i] = ',
+						event.runGroupNumEntries[i]
+					);
+					console.log(
+						'runGroupAnsChoices[i] = ',
+						runGroupAnsChoices[i]
+					);
+					let index = runGroupAnsChoices[i];
+					console.log('index = ', index);
+
+					let numEntries =
+						event.runGroupNumEntries[i][runGroupAnsChoices[i]];
+					console.log('numEntries = ', numEntries);
+
+					let originalNumEntries = [];
+					originalNumEntries = event.runGroupNumEntries[i];
+					console.log('originalNumEntries 1 = ', originalNumEntries);
+
+					originalNumEntries[index] = ++numEntries;
+
+					console.log('originalNumEntries 2 = ', originalNumEntries);
+
+					// set day i group runGroup # runGroupAnsChoices[i]
+					event.runGroupNumEntries.set(i, originalNumEntries);
+
+					console.log(
+						'2: event.runGroupNumEntries[i] = ',
+						event.runGroupNumEntries[i]
+					);
+				}
+			}
+			console.log('event = ', event);
+			console.log('379');
 			await event.save({ session: session });
 
 			// only all tasks succeed, we commit the transaction
 			await session.commitTransaction();
 		} catch (err) {
-			console.log('err = ', err);
+			console.log('387 err = ', err);
 			const error = new HttpError(
 				'Event registration process failed due to technical issue. Please try again later.',
 				500
@@ -294,16 +405,22 @@ const createEntry = async (req, res, next) => {
 		}
 	}
 
-	if (eventFull) {
+	let fullMessage = '';
+	for (let i = 0; i < days; ++i) {
+		if (eventFull[i]) {
+			fullMessage += 'Day ' + i + ' event is Full.';
+		} else if (groupFull[i]) {
+			fullMessage +=
+				'Day ' + i + ' group ' + runGroupAnsTexts[i] + ' is Full.';
+		}
+	}
+
+	if (fullMessage !== '') {
 		res.status(202).json({
 			entry: entry.toObject({ getters: true }),
 			message:
-				'Event is full. You are on the waitlist. Event club will notify you if there is a spot available.'
-		});
-	} else if (groupFull) {
-		res.status(202).json({
-			entry: entry.toObject({ getters: true }),
-			message: `${event.runGroupOptions[runGroupAnsChoice]} is full. You are on the waitlist. You may try to register for another run group or wait for the event organizer to notify you when a spot is available.`
+				fullMessage +
+				'You are on the waitlist. Event club will notify you if there is a spot available.'
 		});
 	} else {
 		res
@@ -312,6 +429,11 @@ const createEntry = async (req, res, next) => {
 	}
 };
 
+// example:
+// options: event.runGroupOptions = [["Morning Group 1","Morning Group 2","Afternoon Group 1","Afternoon Group 2","Afternoon Group 3"],["Morning Group 1","Morning Group 2","Afternoon Group 1","Afternoon Group 2","Afternoon Group 3"]]
+// answer:  entry form answer from users =  RunGroupsForMultipleDaysEventDay2-0
+// fieldName: "RunGroup"
+// return: [runGroupAnsChoices, runGroupAnsTexts], runGroupAnsChoices: answers for each day, runGroupAnsTexts: text for the corresponding text
 const parseAnswer = (options, answer, fieldName) => {
 	// entry answer format:
 	// answer: Array
@@ -320,20 +442,44 @@ const parseAnswer = (options, answer, fieldName) => {
 	//      value: Array
 	//         0: "raceRadioOption_1"
 
-	for (let i = 0; i < answer.length; ++i) {
+	// answerArray stores index number of the answer
+	let answerArray = [];
+	// textArray stores corresponding text of the answer extracted from options
+	let textArray = [];
+	// i is the index of answer
+	// j is the index of options
+	// We will loop through answer, answer is sorted per sequence of the entry form,
+	// therefore the first answer for RunGroup is for Day 1, the 2nd will be Day 2 ... and so on.
+	for (let i = 0, j = 0; i < answer.length; ++i) {
+		console.log('349 options = ', options);
 		let name = answer[i].name;
 		let splitName = name.split('-');
-		// fieldName is 'RunGroup'
-		let index = splitName[0].indexOf(fieldName);
+		// fieldName should start with 'RunGroup'
+		// let index = splitName[0].indexOf(fieldName);
+		console.log('splitName[0] = ', splitName[0]);
+		console.log('fieldName = ', fieldName);
+		let match = splitName[0].startsWith(fieldName);
+
 		// index must be 0 because "RunGroupSingle"
-		if (index === 0) {
+		// if (index === 0) {
+		if (match) {
 			let ansOpt = answer[i].value[0];
 			// parse string "raceRadioOption_1"
 			res = ansOpt.split('_');
-			return [res[1], options[res[1]]];
+			console.log('res = ', res);
+			console.log('res[1] = ', res[1]);
+			console.log('options[j] = ', options[j]);
+			console.log('options[j][res[1]] = ', options[j][res[1]]);
+
+			// res[1] is the answer index
+			answerArray.push(res[1]);
+			// options[j][res[1]] is the corresponding text of the answer in options
+			textArray.push(options[j][res[1]]);
+			++j;
 		}
 	}
-	return [-1, null];
+
+	return [answerArray, textArray];
 };
 
 const updateCar = async (req, res, next) => {

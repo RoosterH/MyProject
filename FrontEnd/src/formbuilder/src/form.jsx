@@ -234,10 +234,11 @@ export default class ReactForm extends React.Component {
 				group.props.data.options.forEach(option => {
 					let optionValid = false;
 					option.options.forEach(opt => {
-						let key = 'child_ref_undefined_' + opt.key;
-						optionValid |= group.options[key].checked;
+						// let key = 'child_ref_undefined_' + opt.key;
+						let key = 'child_ref_RadioButtons_' + opt.key;
 						console.log('key = ', key);
 						console.log('checked = ', group.options[key].checked);
+						optionValid |= group.options[key].checked;
 						console.log('optionValid = ', optionValid);
 					});
 					checked_options &= optionValid;
@@ -319,7 +320,9 @@ export default class ReactForm extends React.Component {
 				let itemData = {};
 				let checked_options = [];
 				option.options.forEach(opt => {
-					let key = 'child_ref_undefined_' + opt.key;
+					console.log('I am creating undefined key ');
+					let key = 'child_ref_RadioButtons_' + opt.key;
+					console.log('key = ', key);
 					if (group.options[key].checked) {
 						checked_options.push(opt.key);
 					}
@@ -408,6 +411,7 @@ export default class ReactForm extends React.Component {
 					} catch (err) {}
 				} else {
 					// this route is for NewEntryManager
+					console.log('answer = ', answer);
 					this.props.returnFormAnswer(answer);
 				}
 			} else {

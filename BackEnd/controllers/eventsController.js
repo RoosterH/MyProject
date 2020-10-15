@@ -549,6 +549,7 @@ const createEvent = async (req, res, next) => {
 	const newEvent = new Event({
 		name,
 		type,
+		multiDayEvent: false,
 		startDate,
 		endDate,
 		regStartDate,
@@ -571,9 +572,9 @@ const createEvent = async (req, res, next) => {
 		// courseMap: courseMapPath,
 		published: false,
 		entryFormData: [],
-		entries: [],
-		waitlist: [],
-		totalEntries: 0,
+		entries: [[]],
+		waitlist: [[]],
+		totalEntries: [],
 		numGroups: 0,
 		capDistribution: false,
 		raceClassOptions: [],
@@ -729,6 +730,7 @@ const updateEventPhotos = async (req, res, next) => {
 // PATCH /api/events/registration/:eid
 const updateEventRegistration = async (req, res, next) => {
 	const eventId = req.params.eid;
+	console.log('733 eventId = ', eventId);
 
 	// validate request, req checks are defined in eventRoutes.js using
 	// express-validator
@@ -740,7 +742,7 @@ const updateEventRegistration = async (req, res, next) => {
 		const result = validationResult(req).formatWith(errorFormatter);
 		return next(
 			new HttpError(
-				`Update event photo process failed. Please check your data: ${result.array()}`,
+				`Update event registration process failed. Please check your data: ${result.array()}`,
 				422
 			)
 		);
@@ -753,14 +755,14 @@ const updateEventRegistration = async (req, res, next) => {
 		club = await Club.findById(clubId);
 	} catch (err) {
 		const error = new HttpError(
-			'Update event photos process failed during club validation. Please try again later.',
+			'Update event registration process failed during club validation. Please try again later.',
 			500
 		);
 		return next(error);
 	}
 	if (!club) {
 		const error = new HttpError(
-			'Update event photos failure. Unauthorized request.',
+			'Update event registration failure. Unauthorized request.',
 			404
 		);
 		return next(error);
@@ -778,27 +780,36 @@ const updateEventRegistration = async (req, res, next) => {
 	}
 	if (!event) {
 		return next(
-			new HttpError('Update event failed finding the event.'),
+			new HttpError(
+				'Update event registration failed finding the event.'
+			),
 			404
 		);
 	}
 
+	console.log('789 event = ', event);
 	// we added userData in check-auth after verifying jwt
 	if (event.clubId.toString() !== req.userData) {
 		const error = new HttpError('Unauthorized operation!!!', 401);
 		return next(error);
 	}
 
-	const { totalCap, numGroups, capDistribution } = req.body;
+	const {
+		totalCap,
+		numGroups,
+		capDistribution,
+		multiDayEvent
+	} = req.body;
 	event.totalCap = totalCap;
 	if (totalCap !== undefined || totalCap !== 0) {
-		event.full = false;
+		event.full.push(false);
 	}
 
 	event.numGroups = numGroups;
 	event.capDistribution = capDistribution;
 	// set published to false to force re-publish
 	event.published = false;
+	event.multiDayEvent = multiDayEvent;
 
 	// if capDistribution is true, we will create numGroups groups.
 	// Each group can only have totalCap / numGroups participants
@@ -808,8 +819,38 @@ const updateEventRegistration = async (req, res, next) => {
 		// 	event.runGroupEntries.push(undefined);
 		// }
 		// run group is named starting from 0 so there is no problem to match with index
+		let group = [];
 		for (let i = 0; i < numGroups; ++i) {
-			event.runGroupNumEntries.push(0);
+			group.push(0);
+		}
+		event.runGroupNumEntries.push(group);
+	}
+
+	if (multiDayEvent) {
+		// create array elements for each day
+		let startDate = moment(event.startDate);
+		let endDate = moment(event.endDate);
+		// dayDiff is the difference for example, 11/1 - 10/31 = 1
+		let dayDiff = endDate.diff(startDate, 'days');
+		// originally each field already has one element so we only need to add numDays elements to it
+		for (let i = 0; i < dayDiff; ++i) {
+			let entry = [];
+			event.entries.push(entry);
+			let wlist = [];
+			event.waitlist.push(wlist);
+			event.full.push(false);
+			if (capDistribution) {
+				//! this does not work as MongoDB will store userId in an array
+				// for (let i = 0; i < numGroups; ++i) {
+				// 	event.runGroupEntries.push(undefined);
+				// }
+				// run group is named starting from 0 so there is no problem to match with index
+				let group = [];
+				for (let i = 0; i < numGroups; ++i) {
+					group.push(0);
+				}
+				event.runGroupNumEntries.push(group);
+			}
 		}
 	}
 
@@ -1021,6 +1062,240 @@ const deleteEvent = async (req, res, next) => {
 		});
 	}
 	res.status(200).json({ message: `Event: ${event.name} deleted` });
+};
+
+// this includes create and update event form
+const createEventForm = async (req, res, next) => {
+	// we need to get entryFormData from body
+	const { entryFormData, saveTemplate } = req.body;
+
+	// Validate clubId exists. If not, sends back an error
+	let club;
+	let clubId = req.userData;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Create event form process failed during club validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'Create event form process faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
+	// Validate eventId belonging to the found club. If not, sends back an error
+	let event;
+	const eventId = req.params.eid;
+	console.log('1096 eventId = ', eventId);
+	// if club does not own the eventId, return error
+	if (!club.events.includes(eventId)) {
+		// Not found in clubs events
+		const error = new HttpError(
+			'Create event form process faied with unauthorized request.  Your club does not own this event.',
+			404
+		);
+		return next(error);
+	}
+
+	event = await Event.findById(eventId);
+	if (!event) {
+		const error = new HttpError(
+			'Create event form process internal failure',
+			404
+		);
+		return next(error);
+	}
+
+	// overwrite the old formData, reason for it because to figure out what to/not to replace
+	// is tidious and error prone, we are not going to have a form with a lot of data so hopefully
+	// it won't impact performace by much.
+	if (entryFormData && entryFormData.length > 0) {
+		event.entryFormData = [];
+		// reset event.runGroupOptions
+		event.runGroupOptions = [];
+		// reset totalEntries
+		event.totalEntries = [];
+		// reset workerAssignments
+		event.workerAssignments = [];
+
+		entryFormData.map(data => {
+			event.entryFormData.push(data);
+			if (data.element === 'MultipleRadioButtonGroup') {
+				data.options.map(option => {
+					// loop through opt.options
+					let [fieldName, choices] = formAnalysis(option);
+					console.log('1131 fieldName = ', fieldName);
+					console.log('choices = ', choices);
+					if (fieldName.startsWith('RunGroup')) {
+						console.log('inRunGroup');
+						event.runGroupOptions.push(choices);
+						console.log(
+							'event.runGroupOptions = ',
+							event.runGroupOptions
+						);
+						// Also make totalEntries same number of elements
+						event.totalEntries.push(0);
+					} else if (fieldName.startsWith('WorkerAssignments')) {
+						event.workerAssignments.push(choices);
+					}
+				});
+			} else {
+				// form analysis here
+				let [fieldName, choices] = formAnalysis(data);
+				if (fieldName === 'RunGroupSingle') {
+					console.log('RunGroupSingle');
+					event.runGroupOptions = [];
+					// event.runGroupOptions = choices;
+					// runGroupOptions is [[]]
+					let optionChoices = [];
+					optionChoices.push(choices);
+					event.runGroupOptions.push(choices);
+				} else if (fieldName === 'RaceClass') {
+					event.raceClassOptions = choices;
+				} else if (fieldName === 'WorkerAssignment') {
+					event.workerAssignments = choices;
+				}
+			}
+		});
+		// whenever entry form gets changed, always set published to false
+		event.published = false;
+
+		// save to template if flag is true
+		if (saveTemplate) {
+			club.entryFormTemplate = [];
+			entryFormData.map(data => club.entryFormTemplate.push(data));
+		}
+	}
+
+	try {
+		if (saveTemplate) {
+			await club.save();
+		}
+		console.log('1183 event = ', event);
+		await event.save();
+		res
+			.status(200)
+			.json({ event: event.toObject({ getters: true }) });
+	} catch (err) {
+		console.log('err = ', err);
+		const error = new HttpError(
+			'Create event form connecting with DB failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+};
+
+// Form analysis
+const formAnalysis = data => {
+	//! @todo Multiple Day MultipleRadioButtonGroup
+	// maybe for lunch options, race group and worker assignment should stay the same across the event
+	if (!data.field_name) {
+		return [null, null];
+	}
+
+	// Form field name is defined in frontend FormBuilder.js
+	// "RunGroupSingle-" Race Group prefix for Single Choice Radiobutton
+	// field_name: "RunGroupSingle-12EDB3DA-484C-4ECB-BB32-C3AE969A2D2F"
+	let parseName = data.field_name.split('-');
+	console.log('parseName = ', parseName);
+	let fieldPrefix = parseName[0];
+	console.log('fieldPrefix = ', fieldPrefix);
+	let choices = [];
+
+	// get the options
+	// format of the
+	// options: Array
+	//    0: Object
+	//       value: "0"
+	//       text: "Morning Session 1"
+	//       key: "raceRadioOption_0"
+	// we will use {value: text} to compose our map
+	// ex: {0: "Morning Session 1"}
+	let options = data.options;
+	for (var i = 0; i < options.length; ++i) {
+		let option = options[i];
+		// build up option map
+		let value = option['text'];
+		choices.push(value);
+	}
+	return [fieldPrefix, choices];
+};
+
+const getEventForm = async (req, res, next) => {
+	let club;
+	let clubId = req.userData;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Create event form process failed during club validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'Create event form process faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
+	// Validate eventId belonging to the found club. If not, sends back an error
+	let event;
+	const eventId = req.params.eid;
+	// if club does not own the eventId, return error
+	if (!club.events.includes(eventId)) {
+		// Not found in clubs events
+		const error = new HttpError(
+			'Create event form process faied with unauthorized request.  Your club does not own this event.',
+			404
+		);
+		return next(error);
+	}
+
+	try {
+		event = await Event.findById(eventId);
+	} catch (err) {
+		// this error is displayed if the request to the DB had some issues
+		const error = new HttpError(
+			'Get EventForm for club process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'Could not complete retrieving event form with provided event id',
+			404
+		);
+		return next(error);
+	}
+
+	// 1. get eventFormData from DB,
+	// 2. if not available check if club has entryFormTemplate
+	// 3. return initialized db if nothing found
+	let entryFormData = event.entryFormData;
+	if (!entryFormData || entryFormData.length === 0) {
+		if (club.entryFormTemplate.length > 0) {
+			entryFormData = club.entryFormTemplate;
+		} else {
+			res.status(200).json({ entryFormData: '[]' });
+		}
+	}
+
+	res.status(200).json(entryFormData);
 };
 
 // POST /api/events/entryreportforusers/:eid
@@ -1264,4 +1539,6 @@ exports.getEventsByOwnerClubId = getEventsByOwnerClubId;
 exports.getPublishedEventsByOwnerClubId = getPublishedEventsByOwnerClubId;
 exports.getOwnerClubEvent = getOwnerClubEvent;
 exports.getEntryReport = getEntryReport;
+exports.getEventForm = getEventForm;
+exports.createEventForm = createEventForm;
 exports.getEntryReportForUsers = getEntryReportForUsers;

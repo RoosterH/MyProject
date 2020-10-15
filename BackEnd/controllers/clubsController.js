@@ -499,15 +499,34 @@ const createEventForm = async (req, res, next) => {
 	if (entryFormData && entryFormData.length > 0) {
 		event.entryFormData = [];
 		entryFormData.map(data => {
+			console.log('data = ', data);
 			event.entryFormData.push(data);
-			// form analysis here
-			let [fieldName, choices] = formAnalysis(data);
-			if (fieldName === 'RunGroupSingle') {
-				event.runGroupOptions = choices;
-			} else if (fieldName === 'RaceClass') {
-				event.raceClassOptions = choices;
-			} else if (fieldName === 'WorkerAssignment') {
-				event.workerAssignments = choices;
+			if (data.element === 'MultipleRadioButtonGroup') {
+				data.options.map(option => {
+					// loop through opt.options
+					let [fieldName, choices] = formAnalysis(option);
+					if (fieldName.startsWith('RunGroup')) {
+						let optionChoices = [];
+						console.log('choices = ', choices);
+						optionChoices.push(choices);
+						event.runGroupOptions.push(choices);
+					}
+				});
+			} else {
+				// form analysis here
+				let [fieldName, choices] = formAnalysis(data);
+
+				if (fieldName === 'RunGroupSingle') {
+					// event.runGroupOptions = choices;
+					// runGroupOptions is [[]]
+					let optionChoices = [];
+					optionChoices.push(choices);
+					event.runGroupOptions.push(choices);
+				} else if (fieldName === 'RaceClass') {
+					event.raceClassOptions = choices;
+				} else if (fieldName === 'WorkerAssignment') {
+					event.workerAssignments = choices;
+				}
 			}
 		});
 		// whenever entry form gets changed, always set published to false
@@ -624,39 +643,22 @@ const formAnalysis = data => {
 	let fieldPrefix = parseName[0];
 	console.log('fieldPrefix = ', fieldPrefix);
 	let choices = [];
-	if (parseName[0] === 'RunGroupSingle') {
-		// get the options
-		// format of the
-		// options: Array
-		//    0: Object
-		//       value: "0"
-		//       text: "Morning Session 1"
-		//       key: "raceRadioOption_0"
-		// we will use {value: text} to compose our map
-		// ex: {0: "Morning Session 1"}
-		let options = data.options;
-		for (var i = 0; i < options.length; ++i) {
-			let option = options[i];
-			// build up option map
-			let value = option['text'];
-			choices.push(value);
-		}
-	} else if (parseName[0] === 'RaceClass') {
-		let options = data.options;
-		for (var i = 0; i < options.length; ++i) {
-			let option = options[i];
-			// build up option map
-			let value = option['text'];
-			choices.push(value);
-		}
-	} else if (parseName[0] === 'WorkerAssignment') {
-		let options = data.options;
-		for (var i = 0; i < options.length; ++i) {
-			let option = options[i];
-			// build up option map
-			let value = option['text'];
-			choices.push(value);
-		}
+
+	// get the options
+	// format of the
+	// options: Array
+	//    0: Object
+	//       value: "0"
+	//       text: "Morning Session 1"
+	//       key: "raceRadioOption_0"
+	// we will use {value: text} to compose our map
+	// ex: {0: "Morning Session 1"}
+	let options = data.options;
+	for (var i = 0; i < options.length; ++i) {
+		let option = options[i];
+		// build up option map
+		let value = option['text'];
+		choices.push(value);
 	}
 	return [fieldPrefix, choices];
 };

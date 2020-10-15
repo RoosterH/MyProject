@@ -183,7 +183,7 @@ const EventForm = props => {
 						<ReactFormGenerator
 							answer_data={formAnswer}
 							action_name={
-								editingMode ? 'SUBMIT' : 'SUBMIT &amp; CONTINUE'
+								editingMode ? 'SUBMIT' : 'SUBMIT & CONTINUE'
 							}
 							data={formData}
 							returnFormAnswer={getFormAnswer}

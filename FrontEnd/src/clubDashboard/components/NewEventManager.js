@@ -141,6 +141,10 @@ const NewEventManager = () => {
 		}
 	}, [saveStatus, saveClickHandler]);
 
+	const [multiDayEvent, setMultiDayEvent] = useState(false);
+	const isMultiDayEvent = multi => {
+		setMultiDayEvent(multi);
+	};
 	return (
 		<React.Fragment>
 			<div className="list-header clearfix">
@@ -173,6 +177,7 @@ const NewEventManager = () => {
 							<NewEvent
 								newEventStatus={NewEventHandler}
 								eventIdHandler={EventIDHandler}
+								isMultiDayEvent={isMultiDayEvent}
 							/>
 						)}
 						{photo && (
@@ -192,6 +197,7 @@ const NewEventManager = () => {
 								registrationStatus={RegistrationHandler}
 								saveStatus={saveHandler}
 								eventId={eventId}
+								multiDayEvent={multiDayEvent}
 							/>
 						)}
 					</div>

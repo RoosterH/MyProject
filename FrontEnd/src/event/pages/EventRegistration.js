@@ -72,6 +72,7 @@ const EventRegistration = props => {
 	const [totalCap, setTotalCap] = useState('');
 	const [numGroups, setNumGroups] = useState('');
 	const [capDistribution, setCapDistribution] = useState(false);
+	const [multiDayEvent, setMultiDayEvent] = useState(false);
 
 	// initialize local storage
 	// Get the existing data
@@ -99,6 +100,9 @@ const EventRegistration = props => {
 		if (eventFormData.capDistribution) {
 			setCapDistribution(eventFormData.capDistribution);
 		}
+		if (eventFormData.multiDayEvent) {
+			setMultiDayEvent(eventFormData.multiDayEvent);
+		}
 	} else if (!initialized) {
 		setInitialized(true);
 		// initialize localStorage
@@ -109,6 +113,7 @@ const EventRegistration = props => {
 		eventFormData['totalCap'] = '';
 		eventFormData['numGroups'] = '';
 		eventFormData['capDistribution'] = false;
+		eventFormData['multiDayEvent'] = false;
 		localStorage.setItem(
 			'eventFormData',
 			JSON.stringify(eventFormData)
@@ -123,7 +128,8 @@ const EventRegistration = props => {
 		// editorState: new EditorState.createEmpty(),
 		totalCap: totalCap,
 		numGroups: numGroups,
-		capDistribution: capDistribution
+		capDistribution: capDistribution,
+		multiDayEvent: multiDayEvent
 	};
 
 	const updateEventFormData = (key, value) => {
@@ -156,7 +162,8 @@ const EventRegistration = props => {
 				JSON.stringify({
 					totalCap: values.totalCap,
 					numGroups: values.numGroups,
-					capDistribution: values.capDistribution
+					capDistribution: values.capDistribution,
+					multiDayEvent: values.multiDayEvent
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -250,7 +257,9 @@ const EventRegistration = props => {
 		<div className="event-form">
 			<div className="event-form-header">
 				<h4>Please enter event registration information</h4>
-				{/* <h5>&nbsp;All fields are required</h5> */}
+				<h5>
+					&nbsp;Values cannot be modified after event been saved.
+				</h5>
 				<hr className="event-form__hr" />
 			</div>
 			<Formik
@@ -350,6 +359,22 @@ const EventRegistration = props => {
 							&nbsp; Check the box if you want to evenly distribute
 							total participant number to each group.
 						</label>
+						{props.multiDayEvent && (
+							<label className="event-form__checkbox">
+								<Field
+									id="multiDayEvent"
+									name="multiDayEvent"
+									type="checkbox"
+									// validate={validateCapDistribution(values)}
+									onBlur={event => {
+										handleBlur(event);
+										setOKLeavePage(false);
+									}}
+								/>
+								&nbsp; You are creating a multiple day event. Please
+								check the box if each day represent a single event.
+							</label>
+						)}
 						{/* error message not working */}
 						{/* {touched.capDistribution && errors.capDistribution && (
 							<div className="event-form__field-error">
@@ -360,6 +385,7 @@ const EventRegistration = props => {
 							name="capDistribution"
 							className="event-form__field-error-quarter"
 						/> */}
+						<br />
 						<Button
 							type="submit"
 							size="medium-block"

@@ -32,6 +32,7 @@ const NewEvent = props => {
 	// continueStatus controls when to return props.newEventStatus back to NewEventManager
 	const [continueStatus, setContinueStatus] = useState(false);
 	const [eventId, setEventId] = useState();
+	const [isMultiDayEvent, setIsMultiDayEvent] = useState(false);
 
 	// const continueHandler = () => {
 	// 	setContinueStatus(true);
@@ -55,6 +56,10 @@ const NewEvent = props => {
 			mounted = false;
 		};
 	}, [formContext]);
+
+	useEffect(() => {
+		props.isMultiDayEvent(isMultiDayEvent);
+	}, [isMultiDayEvent]);
 
 	const {
 		isLoading,
@@ -248,6 +253,11 @@ const NewEvent = props => {
 			);
 			setOKLeavePage(true);
 			setEventId(responseData.event.id);
+			if (values.startDate === values.endDate) {
+				setIsMultiDayEvent(false);
+			} else {
+				setIsMultiDayEvent(true);
+			}
 			// move to next stage
 			setContinueStatus(true);
 		} catch (err) {}

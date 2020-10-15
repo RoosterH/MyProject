@@ -63,12 +63,29 @@
 	font: Montserrat, sans-serif;
 	font-size: 12px;
 	margin: 1rem 1rem 2rem 1rem;
+	/* margin: 0.5rem 1rem 1rem 1rem; */
 	font-weight: 400;
 	color: #82888a;
 }
 
 .events-item__info:hover h1 {
 	text-decoration: underline;
+}
+
+.events-item__eventName {
+	font: Montserrat, sans-serif;
+	font-size: 16px;
+	margin: 0.1rem 1rem 1rem 1rem;
+	font-weight: 600;
+	color: #197dc2;
+	-webkit-box-orient: vertical;
+	display: -webkit-box;
+	height: 38px;
+	-webkit-line-clamp: 2;
+	line-height: 1.2;
+	margin-bottom: 5px;
+	overflow: hidden;
+	white-space: initial;
 }
 
 @media (max-width: 780px) {

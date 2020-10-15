@@ -34,7 +34,7 @@ const EventsItem = props => {
 					</div>
 					<div className="events-item__info">
 						<h2>{props.type}</h2>
-						<h1>{props.name}</h1>
+						<div className="events-item__eventName">{props.name}</div>
 						<h4>by {props.clubName}</h4>
 						<h2>
 							{startDate} - {endDate}{' '}

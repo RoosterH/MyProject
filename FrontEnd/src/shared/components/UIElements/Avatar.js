@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import './Avatar.css';
 
 const Avatar = props => {
-	console.log('in Avatar');
 	const [className, setClassName] = useState('watermark');
 	useEffect(() => {
 		if (props.publishDescription === 'RETIRED') {

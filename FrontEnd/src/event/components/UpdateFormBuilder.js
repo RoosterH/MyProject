@@ -113,7 +113,7 @@ const FormBuilder = props => {
 				responseStatus,
 				responseMessage
 			] = await sendRequest(
-				process.env.REACT_APP_BACKEND_URL + `/clubs/form/${eventId}`,
+				process.env.REACT_APP_BACKEND_URL + `/events/form/${eventId}`,
 				'POST',
 				JSON.stringify({
 					entryFormData: unsavedData,
@@ -171,6 +171,7 @@ const FormBuilder = props => {
 	};
 
 	const cleanUp = () => {
+		clubAuthContext.setClubRedirectURL(null);
 		setUnsavedData(undefined);
 		localStorage.removeItem('eventData');
 		localStorage.removeItem('eventEntryForm');

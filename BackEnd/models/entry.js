@@ -40,14 +40,21 @@ const entrySchema = new Schema({
 	time: { type: Date, required: true },
 	// not used right now. this is intended for loading unfished-entry
 	published: { type: Boolean, required: true },
-	waitlist: { type: Boolean, required: true },
-	groupWaitlist: { type: Boolean, require: true },
+	// ! array
+	waitlist: [{ type: Boolean, required: true }],
+	// ! array
+	groupWaitlist: [{ type: Boolean, require: true }],
 
 	// the following section fields are parsed from answer
 	// the value we store is the answer optoin value
 	// such as: "raceRadioOption_1", we store 1
-	runGroup: { type: String, required: true },
-	workerAssignment: { type: String, required: true },
+	// ! array the best way to use array is to define a static length
+	// ! Issue with dynamic length, DB does not have a good planning for the storage block. If the array gets too big not
+	// ! able to hold in a block, DB will need to relocate to a larger block for all the information.  This will be system
+	// ! performance hit.
+	runGroup: [{ type: String, required: true }],
+	//runGroup: { type: String, required: true },
+	workerAssignment: [{ type: String, required: true }],
 	lunchOption: { type: String }
 });
 
