@@ -337,74 +337,60 @@ const getEntryReport = async (req, res, next) => {
 			waitlist: []
 		});
 	}
-	let entryData = [];
-	for (let i = 0; i < entries.length; ++i) {
-		let entry = await Entry.findById(entries[i]).populate('carId');
-		// add car to entry
-		let car =
-			entry.carId.year +
-			' ' +
-			entry.carId.make +
-			' ' +
-			entry.carId.model;
-		if (entry.carId.trimLevel != undefined) {
-			car += ' ' + entry.carId.trimLevel;
+
+	let days = entries.length;
+	let mutipleDayEntryData = [];
+	for (let i = 0; i < days; ++i) {
+		let entryData = [];
+		let eList = entries[i];
+		for (let j = 0; j < eList.length; ++j) {
+			let entry = await Entry.findById(eList[j]).populate('carId');
+			// add car to entry
+			let car =
+				entry.carId.year +
+				' ' +
+				entry.carId.make +
+				' ' +
+				entry.carId.model;
+			if (entry.carId.trimLevel != undefined) {
+				car += ' ' + entry.carId.trimLevel;
+			}
+			// use {strict:false} to add undefined attribute in schema to existing json obj
+			entry.set('car', car, { strict: false });
+			entryData.push(entry);
 		}
-		// use {strict:false} to add undefined attribute in schema to existing json obj
-		entry.set('car', car, { strict: false });
-		entryData.push(entry);
+		mutipleDayEntryData.push(entryData);
 	}
 
 	// get waitlist
 	let waitlist = event.waitlist;
-	let waitlistData = [];
-	for (let i = 0; i < waitlist.length; ++i) {
-		let entry = await Entry.findById(waitlist[i]).populate('carId');
-		// add car to entry
-		let car =
-			entry.carId.year +
-			' ' +
-			entry.carId.make +
-			' ' +
-			entry.carId.model;
-		if (entry.carId.trimLevel != undefined) {
-			car += ' ' + entry.carId.trimLevel;
+	let mutipleDayWaitlistData = [];
+	for (let i = 0; i < days; ++i) {
+		let waitlistData = [];
+		let wList = waitlist[i];
+		for (let j = 0; j < wList.length; ++j) {
+			let entry = await Entry.findById(wList[j]).populate('carId');
+			// add car to entry
+			let car =
+				entry.carId.year +
+				' ' +
+				entry.carId.make +
+				' ' +
+				entry.carId.model;
+			if (entry.carId.trimLevel != undefined) {
+				car += ' ' + entry.carId.trimLevel;
+			}
+			// use {strict:false} to add undefined attribute in schema to existing json obj
+			entry.set('car', car, { strict: false });
+			waitlistData.push(entry);
 		}
-		// use {strict:false} to add undefined attribute in schema to existing json obj
-		entry.set('car', car, { strict: false });
-		waitlistData.push(entry);
+		mutipleDayWaitlistData.push(waitlistData);
 	}
 
-	if (waitlistData.length === 0) {
-		res.status(200).json({
-			eventName: event.name,
-			entryData: entryData.map(data =>
-				data.toObject({
-					getters: true,
-					transform: (doc, ret, opt) => {
-						delete ret['userId'];
-						delete ret['userName'];
-						delete ret['clubId'];
-						delete ret['clubName'];
-						delete ret['eventId'];
-						delete ret['eventName'];
-						delete ret['carId'];
-						delete ret['disclaimer'];
-						delete ret['time'];
-						delete ret['published'];
-						return ret;
-					}
-				})
-			),
-			waitlistData: [],
-			raceClassOptions: event.raceClassOptions,
-			runGroupOptions: event.runGroupOptions,
-			workerAssignments: event.workerAssignments
-		});
-	} else {
-		res.status(200).json({
-			eventName: event.name,
-			entryData: entryData.map(data =>
+	res.status(200).json({
+		eventName: event.name,
+		entryData: mutipleDayEntryData.map(entryData =>
+			entryData.map(data =>
 				data.toObject({
 					getters: true,
 					transform: (doc, ret, opt) => {
@@ -421,8 +407,10 @@ const getEntryReport = async (req, res, next) => {
 						return ret;
 					}
 				})
-			),
-			waitlistData: waitlistData.map(data =>
+			)
+		),
+		waitlistData: mutipleDayWaitlistData.map(waitlistData =>
+			waitlistData.map(data =>
 				data.toObject({
 					getters: true,
 					transform: (doc, ret, opt) => {
@@ -439,12 +427,12 @@ const getEntryReport = async (req, res, next) => {
 						return ret;
 					}
 				})
-			),
-			raceClassOptions: event.raceClassOptions,
-			runGroupOptions: event.runGroupOptions,
-			workerAssignments: event.workerAssignments
-		});
-	}
+			)
+		),
+		raceClassOptions: event.raceClassOptions,
+		runGroupOptions: event.runGroupOptions,
+		workerAssignments: event.workerAssignments
+	});
 };
 
 // POST /api/events/date/
@@ -1157,6 +1145,8 @@ const createEventForm = async (req, res, next) => {
 					let optionChoices = [];
 					optionChoices.push(choices);
 					event.runGroupOptions.push(choices);
+					// Also make totalEntries[0] = 0
+					event.totalEntries.push(0);
 				} else if (fieldName === 'RaceClass') {
 					event.raceClassOptions = choices;
 				} else if (fieldName === 'WorkerAssignment') {
@@ -1326,6 +1316,7 @@ const getEntryReportForUsers = async (req, res, next) => {
 
 	// get entires
 	let entries = event.entries;
+	console.log('1329 entries = ', entries);
 	// if there is no entry, should not have a waitlist, either.
 	if (entries.length === 0) {
 		res.status(404).json({
@@ -1333,42 +1324,56 @@ const getEntryReportForUsers = async (req, res, next) => {
 			waitlist: []
 		});
 	}
-	let entryData = [];
-	for (let i = 0; i < entries.length; ++i) {
-		let entry = await Entry.findById(entries[i]).populate('carId');
-		// add car to entry
-		let car =
-			entry.carId.year +
-			' ' +
-			entry.carId.make +
-			' ' +
-			entry.carId.model;
-		if (entry.carId.trimLevel != undefined) {
-			car += ' ' + entry.carId.trimLevel;
+
+	let days = entries.length;
+	let mutipleDayEntryData = [];
+	for (let i = 0; i < days; ++i) {
+		let entryData = [];
+		let eList = entries[i];
+		for (let j = 0; j < eList.length; ++j) {
+			// add car info to entry for frontend to display the information
+			let entry = await Entry.findById(eList[j]).populate('carId');
+			console.log('1345 entry = ', entry);
+			// add car to entry
+			let car =
+				entry.carId.year +
+				' ' +
+				entry.carId.make +
+				' ' +
+				entry.carId.model;
+			if (entry.carId.trimLevel != undefined) {
+				car += ' ' + entry.carId.trimLevel;
+			}
+			// use {strict:false} to add undefined attribute in schema to existing json obj
+			entry.set('car', car, { strict: false });
+			entryData.push(entry);
 		}
-		// use {strict:false} to add undefined attribute in schema to existing json obj
-		entry.set('car', car, { strict: false });
-		entryData.push(entry);
+		mutipleDayEntryData.push(entryData);
 	}
 
 	// get waitlist
 	let waitlist = event.waitlist;
-	let waitlistData = [];
-	for (let i = 0; i < waitlist.length; ++i) {
-		let entry = await Entry.findById(waitlist[i]).populate('carId');
-		// add car to entry
-		let car =
-			entry.carId.year +
-			' ' +
-			entry.carId.make +
-			' ' +
-			entry.carId.model;
-		if (entry.carId.trimLevel != undefined) {
-			car += ' ' + entry.carId.trimLevel;
+	let mutipleDayWaitlistData = [];
+	for (let i = 0; i < days; ++i) {
+		let waitlistData = [];
+		let wList = waitlist[i];
+		for (let j = 0; j < wList.length; ++j) {
+			let entry = await Entry.findById(wList[j]).populate('carId');
+			// add car to entry
+			let car =
+				entry.carId.year +
+				' ' +
+				entry.carId.make +
+				' ' +
+				entry.carId.model;
+			if (entry.carId.trimLevel != undefined) {
+				car += ' ' + entry.carId.trimLevel;
+			}
+			// use {strict:false} to add undefined attribute in schema to existing json obj
+			entry.set('car', car, { strict: false });
+			waitlistData.push(entry);
 		}
-		// use {strict:false} to add undefined attribute in schema to existing json obj
-		entry.set('car', car, { strict: false });
-		waitlistData.push(entry);
+		mutipleDayWaitlistData.push(waitlistData);
 	}
 
 	const { displayName } = req.body;
@@ -1378,34 +1383,9 @@ const getEntryReportForUsers = async (req, res, next) => {
 	// }); // { event } => { event: event }
 
 	if (displayName) {
-		if (waitlistData.length === 0) {
-			res.status(200).json({
-				entryData: entryData.map(data =>
-					data.toObject({
-						getters: true,
-						transform: (doc, ret, opt) => {
-							delete ret['userId'];
-							delete ret['userName'];
-							delete ret['clubId'];
-							delete ret['clubName'];
-							delete ret['eventId'];
-							delete ret['eventName'];
-							delete ret['carId'];
-							delete ret['disclaimer'];
-							delete ret['time'];
-							delete ret['published'];
-							return ret;
-						}
-					})
-				),
-				waitlistData: [],
-				raceClassOptions: event.raceClassOptions,
-				runGroupOptions: event.runGroupOptions,
-				workerAssignments: event.workerAssignments
-			});
-		} else {
-			res.status(200).json({
-				entryData: entryData.map(data =>
+		res.status(200).json({
+			entryData: mutipleDayEntryData.map(entryData =>
+				entryData.map(data =>
 					data.toObject({
 						getters: true,
 						transform: (doc, ret, opt) => {
@@ -1419,11 +1399,14 @@ const getEntryReportForUsers = async (req, res, next) => {
 							delete ret['disclaimer'];
 							delete ret['time'];
 							delete ret['published'];
+							delete ret['answer'];
 							return ret;
 						}
 					})
-				),
-				waitlistData: waitlistData.map(data =>
+				)
+			),
+			waitlistData: mutipleDayWaitlistData.map(waitlistData =>
+				waitlistData.map(data =>
 					data.toObject({
 						getters: true,
 						transform: (doc, ret, opt) => {
@@ -1437,20 +1420,21 @@ const getEntryReportForUsers = async (req, res, next) => {
 							delete ret['disclaimer'];
 							delete ret['time'];
 							delete ret['published'];
+							delete ret['answer'];
 							return ret;
 						}
 					})
-				),
-				raceClassOptions: event.raceClassOptions,
-				runGroupOptions: event.runGroupOptions,
-				workerAssignments: event.workerAssignments
-			});
-		}
+				)
+			),
+			raceClassOptions: event.raceClassOptions,
+			runGroupOptions: event.runGroupOptions,
+			workerAssignments: event.workerAssignments
+		});
 	} else {
 		//!displayName
-		if (waitlistData.length === 0) {
-			res.status(200).json({
-				entryData: entryData.map(data =>
+		res.status(200).json({
+			entryData: mutipleDayEntryData.map(entryData =>
+				entryData.map(data =>
 					data.toObject({
 						getters: true,
 						transform: (doc, ret, opt) => {
@@ -1466,18 +1450,14 @@ const getEntryReportForUsers = async (req, res, next) => {
 							delete ret['disclaimer'];
 							delete ret['time'];
 							delete ret['published'];
+							delete ret['answer'];
 							return ret;
 						}
 					})
-				),
-				waitlistData: [],
-				raceClassOptions: event.raceClassOptions,
-				runGroupOptions: event.runGroupOptions,
-				workerAssignments: event.workerAssignments
-			});
-		} else {
-			res.status(200).json({
-				entryData: entryData.map(data =>
+				)
+			),
+			waitlistData: mutipleDayWaitlistData.map(waitlistData =>
+				waitlistData.map(data =>
 					data.toObject({
 						getters: true,
 						transform: (doc, ret, opt) => {
@@ -1493,36 +1473,163 @@ const getEntryReportForUsers = async (req, res, next) => {
 							delete ret['disclaimer'];
 							delete ret['time'];
 							delete ret['published'];
-							return ret;
-						}
-					})
-				),
-				waitlistData: waitlistData.map(data =>
-					data.toObject({
-						getters: true,
-						transform: (doc, ret, opt) => {
-							delete ret['userId'];
-							delete ret['userLastName'];
-							delete ret['userFirstName'];
-							delete ret['clubId'];
-							delete ret['clubName'];
-							delete ret['eventId'];
-							delete ret['eventName'];
-							delete ret['carId'];
 							delete ret['answer'];
-							delete ret['disclaimer'];
-							delete ret['time'];
-							delete ret['published'];
 							return ret;
 						}
 					})
-				),
-				raceClassOptions: event.raceClassOptions,
-				runGroupOptions: event.runGroupOptions,
-				workerAssignments: event.workerAssignments
-			});
-		}
+				)
+			),
+			raceClassOptions: event.raceClassOptions,
+			runGroupOptions: event.runGroupOptions,
+			workerAssignments: event.workerAssignments
+		});
 	}
+	// if (displayName) {
+	// 	if (waitlistData.length === 0) {
+	// 		res.status(200).json({
+	// 			entryData: entryData.map(data =>
+	// 				data.toObject({
+	// 					getters: true,
+	// 					transform: (doc, ret, opt) => {
+	// 						delete ret['userId'];
+	// 						delete ret['userName'];
+	// 						delete ret['clubId'];
+	// 						delete ret['clubName'];
+	// 						delete ret['eventId'];
+	// 						delete ret['eventName'];
+	// 						delete ret['carId'];
+	// 						delete ret['disclaimer'];
+	// 						delete ret['time'];
+	// 						delete ret['published'];
+	// 						return ret;
+	// 					}
+	// 				})
+	// 			),
+	// 			waitlistData: [],
+	// 			raceClassOptions: event.raceClassOptions,
+	// 			runGroupOptions: event.runGroupOptions,
+	// 			workerAssignments: event.workerAssignments
+	// 		});
+	// 	} else {
+	// 		res.status(200).json({
+	// 			entryData: entryData.map(data =>
+	// 				data.toObject({
+	// 					getters: true,
+	// 					transform: (doc, ret, opt) => {
+	// 						delete ret['userId'];
+	// 						// delete ret['userName'];
+	// 						delete ret['clubId'];
+	// 						delete ret['clubName'];
+	// 						delete ret['eventId'];
+	// 						delete ret['eventName'];
+	// 						delete ret['carId'];
+	// 						delete ret['disclaimer'];
+	// 						delete ret['time'];
+	// 						delete ret['published'];
+	// 						return ret;
+	// 					}
+	// 				})
+	// 			),
+	// 			waitlistData: waitlistData.map(data =>
+	// 				data.toObject({
+	// 					getters: true,
+	// 					transform: (doc, ret, opt) => {
+	// 						delete ret['userId'];
+	// 						// delete ret['userName'];
+	// 						delete ret['clubId'];
+	// 						delete ret['clubName'];
+	// 						delete ret['eventId'];
+	// 						delete ret['eventName'];
+	// 						delete ret['carId'];
+	// 						delete ret['disclaimer'];
+	// 						delete ret['time'];
+	// 						delete ret['published'];
+	// 						return ret;
+	// 					}
+	// 				})
+	// 			),
+	// 			raceClassOptions: event.raceClassOptions,
+	// 			runGroupOptions: event.runGroupOptions,
+	// 			workerAssignments: event.workerAssignments
+	// 		});
+	// 	}
+	// } else {
+	// 	//!displayName
+	// 	if (waitlistData.length === 0) {
+	// 		res.status(200).json({
+	// 			entryData: entryData.map(data =>
+	// 				data.toObject({
+	// 					getters: true,
+	// 					transform: (doc, ret, opt) => {
+	// 						delete ret['userId'];
+	// 						delete ret['userLastName'];
+	// 						delete ret['userFirstName'];
+	// 						delete ret['clubId'];
+	// 						delete ret['clubName'];
+	// 						delete ret['eventId'];
+	// 						delete ret['eventName'];
+	// 						delete ret['carId'];
+	// 						delete ret['answer'];
+	// 						delete ret['disclaimer'];
+	// 						delete ret['time'];
+	// 						delete ret['published'];
+	// 						return ret;
+	// 					}
+	// 				})
+	// 			),
+	// 			waitlistData: [],
+	// 			raceClassOptions: event.raceClassOptions,
+	// 			runGroupOptions: event.runGroupOptions,
+	// 			workerAssignments: event.workerAssignments
+	// 		});
+	// 	} else {
+	// 		res.status(200).json({
+	// 			entryData: entryData.map(data =>
+	// 				data.toObject({
+	// 					getters: true,
+	// 					transform: (doc, ret, opt) => {
+	// 						delete ret['userId'];
+	// 						delete ret['userLastName'];
+	// 						delete ret['userFirstName'];
+	// 						delete ret['clubId'];
+	// 						delete ret['clubName'];
+	// 						delete ret['eventId'];
+	// 						delete ret['eventName'];
+	// 						delete ret['carId'];
+	// 						delete ret['answer'];
+	// 						delete ret['disclaimer'];
+	// 						delete ret['time'];
+	// 						delete ret['published'];
+	// 						return ret;
+	// 					}
+	// 				})
+	// 			),
+	// 			waitlistData: waitlistData.map(data =>
+	// 				data.toObject({
+	// 					getters: true,
+	// 					transform: (doc, ret, opt) => {
+	// 						delete ret['userId'];
+	// 						delete ret['userLastName'];
+	// 						delete ret['userFirstName'];
+	// 						delete ret['clubId'];
+	// 						delete ret['clubName'];
+	// 						delete ret['eventId'];
+	// 						delete ret['eventName'];
+	// 						delete ret['carId'];
+	// 						delete ret['answer'];
+	// 						delete ret['disclaimer'];
+	// 						delete ret['time'];
+	// 						delete ret['published'];
+	// 						return ret;
+	// 					}
+	// 				})
+	// 			),
+	// 			raceClassOptions: event.raceClassOptions,
+	// 			runGroupOptions: event.runGroupOptions,
+	// 			workerAssignments: event.workerAssignments
+	// 		});
+	// 	}
+	// }
 };
 
 // export a pointer of the function

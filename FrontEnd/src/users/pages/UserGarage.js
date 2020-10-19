@@ -39,7 +39,7 @@ const UserGarage = props => {
 	// If User is not logged in, we will re-direct to user login page.
 	// authentication check. remember current path. We will use it to check if we are in the re-direct loop to
 	// avoid validation loop
-	useUserLoginValidation(`/users/garage/${userId}`);
+	useUserLoginValidation(`/users/garagewrapper/${userId}`);
 	let location = useLocation();
 	useEffect(() => {
 		// get current URL path

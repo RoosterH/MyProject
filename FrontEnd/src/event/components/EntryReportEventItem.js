@@ -3,7 +3,6 @@ import EntryReportManager from '../../clubDashboard/components/EntryReportManage
 
 // a wrapper of EntryReportManager
 const EntryReportEventItem = props => {
-	console.log('props = ', props);
 	return (
 		<EntryReportManager entryReportData={props.entryReportData} />
 	);

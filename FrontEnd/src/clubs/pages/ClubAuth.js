@@ -217,7 +217,7 @@ const ClubAuth = () => {
 	const clubSignupForm = values => (
 		<div className="auth-div">
 			<h4 className="auth-form-header">
-				<i class="fas fa-flag-checkered" />
+				<i className="fas fa-flag-checkered" />
 				&nbsp;Sign up a new account
 			</h4>
 			<hr className="auth-form--hr" />

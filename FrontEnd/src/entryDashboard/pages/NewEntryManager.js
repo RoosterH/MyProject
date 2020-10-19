@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useContext, useState, useEffect } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
 
 import CarSelector from './CarSelector';
 import Classification from './Classification';
 import EventForm from '../../event/pages/EventForm';
 import SubmitEntry from './SubmitEntry';
+import { UserAuthContext } from '../../shared/context/auth-context';
+import { useUserLoginValidation } from '../../shared/hooks/userLoginValidation-hook';
 
 import './Entry.css';
 
@@ -21,13 +23,27 @@ const NewEntryManager = props => {
 			setEventName(props.location.state.eventName);
 		}
 	}, [props, setEventName]);
+	const userAuthContext = useContext(UserAuthContext);
 
 	let userData = JSON.parse(localStorage.getItem('userData'));
 	// get userId from localStorage
 	let userId = undefined;
-	if (userData.userId) {
+	if (userData && userData.userId) {
 		userId = userData.userId;
 	}
+
+	useUserLoginValidation(`/events/newEntryManager/${eventId}`);
+	let location = useLocation();
+	useEffect(() => {
+		// get current URL path
+		let path = location.pathname;
+		let userRedirectURL = userAuthContext.userRedirectURL;
+		if (path === userRedirectURL) {
+			// If we are re-directing to this page, we want to clear up userRedirectURL
+			// re-init redirectURL after re-direction route
+			userAuthContext.setUserRedirectURL(null);
+		}
+	}, [userAuthContext, location]);
 
 	// collect information from each tab, we will send them to backend via SUBMIT tab
 	const [carId, setCarId] = useState();

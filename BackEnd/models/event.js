@@ -79,7 +79,7 @@ const eventSchema = new Schema({
 	// we use index number to represent each run group for example if there are 5 run groups,
 	// we will have 5 elements in the array runGroupNumEntries[0] => first run group entries
 	// runGroupNumEntries: [[{ type: Number, required: true }]],
-	runGroupNumEntries: [[{ type: Number }]],
+	runGroupNumEntries: [[{ type: Number, require: true }]],
 
 	// Users per run group
 	// runGroupEntries: [

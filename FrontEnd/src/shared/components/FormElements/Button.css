@@ -65,6 +65,36 @@
 	color: #106daf;
 }
 
+/* css need to follow LOVE and HATE rule the sequence of focus/hover/active need to be in an order */
+.button--small-white {
+	margin: 0.5rem 0.5rem 0.5rem 1.5rem;
+	padding: 0.2rem 0.2rem 0.2rem 0.2rem;
+	font-size: small;
+	font-family: 'Montserrat', sans-serif;
+	background: transparent;
+	color: black;
+	border-color: rgb(189, 186, 186);
+}
+
+.button--small-white:visited,
+.button--small-white:focus {
+	background: #e68910;
+	border-color: rgb(189, 186, 186);
+	color: white;
+}
+
+.button--small-white:hover {
+	background: #f5f2ee;
+	border-color: rgb(189, 186, 186);
+	color: black;
+}
+
+.button--small-white:active {
+	background: #e68910;
+	border-color: rgb(189, 186, 186);
+	color: black;
+}
+
 .button--small-orange {
 	font-size: small;
 	font-family: 'Montserrat', sans-serif;

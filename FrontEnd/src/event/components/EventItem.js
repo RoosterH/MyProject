@@ -187,6 +187,9 @@ const EventItem = props => {
 		false
 	);
 	const [userOnWaitlist, setUserOnWaitlist] = useState(false);
+	const [waitlistMSG, setWaitlistMSG] = useState(
+		'You are currently on waitlist.'
+	);
 	const [userOnGroupWaitlist, setUserOnGroupWaitlist] = useState(
 		false
 	);
@@ -207,7 +210,25 @@ const EventItem = props => {
 						if (userEntries[i].eventId === eventId) {
 							setUserRegisteredEvent(true);
 							if (userEntries[i].waitlist) {
-								setUserOnWaitlist(true);
+								let waitlist = false;
+								for (
+									let i = 0;
+									i < userEntries[i].waitlist.length;
+									++i
+								) {
+									if (userEntries[i].waitlist[i]) {
+										waitlist = true;
+										if (waitlist) {
+											setWaitlistMSG(waitlistMSG + ' and Day ' + i);
+										} else {
+											setWaitlistMSG(waitlistMSG + 'Day ' + i);
+										}
+										setUserOnWaitlist(true);
+									}
+								}
+								if (waitlist) {
+									setWaitlistMSG(waitlistMSG + '.');
+								}
 							}
 							if (userEntries[i].groupWaitlist) {
 								setUserOnGroupWaitlist(true);
@@ -225,6 +246,16 @@ const EventItem = props => {
 		setUserRegisteredEvent,
 		setButtonName
 	]);
+
+	const [containerClassName, setContainerClassName] = useState(
+		'entryinfo-container'
+	);
+
+	useEffect(() => {
+		if (props.event.courseMap) {
+			setContainerClassName('entryinfo-container-coursemap-exists');
+		}
+	}, [props.event.courseMap, setContainerClassName]);
 
 	return (
 		// React.Frgment connect multiple components
@@ -367,12 +398,10 @@ const EventItem = props => {
 						</div>
 					</div>
 					{userRegisteredEvent && (
-						<div className="entryinfo-container">
+						// <div className="entryinfo-container">
+						<div className={containerClassName}>
 							<div className="col-xs-12">
-								{userOnWaitlist && (
-									<h3>Your are currently on waitlist.</h3>
-								)}
-
+								{userOnWaitlist && waitlistMSG}
 								<div>
 									<Link
 										to={{

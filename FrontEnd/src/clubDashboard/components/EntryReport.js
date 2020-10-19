@@ -1,28 +1,78 @@
-import React, { useEffect, useState } from 'react';
-import MaterialTable from 'material-table';
-import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
+import React, { useCallback, useEffect, useState } from 'react';
+import MaterialTable from './MaterialTable';
+
+import '../../shared/components/FormElements/Button.css';
 
 const EntryReport = props => {
+	const [days, setDays] = useState(
+		props.entryReportData.entryData
+			? props.entryReportData.entryData.length
+			: 0
+	);
+	const [eventEntryList, setEventEntryList] = useState(
+		props.entryReportData.entryData
+			? props.entryReportData.entryData
+			: undefined
+	);
+	const [eventWaitlist, setEventWaitlist] = useState(
+		props.entryReportData.waitlistData
+			? props.entryReportData.waitlistData
+			: undefined
+	);
+
 	// entries are the user entries
-	let entries = props.entryReportData.entryData;
-	let eventName = props.entryReportData.eventName;
+	const [eventName, setEventName] = useState(
+		props.entryReportData.eventName !== ''
+			? props.entryReportData.eventName
+			: ''
+	);
+	// raceClassOptions is ["SS", "AS", "BS", ...]
+	const [raceClasses, setRaceClasses] = useState(
+		props.entryReportData.raceClassOptions
+			? props.entryReportData.raceClassOptions
+			: undefined
+	);
+	const [runGroups, setRunGroups] = useState(
+		props.entryReportData.runGroupOptions
+			? props.entryReportData.runGroupOptions
+			: undefined
+	);
+	const [workerAssignments, setWorkerAssignments] = useState(
+		props.entryReportData.workerAssignments
+			? props.entryReportData.workerAssignments
+			: undefined
+	);
+
 	const [showLoading, setShowLoading] = useState(true);
 
-	// entryList and waitList are the data passing to Material-Table
-	const [entryList, setEntryList] = useState();
-	const [waitlist, setWaitlist] = useState();
+	// days = how many days for this event
 
+	// create an array from day 1 to loop through when we are rendering day buttons
+	const [dayArray, setDayArray] = useState([]);
+	useEffect(() => {
+		let tmp = [];
+		if (days > 1) {
+			for (var i = 0; i < days; ++i) {
+				tmp.push(i + 1);
+			}
+		}
+		setDayArray(tmp);
+	}, [setDayArray, days]);
+	// check the page has been initialized, if not, we want to hightlight multi-day event day button to day 1
+
+	const [init, setInit] = useState(false);
+	const [daySelection, setDaySelection] = useState(1);
+	// entryListArray and waitListArray elements are the data passing to Material-Table
+	const [entryListArray, setEntryListArray] = useState([]);
+	const [waitlistArray, setWaitlistArray] = useState([]);
 	const [raceClassLookup, setRaceClassLookup] = useState();
-	let raceClasses = [];
 
 	const [runGroupLookup, setRunGroupLookup] = useState();
-	let runGroups = [];
 
 	const [
 		workerAssignmentLookup,
 		setWorkerAssignmentLookup
 	] = useState();
-	let workerAssignments = [];
 
 	// return index of matched value
 	const getMapKey = (val, myMap) => {
@@ -48,70 +98,130 @@ const EntryReport = props => {
 
 	useEffect(() => {
 		//***********  construct lookups ************//
-		// responseData.raceClassOptions is ["SS", "AS", "BS", ...]
-		raceClasses = props.entryReportData.raceClassOptions;
 		let obj = {};
 		obj = convert2Lookup(raceClasses);
 		setRaceClassLookup(obj);
 
-		runGroups = props.entryReportData.runGroupOptions;
-		obj = {};
-		obj = convert2Lookup(runGroups);
-		setRunGroupLookup(obj);
-
-		workerAssignments = props.entryReportData.workerAssignments;
-		obj = [];
-		obj = convert2Lookup(workerAssignments);
-		setWorkerAssignmentLookup(obj);
-
 		//*************** compose entry list from all the entries ************/
-		let entryData = [];
+		let entryDataArray = [];
+		for (let i = 0; i < days; ++i) {
+			obj = {};
+			obj = convert2Lookup(runGroups[i]);
+			setRunGroupLookup(obj);
 
-		for (var i = 0; i < entries.length; ++i) {
-			let entry = {
-				lastName: entries[i].userLastName,
-				firstName: entries[i].userFirstName,
-				// for lookup field, we need to provide key in lookup array, we use index as key
-				raceClass: getMapKey(entries[i].raceClass, raceClasses),
-				carNumber: entries[i].carNumber,
-				car: entries[i].car,
-				runGroup: getMapKey(entries[i].runGroup, runGroups),
-				workerAssignment: getMapKey(
-					entries[i].workerAssignment,
-					workerAssignments
-				)
-			};
+			obj = [];
+			obj = convert2Lookup(workerAssignments[i]);
+			setWorkerAssignmentLookup(obj);
 
-			entryData.push(entry);
+			let entryData = [];
+			let entries = eventEntryList[i];
+			for (var j = 0; j < entries.length; ++j) {
+				let entry = {
+					lastName: entries[j].userLastName,
+					firstName: entries[j].userFirstName,
+					// for lookup field, we need to provide key in lookup array, we use index as key
+					raceClass: getMapKey(entries[j].raceClass, raceClasses),
+					carNumber: entries[i].carNumber,
+					car: entries[i].car,
+					runGroup: getMapKey(entries[j].runGroup[i], runGroups[j]),
+					workerAssignment: getMapKey(
+						entries[j].workerAssignment[i],
+						workerAssignments[j]
+					)
+				};
+				entryData.push(entry);
+			}
+			entryDataArray.push(entryData);
 		}
-		setEntryList(entryData);
+		setEntryListArray(entryDataArray);
 
 		//************ compose waitlist ***************//
-		let waitlistData = [];
-		let waitlist = props.entryReportData.waitlistData;
-		for (var i = 0; i < waitlist.length; ++i) {
-			let entry;
-			entry = {
-				lastName: waitlist[i].userLastName,
-				firstName: waitlist[i].userFirstName,
-				carNumber: waitlist[i].carNumber,
-				raceClass: getMapKey(waitlist[i].raceClass, raceClasses),
-				car: waitlist[i].car,
-				runGroup: getMapKey(entries[i].runGroup, runGroups),
-				workerAssignment: getMapKey(
-					entries[i].workerAssignment,
-					workerAssignments
-				)
-			};
-			waitlistData.push(entry);
+		let waitlistDataArray = [];
+		for (let i = 0; i < days; ++i) {
+			let waitlistData = [];
+			let waitlist = eventWaitlist[i];
+			for (let j = 0; j < waitlist.length; ++j) {
+				let entry;
+				entry = {
+					lastName: waitlist[j].userLastName,
+					firstName: waitlist[j].userFirstName,
+					carNumber: waitlist[j].carNumber,
+					raceClass: getMapKey(waitlist[j].raceClass, raceClasses),
+					car: waitlist[j].car,
+					runGroup: getMapKey(waitlist[j].runGroup[i], runGroups[j]),
+					workerAssignment: getMapKey(
+						waitlist[j].workerAssignment[i],
+						workerAssignments[j]
+					)
+				};
+				waitlistData.push(entry);
+			}
+			waitlistDataArray.push(waitlistData);
 		}
-		setWaitlist(waitlistData);
+		setWaitlistArray(waitlistDataArray);
+
 		setShowLoading(false);
 	}, []);
 
+	// callback for Day Buttons
+	const daySelectionCallback = index => {
+		// index starts from 1, because we use day 1, day 2, ...
+		setDaySelection(index);
+	};
+
+	// create ref for day 1 button. For multi-day events, we want to set focus on day 1 button initially
+	// We didn’t choose useRef in this example because an object ref doesn’t notify us about changes to
+	// the current ref value. Using a callback ref ensures that even if a child component displays the
+	// button later, we still get notified about it in the parent component and can update the color.
+	const day1ButtonRef = useCallback(button => {
+		if (!init && button) {
+			button.focus();
+			setInit(true);
+		}
+	});
+
 	return (
 		<React.Fragment>
-			<div className="entrylist-table">
+			{days > 1 &&
+				dayArray.map(day => {
+					if (day === 1) {
+						// create ref for day 1 button
+						return (
+							<button
+								ref={day1ButtonRef}
+								key={'entrylistforUsers' + day}
+								className="button--small-white"
+								onClick={e => daySelectionCallback(day)}>
+								Day {day}
+							</button>
+						);
+					} else {
+						return (
+							<button
+								key={'entrylistforUsers' + day}
+								className="button--small-white"
+								onClick={e => daySelectionCallback(day)}>
+								Day {day}
+							</button>
+						);
+					}
+				})}
+			{/* render material table according to event day */}
+			{daySelection > 0 &&
+				entryListArray.length > 0 &&
+				waitlistArray.length > 0 && (
+					<MaterialTable
+						entryList={entryListArray[daySelection - 1]}
+						waitlist={waitlistArray[daySelection - 1]}
+						displayName={true}
+						eventName={eventName}
+						showLoading={showLoading}
+						raceClassLookup={raceClassLookup}
+						runGroupLookup={runGroupLookup}
+						workerAssignmentLookup={workerAssignmentLookup}
+					/>
+				)}
+			{/* <div className="entrylist-table">
 				<MaterialTable
 					title={`${eventName} Entry List`}
 					isLoading={showLoading}
@@ -212,7 +322,7 @@ const EntryReport = props => {
 						exportButton: true
 					}}
 				/>
-			</div>
+			</div> */}
 		</React.Fragment>
 	);
 };

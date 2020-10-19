@@ -1,17 +1,27 @@
-import React, { useContext, useState, useEffect } from 'react';
-import MaterialTable from 'material-table';
+import React, {
+	useCallback,
+	useContext,
+	useState,
+	useEffect,
+	useRef
+} from 'react';
+
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { UserAuthContext } from '../../shared/context/auth-context';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
+import MaterialTable from './MaterialTable';
 
 import './ClubManager.css';
+import '../../shared/components/FormElements/Button.css';
+import { set } from 'date-fns';
+
 const EntryListForUsers = props => {
 	let displayName = props.location.state.displayName;
 	let eventName = props.location.state.eventName;
 	let eventId = props.location.state.eventId;
-	const [showLoading, setShowLoading] = useState(true);
 
+	const [showLoading, setShowLoading] = useState(true);
 	const userAuthContext = useContext(UserAuthContext);
 	const {
 		isLoading,
@@ -19,9 +29,24 @@ const EntryListForUsers = props => {
 		sendRequest,
 		clearError
 	} = useHttpClient();
-	const [entryList, setEntryList] = useState([]);
-	const [waitlist, setWaitlist] = useState([]);
+	// check the page has been initialized, if not, we want to hightlight multi-day event day button to day 1
+	const [init, setInit] = useState(false);
 
+	const [days, setDays] = useState(0);
+	const [dayArray, setDayArray] = useState([]);
+	useEffect(() => {
+		let tmp = [];
+		if (days > 1) {
+			for (var i = 0; i < days; ++i) {
+				tmp.push(i + 1);
+			}
+		}
+		setDayArray(tmp);
+	}, [setDayArray, days]);
+
+	const [daySelection, setDaySelection] = useState(1);
+	const [entryListArray, setEntryListArray] = useState([]);
+	const [waitlistArray, setWaitlistArray] = useState([]);
 	const [raceClassLookup, setRaceClassLookup] = useState();
 	let raceClasses = [];
 
@@ -74,6 +99,8 @@ const EntryListForUsers = props => {
 					}
 				);
 
+				setDays(responseData.entryData.length);
+
 				//***********  construct lookups ************//
 				// responseData.raceClassOptions is ["SS", "AS", "BS", ...]
 				raceClasses = responseData.raceClassOptions;
@@ -81,97 +108,141 @@ const EntryListForUsers = props => {
 				obj = convert2Lookup(raceClasses);
 				setRaceClassLookup(obj);
 
-				runGroups = responseData.runGroupOptions;
-				obj = {};
-				obj = convert2Lookup(runGroups);
-				setRunGroupLookup(obj);
-
-				workerAssignments = responseData.workerAssignments;
-				obj = [];
-				obj = convert2Lookup(workerAssignments);
-				setWorkerAssignmentLookup(obj);
-
 				//*************** compose entry list from all the entries ************/
-				let entryData = [];
-				let entries = responseData.entryData;
-				for (var i = 0; i < entries.length; ++i) {
-					let entry;
-					if (displayName) {
-						entry = {
-							lastName: entries[i].userLastName,
-							firstName: entries[i].userFirstName[0] + '.',
-							carNumber: entries[i].carNumber,
-							// for lookup field, we need to provide key in lookup array, we use index as key
-							raceClass: getMapKey(entries[i].raceClass, raceClasses),
-							car: entries[i].car,
-							runGroup: getMapKey(entries[i].runGroup, runGroups),
-							workerAssignment: getMapKey(
-								entries[i].workerAssignment,
-								workerAssignments
-							)
-						};
-					} else {
-						entry = {
-							userName: entries[i].userName,
-							carNumber: entries[i].carNumber,
-							raceClass: getMapKey(entries[i].raceClass, raceClasses),
-							car: entries[i].car,
-							runGroup: getMapKey(entries[i].runGroup, runGroups),
-							workerAssignment: getMapKey(
-								entries[i].workerAssignment,
-								workerAssignments
-							)
-						};
+				runGroups = responseData.runGroupOptions;
+				workerAssignments = responseData.workerAssignments;
+				let entryDataArray = [];
+				let days = responseData.entryData.length;
+				for (let i = 0; i < days; ++i) {
+					obj = {};
+					obj = convert2Lookup(runGroups[i]);
+					setRunGroupLookup(obj);
+
+					obj = {};
+					obj = convert2Lookup(workerAssignments[i]);
+					setWorkerAssignmentLookup(obj);
+
+					let entryData = [];
+					let entries = responseData.entryData[i];
+					for (var j = 0; j < entries.length; ++j) {
+						let entry;
+						if (displayName) {
+							entry = {
+								lastName: entries[j].userLastName,
+								firstName: entries[j].userFirstName[0] + '.',
+								carNumber: entries[j].carNumber,
+								// for lookup field, we need to provide key in lookup array, we use index as key
+								raceClass: getMapKey(
+									entries[j].raceClass,
+									raceClasses
+								),
+								car: entries[j].car,
+								runGroup: getMapKey(
+									entries[j].runGroup[i],
+									runGroups[j]
+								),
+								workerAssignment: getMapKey(
+									entries[j].workerAssignment[i],
+									workerAssignments[j]
+								)
+							};
+						} else {
+							entry = {
+								userName: entries[j].userName,
+								carNumber: entries[j].carNumber,
+								raceClass: getMapKey(
+									entries[j].raceClass,
+									raceClasses
+								),
+								car: entries[j].car,
+								runGroup: getMapKey(
+									entries[j].runGroup[i],
+									runGroups[j]
+								),
+								workerAssignment: getMapKey(
+									entries[j].workerAssignment[i],
+									workerAssignments[j]
+								)
+							};
+						}
+						entryData.push(entry);
 					}
-					entryData.push(entry);
+					entryDataArray.push(entryData);
 				}
-				setEntryList(entryData);
+				setEntryListArray(entryDataArray);
 
 				//************ compose waitlist ***************//
-				let waitlistData = [];
-				let waitlist = responseData.waitlistData;
-				for (var i = 0; i < waitlist.length; ++i) {
-					let entry;
-					if (displayName) {
-						entry = {
-							lastName: waitlist[i].userLastName,
-							firstName: waitlist[i].userFirstName[0] + '.',
-							carNumber: waitlist[i].carNumber,
-							raceClass: getMapKey(
-								waitlist[i].raceClass,
-								raceClasses
-							),
-							car: waitlist[i].car,
-							runGroup: getMapKey(entries[i].runGroup, runGroups),
-							workerAssignment: getMapKey(
-								entries[i].workerAssignment,
-								workerAssignments
-							)
-						};
-					} else {
-						entry = {
-							userName: waitlist[i].userName,
-							carNumber: waitlist[i].carNumber,
-							raceClass: getMapKey(
-								waitlist[i].raceClass,
-								raceClasses
-							),
-							car: waitlist[i].car,
-							runGroup: getMapKey(entries[i].runGroup, runGroups),
-							workerAssignment: getMapKey(
-								entries[i].workerAssignment,
-								workerAssignments
-							)
-						};
+				let waitlistDataArray = [];
+				days = responseData.waitlistData.length;
+				for (let i = 0; i < days; ++i) {
+					let entries = responseData.entryData[i];
+					let waitlistData = [];
+					let waitlist = responseData.waitlistData[i];
+					for (var j = 0; j < waitlist.length; ++j) {
+						let entry;
+						if (displayName) {
+							entry = {
+								lastName: waitlist[j].userLastName,
+								firstName: waitlist[j].userFirstName[0] + '.',
+								carNumber: waitlist[j].carNumber,
+								raceClass: getMapKey(
+									waitlist[j].raceClass,
+									raceClasses
+								),
+								car: waitlist[j].car,
+								runGroup: getMapKey(
+									entries[j].runGroup[i],
+									runGroups[j]
+								),
+								workerAssignment: getMapKey(
+									entries[j].workerAssignment[i],
+									workerAssignments[j]
+								)
+							};
+						} else {
+							entry = {
+								userName: waitlist[j].userName,
+								carNumber: waitlist[j].carNumber,
+								raceClass: getMapKey(
+									waitlist[j].raceClass,
+									raceClasses
+								),
+								car: waitlist[j].car,
+								runGroup: getMapKey(
+									waitlist[j].runGroup[i],
+									runGroups[j]
+								),
+								workerAssignment: getMapKey(
+									waitlist[j].workerAssignment[i],
+									workerAssignments[j]
+								)
+							};
+						}
+						waitlistData.push(entry);
 					}
-					waitlistData.push(entry);
+					waitlistDataArray.push(waitlistData);
 				}
-				setWaitlist(waitlistData);
+				setWaitlistArray(waitlistDataArray);
 				setShowLoading(false);
 			} catch (err) {}
 		};
 		fetchEntries();
-	}, [sendRequest, setEntryList]);
+	}, [sendRequest, setEntryListArray, setWaitlistArray]);
+
+	const daySelectionCallback = index => {
+		setDaySelection(index);
+	};
+
+	// create ref for day 1 button. For multi-day events, we want to set focus on day 1 button initially
+	// We didn’t choose useRef in this example because an object ref doesn’t notify us about changes to
+	// the current ref value. Using a callback ref ensures that even if a child component displays the
+	// button later, we still get notified about it in the parent component and can update the color.
+	const day1ButtonRef = useCallback(button => {
+		if (!init && button) {
+			button.focus();
+			setInit(true);
+		}
+	});
 
 	return (
 		<React.Fragment>
@@ -181,179 +252,46 @@ const EntryListForUsers = props => {
 					<LoadingSpinner />
 				</div>
 			)}
-			<div className="entrylist-table">
-				{displayName && (
+			{/* Showing day button for multi-day event */}
+			{days > 1 &&
+				dayArray.map(day => {
+					if (day === 1) {
+						// create ref for day 1 button
+						return (
+							<button
+								ref={day1ButtonRef}
+								key={'entrylistforUsers' + day}
+								className="button--small-white"
+								onClick={e => daySelectionCallback(day)}>
+								Day {day}
+							</button>
+						);
+					} else {
+						return (
+							<button
+								key={'entrylistforUsers' + day}
+								className="button--small-white"
+								onClick={e => daySelectionCallback(day)}>
+								Day {day}
+							</button>
+						);
+					}
+				})}
+			{/* render material table according to event day */}
+			{daySelection &&
+				entryListArray.length > 0 &&
+				waitlistArray.length > 0 && (
 					<MaterialTable
-						title={`${eventName} Entry List`}
-						isLoading={showLoading}
-						components={{
-							OverlayLoading: props => (
-								<div className="center">
-									<LoadingSpinner />
-								</div>
-							)
-						}}
-						style={{
-							border: '2px solid gray',
-							maxWidth: '1450px',
-							marginTop: '10px',
-							marginLeft: '20px'
-						}}
-						columns={[
-							{ title: 'Last Name', field: 'lastName' },
-							{
-								title: 'First Name',
-								field: 'firstName',
-								filtering: false
-							},
-							{
-								title: 'Car Number',
-								field: 'carNumber',
-								filtering: false
-							},
-							{ title: 'Car', field: 'car', filtering: false },
-							{
-								title: 'Race Class',
-								field: 'raceClass',
-								lookup: raceClassLookup
-							},
-							{
-								title: 'Run Group',
-								field: 'runGroup',
-								lookup: runGroupLookup
-							},
-							{
-								title: 'Worker Group',
-								field: 'workerAssignment',
-								lookup: workerAssignmentLookup
-							}
-						]}
-						data={entryList}
-						options={{
-							filtering: true,
-							exportButton: true
-						}}
+						entryList={entryListArray[daySelection - 1]}
+						waitlist={waitlistArray[daySelection - 1]}
+						displayName={displayName}
+						eventName={eventName}
+						showLoading={showLoading}
+						raceClassLookup={raceClassLookup}
+						runGroupLookup={runGroupLookup}
+						workerAssignmentLookup={workerAssignmentLookup}
 					/>
 				)}
-				{displayName && waitlist !== [] && (
-					<MaterialTable
-						title={`${eventName} Waitlist`}
-						style={{
-							border: '2px solid gray',
-							maxWidth: '1450px',
-							overflow: 'scroll',
-							marginTop: '10px',
-							marginLeft: '20px'
-						}}
-						columns={[
-							{ title: 'Last Name', field: 'lastName' },
-							{
-								title: 'First Name',
-								field: 'firstName',
-								filtering: false
-							},
-							{
-								title: 'Car Number',
-								field: 'carNumber',
-								filtering: false
-							},
-							{ title: 'Car', field: 'car', filtering: false },
-							{
-								title: 'Race Class',
-								field: 'raceClass',
-								lookup: raceClassLookup,
-								filtering: false
-							},
-							{
-								title: 'Run Group',
-								field: 'runGroup',
-								lookup: runGroupLookup,
-								filtering: false
-							},
-							{
-								title: 'Worker Group',
-								field: 'workerAssignment',
-								lookup: workerAssignmentLookup,
-								filtering: false
-							}
-						]}
-						data={waitlist}
-						options={{
-							filtering: false,
-							sorting: false,
-							exportButton: true
-						}}
-					/>
-				)}
-				{!displayName && (
-					<MaterialTable
-						title={`${eventName} Entry List`}
-						columns={[
-							{ title: 'User Name', field: 'userName' },
-							{
-								title: 'Car Number',
-								field: 'carNumber',
-								filtering: false
-							},
-							{ title: 'Car', field: 'car', filtering: false },
-							{
-								title: 'Race Class',
-								field: 'raceClass',
-								lookup: raceClassLookup
-							},
-							{
-								title: 'Run Group',
-								field: 'runGroup',
-								lookup: runGroupLookup
-							},
-
-							{
-								title: 'Worker Group',
-								field: 'workerAssignment',
-								lookup: workerAssignmentLookup
-							}
-						]}
-						data={entryList}
-						options={{
-							filtering: true,
-							exportButton: true
-						}}
-					/>
-				)}
-				{!displayName && waitlist !== [] && (
-					<MaterialTable
-						title={`${eventName} Waitlist`}
-						columns={[
-							{ title: 'User Name', field: 'userName' },
-							{
-								title: 'Car Number',
-								field: 'carNumber'
-							},
-							{ title: 'Car', field: 'car' },
-							{
-								title: 'Race Class',
-								field: 'raceClass',
-								lookup: raceClassLookup
-							},
-							{
-								title: 'Run Group',
-								field: 'runGroup',
-								lookup: runGroupLookup
-							},
-							{
-								title: 'Worker Group',
-								field: 'workerAssignment',
-								lookup: workerAssignmentLookup
-							}
-						]}
-						data={waitlist}
-						options={{
-							sorting: false,
-							exportButton: true
-						}}
-					/>
-				)}
-			</div>
 		</React.Fragment>
 	);
 };

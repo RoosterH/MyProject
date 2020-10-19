@@ -410,8 +410,13 @@ const createEntry = async (req, res, next) => {
 		if (eventFull[i]) {
 			fullMessage += 'Day ' + i + ' event is Full.';
 		} else if (groupFull[i]) {
+			let day = i + 1;
 			fullMessage +=
-				'Day ' + i + ' group ' + runGroupAnsTexts[i] + ' is Full.';
+				'Day ' +
+				day +
+				' group ' +
+				runGroupAnsTexts[i] +
+				' is Full.  ';
 		}
 	}
 

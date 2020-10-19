@@ -69,6 +69,10 @@ const EditEventSelector = React.lazy(() =>
 const EntryListForUsers = React.lazy(() =>
 	import('./clubDashboard/components/EntryListForUsers')
 );
+const MaterialTable = React.lazy(() =>
+	import('./clubDashboard/components/MaterialTable')
+);
+
 const Events = React.lazy(() => import('./events/pages/Events'));
 const EventPhotos = React.lazy(() =>
 	import('./event/pages/EventPhotos')
@@ -216,6 +220,11 @@ const App = () => {
 					component={EntryListForUsers}
 					exact
 				/>
+				<Route
+					path="/events/entrylistMaterialTable/:eid"
+					component={MaterialTable}
+					exact
+				/>
 				<Route path="/events/entry/:carId" exact>
 					<Car />
 				</Route>
@@ -324,6 +333,11 @@ const App = () => {
 				<Route path="/users/cars/:carId" exact>
 					<Car />
 				</Route>
+				<Route
+					path="/events/entrylistMaterialTable/:eid"
+					component={MaterialTable}
+					exact
+				/>
 				{/* End of page refresh section */}
 
 				<Route path="/error" exact>

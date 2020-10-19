@@ -37,7 +37,7 @@ const EventManager = () => {
 							className="fa fa-sort-desc pull-right"
 							aria-hidden="true"
 						/>
-						Edit Event
+						Waitlist
 					</Link>
 					<Link to={`/clubs/editEventSelector/${cid}`} exact="exact">
 						<p className="list-content-desc">
@@ -51,7 +51,7 @@ const EventManager = () => {
 							className="fa fa-sort-desc pull-right"
 							aria-hidden="true"
 						/>
-						View Event
+						Pending waitlist invitation
 					</Link>
 					<Link to={`/clubs/viewEventSelector/${cid}`} exact="exact">
 						<p className="list-content-desc">

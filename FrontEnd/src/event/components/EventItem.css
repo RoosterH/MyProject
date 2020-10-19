@@ -247,7 +247,19 @@
 	padding: 0.5rem;
 }
 
-.entryinfo-container h3 {
+.entryinfo-container-coursemap-exists {
+	display: inline-block;
+	border: 1px;
+	border-style: ridge;
+	width: 25%;
+	position: absolute;
+	top: 36rem;
+	font-size: 14px;
+	padding: 0.5rem;
+}
+
+.entryinfo-container,
+.entryinfo-container-coursemap-exists h3 {
 	display: block;
 	color: rgb(219, 21, 21);
 	font-size: 14px;
@@ -255,14 +267,16 @@
 	display: inline;
 }
 
-.entryinfo-container h3 {
+.entryinfo-container,
+.entryinfo-container-coursemap-exists h3 {
 	font-size: 14px;
 	font-weight: 500;
 	display: inline;
 	margin-right: 0.5rem;
 }
 
-.entryinfo-container h4 {
+.entryinfo-container,
+.entryinfo-container-coursemap-exists h4 {
 	font-size: 12px;
 	font-weight: 400;
 	color: #82888a;
