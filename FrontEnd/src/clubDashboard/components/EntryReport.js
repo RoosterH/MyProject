@@ -214,115 +214,13 @@ const EntryReport = props => {
 						entryList={entryListArray[daySelection - 1]}
 						waitlist={waitlistArray[daySelection - 1]}
 						displayName={true}
-						eventName={eventName}
+						eventName={eventName + ' Day ' + daySelection}
 						showLoading={showLoading}
 						raceClassLookup={raceClassLookup}
 						runGroupLookup={runGroupLookup}
 						workerAssignmentLookup={workerAssignmentLookup}
 					/>
 				)}
-			{/* <div className="entrylist-table">
-				<MaterialTable
-					title={`${eventName} Entry List`}
-					isLoading={showLoading}
-					components={{
-						OverlayLoading: props => (
-							<div className="center">
-								<LoadingSpinner />
-							</div>
-						)
-					}}
-					style={{
-						border: '2px solid gray',
-						maxWidth: '1450px',
-						marginTop: '10px',
-						marginLeft: '20px'
-					}}
-					columns={[
-						{ title: 'Last Name', field: 'lastName' },
-						{
-							title: 'First Name',
-							field: 'firstName',
-							filtering: false
-						},
-						{
-							title: 'Car Number',
-							field: 'carNumber',
-							filtering: false
-						},
-						{ title: 'Car', field: 'car', filtering: false },
-						{
-							title: 'Race Class',
-							field: 'raceClass',
-							lookup: raceClassLookup
-						},
-						{
-							title: 'Run Group',
-							field: 'runGroup',
-							lookup: runGroupLookup
-						},
-						{
-							title: 'Worker Group',
-							field: 'workerAssignment',
-							lookup: workerAssignmentLookup
-						}
-					]}
-					data={entryList}
-					options={{
-						filtering: true,
-						exportButton: true
-					}}
-				/>
-
-				<MaterialTable
-					title={`${eventName} Waitlist`}
-					style={{
-						border: '2px solid gray',
-						maxWidth: '1450px',
-						overflow: 'scroll',
-						marginTop: '10px',
-						marginLeft: '20px'
-					}}
-					columns={[
-						{ title: 'Last Name', field: 'lastName' },
-						{
-							title: 'First Name',
-							field: 'firstName',
-							filtering: false
-						},
-						{
-							title: 'Car Number',
-							field: 'carNumber',
-							filtering: false
-						},
-						{ title: 'Car', field: 'car' },
-						{
-							title: 'Race Class',
-							field: 'raceClass',
-							lookup: raceClassLookup,
-							filtering: false
-						},
-						{
-							title: 'Run Group',
-							field: 'runGroup',
-							lookup: runGroupLookup,
-							filtering: false
-						},
-						{
-							title: 'Worker Group',
-							field: 'workerAssignment',
-							lookup: workerAssignmentLookup,
-							filtering: false
-						}
-					]}
-					data={waitlist}
-					options={{
-						filtering: false,
-						sorting: false,
-						exportButton: true
-					}}
-				/>
-			</div> */}
 		</React.Fragment>
 	);
 };
