@@ -75,9 +75,29 @@ const EditEntryManager = props => {
 
 	// get newEntry from sub-component whenever there is a new change
 	const getNewEntry = newEntry => {
+		console.log('78 newEntry = ', newEntry);
 		setEntry(newEntry);
 		setEntryCarId(newEntry.carId);
 		setEntryId(newEntry.id);
+
+		// write entry to localStorage
+		let userData = JSON.parse(localStorage.getItem('userData'));
+
+		console.log('userData = ', userData);
+		let newUserEntries = [];
+		newUserEntries = userData.userEntries;
+		let userEntryIndex;
+		for (let i = 0; i < newUserEntries.length; ++i) {
+			if (newUserEntries[i].id === newEntry.id) {
+				userEntryIndex = i;
+				break;
+			}
+		}
+		console.log('newUserEntries1 = ', newUserEntries);
+		newUserEntries.splice(userEntryIndex, 1, newEntry);
+		console.log('newUserEntries2 = ', newUserEntries);
+		userData.userEntries = newUserEntries;
+		localStorage.setItem('userData', JSON.stringify(userData));
 	};
 
 	let userData = JSON.parse(localStorage.getItem('userData'));

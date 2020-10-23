@@ -209,25 +209,29 @@ const EventItem = props => {
 					for (let i = 0; i < userEntries.length; ++i) {
 						if (userEntries[i].eventId === eventId) {
 							setUserRegisteredEvent(true);
-							if (userEntries[i].waitlist) {
+							if (userEntries[i].waitlist !== undefined) {
 								let waitlist = false;
+								let tmpWaitlistMSG = waitlistMSG;
 								for (
-									let i = 0;
-									i < userEntries[i].waitlist.length;
-									++i
+									let j = 0;
+									j < userEntries[i].waitlist.length;
+									++j
 								) {
-									if (userEntries[i].waitlist[i]) {
-										waitlist = true;
+									if (userEntries[i].waitlist[j]) {
 										if (waitlist) {
-											setWaitlistMSG(waitlistMSG + ' and Day ' + i);
+											tmpWaitlistMSG += ' and Day ' + (j + 1);
 										} else {
-											setWaitlistMSG(waitlistMSG + 'Day ' + i);
+											if (userEntries[i].waitlist.length > 1) {
+												tmpWaitlistMSG += ' Day ' + (j + 1);
+												waitlist = true;
+											}
 										}
 										setUserOnWaitlist(true);
 									}
 								}
 								if (waitlist) {
-									setWaitlistMSG(waitlistMSG + '.');
+									tmpWaitlistMSG += '.';
+									setWaitlistMSG(tmpWaitlistMSG);
 								}
 							}
 							if (userEntries[i].groupWaitlist) {
@@ -395,13 +399,16 @@ const EventItem = props => {
 									</Button>
 								</Link>
 							)}
+							<div className="waitlist-msg">
+								{userOnWaitlist && waitlistMSG}
+							</div>
 						</div>
 					</div>
 					{userRegisteredEvent && (
 						// <div className="entryinfo-container">
 						<div className={containerClassName}>
 							<div className="col-xs-12">
-								{userOnWaitlist && waitlistMSG}
+								{/* {userOnWaitlist && waitlistMSG} */}
 								<div>
 									<Link
 										to={{

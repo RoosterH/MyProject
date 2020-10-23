@@ -123,10 +123,10 @@ const EntryReport = props => {
 					raceClass: getMapKey(entries[j].raceClass, raceClasses),
 					carNumber: entries[i].carNumber,
 					car: entries[i].car,
-					runGroup: getMapKey(entries[j].runGroup[i], runGroups[j]),
+					runGroup: getMapKey(entries[j].runGroup[i], runGroups[i]),
 					workerAssignment: getMapKey(
 						entries[j].workerAssignment[i],
-						workerAssignments[j]
+						workerAssignments[i]
 					)
 				};
 				entryData.push(entry);
@@ -148,10 +148,10 @@ const EntryReport = props => {
 					carNumber: waitlist[j].carNumber,
 					raceClass: getMapKey(waitlist[j].raceClass, raceClasses),
 					car: waitlist[j].car,
-					runGroup: getMapKey(waitlist[j].runGroup[i], runGroups[j]),
+					runGroup: getMapKey(waitlist[j].runGroup[i], runGroups[i]),
 					workerAssignment: getMapKey(
 						waitlist[j].workerAssignment[i],
-						workerAssignments[j]
+						workerAssignments[i]
 					)
 				};
 				waitlistData.push(entry);

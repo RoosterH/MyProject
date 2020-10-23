@@ -139,11 +139,11 @@ const EntryListForUsers = props => {
 								car: entries[j].car,
 								runGroup: getMapKey(
 									entries[j].runGroup[i],
-									runGroups[j]
+									runGroups[i]
 								),
 								workerAssignment: getMapKey(
 									entries[j].workerAssignment[i],
-									workerAssignments[j]
+									workerAssignments[i]
 								)
 							};
 						} else {
@@ -157,11 +157,11 @@ const EntryListForUsers = props => {
 								car: entries[j].car,
 								runGroup: getMapKey(
 									entries[j].runGroup[i],
-									runGroups[j]
+									runGroups[i]
 								),
 								workerAssignment: getMapKey(
 									entries[j].workerAssignment[i],
-									workerAssignments[j]
+									workerAssignments[i]
 								)
 							};
 						}
@@ -191,12 +191,12 @@ const EntryListForUsers = props => {
 								),
 								car: waitlist[j].car,
 								runGroup: getMapKey(
-									entries[j].runGroup[i],
-									runGroups[j]
+									waitlist[j].runGroup[i],
+									runGroups[i]
 								),
 								workerAssignment: getMapKey(
-									entries[j].workerAssignment[i],
-									workerAssignments[j]
+									waitlist[j].workerAssignment[i],
+									workerAssignments[i]
 								)
 							};
 						} else {
@@ -210,11 +210,11 @@ const EntryListForUsers = props => {
 								car: waitlist[j].car,
 								runGroup: getMapKey(
 									waitlist[j].runGroup[i],
-									runGroups[j]
+									runGroups[i]
 								),
 								workerAssignment: getMapKey(
 									waitlist[j].workerAssignment[i],
-									workerAssignments[j]
+									workerAssignments[i]
 								)
 							};
 						}
@@ -285,7 +285,7 @@ const EntryListForUsers = props => {
 						entryList={entryListArray[daySelection - 1]}
 						waitlist={waitlistArray[daySelection - 1]}
 						displayName={displayName}
-						eventName={eventName}
+						eventName={eventName + ' Day ' + daySelection}
 						showLoading={showLoading}
 						raceClassLookup={raceClassLookup}
 						runGroupLookup={runGroupLookup}

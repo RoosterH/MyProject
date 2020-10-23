@@ -62,6 +62,7 @@ export default class ReactForm extends React.Component {
 	sendRQ;
 	userToken;
 	eventId;
+	fullMessage;
 	// end of private variable section
 
 	constructor(props) {
@@ -70,9 +71,15 @@ export default class ReactForm extends React.Component {
 		this.emitter = new EventEmitter();
 		this.entryId = props.entryId;
 		this.editingMode = props.editingMode;
-		this.getNewEntry = newEntry => {
-			props.getNewEntry(newEntry);
-		};
+		// this.getNewEntry = newEntry => {
+		// 	console.log('75 newEntry = ', newEntry);
+		// 	props.getNewEntry(newEntry);
+		// };
+	}
+
+	getNewEntry(newEntry) {
+		console.log('75 newEntry = ', newEntry);
+		this.props.getNewEntry(newEntry);
 	}
 
 	// convert provided answers
@@ -186,7 +193,6 @@ export default class ReactForm extends React.Component {
 	}
 
 	_isInvalid(item) {
-		console.log('_isInvalid ');
 		let invalid = false;
 		if (item.required === true) {
 			if (
@@ -373,6 +379,7 @@ export default class ReactForm extends React.Component {
 	}
 
 	async handleSubmit(e) {
+		console.log('376 responseData.entry');
 		e.preventDefault();
 		let errors = [];
 		if (!this.props.skip_validations) {
@@ -381,6 +388,7 @@ export default class ReactForm extends React.Component {
 			this.emitter.emit('formValidation', errors);
 		}
 
+		console.log('384 responseData.entry');
 		// Only submit if there are no errors.
 		if (errors.length < 1) {
 			const answer_data = this.props;
@@ -390,10 +398,15 @@ export default class ReactForm extends React.Component {
 				// editinMode meaning we are in EditEntryManager
 				if (this.editingMode) {
 					try {
+						console.log('393 responseData.entry = ');
 						const answer = this._collectFormData(this.props.data);
 						// we need to use JSON.stringify to send array objects.
 						// FormData with JSON.stringify not working
-						let responseData = await this.sendRQ(
+						let [
+							responseData,
+							responseStatus,
+							responseMessage
+						] = await this.sendRQ(
 							process.env.REACT_APP_BACKEND_URL +
 								`/entries/formAnswer/${this.entryId}`,
 							'PATCH',
@@ -407,6 +420,12 @@ export default class ReactForm extends React.Component {
 								Authorization: 'Bearer ' + this.userToken
 							}
 						);
+						if (responseStatus === 202) {
+							// either group is full or event is full
+							this.fullMessage = responseMessage;
+						} else {
+							this.fullMessage = 'NO';
+						}
 						this.getNewEntry(responseData.entry);
 					} catch (err) {}
 				} else {
@@ -718,6 +737,7 @@ export default class ReactForm extends React.Component {
 										{actionName}
 									</Button>
 								)}
+
 								{!this.props.hide_actions && this.props.back_action && (
 									<a
 										href={this.props.back_action}
@@ -726,6 +746,24 @@ export default class ReactForm extends React.Component {
 									</a>
 								)}
 							</div>
+							{this.fullMessage !== 'NO' && (
+								<p
+									style={{
+										color: 'red'
+									}}>
+									{' '}
+									{this.fullMessage}{' '}
+								</p>
+							)}
+							{this.fullMessage === 'NO' && (
+								<p
+									style={{
+										color: 'green'
+									}}>
+									{' '}
+									Your entry is successfully submitted.{' '}
+								</p>
+							)}
 						</form>
 					</div>
 				</div>

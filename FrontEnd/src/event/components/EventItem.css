@@ -372,6 +372,13 @@ toggle-section .sub-heading .toggle-btn {
 	font-size: 14px;
 }
 
+.waitlist-msg {
+	font-size: 14px;
+	font-weight: 500;
+	display: inline;
+	margin-left: 0.5rem;
+	color: tomato;
+}
 @media (min-width: 780px) {
 	.event-pages {
 		/* margin-top: -20px; */

@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 // for Google Geocode API that converts address to coordinates
 const getCoordinatesForAddress = require('../util/location');
 const Entry = require('../models/entry');
+const EntryReport = require('../models/entryReport');
 const Event = require('../models/event');
 const Club = require('../models/club');
 
@@ -557,17 +558,27 @@ const createEvent = async (req, res, next) => {
 		clubName: club.name,
 		clubImage: club.image,
 		image: 'UNDEFINED',
-		// courseMap: courseMapPath,
 		published: false,
 		entryFormData: [],
+
+		// ready to remove
 		entries: [[]],
 		waitlist: [[]],
 		totalEntries: [],
+
 		numGroups: 0,
 		capDistribution: false,
 		raceClassOptions: [],
 		runGroupOptions: [],
 		workerAssignments: []
+	});
+
+	const newEventEntryReport = new EntryReport({
+		entries: [[]],
+		waitlist: [[]],
+		runGroupNumEntries: [[]],
+		full: [],
+		totalEntries: []
 	});
 
 	try {
@@ -580,7 +591,16 @@ const createEvent = async (req, res, next) => {
 		 **/
 		const session = await mongoose.startSession();
 		session.startTransaction();
+		// save event first, here we need to use the newEvent Id so no async await
 		await newEvent.save({ session: session });
+
+		// ! for very first time that DB collection not yet has newentryreports, we need to move
+		// ! this section outside of transcation because a bug from Mongoose that does not create
+		// ! a new collection for transaction tasks
+		// create entryReport for the event
+		newEventEntryReport.eventId = newEvent.id;
+		await newEventEntryReport.save({ session: session });
+
 		/**
 		 * push here is not an array push method. Instead it's a Mongoose method that
 		 * establishes connection between two models which are club and event in this case.
@@ -600,6 +620,22 @@ const createEvent = async (req, res, next) => {
 		return next(error);
 	}
 
+	// ! for very first time that DB collection not yet has newentryreports, we need to enable this section
+	// ! the best way is to create collection from Atlas
+	// try {
+	// 	// create entryReport for the event
+	// 	newEventEntryReport.eventId = newEvent.id;
+	// 	await newEventEntryReport.save();
+	// } catch (err) {
+	// 	console.log('err = ', err);
+	// 	const error = new HttpError(
+	// 		'Create event entryReport DB failed. Please try again later.',
+	// 		500
+	// 	);
+	// 	return next(error);
+	// }
+
+	console.log('newEventEntryReport = ', newEventEntryReport);
 	res
 		.status(201)
 		.json({ event: newEvent.toObject({ getters: true }) });
@@ -790,6 +826,8 @@ const updateEventRegistration = async (req, res, next) => {
 	} = req.body;
 	event.totalCap = totalCap;
 	if (totalCap !== undefined || totalCap !== 0) {
+		// initialize to avoid updating keeps adding elements to array
+		event.full = [];
 		event.full.push(false);
 	}
 
@@ -801,7 +839,10 @@ const updateEventRegistration = async (req, res, next) => {
 
 	// if capDistribution is true, we will create numGroups groups.
 	// Each group can only have totalCap / numGroups participants
+	// add day1 runGroupNumEntries
 	if (capDistribution) {
+		// re-init array before push
+		event.runGroupNumEntries = [];
 		//! this does not work as MongoDB will store userId in an array
 		// for (let i = 0; i < numGroups; ++i) {
 		// 	event.runGroupEntries.push(undefined);
@@ -814,6 +855,7 @@ const updateEventRegistration = async (req, res, next) => {
 		event.runGroupNumEntries.push(group);
 	}
 
+	// add day2, day3 ... runGroupNumEntries
 	if (multiDayEvent) {
 		// create array elements for each day
 		let startDate = moment(event.startDate);
@@ -1185,8 +1227,6 @@ const createEventForm = async (req, res, next) => {
 
 // Form analysis
 const formAnalysis = data => {
-	//! @todo Multiple Day MultipleRadioButtonGroup
-	// maybe for lunch options, race group and worker assignment should stay the same across the event
 	if (!data.field_name) {
 		return [null, null];
 	}
@@ -1316,7 +1356,6 @@ const getEntryReportForUsers = async (req, res, next) => {
 
 	// get entires
 	let entries = event.entries;
-	console.log('1329 entries = ', entries);
 	// if there is no entry, should not have a waitlist, either.
 	if (entries.length === 0) {
 		res.status(404).json({
@@ -1333,7 +1372,6 @@ const getEntryReportForUsers = async (req, res, next) => {
 		for (let j = 0; j < eList.length; ++j) {
 			// add car info to entry for frontend to display the information
 			let entry = await Entry.findById(eList[j]).populate('carId');
-			console.log('1345 entry = ', entry);
 			// add car to entry
 			let car =
 				entry.carId.year +
@@ -1484,152 +1522,6 @@ const getEntryReportForUsers = async (req, res, next) => {
 			workerAssignments: event.workerAssignments
 		});
 	}
-	// if (displayName) {
-	// 	if (waitlistData.length === 0) {
-	// 		res.status(200).json({
-	// 			entryData: entryData.map(data =>
-	// 				data.toObject({
-	// 					getters: true,
-	// 					transform: (doc, ret, opt) => {
-	// 						delete ret['userId'];
-	// 						delete ret['userName'];
-	// 						delete ret['clubId'];
-	// 						delete ret['clubName'];
-	// 						delete ret['eventId'];
-	// 						delete ret['eventName'];
-	// 						delete ret['carId'];
-	// 						delete ret['disclaimer'];
-	// 						delete ret['time'];
-	// 						delete ret['published'];
-	// 						return ret;
-	// 					}
-	// 				})
-	// 			),
-	// 			waitlistData: [],
-	// 			raceClassOptions: event.raceClassOptions,
-	// 			runGroupOptions: event.runGroupOptions,
-	// 			workerAssignments: event.workerAssignments
-	// 		});
-	// 	} else {
-	// 		res.status(200).json({
-	// 			entryData: entryData.map(data =>
-	// 				data.toObject({
-	// 					getters: true,
-	// 					transform: (doc, ret, opt) => {
-	// 						delete ret['userId'];
-	// 						// delete ret['userName'];
-	// 						delete ret['clubId'];
-	// 						delete ret['clubName'];
-	// 						delete ret['eventId'];
-	// 						delete ret['eventName'];
-	// 						delete ret['carId'];
-	// 						delete ret['disclaimer'];
-	// 						delete ret['time'];
-	// 						delete ret['published'];
-	// 						return ret;
-	// 					}
-	// 				})
-	// 			),
-	// 			waitlistData: waitlistData.map(data =>
-	// 				data.toObject({
-	// 					getters: true,
-	// 					transform: (doc, ret, opt) => {
-	// 						delete ret['userId'];
-	// 						// delete ret['userName'];
-	// 						delete ret['clubId'];
-	// 						delete ret['clubName'];
-	// 						delete ret['eventId'];
-	// 						delete ret['eventName'];
-	// 						delete ret['carId'];
-	// 						delete ret['disclaimer'];
-	// 						delete ret['time'];
-	// 						delete ret['published'];
-	// 						return ret;
-	// 					}
-	// 				})
-	// 			),
-	// 			raceClassOptions: event.raceClassOptions,
-	// 			runGroupOptions: event.runGroupOptions,
-	// 			workerAssignments: event.workerAssignments
-	// 		});
-	// 	}
-	// } else {
-	// 	//!displayName
-	// 	if (waitlistData.length === 0) {
-	// 		res.status(200).json({
-	// 			entryData: entryData.map(data =>
-	// 				data.toObject({
-	// 					getters: true,
-	// 					transform: (doc, ret, opt) => {
-	// 						delete ret['userId'];
-	// 						delete ret['userLastName'];
-	// 						delete ret['userFirstName'];
-	// 						delete ret['clubId'];
-	// 						delete ret['clubName'];
-	// 						delete ret['eventId'];
-	// 						delete ret['eventName'];
-	// 						delete ret['carId'];
-	// 						delete ret['answer'];
-	// 						delete ret['disclaimer'];
-	// 						delete ret['time'];
-	// 						delete ret['published'];
-	// 						return ret;
-	// 					}
-	// 				})
-	// 			),
-	// 			waitlistData: [],
-	// 			raceClassOptions: event.raceClassOptions,
-	// 			runGroupOptions: event.runGroupOptions,
-	// 			workerAssignments: event.workerAssignments
-	// 		});
-	// 	} else {
-	// 		res.status(200).json({
-	// 			entryData: entryData.map(data =>
-	// 				data.toObject({
-	// 					getters: true,
-	// 					transform: (doc, ret, opt) => {
-	// 						delete ret['userId'];
-	// 						delete ret['userLastName'];
-	// 						delete ret['userFirstName'];
-	// 						delete ret['clubId'];
-	// 						delete ret['clubName'];
-	// 						delete ret['eventId'];
-	// 						delete ret['eventName'];
-	// 						delete ret['carId'];
-	// 						delete ret['answer'];
-	// 						delete ret['disclaimer'];
-	// 						delete ret['time'];
-	// 						delete ret['published'];
-	// 						return ret;
-	// 					}
-	// 				})
-	// 			),
-	// 			waitlistData: waitlistData.map(data =>
-	// 				data.toObject({
-	// 					getters: true,
-	// 					transform: (doc, ret, opt) => {
-	// 						delete ret['userId'];
-	// 						delete ret['userLastName'];
-	// 						delete ret['userFirstName'];
-	// 						delete ret['clubId'];
-	// 						delete ret['clubName'];
-	// 						delete ret['eventId'];
-	// 						delete ret['eventName'];
-	// 						delete ret['carId'];
-	// 						delete ret['answer'];
-	// 						delete ret['disclaimer'];
-	// 						delete ret['time'];
-	// 						delete ret['published'];
-	// 						return ret;
-	// 					}
-	// 				})
-	// 			),
-	// 			raceClassOptions: event.raceClassOptions,
-	// 			runGroupOptions: event.runGroupOptions,
-	// 			workerAssignments: event.workerAssignments
-	// 		});
-	// 	}
-	// }
 };
 
 // export a pointer of the function
