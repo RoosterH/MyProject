@@ -750,7 +750,7 @@ const updateEventPhotos = async (req, res, next) => {
 	}
 };
 
-// This is called on both first and update EventRegistration
+// This is called on both new and update EventRegistration
 // PATCH /api/events/registration/:eid
 const updateEventRegistration = async (req, res, next) => {
 	const eventId = req.params.eid;
@@ -840,20 +840,20 @@ const updateEventRegistration = async (req, res, next) => {
 	// if capDistribution is true, we will create numGroups groups.
 	// Each group can only have totalCap / numGroups participants
 	// add day1 runGroupNumEntries
-	if (capDistribution) {
-		// re-init array before push
-		event.runGroupNumEntries = [];
-		//! this does not work as MongoDB will store userId in an array
-		// for (let i = 0; i < numGroups; ++i) {
-		// 	event.runGroupEntries.push(undefined);
-		// }
-		// run group is named starting from 0 so there is no problem to match with index
-		let group = [];
-		for (let i = 0; i < numGroups; ++i) {
-			group.push(0);
-		}
-		event.runGroupNumEntries.push(group);
+	// if (capDistribution) {
+	// re-init array before push
+	event.runGroupNumEntries = [];
+	//! this does not work as MongoDB will store userId in an array
+	// for (let i = 0; i < numGroups; ++i) {
+	// 	event.runGroupEntries.push(undefined);
+	// }
+	// run group is named starting from 0 so there is no problem to match with index
+	let group = [];
+	for (let i = 0; i < numGroups; ++i) {
+		group.push(0);
 	}
+	event.runGroupNumEntries.push(group);
+	// }
 
 	// add day2, day3 ... runGroupNumEntries
 	if (multiDayEvent) {
@@ -1094,7 +1094,7 @@ const deleteEvent = async (req, res, next) => {
 	res.status(200).json({ message: `Event: ${event.name} deleted` });
 };
 
-// this includes create and update event form
+// this includes create and update event entry form
 const createEventForm = async (req, res, next) => {
 	// we need to get entryFormData from body
 	const { entryFormData, saveTemplate } = req.body;

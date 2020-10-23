@@ -99,18 +99,18 @@ const createEntry = async (req, res, next) => {
 		event.entries.length !== event.totalEntries.length
 	) {
 		// todo: to be removed @@@@@@@@@
-		// console.log('event.entries.length = ', event.entries.length);
-		// console.log('event.waitlist.length = ', event.waitlist.length);
-		// console.log('event.full.length = ', event.full.length);
-		// console.log(
-		// 	'event.runGroupOptions.length = ',
-		// 	event.runGroupOptions.length
-		// );
-		// console.log(
-		// 	'event.runGroupNumEntries.length = ',
-		// 	event.runGroupNumEntries.length
-		// );
-		// console.log('event.totalEntries = ', event.totalEntries);
+		console.log('event.entries.length = ', event.entries.length);
+		console.log('event.waitlist.length = ', event.waitlist.length);
+		console.log('event.full.length = ', event.full.length);
+		console.log(
+			'event.runGroupOptions.length = ',
+			event.runGroupOptions.length
+		);
+		console.log(
+			'event.runGroupNumEntries.length = ',
+			event.runGroupNumEntries.length
+		);
+		console.log('event.totalEntries = ', event.totalEntries);
 
 		const error = new HttpError(
 			'Entry submission process internal failure array length not the same.',
