@@ -589,8 +589,6 @@ const getEventEntryFormWithAnswer = async (req, res, next) => {
 		return next(error);
 	}
 
-	console.log('entry = ', entry);
-
 	res.status(200).json({
 		eventName: event.name,
 		entryFormData: entryFormData,

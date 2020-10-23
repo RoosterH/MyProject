@@ -1123,7 +1123,6 @@ const createEventForm = async (req, res, next) => {
 	// Validate eventId belonging to the found club. If not, sends back an error
 	let event;
 	const eventId = req.params.eid;
-	console.log('1096 eventId = ', eventId);
 	// if club does not own the eventId, return error
 	if (!club.events.includes(eventId)) {
 		// Not found in clubs events
@@ -1161,15 +1160,8 @@ const createEventForm = async (req, res, next) => {
 				data.options.map(option => {
 					// loop through opt.options
 					let [fieldName, choices] = formAnalysis(option);
-					console.log('1131 fieldName = ', fieldName);
-					console.log('choices = ', choices);
 					if (fieldName.startsWith('RunGroup')) {
-						console.log('inRunGroup');
 						event.runGroupOptions.push(choices);
-						console.log(
-							'event.runGroupOptions = ',
-							event.runGroupOptions
-						);
 						// Also make totalEntries same number of elements
 						event.totalEntries.push(0);
 					} else if (fieldName.startsWith('WorkerAssignments')) {
@@ -1180,7 +1172,6 @@ const createEventForm = async (req, res, next) => {
 				// form analysis here
 				let [fieldName, choices] = formAnalysis(data);
 				if (fieldName === 'RunGroupSingle') {
-					console.log('RunGroupSingle');
 					event.runGroupOptions = [];
 					// event.runGroupOptions = choices;
 					// runGroupOptions is [[]]
@@ -1210,13 +1201,11 @@ const createEventForm = async (req, res, next) => {
 		if (saveTemplate) {
 			await club.save();
 		}
-		console.log('1183 event = ', event);
 		await event.save();
 		res
 			.status(200)
 			.json({ event: event.toObject({ getters: true }) });
 	} catch (err) {
-		console.log('err = ', err);
 		const error = new HttpError(
 			'Create event form connecting with DB failed. Please try again later.',
 			500
@@ -1235,9 +1224,7 @@ const formAnalysis = data => {
 	// "RunGroupSingle-" Race Group prefix for Single Choice Radiobutton
 	// field_name: "RunGroupSingle-12EDB3DA-484C-4ECB-BB32-C3AE969A2D2F"
 	let parseName = data.field_name.split('-');
-	console.log('parseName = ', parseName);
 	let fieldPrefix = parseName[0];
-	console.log('fieldPrefix = ', fieldPrefix);
 	let choices = [];
 
 	// get the options

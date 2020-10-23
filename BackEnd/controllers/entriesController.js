@@ -98,20 +98,6 @@ const createEntry = async (req, res, next) => {
 		event.entries.length !== event.runGroupNumEntries.length ||
 		event.entries.length !== event.totalEntries.length
 	) {
-		// todo: to be removed @@@@@@@@@
-		console.log('event.entries.length = ', event.entries.length);
-		console.log('event.waitlist.length = ', event.waitlist.length);
-		console.log('event.full.length = ', event.full.length);
-		console.log(
-			'event.runGroupOptions.length = ',
-			event.runGroupOptions.length
-		);
-		console.log(
-			'event.runGroupNumEntries.length = ',
-			event.runGroupNumEntries.length
-		);
-		console.log('event.totalEntries = ', event.totalEntries);
-
 		const error = new HttpError(
 			'Entry submission process internal failure array length not the same.',
 			500
@@ -148,7 +134,6 @@ const createEntry = async (req, res, next) => {
 	// let groupFull = false;
 	let groupFull = [];
 
-	console.log('137 event.runGroupOptions = ', event.runGroupOptions);
 	// runGroupAnsChoices is the answer index for each day, i.e., index 1 is extracted from => 0: "raceRadioOption_1"
 	// runGroups
 	let [runGroupAnsChoices, runGroupAnsTexts] = parseAnswer(
@@ -526,17 +511,14 @@ const updateFormAnswer = async (req, res, next) => {
 	let eventFull = [];
 	for (let i = 0; i < days; ++i) {
 		if (event.totalEntries[i] >= event.totalCap || event.full[i]) {
-			console.log('event day is full = ', i);
 			eventFull.push(true);
 		} else {
-			console.log('event day is NOT full = ', i);
 			eventFull.push(false);
 		}
 	}
 
 	let groupFull = [];
 
-	console.log('676 event.runGroupOptions = ', event.runGroupOptions);
 	// runGroupAnsChoices is the answer index for each day, i.e., index 1 is extracted from => 0: "raceRadioOption_1"
 	// runGroups
 	let [runGroupAnsChoices, runGroupAnsTexts] = parseAnswer(
@@ -545,9 +527,6 @@ const updateFormAnswer = async (req, res, next) => {
 		'RunGroup'
 	);
 
-	console.log('event.runGroupOptions = ', event.runGroupOptions);
-	console.log('entry.runGroup = ', entry.runGroup);
-
 	let [runGroupsIndex] = getRunGroupsIndex(
 		event.runGroupOptions,
 		entry.runGroup
@@ -555,7 +534,6 @@ const updateFormAnswer = async (req, res, next) => {
 
 	// ! need to support single day selection for multiple day event
 	if (runGroupAnsChoices.length === 0) {
-		console.log('164');
 		const error = new HttpError(
 			'Event registration answer invalid @run group. ',
 			400
@@ -567,20 +545,14 @@ const updateFormAnswer = async (req, res, next) => {
 	if (event.capDistribution) {
 		let capPerGroup = Math.floor(event.totalCap / event.numGroups);
 		for (let i = 0; i < days; ++i) {
-			console.log(
-				' event.runGroupNumEntries[i][runGroupAnsChoices[i]] = ',
-				event.runGroupNumEntries[i][runGroupAnsChoices[i]]
-			);
 			if (
 				// event.runGroupNumEntries[i][j] is a 2-D array, i for day, j for group
 				// runGroupAnsChoices[i] is the answer for i day
 				event.runGroupNumEntries[i][runGroupAnsChoices[i]] ==
 				capPerGroup
 			) {
-				console.log('group is full = ', i);
 				groupFull.push(true);
 			} else {
-				console.log('group is NOT full = ', i);
 				groupFull.push(false);
 			}
 		}
@@ -610,19 +582,10 @@ const updateFormAnswer = async (req, res, next) => {
 	for (let i = 0; i < days; ++i) {
 		let oldIndex = runGroupsIndex[i];
 		let newIndex = runGroupAnsChoices[i];
-		console.log('oldIndex = ', oldIndex);
-		console.log('newIndex = ', newIndex);
-		console.log('entry.waitlist[i] = ', entry.waitlist[i]);
-		console.log('entry.groupWaitlist[i] = ', entry.groupWaitlist[i]);
-		console.log('eventFull[i] = ', eventFull[i]);
-		console.log('groupFull[i] = ', groupFull[i]);
-
 		// old run group same as new run group, skip
 		if (oldIndex == newIndex) {
-			console.log('continue');
 			continue;
 		}
-		console.log('after continue');
 		let onWaitlist = entry.waitlist[i];
 		let onGroupWaitlist = entry.groupWaitlist[i];
 		if (!event.capDistribution && eventFull[i]) {
@@ -636,7 +599,6 @@ const updateFormAnswer = async (req, res, next) => {
 			// check if the previous entry was on the group waitlist
 			// if entry.groupWaitlist  == true, entry.waitlist must be also true
 			if (onWaitlist && onGroupWaitlist) {
-				console.log('onWaitlist');
 				// if current entry run group is good, remove the entry from waitlist
 				let waitlistEntries = event.waitlist[i];
 				let entryIndex = waitlistEntries.indexOf(entry.id);
@@ -654,33 +616,20 @@ const updateFormAnswer = async (req, res, next) => {
 			}
 			// we have checked current entry run group is different from previous entry run group
 			let dayRunGroupNumEntries = event.runGroupNumEntries[i];
-
-			console.log(
-				'739 dayRunGroupNumEntries = ',
-				dayRunGroupNumEntries
-			);
 			let newDayRunGroupEntries = [];
-			console.log('length = ', dayRunGroupNumEntries.length);
-
 			for (let j = 0; j < dayRunGroupNumEntries.length; ++j) {
 				if (j == newIndex) {
-					console.log(' j2 = ', j);
 					newDayRunGroupEntries.push(dayRunGroupNumEntries[j] + 1);
 				} else if (j == oldIndex && !onWaitlist) {
-					console.log(' j1 = ', j);
 					newDayRunGroupEntries.push(dayRunGroupNumEntries[j] - 1);
 				} else {
-					console.log(' j4 = ', j);
 					newDayRunGroupEntries.push(dayRunGroupNumEntries[j]);
 				}
 			}
-
-			console.log('newDayRunGroupEntries = ', newDayRunGroupEntries);
 			// use set to set array value => array.set(index, value)
 			event.runGroupNumEntries.set(i, newDayRunGroupEntries);
 		} else {
 			// groupFull[i] === true
-			console.log('run group is full');
 			// if previous entry was good but now the new group is full.
 			// We don't want to re-enter the event, instead giving an error message.
 			// Because drop an entry to waitlist is very bad.
@@ -706,24 +655,20 @@ const updateFormAnswer = async (req, res, next) => {
 	entry.answer = answer;
 	for (let i = 0; i < days; ++i) {
 		if (!groupFull[i]) {
-			console.log('runGroupAnsTexts = ', runGroupAnsTexts[i]);
 			entry.runGroup.set(i, runGroupAnsTexts[i]);
 		}
 		entry.workerAssignment.set(i, workerAssignmentAnsTexts[i]);
 	}
 
-	console.log('entry = ', entry);
 	try {
 		const session = await mongoose.startSession();
 		session.startTransaction();
 		// save entry first because entry has less requests than event
 		await entry.save({ session: session });
-		console.log('save entry ');
 		await event.save({ session: session });
-		console.log('save event ');
 		await session.commitTransaction();
 	} catch (err) {
-		console.log('err 2 =', err);
+		console.log('err  =', err);
 		const error = new HttpError(
 			'Entry update form answer connecting with DB failed. Please try again later.',
 			500
@@ -746,8 +691,6 @@ const updateFormAnswer = async (req, res, next) => {
 };
 
 const getRunGroupsIndex = (runGroupOptions, runGroups) => {
-	console.log('841 runGrioupOptions = ', runGroupOptions);
-	console.log('runGroups = ', runGroups);
 	let runGroupsIndex = [];
 	let days = runGroups.length;
 	for (let i = 0; i < days; ++i) {

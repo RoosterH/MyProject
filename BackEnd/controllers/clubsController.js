@@ -499,7 +499,6 @@ const createEventForm = async (req, res, next) => {
 	if (entryFormData && entryFormData.length > 0) {
 		event.entryFormData = [];
 		entryFormData.map(data => {
-			console.log('data = ', data);
 			event.entryFormData.push(data);
 			if (data.element === 'MultipleRadioButtonGroup') {
 				data.options.map(option => {
@@ -507,7 +506,6 @@ const createEventForm = async (req, res, next) => {
 					let [fieldName, choices] = formAnalysis(option);
 					if (fieldName.startsWith('RunGroup')) {
 						let optionChoices = [];
-						console.log('choices = ', choices);
 						optionChoices.push(choices);
 						event.runGroupOptions.push(choices);
 					}
@@ -639,9 +637,7 @@ const formAnalysis = data => {
 	// "RunGroupSingle-" Race Group prefix for Single Choice Radiobutton
 	// field_name: "RunGroupSingle-12EDB3DA-484C-4ECB-BB32-C3AE969A2D2F"
 	let parseName = data.field_name.split('-');
-	console.log('parseName = ', parseName);
 	let fieldPrefix = parseName[0];
-	console.log('fieldPrefix = ', fieldPrefix);
 	let choices = [];
 
 	// get the options
