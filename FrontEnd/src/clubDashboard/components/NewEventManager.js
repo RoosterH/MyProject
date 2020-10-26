@@ -28,7 +28,7 @@ const NewEventManager = () => {
 		setFormBuilderClass('li-tab');
 		setRegistration(false);
 		setRegistrationClass('li-tab');
-		setPercentage('0');
+		setPercentage('25');
 	};
 	const photoClickHandler = () => {
 		setEventInfo(false);
@@ -39,7 +39,7 @@ const NewEventManager = () => {
 		setFormBuilderClass('li-tab');
 		setRegistration(false);
 		setRegistrationClass('li-tab');
-		setPercentage('25');
+		setPercentage('50');
 	};
 	const formBuilderClickHandler = () => {
 		setEventInfo(false);
@@ -50,7 +50,7 @@ const NewEventManager = () => {
 		setFormBuilderClass('li-tab_orange');
 		setRegistration(false);
 		setRegistrationClass('li-tab');
-		setPercentage('50');
+		setPercentage('75');
 	};
 	const registrationClickHandler = () => {
 		setEventInfo(false);
@@ -61,10 +61,10 @@ const NewEventManager = () => {
 		setFormBuilderClass('li-tab');
 		setRegistration(true);
 		setRegistrationClass('li-tab_orange');
-		setPercentage('75');
+		setPercentage('100');
 	};
 	const saveClickHandler = () => {
-		setPercentage('100');
+		// setPercentage('100');
 	};
 
 	// set defualt page, if none is false, we will use eventInfo as default

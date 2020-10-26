@@ -569,7 +569,6 @@ const createEvent = async (req, res, next) => {
 		totalEntries: []
 	});
 
-	console.log('newEventEntryReport.id = ', newEventEntryReport.id);
 	const newEvent = new Event({
 		name,
 		type,
@@ -778,7 +777,6 @@ const updateEventPhotos = async (req, res, next) => {
 // PATCH /api/events/registration/:eid
 const createUpdateEventRegistration = async (req, res, next) => {
 	const eventId = req.params.eid;
-	console.log('733 eventId = ', eventId);
 
 	// validate request, req checks are defined in eventRoutes.js using
 	// express-validator
@@ -818,7 +816,7 @@ const createUpdateEventRegistration = async (req, res, next) => {
 
 	let event;
 	try {
-		event = await await Event.findById(eventId);
+		event = await Event.findById(eventId).populate('entryReportId');
 	} catch (err) {
 		const error = new HttpError(
 			'Update event registration process failed, please try again later.',
@@ -837,7 +835,7 @@ const createUpdateEventRegistration = async (req, res, next) => {
 
 	let entryReport;
 	try {
-		entryReport = await EntryReport.findById(event.entryReportId);
+		entryReport = event.entryReportId;
 	} catch (err) {
 		const error = new HttpError(
 			'Update event registration process failed when retrieving entryReport, please try again later.',
@@ -845,7 +843,6 @@ const createUpdateEventRegistration = async (req, res, next) => {
 		);
 		return next(error);
 	}
-	console.log('844 entryReport = ', entryReport);
 	if (!entryReport) {
 		return next(
 			new HttpError(
@@ -855,7 +852,6 @@ const createUpdateEventRegistration = async (req, res, next) => {
 		);
 	}
 
-	console.log('789 event = ', event);
 	// we added userData in check-auth after verifying jwt
 	if (event.clubId.toString() !== req.userData) {
 		const error = new HttpError('Unauthorized operation!!!', 401);
@@ -1157,7 +1153,9 @@ const deleteEvent = async (req, res, next) => {
 	try {
 		// populate allows us to access a document in another collection
 		// and to work with data in that existing document
-		event = await Event.findById(eventId).populate('clubId');
+		event = await Event.findById(eventId)
+			.populate('clubId')
+			.populate('entryReportId');
 	} catch (err) {
 		const error = new HttpError(
 			'Delete event process failed. Please try again later.',
@@ -1189,7 +1187,7 @@ const deleteEvent = async (req, res, next) => {
 		return next(error);
 	}
 
-	let entryReport = EntryReport.findById(event.entryReportId);
+	let entryReport = event.entryReportId;
 	try {
 		// we need to use populate('clubId') above to be able to modify data in
 		// event.clubId.events
@@ -1199,12 +1197,23 @@ const deleteEvent = async (req, res, next) => {
 		// remove entryReport
 		await entryReport.remove({ session: session });
 
-		await event.remove({ session: session });
+		if (event.image !== 'UNDEFINED' && event.image) {
+			fs.unlink(event.image, err => {
+				console.log('unlink event image error = ', err);
+			});
+		}
+		if (event.courseMap) {
+			fs.unlink(event.courseMap, err => {
+				console.log('unlink course map error = ', err);
+			});
+		}
+
 		/**
 		 * pull the event out from the clubId events
 		 **/
 		event.clubId.events.pull(event);
 		await event.clubId.save({ session: session });
+		await event.remove({ session: session });
 
 		// only both tasks succeed, we commit the transaction
 		await session.commitTransaction();
@@ -1217,16 +1226,6 @@ const deleteEvent = async (req, res, next) => {
 		return next(error);
 	}
 
-	if (event.image !== 'UNDEFINED' && event.image) {
-		fs.unlink(event.image, err => {
-			console.log('unlink event image error = ', err);
-		});
-	}
-	if (event.courseMap) {
-		fs.unlink(event.courseMap, err => {
-			console.log('unlink course map error = ', err);
-		});
-	}
 	res.status(200).json({ message: `Event: ${event.name} deleted` });
 };
 
@@ -1507,9 +1506,7 @@ const getEntryReportForUsers = async (req, res, next) => {
 	const eventId = req.params.eid;
 	let event;
 	try {
-		event = await (await Event.findById(eventId)).populate(
-			'entryReportId'
-		);
+		event = await Event.findById(eventId).populate('entryReportId');
 	} catch (err) {
 		console.log('err = ', err);
 		// this error is displayed if the request to the DB had some issues
@@ -1528,18 +1525,7 @@ const getEntryReportForUsers = async (req, res, next) => {
 		return next(error);
 	}
 
-	let entryReport;
-	try {
-		entryReport = await EntryReport.findById(event.entryReportId);
-	} catch (err) {
-		console.log('err = ', err);
-		// this error is displayed if the request to the DB had some issues
-		const error = new HttpError(
-			'Cannot find the event for the entry list druing retrieving entryReport. Please try again later.',
-			500
-		);
-		return next(error);
-	}
+	let entryReport = event.entryReportId;
 	if (!entryReport) {
 		const error = new HttpError(
 			'Could not find the event druing retrieving entryReport. Please try later.',

@@ -14,8 +14,12 @@ import { UserAuthContext } from '../../shared/context/auth-context';
 import './Entry.css';
 
 const EditEntryManager = props => {
+	console.log('props.location.state = ', props.location.state);
 	const eventId = useParams().id;
 	const [eventName, setEventName] = useState('');
+	// Allow users to cancel registration after reg is closed. Currently un-supported,
+	// Need to make an option for club to opt this option if we'd like to support this feature.
+	const [regClosed, setRegClosed] = useState(false);
 	const {
 		isLoading,
 		error,
@@ -29,11 +33,13 @@ const EditEntryManager = props => {
 		if (
 			props.location &&
 			props.location.state &&
-			props.location.state.eventName
+			props.location.state.eventName &&
+			props.location.state.regClosed
 		) {
 			setEventName(props.location.state.eventName);
+			setRegClosed(props.location.state.regClosed);
 		}
-	}, [props, setEventName]);
+	}, [props, setEventName, setRegClosed]);
 
 	const [entry, setEntry] = useState();
 	const [entryId, setEntryId] = useState();
@@ -174,9 +180,27 @@ const EditEntryManager = props => {
 	};
 
 	// set defualt page, if none is false, we will use carSelector as default
-	if (!carSelector && !classification && !form && !submit) {
-		carSelectorClickHandler();
-	}
+	useEffect(() => {
+		if (
+			!carSelector &&
+			!classification &&
+			!form &&
+			!submit &&
+			!regClosed
+		) {
+			carSelectorClickHandler();
+		} else if (regClosed) {
+			submitClickHandler();
+		}
+	}, [
+		carSelector,
+		classification,
+		form,
+		submit,
+		regClosed,
+		carSelectorClickHandler,
+		submitClickHandler
+	]);
 
 	// getting continue status back from <Form />
 	const [formStatus, setFormStatus] = useState(false);
@@ -205,6 +229,12 @@ const EditEntryManager = props => {
 			)}
 			<div className="list-header clearfix">
 				<div className="h3-heavy">{eventName}</div>
+				{regClosed && (
+					<div className="h3-heavy">
+						Registration is now closed.&nbsp;&nbsp;You can not modify
+						your entry except canceling it.
+					</div>
+				)}
 			</div>
 
 			{/* New Event Manager Tabs*/}
@@ -214,18 +244,21 @@ const EditEntryManager = props => {
 					<ul className="nav nav-tabs">
 						<Button
 							size={carSelectorClass}
+							disabled={regClosed}
 							autoFocus
 							onClick={carSelectorClickHandler}>
 							Car
 						</Button>
 						<Button
 							size={classificationClass}
+							disabled={regClosed}
 							autoFocus
 							onClick={classificationClickHandler}>
 							Classification
 						</Button>
 						<Button
 							size={formClass}
+							disabled={regClosed}
 							autoFocus
 							onClick={formClickHandler}>
 							Form

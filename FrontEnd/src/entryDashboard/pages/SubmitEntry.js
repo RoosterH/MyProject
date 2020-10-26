@@ -302,7 +302,7 @@ const SubmitEntry = props => {
 								type="button"
 								size="small-block"
 								margin-left="1.5rem"
-								disabled={!continueStatus}>
+								disabled={!continueStatus && !editingMode}>
 								VIEW EVENT ENTRY LIST
 							</Button>
 						</Link>

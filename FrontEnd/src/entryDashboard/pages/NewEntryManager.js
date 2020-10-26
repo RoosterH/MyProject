@@ -72,7 +72,7 @@ const NewEntryManager = props => {
 		setFformClass('li-tab');
 		setSubmit(false);
 		setSubmitClass('li-tab');
-		setPercentage('0');
+		setPercentage('25');
 	};
 	const classificationClickHandler = () => {
 		setCarSelector(false);
@@ -83,7 +83,7 @@ const NewEntryManager = props => {
 		setFformClass('li-tab');
 		setSubmit(false);
 		setSubmitClass('li-tab');
-		setPercentage('25');
+		setPercentage('50');
 	};
 	const formClickHandler = () => {
 		setCarSelector(false);
@@ -94,7 +94,7 @@ const NewEntryManager = props => {
 		setFformClass('li-tab_orange');
 		setSubmit(false);
 		setSubmitClass('li-tab');
-		setPercentage('50');
+		setPercentage('75');
 	};
 	const submitClickHandler = () => {
 		setCarSelector(false);
@@ -105,11 +105,11 @@ const NewEntryManager = props => {
 		setFformClass('li-tab');
 		setSubmit(true);
 		setSubmitClass('li-tab_orange');
-		setPercentage('75');
+		setPercentage('100');
 	};
 
 	const finishHandler = () => {
-		setPercentage('100');
+		// setPercentage('100');
 	};
 
 	// set defualt page, if none is false, we will use carSelector as default

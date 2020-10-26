@@ -412,7 +412,10 @@ const EventItem = props => {
 								<Link
 									to={{
 										pathname: `/events/editEntryManager/${props.event.id}`,
-										state: { eventName: props.event.name }
+										state: {
+											eventName: props.event.name
+											// regClosed: !openRegistration
+										}
 									}}>
 									<Button
 										disabled={!openRegistration}
