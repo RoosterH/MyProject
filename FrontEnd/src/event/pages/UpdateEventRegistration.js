@@ -30,14 +30,35 @@ const UpdateEventRegistration = props => {
 	const [showSaveBtn, setShowSaveBtn] = useState(false);
 	const [published, setPublished] = useState(props.event.published);
 	const [publishBtnName, setPublishBtnName] = useState('PUBLISH');
+	const [registrationClosed, setRegistrationClosed] = useState(
+		props.event.closed
+	);
 
-	const [openDeleteModal, setOpenDeleteModal] = useState(false);
+	// controller of DELETE event modal
 	const [showDELModal, setShowDELModal] = useState(false);
 	const openDELHandler = () => {
 		setShowDELModal(true);
 	};
 	const closeDELHandler = () => {
 		setShowDELModal(false);
+	};
+
+	// controller of close registration modal
+	const [showCloseRegModal, setShowCloseRegModal] = useState(false);
+	const openCloseRegHandler = () => {
+		setShowCloseRegModal(true);
+	};
+	const closeCloseRegHandler = () => {
+		setShowCloseRegModal(false);
+	};
+
+	// controller of close registration modal
+	const [showOpenRegModal, setShowOpenRegModal] = useState(false);
+	const openOpenRegHandler = () => {
+		setShowOpenRegModal(true);
+	};
+	const closeOpenRegHandler = () => {
+		setShowOpenRegModal(false);
 	};
 
 	useEffect(() => {
@@ -226,9 +247,8 @@ const UpdateEventRegistration = props => {
 				'PATCH',
 				JSON.stringify({ published: true }),
 				{
-					// No need for content-type since body is null,
-					// adding JWT to header for authentication
 					'Content-Type': 'application/json',
+					// adding JWT to header for authentication
 					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
@@ -249,6 +269,7 @@ const UpdateEventRegistration = props => {
 				'DELETE',
 				null,
 				{
+					// No need for content-type since body is null,
 					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
@@ -257,6 +278,50 @@ const UpdateEventRegistration = props => {
 			history.push(
 				`/clubs/editEventSelector/${clubAuthContext.clubId}`
 			);
+		} catch (err) {}
+	};
+
+	const closeRegHandler = async () => {
+		setShowCloseRegModal(false);
+		try {
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL +
+					`/events/closeEventRegistration/${eventId}`,
+				'PATCH',
+				JSON.stringify({ closed: true }),
+				{
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
+				}
+			);
+			setRegistrationClosed(true);
+			props.returnNewEvent(responseData.event);
+		} catch (err) {}
+	};
+
+	const openRegHandler = async () => {
+		setShowOpenRegModal(false);
+		try {
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL +
+					`/events/closeEventRegistration/${eventId}`,
+				'PATCH',
+				JSON.stringify({ closed: false }),
+				{
+					'Content-Type': 'application/json',
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
+				}
+			);
+			setRegistrationClosed(false);
+			props.returnNewEvent(responseData.event);
 		} catch (err) {}
 	};
 
@@ -319,6 +384,7 @@ const UpdateEventRegistration = props => {
 							type="text"
 							className="event-form__field_quarter"
 							validate={validateTotalCap}
+							disabled={published}
 							onBlur={event => {
 								// without handBlure(event) touched.name will not work
 								handleBlur(event);
@@ -342,6 +408,7 @@ const UpdateEventRegistration = props => {
 							type="text"
 							className="event-form__field_quarter"
 							validate={validateNumGroups}
+							disabled={published}
 							onBlur={event => {
 								handleBlur(event);
 								updateEventFormData('numGroups', event.target.value);
@@ -358,6 +425,7 @@ const UpdateEventRegistration = props => {
 								id="capDistribution"
 								name="capDistribution"
 								type="checkbox"
+								disabled={published}
 								onBlur={event => {
 									handleBlur(event);
 									setOKLeavePage(false);
@@ -373,6 +441,7 @@ const UpdateEventRegistration = props => {
 									id="multiDayEvent"
 									name="multiDayEvent"
 									type="checkbox"
+									disabled={published}
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
@@ -408,6 +477,25 @@ const UpdateEventRegistration = props => {
 							onClick={openDELHandler}>
 							DELETE
 						</Button>
+
+						{published && !registrationClosed && (
+							<Button
+								type="button"
+								size="medium"
+								margin-left="1.5rem"
+								onClick={openCloseRegHandler}>
+								Close Registration
+							</Button>
+						)}
+						{published && registrationClosed && (
+							<Button
+								type="button"
+								size="medium"
+								margin-left="1.5rem"
+								onClick={openOpenRegHandler}>
+								Open Registration
+							</Button>
+						)}
 						<NavigationPrompt
 							afterConfirm={() => {
 								formContext.setIsInsideForm(false);
@@ -483,6 +571,54 @@ const UpdateEventRegistration = props => {
 					<p className="modal__content">
 						Do you really want to delete {props.event.name}? It cannot
 						be recovered after deletion.
+					</p>
+				</Modal>
+			)}
+			{showCloseRegModal && (
+				<Modal
+					className="modal-delete"
+					show={showCloseRegModal}
+					contentClass="event-item__modal-delete"
+					onCancel={closeCloseRegHandler}
+					header="Warning!"
+					footerClass="event-item__modal-actions"
+					footer={
+						<React.Fragment>
+							<Button inverse onClick={closeCloseRegHandler}>
+								CANCEL
+							</Button>
+							<Button danger onClick={closeRegHandler}>
+								CLOSE REGISTRATION
+							</Button>
+						</React.Fragment>
+					}>
+					<p className="modal__content">
+						Please confirm you really want to close registration for{' '}
+						{props.event.name}.
+					</p>
+				</Modal>
+			)}
+			{showOpenRegModal && (
+				<Modal
+					className="modal-delete"
+					show={showOpenRegModal}
+					contentClass="event-item__modal-delete"
+					onCancel={closeOpenRegHandler}
+					header="Warning!"
+					footerClass="event-item__modal-actions"
+					footer={
+						<React.Fragment>
+							<Button inverse onClick={closeOpenRegHandler}>
+								CANCEL
+							</Button>
+							<Button danger onClick={openRegHandler}>
+								OPEN REGISTRATION
+							</Button>
+						</React.Fragment>
+					}>
+					<p className="modal__content">
+						Please confirm you really want to open registration for{' '}
+						{props.event.name}.
 					</p>
 				</Modal>
 			)}

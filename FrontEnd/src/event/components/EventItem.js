@@ -18,6 +18,10 @@ import './EventItem.css';
 const EventItem = props => {
 	// useContext is listening to "ClubAuthContext"
 	const userAuthContext = useContext(UserAuthContext);
+	// check whether event registration is closed by club
+	const [registrationClosed, setRegistrationClosed] = useState(
+		props.event.closed
+	);
 
 	// modal section
 	const [showModal, setShowModal] = useState(false);
@@ -100,62 +104,80 @@ const EventItem = props => {
 	let regEndDate = props.event.regEndDate;
 	let now = moment();
 	useEffect(() => {
-		if (moment(regStartDate) > now) {
-			setRegTimeline('0');
+		if (registrationClosed) {
+			setOpenRegistration(false);
 		} else {
-			if (moment(regEndDate) - now > 604800000) {
-				setRegTimeline('1');
-				setOpenRegistration(true);
-			} else if (moment(regEndDate) - now > 259200000) {
-				setOpenRegistration(true);
-				setRegTimeline('2');
-			} else if (moment(regEndDate) - now > 0) {
-				setRegTimeline('3');
-				setOpenRegistration(true);
+			if (moment(regStartDate) > now) {
+				setRegTimeline('0');
 			} else {
-				setOpenRegistration(false);
-				setRegTimeline('4');
+				if (moment(regEndDate) - now > 604800000) {
+					setRegTimeline('1');
+					setOpenRegistration(true);
+				} else if (moment(regEndDate) - now > 259200000) {
+					setOpenRegistration(true);
+					setRegTimeline('2');
+				} else if (moment(regEndDate) - now > 0) {
+					setRegTimeline('3');
+					setOpenRegistration(true);
+				} else {
+					setOpenRegistration(false);
+					setRegTimeline('4');
+				}
 			}
 		}
-	}, [now, regStartDate, regEndDate]);
+	}, [
+		now,
+		regStartDate,
+		regEndDate,
+		setOpenRegistration,
+		registrationClosed
+	]);
 
 	const RegistrationMSG = () => {
-		if (regTimeline === '0') {
-			// registration not yet started
+		if (registrationClosed) {
 			return (
-				<h4 className="alert alert-primary" role="alert">
-					Registration starts in {regDuration}
+				<h4 className="alert alert-dark" role="alert">
+					Registration is now closed
 				</h4>
 			);
 		} else {
-			if (regTimeline === '1') {
-				// registration closed in more than 7 days
+			if (regTimeline === '0') {
+				// registration not yet started
 				return (
-					<h4 className="alert alert-success" role="alert">
-						Registration ends in {regDuration}
-					</h4>
-				);
-			} else if (regTimeline === '2') {
-				// registration closed in more than 3 days
-				return (
-					<h4 className="alert alert-warning" role="alert">
-						Registration ends in {regDuration}
-					</h4>
-				);
-			} else if (regTimeline === '3') {
-				// registration closed in less than 3 days
-				return (
-					<h4 className="alert alert-danger" role="alert">
-						Registration ends in {regDuration}
+					<h4 className="alert alert-primary" role="alert">
+						Registration starts in {regDuration}
 					</h4>
 				);
 			} else {
-				// registration closed regTimeline === '4'
-				return (
-					<h4 className="alert alert-dark" role="alert">
-						Registration is now closed
-					</h4>
-				);
+				if (regTimeline === '1') {
+					// registration closed in more than 7 days
+					return (
+						<h4 className="alert alert-success" role="alert">
+							Registration ends in {regDuration}
+						</h4>
+					);
+				} else if (regTimeline === '2') {
+					// registration closed in more than 3 days
+					return (
+						<h4 className="alert alert-warning" role="alert">
+							Registration ends in {regDuration}
+						</h4>
+					);
+				} else if (regTimeline === '3') {
+					// registration closed in less than 3 days
+					return (
+						<h4 className="alert alert-danger" role="alert">
+							Registration ends in {regDuration}
+						</h4>
+					);
+				} else {
+					// (regTimeline === '4')
+					return (
+						<h4 className="alert alert-dark" role="alert">
+							Registration is now closed
+						</h4>
+					);
+				}
 			}
 		}
 	};

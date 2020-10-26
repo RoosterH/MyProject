@@ -309,7 +309,7 @@ const getEntryReport = async (req, res, next) => {
 	const eventId = req.params.eid;
 	let event;
 	try {
-		event = await Event.findById(eventId);
+		event = await Event.findById(eventId).populate('entryReportId');
 	} catch (err) {
 		console.log('err = ', err);
 		// this error is displayed if the request to the DB had some issues
@@ -319,7 +319,6 @@ const getEntryReport = async (req, res, next) => {
 		);
 		return next(error);
 	}
-
 	// this error is for DB not be able to find the event with provided ID
 	if (!event) {
 		const error = new HttpError(
@@ -329,8 +328,17 @@ const getEntryReport = async (req, res, next) => {
 		return next(error);
 	}
 
+	let entryReport = event.entryReportId;
+	if (!entryReport) {
+		const error = new HttpError(
+			'Could not find the event entry report. Please try later.',
+			404
+		);
+		return next(error);
+	}
+
 	// get entires
-	let entries = event.entries;
+	let entries = entryReport.entries;
 	// if there is no entry, should not have a waitlist, either.
 	if (entries.length === 0) {
 		res.status(404).json({
@@ -345,7 +353,16 @@ const getEntryReport = async (req, res, next) => {
 		let entryData = [];
 		let eList = entries[i];
 		for (let j = 0; j < eList.length; ++j) {
-			let entry = await Entry.findById(eList[j]).populate('carId');
+			let entry;
+			try {
+				entry = await Entry.findById(eList[j]).populate('carId');
+			} catch (err) {
+				const error = new HttpError(
+					'Cannot find the entry in getEntryReport entry. Please try again later.',
+					500
+				);
+				return next(error);
+			}
 			// add car to entry
 			let car =
 				entry.carId.year +
@@ -364,13 +381,22 @@ const getEntryReport = async (req, res, next) => {
 	}
 
 	// get waitlist
-	let waitlist = event.waitlist;
+	let waitlist = entryReport.waitlist;
 	let mutipleDayWaitlistData = [];
 	for (let i = 0; i < days; ++i) {
 		let waitlistData = [];
 		let wList = waitlist[i];
 		for (let j = 0; j < wList.length; ++j) {
-			let entry = await Entry.findById(wList[j]).populate('carId');
+			let entry;
+			try {
+				entry = await Entry.findById(wList[j]).populate('carId');
+			} catch (err) {
+				const error = new HttpError(
+					'Cannot find the entry in getEntryReport waitlist. Please try again later.',
+					500
+				);
+				return next(error);
+			}
 			// add car to entry
 			let car =
 				entry.carId.year +
@@ -535,6 +561,15 @@ const createEvent = async (req, res, next) => {
 		return next(error);
 	}
 
+	const newEventEntryReport = new EntryReport({
+		entries: [[]],
+		waitlist: [[]],
+		runGroupNumEntries: [[]],
+		full: [],
+		totalEntries: []
+	});
+
+	console.log('newEventEntryReport.id = ', newEventEntryReport.id);
 	const newEvent = new Event({
 		name,
 		type,
@@ -561,26 +596,31 @@ const createEvent = async (req, res, next) => {
 		published: false,
 		entryFormData: [],
 
-		// ready to remove
-		entries: [[]],
-		waitlist: [[]],
-		totalEntries: [],
+		// todo remove @@@@
+		// entries: [[]],
+		// waitlist: [[]],
+		// totalEntries: [],
 
 		numGroups: 0,
 		capDistribution: false,
 		raceClassOptions: [],
 		runGroupOptions: [],
-		workerAssignments: []
+		workerAssignments: [],
+		closed: false
 	});
 
-	const newEventEntryReport = new EntryReport({
-		entries: [[]],
-		waitlist: [[]],
-		runGroupNumEntries: [[]],
-		full: [],
-		totalEntries: []
-	});
-
+	// ! Intentionally leave this outside of transaction.
+	// Because Mongoose has a bug not able to create a new DB collection during transaction,
+	// event the problem only happens at a fresh DB, we still want to leave this outside.
+	try {
+		await newEventEntryReport.save();
+	} catch (err) {
+		const error = new HttpError(
+			'Create event failed when saving newEventEntryReport. Please try again later.',
+			500
+		);
+		return next(error);
+	}
 	try {
 		/**
 		 * 2 operations here: 1. save the event to DB. 2. store the event ID to club
@@ -591,12 +631,10 @@ const createEvent = async (req, res, next) => {
 		 **/
 		const session = await mongoose.startSession();
 		session.startTransaction();
+
+		newEvent.entryReportId = newEventEntryReport.id;
 		// save event first, here we need to use the newEvent Id so no async await
 		await newEvent.save({ session: session });
-
-		// ! for very first time that DB collection not yet has newentryreports, we need to move
-		// ! this section outside of transcation because a bug from Mongoose that does not create
-		// ! a new collection for transaction tasks
 		// create entryReport for the event
 		newEventEntryReport.eventId = newEvent.id;
 		await newEventEntryReport.save({ session: session });
@@ -612,6 +650,8 @@ const createEvent = async (req, res, next) => {
 		// only both tasks succeed, we commit the transaction
 		await session.commitTransaction();
 	} catch (err) {
+		// delete newEventEntryReporyt if there is an error
+		await newEventEntryReport.remove();
 		console.log('err = ', err);
 		const error = new HttpError(
 			'Create event failed. Please try again later.',
@@ -620,22 +660,6 @@ const createEvent = async (req, res, next) => {
 		return next(error);
 	}
 
-	// ! for very first time that DB collection not yet has newentryreports, we need to enable this section
-	// ! the best way is to create collection from Atlas
-	// try {
-	// 	// create entryReport for the event
-	// 	newEventEntryReport.eventId = newEvent.id;
-	// 	await newEventEntryReport.save();
-	// } catch (err) {
-	// 	console.log('err = ', err);
-	// 	const error = new HttpError(
-	// 		'Create event entryReport DB failed. Please try again later.',
-	// 		500
-	// 	);
-	// 	return next(error);
-	// }
-
-	console.log('newEventEntryReport = ', newEventEntryReport);
 	res
 		.status(201)
 		.json({ event: newEvent.toObject({ getters: true }) });
@@ -752,7 +776,7 @@ const updateEventPhotos = async (req, res, next) => {
 
 // This is called on both new and update EventRegistration
 // PATCH /api/events/registration/:eid
-const updateEventRegistration = async (req, res, next) => {
+const createUpdateEventRegistration = async (req, res, next) => {
 	const eventId = req.params.eid;
 	console.log('733 eventId = ', eventId);
 
@@ -794,7 +818,7 @@ const updateEventRegistration = async (req, res, next) => {
 
 	let event;
 	try {
-		event = await Event.findById(eventId);
+		event = await await Event.findById(eventId);
 	} catch (err) {
 		const error = new HttpError(
 			'Update event registration process failed, please try again later.',
@@ -806,6 +830,26 @@ const updateEventRegistration = async (req, res, next) => {
 		return next(
 			new HttpError(
 				'Update event registration failed finding the event.'
+			),
+			404
+		);
+	}
+
+	let entryReport;
+	try {
+		entryReport = await EntryReport.findById(event.entryReportId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update event registration process failed when retrieving entryReport, please try again later.',
+			500
+		);
+		return next(error);
+	}
+	console.log('844 entryReport = ', entryReport);
+	if (!entryReport) {
+		return next(
+			new HttpError(
+				'Update event registration failed when retrieving entryReport.'
 			),
 			404
 		);
@@ -827,8 +871,8 @@ const updateEventRegistration = async (req, res, next) => {
 	event.totalCap = totalCap;
 	if (totalCap !== undefined || totalCap !== 0) {
 		// initialize to avoid updating keeps adding elements to array
-		event.full = [];
-		event.full.push(false);
+		entryReport.full = [];
+		entryReport.full.push(false);
 	}
 
 	event.numGroups = numGroups;
@@ -842,20 +886,18 @@ const updateEventRegistration = async (req, res, next) => {
 	// add day1 runGroupNumEntries
 	// if (capDistribution) {
 	// re-init array before push
-	event.runGroupNumEntries = [];
-	//! this does not work as MongoDB will store userId in an array
-	// for (let i = 0; i < numGroups; ++i) {
-	// 	event.runGroupEntries.push(undefined);
-	// }
+	entryReport.runGroupNumEntries = [];
+
 	// run group is named starting from 0 so there is no problem to match with index
 	let group = [];
 	for (let i = 0; i < numGroups; ++i) {
 		group.push(0);
 	}
-	event.runGroupNumEntries.push(group);
+	entryReport.runGroupNumEntries.push(group);
 	// }
 
-	// add day2, day3 ... runGroupNumEntries
+	// day1 already been added previously
+	// here we are adding day2, day3 ... etc. runGroupNumEntries
 	if (multiDayEvent) {
 		// create array elements for each day
 		let startDate = moment(event.startDate);
@@ -865,32 +907,29 @@ const updateEventRegistration = async (req, res, next) => {
 		// originally each field already has one element so we only need to add numDays elements to it
 		for (let i = 0; i < dayDiff; ++i) {
 			let entry = [];
-			event.entries.push(entry);
+			entryReport.entries.push(entry);
 			let wlist = [];
-			event.waitlist.push(wlist);
-			event.full.push(false);
+			entryReport.waitlist.push(wlist);
+			entryReport.full.push(false);
 			if (capDistribution) {
-				//! this does not work as MongoDB will store userId in an array
-				// for (let i = 0; i < numGroups; ++i) {
-				// 	event.runGroupEntries.push(undefined);
-				// }
 				// run group is named starting from 0 so there is no problem to match with index
 				let group = [];
 				for (let i = 0; i < numGroups; ++i) {
 					group.push(0);
 				}
-				event.runGroupNumEntries.push(group);
+				entryReport.runGroupNumEntries.push(group);
 			}
 		}
 	}
 
 	try {
-		await event.save();
-		res.status(200).json({
-			event: event.toObject({
-				getters: true
-			})
-		});
+		const session = await mongoose.startSession();
+		session.startTransaction();
+		await event.save({ session: session });
+		await entryReport.save({ session: session });
+
+		// only all tasks succeed, we commit the transaction
+		await session.commitTransaction();
 	} catch (err) {
 		console.log('err = ', err);
 		const error = new HttpError(
@@ -899,6 +938,97 @@ const updateEventRegistration = async (req, res, next) => {
 		);
 		return next(error);
 	}
+	res.status(200).json({
+		event: event.toObject({
+			getters: true
+		})
+	});
+};
+
+// Close Event Registration
+// PATCH /api/events/closeEventRegistration/:eid
+const closeEventRegistration = async (req, res, next) => {
+	const eventId = req.params.eid;
+
+	// validate request, req checks are defined in eventRoutes.js using
+	// express-validator
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		return next(
+			new HttpError(
+				`Close event registration process failed. Please check your data: ${result.array()}`,
+				422
+			)
+		);
+	}
+
+	// Validate clubId exists. If not, sends back an error
+	let club;
+	let clubId = req.userData;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update event registration process failed during club validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!club) {
+		const error = new HttpError(
+			'Update event registration failure. Unauthorized request.',
+			404
+		);
+		return next(error);
+	}
+
+	let event;
+	try {
+		event = await await Event.findById(eventId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update event registration process failed, please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!event) {
+		return next(
+			new HttpError(
+				'Update event registration failed finding the event.'
+			),
+			404
+		);
+	}
+
+	// we added userData in check-auth after verifying jwt
+	if (event.clubId.toString() !== req.userData) {
+		const error = new HttpError('Unauthorized operation!!!', 401);
+		return next(error);
+	}
+
+	const { closed } = req.body;
+	event.closed = closed;
+
+	try {
+		await event.save();
+	} catch (err) {
+		console.log('err = ', err);
+		const error = new HttpError(
+			'Close event registration failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	res.status(200).json({
+		event: event.toObject({
+			getters: true
+		})
+	});
 };
 
 // PATCH /api/events/:eid
@@ -1059,11 +1189,16 @@ const deleteEvent = async (req, res, next) => {
 		return next(error);
 	}
 
+	let entryReport = EntryReport.findById(event.entryReportId);
 	try {
 		// we need to use populate('clubId') above to be able to modify data in
 		// event.clubId.events
 		const session = await mongoose.startSession();
 		session.startTransaction();
+
+		// remove entryReport
+		await entryReport.remove({ session: session });
+
 		await event.remove({ session: session });
 		/**
 		 * pull the event out from the clubId events
@@ -1074,6 +1209,7 @@ const deleteEvent = async (req, res, next) => {
 		// only both tasks succeed, we commit the transaction
 		await session.commitTransaction();
 	} catch (err) {
+		console.log('err = ', err);
 		const error = new HttpError(
 			'Failed to delete the event.  Please try it later.',
 			500
@@ -1095,7 +1231,7 @@ const deleteEvent = async (req, res, next) => {
 };
 
 // this includes create and update event entry form
-const createEventForm = async (req, res, next) => {
+const createUpdateEntryForm = async (req, res, next) => {
 	// we need to get entryFormData from body
 	const { entryFormData, saveTemplate } = req.body;
 
@@ -1121,7 +1257,6 @@ const createEventForm = async (req, res, next) => {
 	}
 
 	// Validate eventId belonging to the found club. If not, sends back an error
-	let event;
 	const eventId = req.params.eid;
 	// if club does not own the eventId, return error
 	if (!club.events.includes(eventId)) {
@@ -1133,10 +1268,37 @@ const createEventForm = async (req, res, next) => {
 		return next(error);
 	}
 
-	event = await Event.findById(eventId);
+	let event;
+	try {
+		event = await Event.findById(eventId);
+	} catch (err) {
+		const error = new HttpError(
+			'Create event form process internal failure during event retrieval',
+			500
+		);
+		return next(error);
+	}
 	if (!event) {
 		const error = new HttpError(
 			'Create event form process internal failure',
+			404
+		);
+		return next(error);
+	}
+
+	let entryReport;
+	try {
+		entryReport = await EntryReport.findById(event.entryReportId);
+	} catch (err) {
+		const error = new HttpError(
+			'Create event form process internal failure during entryReport retrieval',
+			500
+		);
+		return next(error);
+	}
+	if (!entryReport) {
+		const error = new HttpError(
+			'Create event form process internal failure when retrieving entryReport',
 			404
 		);
 		return next(error);
@@ -1150,36 +1312,58 @@ const createEventForm = async (req, res, next) => {
 		// reset event.runGroupOptions
 		event.runGroupOptions = [];
 		// reset totalEntries
-		event.totalEntries = [];
+		entryReport.totalEntries = [];
 		// reset workerAssignments
 		event.workerAssignments = [];
 
 		entryFormData.map(data => {
 			event.entryFormData.push(data);
 			if (data.element === 'MultipleRadioButtonGroup') {
-				data.options.map(option => {
+				let runGroupOptionsLength = event.runGroupOptions.length;
+				let workerAssignmentsLength = event.workerAssignments.length;
+				data.options.map((option, index) => {
 					// loop through opt.options
 					let [fieldName, choices] = formAnalysis(option);
 					if (fieldName.startsWith('RunGroup')) {
-						event.runGroupOptions.push(choices);
-						// Also make totalEntries same number of elements
-						event.totalEntries.push(0);
+						if (runGroupOptionsLength > 0) {
+							// update existing eventEntryForm
+							event.runGroupOptions.set(index, choices);
+							entryReport.totalEntries.set(0, 0);
+						} else {
+							// create a new eventEntryForm
+							event.runGroupOptions.push(choices);
+							// Also make totalEntries same number of elements
+							entryReport.totalEntries.push(0);
+						}
 					} else if (fieldName.startsWith('WorkerAssignments')) {
-						event.workerAssignments.push(choices);
+						if (workerAssignmentsLength > 0) {
+							event.workerAssignments.set(index, choices);
+						} else {
+							event.workerAssignments.push(choices);
+						}
 					}
 				});
 			} else {
 				// form analysis here
 				let [fieldName, choices] = formAnalysis(data);
 				if (fieldName === 'RunGroupSingle') {
-					event.runGroupOptions = [];
-					// event.runGroupOptions = choices;
 					// runGroupOptions is [[]]
 					let optionChoices = [];
 					optionChoices.push(choices);
-					event.runGroupOptions.push(choices);
+					if (event.runGroupOptions.length === 1) {
+						// update existing eventEntryForm
+						event.runGroupOptions.set(0, choices);
+					} else {
+						// create a new eventEntryForm
+						event.runGroupOptions.push(choices);
+					}
+
 					// Also make totalEntries[0] = 0
-					event.totalEntries.push(0);
+					if (entryReport.totalEntries.length === 1) {
+						entryReport.totalEntries.set(0, 0);
+					} else {
+						entryReport.totalEntries.push(0);
+					}
 				} else if (fieldName === 'RaceClass') {
 					event.raceClassOptions = choices;
 				} else if (fieldName === 'WorkerAssignment') {
@@ -1198,13 +1382,14 @@ const createEventForm = async (req, res, next) => {
 	}
 
 	try {
+		const session = await mongoose.startSession();
+		session.startTransaction();
 		if (saveTemplate) {
-			await club.save();
+			await club.save({ session: session });
 		}
-		await event.save();
-		res
-			.status(200)
-			.json({ event: event.toObject({ getters: true }) });
+		await entryReport.save({ session: session });
+		await event.save({ session: session });
+		await session.commitTransaction();
 	} catch (err) {
 		const error = new HttpError(
 			'Create event form connecting with DB failed. Please try again later.',
@@ -1212,6 +1397,7 @@ const createEventForm = async (req, res, next) => {
 		);
 		return next(error);
 	}
+	res.status(200).json({ event: event.toObject({ getters: true }) });
 };
 
 // Form analysis
@@ -1246,7 +1432,7 @@ const formAnalysis = data => {
 	return [fieldPrefix, choices];
 };
 
-const getEventForm = async (req, res, next) => {
+const getEntryForm = async (req, res, next) => {
 	let club;
 	let clubId = req.userData;
 	try {
@@ -1321,7 +1507,9 @@ const getEntryReportForUsers = async (req, res, next) => {
 	const eventId = req.params.eid;
 	let event;
 	try {
-		event = await Event.findById(eventId);
+		event = await (await Event.findById(eventId)).populate(
+			'entryReportId'
+		);
 	} catch (err) {
 		console.log('err = ', err);
 		// this error is displayed if the request to the DB had some issues
@@ -1331,7 +1519,6 @@ const getEntryReportForUsers = async (req, res, next) => {
 		);
 		return next(error);
 	}
-
 	// this error is for DB not be able to find the event with provided ID
 	if (!event) {
 		const error = new HttpError(
@@ -1341,8 +1528,28 @@ const getEntryReportForUsers = async (req, res, next) => {
 		return next(error);
 	}
 
+	let entryReport;
+	try {
+		entryReport = await EntryReport.findById(event.entryReportId);
+	} catch (err) {
+		console.log('err = ', err);
+		// this error is displayed if the request to the DB had some issues
+		const error = new HttpError(
+			'Cannot find the event for the entry list druing retrieving entryReport. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!entryReport) {
+		const error = new HttpError(
+			'Could not find the event druing retrieving entryReport. Please try later.',
+			404
+		);
+		return next(error);
+	}
+
 	// get entires
-	let entries = event.entries;
+	let entries = entryReport.entries;
 	// if there is no entry, should not have a waitlist, either.
 	if (entries.length === 0) {
 		res.status(404).json({
@@ -1377,13 +1584,22 @@ const getEntryReportForUsers = async (req, res, next) => {
 	}
 
 	// get waitlist
-	let waitlist = event.waitlist;
+	let waitlist = entryReport.waitlist;
 	let mutipleDayWaitlistData = [];
 	for (let i = 0; i < days; ++i) {
 		let waitlistData = [];
 		let wList = waitlist[i];
 		for (let j = 0; j < wList.length; ++j) {
-			let entry = await Entry.findById(wList[j]).populate('carId');
+			let entry;
+			try {
+				entry = await Entry.findById(wList[j]).populate('carId');
+			} catch (err) {
+				const error = new HttpError(
+					'Cannot find the entry in getEntryReportForUsers. Please try again later.',
+					500
+				);
+				return next(error);
+			}
 			// add car to entry
 			let car =
 				entry.carId.year +
@@ -1403,10 +1619,6 @@ const getEntryReportForUsers = async (req, res, next) => {
 
 	const { displayName } = req.body;
 	// convert Mongoose object to a normal js object and get rid of _ of _id using getters: true
-	// res.status(200).json({
-	// 	entryData: entryData.map(data => data.toObject({ getters: true }))
-	// }); // { event } => { event: event }
-
 	if (displayName) {
 		res.status(200).json({
 			entryData: mutipleDayEntryData.map(entryData =>
@@ -1520,11 +1732,12 @@ exports.createEvent = createEvent;
 exports.updateEvent = updateEvent;
 exports.deleteEvent = deleteEvent;
 exports.updateEventPhotos = updateEventPhotos;
-exports.updateEventRegistration = updateEventRegistration;
+exports.createUpdateEventRegistration = createUpdateEventRegistration;
+exports.closeEventRegistration = closeEventRegistration;
 exports.getEventsByOwnerClubId = getEventsByOwnerClubId;
 exports.getPublishedEventsByOwnerClubId = getPublishedEventsByOwnerClubId;
 exports.getOwnerClubEvent = getOwnerClubEvent;
 exports.getEntryReport = getEntryReport;
-exports.getEventForm = getEventForm;
-exports.createEventForm = createEventForm;
+exports.getEntryForm = getEntryForm;
+exports.createUpdateEntryForm = createUpdateEntryForm;
 exports.getEntryReportForUsers = getEntryReportForUsers;

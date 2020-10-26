@@ -21,15 +21,6 @@ const router = express.Router();
 // need to be authenticated
 router.use(checkUserAuth);
 
-// users needs to login to see their events
-// router.get('/user/:uid', eventsController.getEventsByUserId);
-
-// get event entry form
-// router.get('/form/:eid', eventsController.getEventEntryForm);
-
-// get event entry form
-// router.get('/form/submit/:eid', eventsController.getEventEntryForm);
-
 // submit entry
 router.post(
 	'/submit/:eid',
@@ -64,6 +55,6 @@ router.patch(
 	entriesController.updateFormAnswer
 );
 
-// router.delete('/:eid', eventsController.deleteEvent);
+router.delete('/:entryId', entriesController.deleteEntry);
 
 module.exports = router;

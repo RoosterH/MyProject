@@ -126,10 +126,10 @@ const UpdateEvent = props => {
 			.max('2021-12-31')
 			.required(),
 		regStartDate: Yup.date()
-			.min(
-				tomorrow,
-				'Registration start date cannot be earlier than tomorrow'
-			)
+			// .min(
+			// 	tomorrow,
+			// 	'Registration start date cannot be earlier than tomorrow'
+			// )
 			.max(
 				Yup.ref('startDate'),
 				'Registration start date must be earlier than event start date'
@@ -455,7 +455,7 @@ const UpdateEvent = props => {
 							id="regStartDate"
 							name="regStartDate"
 							type="date"
-							min={tomorrow}
+							// min={tomorrow}
 							max="2030-12-31"
 							className="event-form__startdate"
 							onBlur={event => {

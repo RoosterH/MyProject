@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useHistory, useHitory } from 'react-router-dom';
 import UpdateEvent from '../../event/pages/UpdateEvent';
 import UpdateFormBuilder from '../../event/components/UpdateFormBuilder';
 import UpdateEventPhotos from '../../event/pages/UpdateEventPhotos';
@@ -12,7 +11,6 @@ const EditEventManager = props => {
 	const [published, setPublished] = useState(props.event.published);
 
 	const [event, setEvent] = useState(props.event);
-	const history = useHistory();
 	// getting newEvent from all update procs after the change been saved to backend
 	// so we can have updated event information
 	const updateEvent = newEvent => {

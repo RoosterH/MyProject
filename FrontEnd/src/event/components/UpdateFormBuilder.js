@@ -159,7 +159,6 @@ const FormBuilder = props => {
 			// save the array to unsavedData and backend
 			// format of data: {task_data: Array(6)}
 			setUnsavedData(data.task_data);
-			setPublished(false);
 			// update the new data to localStorage
 			localStorage.setItem(
 				'eventEntryForm',
@@ -188,7 +187,7 @@ const FormBuilder = props => {
 			<div className="formbuilder-header">
 				<h4>Entry Form Builder</h4>
 				<Button
-					disabled={!unsavedData}
+					disabled={!unsavedData || published}
 					size="entryform--save"
 					onClick={saveHandler}>
 					SAVE

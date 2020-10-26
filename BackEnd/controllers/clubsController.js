@@ -478,13 +478,21 @@ const createEventForm = async (req, res, next) => {
 	if (!club.events.includes(eventId)) {
 		// Not found in clubs events
 		const error = new HttpError(
-			'Create event form process faied with unauthorized request.  Your club does not own this event.',
+			' Your club does not own this event.',
 			404
 		);
 		return next(error);
 	}
 
-	event = await Event.findById(eventId);
+	try {
+		event = await Event.findById(eventId);
+	} catch (err) {
+		const error = new HttpError(
+			'Internal failure in createEventForm when retriving event.',
+			500
+		);
+		return next(error);
+	}
 	if (!event) {
 		const error = new HttpError(
 			'Create event form process internal failure',
@@ -590,7 +598,15 @@ const publishEvent = async (req, res, next) => {
 		return next(error);
 	}
 
-	event = await Event.findById(eventId);
+	try {
+		event = await Event.findById(eventId);
+	} catch (err) {
+		const error = new HttpError(
+			'Internal failre in publishEvent when retriving event',
+			500
+		);
+		return next(error);
+	}
 	if (!event) {
 		const error = new HttpError(
 			'Create event form process internal failure',

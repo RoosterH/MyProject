@@ -10,14 +10,11 @@ const entryReportSchema = new Schema({
 	// using ref as foreign key pointing to Club
 	eventId: {
 		type: mongoose.Types.ObjectId,
-		required: true,
 		ref: 'Event'
 	},
 
 	// ** The following section will not be returned to front end unless from specific requests **
-	// event entry form
-	entryFormData: { type: Array, required: true },
-	// ! array
+	// ! nested array
 	entries: [
 		[
 			{
@@ -27,7 +24,7 @@ const entryReportSchema = new Schema({
 			}
 		]
 	],
-	// ! array
+	// ! nested array
 	waitlist: [
 		[
 			{
@@ -37,17 +34,16 @@ const entryReportSchema = new Schema({
 			}
 		]
 	],
-	// ! array
-	full: [{ type: Boolean }],
-	// Number of entries
-	// ! array
-	totalEntries: [{ type: Number, required: true }],
+	// ! nested array
 	// Run Group number of entries
-	// ! array
 	// we use index number to represent each run group for example if there are 5 run groups,
 	// we will have 5 elements in the array runGroupNumEntries[0] => first run group entries
 	// runGroupNumEntries: [[{ type: Number, required: true }]],
-	runGroupNumEntries: [[{ type: Number, require: true }]]
+	runGroupNumEntries: [[{ type: Number, require: true }]],
+
+	full: [{ type: Boolean, require: true }],
+	// Number of entries
+	totalEntries: [{ type: Number, required: true }]
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

@@ -285,7 +285,11 @@ const EntryListForUsers = props => {
 						entryList={entryListArray[daySelection - 1]}
 						waitlist={waitlistArray[daySelection - 1]}
 						displayName={displayName}
-						eventName={eventName + ' Day ' + daySelection}
+						eventName={
+							entryListArray.length > 1
+								? eventName + ' Day ' + daySelection
+								: eventName
+						}
 						showLoading={showLoading}
 						raceClassLookup={raceClassLookup}
 						runGroupLookup={runGroupLookup}

@@ -41,10 +41,10 @@ const EditEntryManager = props => {
 	const [carNumber, setCarNumber] = useState();
 	const [raceClass, setRaceClass] = useState();
 
-	// get entry data from backend, whenever we modify the entry information, we need to update it
-	// so each tab does not need to retrieve entry information again
+	// only get entry data from backend at the very beginning,
+	// Whenever we modify the entry information in sub-tabs, we use getNewEntry to receive new entry
+	// so each tab does not need to retrieve entry information again.
 	useEffect(() => {
-		console.log('in effect');
 		const getEntry = async () => {
 			let responseData, responseStatus, responseMessage;
 			try {
@@ -63,7 +63,6 @@ const EditEntryManager = props => {
 					}
 				);
 			} catch (err) {}
-			console.log('entry = ', responseData.entry);
 			setEntry(responseData.entry);
 			setEntryCarId(responseData.entry.carId);
 			setEntryId(responseData.entry.id);
@@ -71,11 +70,10 @@ const EditEntryManager = props => {
 			setRaceClass(responseData.entry.raceClass);
 		};
 		getEntry();
-	}, [setEntry, setEntryCarId, sendRequest, userAuthContext]);
+	}, []);
 
 	// get newEntry from sub-component whenever there is a new change
 	const getNewEntry = newEntry => {
-		console.log('78 newEntry = ', newEntry);
 		setEntry(newEntry);
 		setEntryCarId(newEntry.carId);
 		setEntryId(newEntry.id);
@@ -83,7 +81,6 @@ const EditEntryManager = props => {
 		// write entry to localStorage
 		let userData = JSON.parse(localStorage.getItem('userData'));
 
-		console.log('userData = ', userData);
 		let newUserEntries = [];
 		newUserEntries = userData.userEntries;
 		let userEntryIndex;
@@ -93,9 +90,7 @@ const EditEntryManager = props => {
 				break;
 			}
 		}
-		console.log('newUserEntries1 = ', newUserEntries);
 		newUserEntries.splice(userEntryIndex, 1, newEntry);
-		console.log('newUserEntries2 = ', newUserEntries);
 		userData.userEntries = newUserEntries;
 		localStorage.setItem('userData', JSON.stringify(userData));
 	};
@@ -239,7 +234,7 @@ const EditEntryManager = props => {
 							size={submitClass}
 							autoFocus
 							onClick={submitClickHandler}>
-							Submit
+							Registration
 						</Button>
 					</ul>
 					<div className="tab-content">
@@ -272,10 +267,10 @@ const EditEntryManager = props => {
 						)}
 						{submit && (
 							<SubmitEntry
+								entryId={entryId}
 								editingMode={true}
 								eventId={eventId}
 								eventName={eventName}
-								getNewEntry={getNewEntry}
 							/>
 						)}
 					</div>

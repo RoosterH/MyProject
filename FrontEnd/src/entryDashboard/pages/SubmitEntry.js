@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useHistory } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
@@ -7,16 +7,18 @@ import NavigationPrompt from 'react-router-navigation-prompt';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
+import Modal from '../../shared/components/UIElements/Modal';
 
 import Button from '../../shared/components/FormElements/Button';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 import { UserAuthContext } from '../../shared/context/auth-context';
 import { FormContext } from '../../shared/context/form-context';
-import EntryListForUsers from '../../clubDashboard/components/EntryListForUsers';
 
 import '../../shared/css/EventForm.css';
 
 const SubmitEntry = props => {
+	const history = useHistory();
+	let entryId = props.entryId;
 	let eventId = props.eventId;
 	let eventName = props.eventName;
 	let carId = props.carId;
@@ -31,6 +33,15 @@ const SubmitEntry = props => {
 		sendRequest,
 		clearError
 	} = useHttpClient();
+
+	// controller of DELETE event modal
+	const [showDELModal, setShowDELModal] = useState(false);
+	const openDELHandler = () => {
+		setShowDELModal(true);
+	};
+	const closeDELHandler = () => {
+		setShowDELModal(false);
+	};
 
 	const [initialized, setInitialized] = useState(false);
 	const userAuthContext = useContext(UserAuthContext);
@@ -148,7 +159,6 @@ const SubmitEntry = props => {
 				{
 					'Content-type': 'application/json',
 					// adding JWT to header for authentication
-					// Authorization: 'Bearer ' + storageData.userToken
 					Authorization: 'Bearer ' + userAuthContext.userToken
 				}
 			);
@@ -177,6 +187,37 @@ const SubmitEntry = props => {
 		} catch (err) {
 			console.log('err = ', err);
 		}
+	};
+
+	const deleteHandler = async () => {
+		setShowDELModal(false);
+		try {
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL + `/entries/${entryId}`,
+				'DELETE',
+				null,
+				{
+					// No need for content-type since body is null,
+					Authorization: 'Bearer ' + userAuthContext.userToken
+				}
+			);
+
+			if (responseStatus === 200) {
+				// remove entry from localStorage
+				let userData = JSON.parse(localStorage.getItem('userData'));
+				let index = userData.userEntries.indexOf(entryId);
+				userData.userEntries.splice(index, 1);
+				localStorage.setItem('userData', JSON.stringify(userData));
+			}
+
+			// after deleting event, forward to eventManager, we do not want to send null event back
+			// even we have a callback from EditEventManager
+			history.push(`/users/events/${userAuthContext.userId}`);
+		} catch (err) {}
 	};
 
 	const eventForm = values => (
@@ -227,18 +268,27 @@ const SubmitEntry = props => {
 							&nbsp; I accept the charge and cancellation terms and
 							conditions.
 						</label>
-						<Button
-							type="submit"
-							size="small-block"
-							margin-left="1.5rem"
-							disabled={
-								isSubmitting ||
-								!(isValid && dirty) ||
-								submitted ||
-								editingMode
-							}>
-							SUBMIT
-						</Button>
+						{!editingMode && (
+							<Button
+								type="submit"
+								size="small-block"
+								margin-left="1.5rem"
+								disabled={
+									isSubmitting || !(isValid && dirty) || submitted
+								}>
+								SUBMIT
+							</Button>
+						)}
+						{editingMode && (
+							<Button
+								type="button"
+								size="small-block"
+								margin-left="1.5rem"
+								disabled={isSubmitting}
+								onClick={openDELHandler}>
+								CANCEL REGISTRATION
+							</Button>
+						)}
 						<Link
 							to={{
 								pathname: `/events/entrylist/${eventId}`,
@@ -313,6 +363,30 @@ const SubmitEntry = props => {
 
 	return (
 		<React.Fragment>
+			{showDELModal && (
+				<Modal
+					className="modal-delete"
+					show={showDELModal}
+					contentClass="event-item__modal-delete"
+					onCancel={closeDELHandler}
+					header="Warning!"
+					footerClass="event-item__modal-actions"
+					footer={
+						<React.Fragment>
+							<Button inverse onClick={closeDELHandler}>
+								NO
+							</Button>
+							<Button danger onClick={deleteHandler}>
+								YES
+							</Button>
+						</React.Fragment>
+					}>
+					<p className="modal__content">
+						Do you really want to cancel registration of {eventName}?
+						It cannot be recovered after cancellation.
+					</p>
+				</Modal>
+			)}
 			<ErrorModal error={error} onClear={clearError} />
 			{isLoading && (
 				<div className="center">

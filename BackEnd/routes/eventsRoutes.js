@@ -113,7 +113,7 @@ router.patch(
 		check('capDistribution').not().isEmpty(),
 		check('multiDayEvent').not().isEmpty()
 	],
-	eventsController.updateEventRegistration
+	eventsController.createUpdateEventRegistration
 );
 
 router.patch(
@@ -144,13 +144,19 @@ router.patch(
 	eventsController.updateEvent
 );
 
+router.patch(
+	'/closeEventRegistration/:eid',
+	[check('closed').not().isEmpty()],
+	eventsController.closeEventRegistration
+);
+
 router.delete('/:eid', eventsController.deleteEvent);
 
 // /api/clubs/form/:eid
-router.get('/form/:eid', eventsController.getEventForm);
+router.get('/form/:eid', eventsController.getEntryForm);
 
 // create event entry form
-router.post('/form/:eid', eventsController.createEventForm);
+router.post('/form/:eid', eventsController.createUpdateEntryForm);
 
 router.use(checkUserAuth);
 

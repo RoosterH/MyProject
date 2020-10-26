@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 
 const Event = require('../models/event');
 const Entry = require('../models/entry');
+const EntryReport = require('../models/entryReport');
 const User = require('../models/user');
 const e = require('express');
 const { compare } = require('bcryptjs');
@@ -78,12 +79,37 @@ const createEntry = async (req, res, next) => {
 	// ! previous event.save() done.
 
 	// Validate event exists, if not send back an error.
-	let event;
 	const eventId = req.params.eid;
-	event = await Event.findById(eventId);
+	let event;
+	try {
+		event = await Event.findById(eventId).populate('entryReportId');
+	} catch (err) {
+		const error = new HttpError(
+			'Entry submission process internal failure during event retrieval',
+			500
+		);
+		return next(error);
+	}
 	if (!event) {
 		const error = new HttpError(
 			'Entry submission process internal failure',
+			404
+		);
+		return next(error);
+	}
+	let entryReport = event.entryReportId;
+	// try {
+	// 	entryReport = await EntryReport.findById(event.entryReport);
+	// } catch (err) {
+	// 	const error = new HttpError(
+	// 		'Entry submission process internal failure during entryReport retrieval',
+	// 		500
+	// 	);
+	// 	return next(error);
+	// }
+	if (!entryReport) {
+		const error = new HttpError(
+			'Entry submission process internal failure entryReport not found',
 			404
 		);
 		return next(error);
@@ -92,12 +118,38 @@ const createEntry = async (req, res, next) => {
 	let multiDayEvent = event.multiDayEvent;
 	// validation to make sure all the field array lengths are the same
 	if (
-		event.entries.length !== event.waitlist.length ||
-		event.entries.length !== event.full.length ||
-		event.entries.length !== event.runGroupOptions.length ||
-		event.entries.length !== event.runGroupNumEntries.length ||
-		event.entries.length !== event.totalEntries.length
+		entryReport.entries.length !== entryReport.waitlist.length ||
+		entryReport.entries.length !== entryReport.full.length ||
+		entryReport.entries.length !== event.runGroupOptions.length ||
+		entryReport.entries.length !==
+			entryReport.runGroupNumEntries.length ||
+		entryReport.entries.length !== entryReport.totalEntries.length
 	) {
+		console.log(
+			'entryReport.entries.length = ',
+			entryReport.entries.length
+		);
+		console.log(
+			'entryReport.waitlist.length = ',
+			entryReport.waitlist.length
+		);
+		console.log(
+			'entryReport.full.length = ',
+			entryReport.full.length
+		);
+		console.log(
+			'entryReport.runGroupNumEntries.length = ',
+			entryReport.runGroupNumEntries.length
+		);
+		console.log(
+			'entryReport.totalEntries.length = ',
+			entryReport.totalEntries.length
+		);
+		console.log(
+			'event.runGroupOptions.length = ',
+			event.runGroupOptions.length
+		);
+
 		const error = new HttpError(
 			'Entry submission process internal failure array length not the same.',
 			500
@@ -105,19 +157,22 @@ const createEntry = async (req, res, next) => {
 		return next(error);
 	}
 	// find how many days
-	let days = event.entries.length;
+	let days = entryReport.entries.length;
 
 	// todo: auto bump waitlist once entry drops out from entry list
 	// check if event is already full
 	// 2 conditions here:
 	// 1. total entries >= event.topCap
-	// 2. event.full flag. In this case, total.entries could be < event.totalCap because someone canceled
+	// 2. entryReport.full flag. In this case, total.entries could be < event.totalCap because someone canceled
 	//    the entry and removed from entry list.  We do not do auto bump yet so we will leave it as is.
-	//    we cannot use event.waitlist.length > 0, reason for it is because we also put group wait list entries
+	//    we cannot use entryReport.waitlist.length > 0, reason for it is because we also put group wait list entries
 	//    to waitlist even though event is not full.
 	let eventFull = [];
 	for (let i = 0; i < days; ++i) {
-		if (event.totalEntries[i] >= event.totalCap || event.full[i]) {
+		if (
+			entryReport.totalEntries[i] >= event.totalCap ||
+			entryReport.full[i]
+		) {
 			eventFull.push(true);
 		} else {
 			eventFull.push(false);
@@ -156,9 +211,9 @@ const createEntry = async (req, res, next) => {
 		let capPerGroup = Math.floor(event.totalCap / event.numGroups);
 		for (let i = 0; i < days; ++i) {
 			if (
-				// event.runGroupNumEntries[i][j] is a 2-D array, i for day, j for group
+				// entryReport.runGroupNumEntries[i][j] is a 2-D array, i for day, j for group
 				// runGroupAnsChoices[i] is the answer for i day
-				event.runGroupNumEntries[i][runGroupAnsChoices[i]] ===
+				entryReport.runGroupNumEntries[i][runGroupAnsChoices[i]] ===
 				capPerGroup
 			) {
 				groupFull.push(true);
@@ -189,10 +244,19 @@ const createEntry = async (req, res, next) => {
 	}
 
 	// check if user has entered the event
-	let entry = await Entry.findOne({
-		eventId: eventId,
-		userId: userId
-	});
+	let entry;
+	try {
+		entry = await Entry.findOne({
+			eventId: eventId,
+			userId: userId
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'Internal error in createEntry when retrieving entry.',
+			500
+		);
+		return next(error);
+	}
 
 	if (entry) {
 		// we should not find any entry here
@@ -243,23 +307,21 @@ const createEntry = async (req, res, next) => {
 			// if event or group is full, put in wailist; otherwise put in entries
 			for (let i = 0; i < days; ++i) {
 				if (eventFull[i] || groupFull[i]) {
-					let currentWaitlist = event.waitlist[i];
+					let currentWaitlist = entryReport.waitlist[i];
 					currentWaitlist.push(entry);
-					event.waitlist.set(i, currentWaitlist);
+					entryReport.waitlist.set(i, currentWaitlist);
 				} else {
-					let currentEntries = event.entries[i];
+					let currentEntries = entryReport.entries[i];
 					currentEntries.push(entry);
-					event.entries.set(i, currentEntries);
+					entryReport.entries.set(i, currentEntries);
 				}
 			}
 			// update totalEntries number when neither event nor group is full
 			for (let i = 0; i < days; ++i) {
-				let numEntries = event.totalEntries[i];
-				// event.totalEntries[i]++;
-				event.totalEntries.set(i, ++numEntries);
-				if (event.totalEntries[i] === event.totalCap) {
-					// event.full[i] = true;
-					event.full.set(i, true);
+				let numEntries = entryReport.totalEntries[i];
+				entryReport.totalEntries.set(i, ++numEntries);
+				if (entryReport.totalEntries[i] === event.totalCap) {
+					entryReport.full.set(i, true);
 				}
 			}
 			// update runGroup entry number
@@ -267,16 +329,16 @@ const createEntry = async (req, res, next) => {
 				if (!groupFull[i]) {
 					let index = runGroupAnsChoices[i];
 					let numEntries =
-						event.runGroupNumEntries[i][runGroupAnsChoices[i]];
+						entryReport.runGroupNumEntries[i][runGroupAnsChoices[i]];
 					let originalNumEntries = [];
-					originalNumEntries = event.runGroupNumEntries[i];
+					originalNumEntries = entryReport.runGroupNumEntries[i];
 					originalNumEntries[index] = ++numEntries;
 
 					// set day i group runGroup # runGroupAnsChoices[i]
-					event.runGroupNumEntries.set(i, originalNumEntries);
+					entryReport.runGroupNumEntries.set(i, originalNumEntries);
 				}
 			}
-			await event.save({ session: session });
+			await entryReport.save({ session: session });
 
 			// only all tasks succeed, we commit the transaction
 			await session.commitTransaction();
@@ -482,10 +544,28 @@ const updateFormAnswer = async (req, res, next) => {
 	}
 
 	let event;
-	event = await Event.findById(entry.eventId);
+	event = await await Event.findById(entry.eventId);
 	if (!event) {
 		const error = new HttpError(
 			'Entry submission process internal failure',
+			404
+		);
+		return next(error);
+	}
+
+	let entryReport;
+	try {
+		entryReport = await EntryReport.findById(event.entryReportId);
+	} catch (err) {
+		const error = new HttpError(
+			'Entry submission process internal failure entryReport not found.',
+			500
+		);
+		return next(error);
+	}
+	if (!entryReport) {
+		const error = new HttpError(
+			'Entry submission process internal failure entryReport not found.',
 			404
 		);
 		return next(error);
@@ -506,11 +586,14 @@ const updateFormAnswer = async (req, res, next) => {
 	// ! previous event.save() done.
 
 	// find how many days
-	let days = event.entries.length;
+	let days = entryReport.entries.length;
 
 	let eventFull = [];
 	for (let i = 0; i < days; ++i) {
-		if (event.totalEntries[i] >= event.totalCap || event.full[i]) {
+		if (
+			entryReport.totalEntries[i] >= event.totalCap ||
+			entryReport.full[i]
+		) {
 			eventFull.push(true);
 		} else {
 			eventFull.push(false);
@@ -546,9 +629,9 @@ const updateFormAnswer = async (req, res, next) => {
 		let capPerGroup = Math.floor(event.totalCap / event.numGroups);
 		for (let i = 0; i < days; ++i) {
 			if (
-				// event.runGroupNumEntries[i][j] is a 2-D array, i for day, j for group
+				// entryReport.runGroupNumEntries[i][j] is a 2-D array, i for day, j for group
 				// runGroupAnsChoices[i] is the answer for i day
-				event.runGroupNumEntries[i][runGroupAnsChoices[i]] ==
+				entryReport.runGroupNumEntries[i][runGroupAnsChoices[i]] ==
 				capPerGroup
 			) {
 				groupFull.push(true);
@@ -600,22 +683,22 @@ const updateFormAnswer = async (req, res, next) => {
 			// if entry.groupWaitlist  == true, entry.waitlist must be also true
 			if (onWaitlist && onGroupWaitlist) {
 				// if current entry run group is good, remove the entry from waitlist
-				let waitlistEntries = event.waitlist[i];
+				let waitlistEntries = entryReport.waitlist[i];
 				let entryIndex = waitlistEntries.indexOf(entry.id);
 				waitlistEntries.splice(entryIndex, 1);
-				event.waitlist.set(i, waitlistEntries);
+				entryReport.waitlist.set(i, waitlistEntries);
 
 				// put in entries
-				let entries = event.entries[i];
+				let entries = entryReport.entries[i];
 				entries.push(entry.id);
-				event.entries.set(i, entries);
+				entryReport.entries.set(i, entries);
 
 				// update entry status
 				entry.waitlist.set(i, false);
 				entry.groupWaitlist.set(i, false);
 			}
 			// we have checked current entry run group is different from previous entry run group
-			let dayRunGroupNumEntries = event.runGroupNumEntries[i];
+			let dayRunGroupNumEntries = entryReport.runGroupNumEntries[i];
 			let newDayRunGroupEntries = [];
 			for (let j = 0; j < dayRunGroupNumEntries.length; ++j) {
 				if (j == newIndex) {
@@ -627,7 +710,7 @@ const updateFormAnswer = async (req, res, next) => {
 				}
 			}
 			// use set to set array value => array.set(index, value)
-			event.runGroupNumEntries.set(i, newDayRunGroupEntries);
+			entryReport.runGroupNumEntries.set(i, newDayRunGroupEntries);
 		} else {
 			// groupFull[i] === true
 			// if previous entry was good but now the new group is full.
@@ -665,7 +748,7 @@ const updateFormAnswer = async (req, res, next) => {
 		session.startTransaction();
 		// save entry first because entry has less requests than event
 		await entry.save({ session: session });
-		await event.save({ session: session });
+		await entryReport.save({ session: session });
 		await session.commitTransaction();
 	} catch (err) {
 		console.log('err  =', err);
@@ -699,7 +782,177 @@ const getRunGroupsIndex = (runGroupOptions, runGroups) => {
 	return [runGroupsIndex];
 };
 
+const deleteEntry = async (req, res, next) => {
+	// Validate event exists, if not send back an error.
+	const entryId = req.params.entryId;
+	let entry;
+	try {
+		entry = await Entry.findById(entryId).populate('eventId');
+	} catch (err) {
+		const error = new HttpError(
+			'Internal error in cancelEntry when retrieving entry.',
+			500
+		);
+		return next(error);
+	}
+	let eventName = entry.eventId.name;
+
+	if (!entry) {
+		// we should not find any entry here
+		const error = new HttpError('User entry cannot be found.', 400);
+		return next(error);
+	}
+
+	// Validate userId exists. If not, sends back an error
+	let user;
+	// req.userData is inserted in check-auth.js
+	let userId = req.userData;
+	try {
+		user = await User.findById(userId);
+	} catch (err) {
+		const error = new HttpError(
+			'Cancel registration process failed during user validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!user) {
+		const error = new HttpError(
+			'Cancel registration faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		const error = new HttpError(
+			`Cancel registration process failed. Please check your data: ${result.array()}`,
+			422
+		);
+		return next(error);
+	}
+
+	let event;
+	try {
+		event = await Event.findById(entry.eventId.id);
+	} catch (err) {
+		const error = new HttpError(
+			'Internal error in cancelEntry when retrieving event.',
+			500
+		);
+		return next(error);
+	}
+	if (!event) {
+		const error = new HttpError(
+			'Internal error in cancelEntry event not found.',
+			500
+		);
+		return next(error);
+	}
+
+	let entryReport;
+	try {
+		entryReport = await EntryReport.findById(event.entryReportId);
+	} catch (err) {
+		const error = new HttpError(
+			'`Cancel registration process internal failure entryReport not found',
+			404
+		);
+		return next(error);
+	}
+	if (!entryReport) {
+		const error = new HttpError(
+			'`Cancel registration process internal failure entryReport not in DB',
+			404
+		);
+		return next(error);
+	}
+
+	let multiDayEvent = entry.eventId.multiDayEvent;
+	// find how many days
+	let days = entryReport.entries.length;
+
+	// todo: auto bump waitlist once entry drops out from entry list
+	// Since we do not auto bump autolist so we will not touch event full flag
+	// we only modify entryReport.entries and entryReport.waitlist to remove entry from lists
+	for (let i = 0; i < days; ++i) {
+		if (entry.waitlist[i]) {
+			// remove from waitlist
+			let waitlist = entryReport.waitlist[i];
+			let index = waitlist.indexOf(entryId);
+			waitlist.splice(index, 1);
+			entryReport.waitlist.set(i, waitlist);
+		} else {
+			// remove from entries
+			let entryList = entryReport.entries[i];
+			let index = entryList.indexOf(entryId);
+			entryList.splice(index, 1);
+			entryReport.entries.set(i, entryList);
+
+			// -1 for runGroup
+			// match event runGroupOptions
+			const [runGroupIndex] = getRunGroupIndex(
+				event.runGroupOptions[i],
+				entry.runGroup[i]
+			);
+			let num = entryReport.runGroupNumEntries[i][runGroupIndex];
+			// workaround method to change an element value in a nested array array[i][j]
+			// first retrieve array[i] => let array1 = [], array1 = array[i]
+			// and modify it outside => array1[j]--
+			// then use array.set(i, array1) to set array1 to array
+			let runGroupNumEntries = [];
+			runGroupNumEntries = entryReport.runGroupNumEntries[i];
+			runGroupNumEntries[runGroupIndex]--;
+			entryReport.runGroupNumEntries.set(i, runGroupNumEntries);
+		}
+		// -1 for totalEntries
+		let numEntries = entryReport.totalEntries[i];
+		entryReport.totalEntries.set(i, numEntries - 1);
+	}
+
+	// remove entry from user entries
+	user.entries.pull(entryId);
+	try {
+		// we need to use populate('clubId') above to be able to modify data in
+		// event.clubId.events
+		const session = await mongoose.startSession();
+		session.startTransaction();
+		await user.save({ session: session });
+		await entry.remove({ session: session });
+		// remove entryReport
+		await entryReport.save({ session: session });
+		// only both tasks succeed, we commit the transaction
+		await session.commitTransaction();
+	} catch (err) {
+		console.log('err = ', err);
+		const error = new HttpError(
+			'Failed to delete the event.  Please try it later.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		message: `Your entry for ${eventName} has been deleted`
+	});
+};
+
+const getRunGroupIndex = (runGroupOptions, runGroupText) => {
+	for (let i = 0; i < runGroupOptions.length; ++i) {
+		if (runGroupOptions[i] == runGroupText) {
+			return [i];
+		}
+	}
+};
+
 exports.createEntry = createEntry;
 exports.updateCar = updateCar;
 exports.updateClassNumber = updateClassNumber;
 exports.updateFormAnswer = updateFormAnswer;
+exports.deleteEntry = deleteEntry;
