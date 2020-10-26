@@ -121,8 +121,8 @@ const EntryReport = props => {
 					firstName: entries[j].userFirstName,
 					// for lookup field, we need to provide key in lookup array, we use index as key
 					raceClass: getMapKey(entries[j].raceClass, raceClasses),
-					carNumber: entries[i].carNumber,
-					car: entries[i].car,
+					carNumber: entries[j].carNumber,
+					car: entries[j].car,
 					runGroup: getMapKey(entries[j].runGroup[i], runGroups[i]),
 					workerAssignment: getMapKey(
 						entries[j].workerAssignment[i],
