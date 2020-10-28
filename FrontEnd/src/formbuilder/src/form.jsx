@@ -680,22 +680,17 @@ export default class ReactForm extends React.Component {
 							this.userToken = userToken;
 							this.eventId = eventId;
 
-							// reason to have this condition is we need to return something meaningful at the end of the
-							// React component
-							if (!isLoading) {
-								return <div></div>;
-							}
-
-							if (error) {
-								return (
-									<ErrorModal error={error} onClear={clearError} />
-								);
-							}
-
 							return (
-								<div className="center">
-									<LoadingSpinner />
-								</div>
+								<React.Fragment>
+									{isLoading && (
+										<div className="center">
+											<LoadingSpinner />
+										</div>
+									)}
+									{error && (
+										<ErrorModal error={error} onClear={clearError} />
+									)}
+								</React.Fragment>
 							);
 						}}
 					</HookWrapper>

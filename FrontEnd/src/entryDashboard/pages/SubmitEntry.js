@@ -46,7 +46,7 @@ const SubmitEntry = props => {
 	const [initialized, setInitialized] = useState(false);
 	const userAuthContext = useContext(UserAuthContext);
 	const formContext = useContext(FormContext);
-	const [fullMessage, setFullMessage] = useState('');
+	const [statusMessage, setStatusMessage] = useState('');
 
 	// continueStatus controls when to return props.newEventStatus back to NewEventManager
 	const [continueStatus, setContinueStatus] = useState(false);
@@ -135,7 +135,6 @@ const SubmitEntry = props => {
 
 	const submitHandler = async values => {
 		// return back to NewEntryManager
-		setContinueStatus(true);
 		let disclaimer = values.acceptDisclaimer;
 
 		try {
@@ -182,8 +181,10 @@ const SubmitEntry = props => {
 			if (responseStatus === 202) {
 				console.log('inside 202');
 				// either group is full or event is full
-				setFullMessage(responseMessage);
+				setStatusMessage(responseMessage);
 			}
+
+			setContinueStatus(true);
 		} catch (err) {
 			console.log('err = ', err);
 		}
@@ -282,7 +283,7 @@ const SubmitEntry = props => {
 						{editingMode && (
 							<Button
 								type="button"
-								size="small-block"
+								size="small-block-warning"
 								margin-left="1.5rem"
 								disabled={isSubmitting}
 								onClick={openDELHandler}>
@@ -307,7 +308,7 @@ const SubmitEntry = props => {
 							</Button>
 						</Link>
 						<div className="event-form-errmsg">
-							{fullMessage && <p> {fullMessage} </p>}
+							{statusMessage && <p> {statusMessage} </p>}
 						</div>
 						<NavigationPrompt
 							afterConfirm={() => {
@@ -361,6 +362,12 @@ const SubmitEntry = props => {
 		</div>
 	);
 
+	// Error in submission, we will forward page to users events
+	const onclearCallBack = () => {
+		clearError();
+		history.push(`/users/events/${userAuthContext.userId}`);
+	};
+
 	return (
 		<React.Fragment>
 			{showDELModal && (
@@ -387,7 +394,7 @@ const SubmitEntry = props => {
 					</p>
 				</Modal>
 			)}
-			<ErrorModal error={error} onClear={clearError} />
+			<ErrorModal error={error} onClear={onclearCallBack} />
 			{isLoading && (
 				<div className="center">
 					<LoadingSpinner />

@@ -167,7 +167,6 @@ const Classification = props => {
 					errors,
 					isSubmitting,
 					isValid,
-					dirty,
 					setFieldValue,
 					submitted,
 					touched,
@@ -221,7 +220,7 @@ const Classification = props => {
 							type="submit"
 							size="small-block"
 							margin-left="1.5rem"
-							disabled={isSubmitting || !(isValid && dirty)}>
+							disabled={isSubmitting || !isValid}>
 							SAVE &amp; CONTINUE
 						</Button>
 						<NavigationPrompt

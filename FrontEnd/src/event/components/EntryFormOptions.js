@@ -367,6 +367,11 @@ export const EntryFormOptions = () => [
 						value: '4',
 						text: 'Afternoon Group 3',
 						key: `RunGroupsForMultipleDaysEventDay1_4`
+					},
+					{
+						value: '5',
+						text: 'Not Attending',
+						key: `RunGroupsForMultipleDaysEventDay1_5`
 					}
 				]
 			},
@@ -402,6 +407,11 @@ export const EntryFormOptions = () => [
 						value: '4',
 						text: 'Afternoon Group 3',
 						key: `RunGroupsForMultipleDaysEventDay2_4`
+					},
+					{
+						value: '5',
+						text: 'Not Attending',
+						key: `RunGroupsForMultipleDaysEventDay2_5`
 					}
 				]
 			}
@@ -450,6 +460,11 @@ export const EntryFormOptions = () => [
 						value: '4',
 						text: 'Tech Inspection',
 						key: `WorkerAssignmentsForMultipleDaysEventDay1_4`
+					},
+					{
+						value: '5',
+						text: 'Not Attending',
+						key: `WorkerAssignmentsForMultipleDaysEventDay1_5`
 					}
 				]
 			},
@@ -485,6 +500,11 @@ export const EntryFormOptions = () => [
 						value: '4',
 						text: 'Tech Inspection',
 						key: `WorkerAssignmentsForMultipleDaysEventDay2_4`
+					},
+					{
+						value: '5',
+						text: 'Not Attending',
+						key: `WorkerAssignmentsForMultipleDaysEventDay2_5`
 					}
 				]
 			}
