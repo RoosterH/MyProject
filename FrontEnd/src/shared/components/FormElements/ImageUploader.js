@@ -49,8 +49,8 @@ const ImageUploader = props => {
 					<div className={props.previewStyle}>
 						<Image
 							draggable="true"
-							// src={currentUrl}
-							src={process.env.REACT_APP_ASSET_URL + `/${currentUrl}`}
+							src={currentUrl}
+							// src={process.env.REACT_APP_ASSET_URL + `/${currentUrl}`}
 							alt="Existing file"
 							// ondrag={() => props.onDrag()}
 						/>

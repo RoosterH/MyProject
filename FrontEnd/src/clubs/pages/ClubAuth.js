@@ -123,10 +123,18 @@ const ClubAuth = () => {
 
 	// Formik section
 	const initialValues = {
+		name: '',
 		email: '',
 		image: undefined,
 		password: '',
 		passwordValidation: ''
+	};
+	const validateClubName = value => {
+		let error;
+		if (!value) {
+			error = 'Club Name is required.';
+		}
+		return error;
 	};
 	const validateEmail = value => {
 		let error;
@@ -233,6 +241,21 @@ const ClubAuth = () => {
 					handleBlur
 				}) => (
 					<Form className="auth-from-container">
+						<div>
+							<label htmlFor="name" className="auth-form-label">
+								Club Name
+							</label>
+							<Field
+								id="name"
+								name="name"
+								type="text"
+								validate={validateClubName}
+								className="auth-form-input"
+							/>
+							{touched.name && errors.name && (
+								<div className="auth-form-error">{errors.name}</div>
+							)}
+						</div>
 						<div>
 							<label htmlFor="email" className="auth-form-label">
 								Email

@@ -303,8 +303,9 @@ const EventItem = props => {
 							<h3>Right click on map for more actions.</h3>
 							<img
 								src={
-									process.env.REACT_APP_ASSET_URL +
-									`/${props.event.courseMap}`
+									// process.env.REACT_APP_ASSET_URL +
+									// `/${props.event.courseMap}`
+									props.event.courseMap
 								}
 								alt={props.event.alt}
 								className="map-container"></img>
@@ -323,8 +324,9 @@ const EventItem = props => {
 						<div className="logo-container ">
 							<img
 								src={
-									process.env.REACT_APP_ASSET_URL +
-									`/${props.event.clubImage}`
+									// process.env.REACT_APP_ASSET_URL +
+									// `/${props.event.clubImage}`
+									props.event.clubImage
 								}
 								alt={props.event.clubName}
 							/>
@@ -360,8 +362,9 @@ const EventItem = props => {
 						<div className="eventimage-container">
 							<img
 								src={
-									process.env.REACT_APP_ASSET_URL +
-									`/${props.event.image}`
+									// process.env.REACT_APP_ASSET_URL +
+									// `/${props.event.image}`
+									props.event.image
 								}
 								alt={props.event.name}
 								className="eventimage-container-img"
@@ -505,8 +508,9 @@ const EventItem = props => {
 										title={props.event.courseMap}
 										alt={props.event.courseMap}
 										src={
-											process.env.REACT_APP_ASSET_URL +
-											`/${props.event.courseMap}`
+											// process.env.REACT_APP_ASSET_URL +
+											// `/${props.event.courseMap}`
+											props.event.courseMap
 										}
 										onClick={() => openCourseHandler()}
 										onHoover

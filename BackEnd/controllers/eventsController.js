@@ -727,10 +727,39 @@ const updateEventPhotos = async (req, res, next) => {
 		return next(error);
 	}
 
+	// example of req.files =  [Object: null prototype] {
+	// 	image: [
+	// 	  {
+	// 		fieldname: 'image',
+	// 		originalname: '56270082_2262210193836118_5490618536881553408_o-1024x683.jpg',
+	// 		encoding: '7bit',
+	// 		mimetype: 'image/jpeg',
+	// 		size: 81674,
+	// 		bucket: 'myseattime-dev',
+	// 		key: 'clubs/undefined.jpeg',
+	// 		acl: 'public-read',
+	// 		contentType: 'application/octet-stream',
+	// 		contentDisposition: null,
+	// 		storageClass: 'STANDARD',
+	// 		serverSideEncryption: null,
+	// 		metadata: [Object],
+	// 		location: 'https://myseattime-dev.s3.us-west-1.amazonaws.com/clubs/undefined.jpeg',
+	// 		etag: '"6bf661ffa6920a78556a3669d25d87e8"',
+	// 		versionId: undefined
+	// 	  }
+	// 	],
+	// 	courseMap: [
+	// 	  {
+	// 		...........
+	// 	  }
+	// 	]
+	//   }
 	// check whether image or courseMap been changed or not
 	let imagePath, courseMapPath;
+	// if new req has image, we want to unlink the old image
 	if (req.files.image) {
-		imagePath = req.files.image[0].path;
+		// in route, we have max count: 1, so  reg.files.image is an array
+		imagePath = req.files.image[0].location;
 		// default value is 'UNDEFINED' set in createEvent
 		if (event.image !== 'UNDEFINED') {
 			fs.unlink(event.image, err => {
@@ -739,7 +768,8 @@ const updateEventPhotos = async (req, res, next) => {
 		}
 	}
 	if (req.files.courseMap) {
-		courseMapPath = req.files.courseMap[0].path;
+		// in route, we have max count: 1, so  reg.files.courseMap is an array
+		courseMapPath = req.files.courseMap[0].location;
 		if (event.courseMap) {
 			fs.unlink(event.courseMap, err => {
 				console.log(err);

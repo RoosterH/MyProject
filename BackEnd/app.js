@@ -2,6 +2,7 @@ const fs = require('fs'); // file system, a nodejs module
 const path = require('path');
 
 const express = require('express');
+var cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 // const passport = require('passport');
@@ -46,6 +47,7 @@ app.use((req, res, next) => {
 	next();
 });
 
+app.use(cors());
 app.use('/api/cars/', carsRoutes);
 app.use('/api/clubs/', clubsRoutes);
 app.use('/api/entries/', entriesRoutes);

@@ -74,12 +74,7 @@ const CarItem = props => {
 	const carImageElement =
 		props.car.image !== '' ? (
 			<div className="event-item__image">
-				<img
-					src={
-						process.env.REACT_APP_ASSET_URL + `/${props.car.image}`
-					}
-					alt={props.car.name}
-				/>
+				<img src={props.car.image} alt={props.car.name} />
 			</div>
 		) : (
 			<div></div>
@@ -146,8 +141,9 @@ const CarItem = props => {
 							{owner && userAuthContext.userImage && (
 								<img
 									src={
-										process.env.REACT_APP_ASSET_URL +
-										`/${userAuthContext.userImage}`
+										// process.env.REACT_APP_ASSET_URL +
+										// `/${userAuthContext.userImage}`
+										userAuthContext.userImage
 									}
 									alt={props.car.model}
 								/>
@@ -192,8 +188,9 @@ const CarItem = props => {
 								<div className="carimage-container">
 									<img
 										src={
-											process.env.REACT_APP_ASSET_URL +
-											`/${props.car.image}`
+											// process.env.REACT_APP_ASSET_URL +
+											// `/${props.car.image}`
+											props.car.image
 										}
 										alt={props.car.model}
 										className="carimage-container-img"

@@ -12,6 +12,7 @@ import './UserCarsItem.css';
 // UserCarItem renders a card for each event
 const UserCarsItem = props => {
 	let carSelector = props.carSelector;
+	console.log('props.image = ', props.image);
 	const {
 		isLoading,
 		error,

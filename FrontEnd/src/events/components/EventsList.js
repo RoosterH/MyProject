@@ -47,7 +47,8 @@ const EventList = props => {
 					id={event.id}
 					name={event.name}
 					type={event.type}
-					image={process.env.REACT_APP_ASSET_URL + `/${event.image}`}
+					// image={process.env.REACT_APP_ASSET_URL + `/${event.image}`}
+					image={event.image}
 					clubName={event.clubName}
 					clubId={event.clubId}
 					startDate={event.startDate}

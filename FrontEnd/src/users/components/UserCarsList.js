@@ -44,7 +44,8 @@ const UserCarsList = props => {
 					make={car.make}
 					model={car.model}
 					trimLevel={car.trimLevel}
-					image={process.env.REACT_APP_ASSET_URL + `/${car.image}`}
+					// image={process.env.REACT_APP_ASSET_URL + `/${car.image}`}
+					image={car.image}
 					tireBrand={car.tireBrand}
 					tireName={car.tireName}
 					tireFrontWidth={car.tireFrontWidth}

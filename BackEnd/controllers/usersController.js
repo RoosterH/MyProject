@@ -126,7 +126,7 @@ const createUser = async (req, res, next) => {
 		lastName,
 		firstName,
 		email,
-		image: req.file.path,
+		image: req.file.location,
 		password: hashedPassword,
 		entries: []
 	});

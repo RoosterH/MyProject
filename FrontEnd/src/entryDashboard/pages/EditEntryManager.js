@@ -33,13 +33,13 @@ const EditEntryManager = props => {
 		if (
 			props.location &&
 			props.location.state &&
-			props.location.state.eventName &&
-			props.location.state.regClosed
+			props.location.state.eventName
+			// && props.location.state.regClosed
 		) {
 			setEventName(props.location.state.eventName);
-			setRegClosed(props.location.state.regClosed);
+			// setRegClosed(props.location.state.regClosed);
 		}
-	}, [props, setEventName, setRegClosed]);
+	}, [props, setEventName]);
 
 	const [entry, setEntry] = useState();
 	const [entryId, setEntryId] = useState();
@@ -229,6 +229,9 @@ const EditEntryManager = props => {
 			)}
 			<div className="list-header clearfix">
 				<div className="h3-heavy">{eventName}</div>
+				<div className="h3">
+					Please click on the tab to make changes.
+				</div>
 				{regClosed && (
 					<div className="h3-heavy">
 						Registration is now closed.&nbsp;&nbsp;You can not modify

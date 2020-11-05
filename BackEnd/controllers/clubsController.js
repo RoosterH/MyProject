@@ -114,10 +114,11 @@ const createClub = async (req, res, next) => {
 		return next(error);
 	}
 
+	// req.file.location = https://myseattime-dev.s3.us-west-1.amazonaws.com/clubs/d20e6020-1e70-11eb-96c0-19998090542e.png
 	const newClub = new Club({
 		name,
 		email,
-		image: req.file.path,
+		image: req.file.location,
 		password: hashedPassword,
 		events: []
 	});
@@ -435,14 +436,16 @@ const getEventForm = async (req, res, next) => {
 	// 3. return initialized db if nothing found
 	let entryFormData = event.entryFormData;
 	if (!entryFormData || entryFormData.length === 0) {
+		console.log('442 here ');
 		if (club.entryFormTemplate.length > 0) {
 			entryFormData = club.entryFormTemplate;
+			res.status(200).json(entryFormData);
 		} else {
 			res.status(200).json({ entryFormData: '[]' });
 		}
+	} else {
+		res.status(200).json(entryFormData);
 	}
-
-	res.status(200).json(entryFormData);
 };
 
 // this includes create and update event form

@@ -4,6 +4,13 @@
 		"MONGO_DB_PASSWORD": "hung",
 		"MONGO_DB_NAME": "MySeatTime",
 		"GOOGLE_MAP_API_KEY": "AIzaSyACZSZtNh33iMJUXVaN4X-wOeNnlNjJajk",
-		"DUMMY_CLUB_ID": "5ef702c7ba7511499165e653"
+		"DUMMY_CLUB_ID": "5ef702c7ba7511499165e653",
+		"AWS_ACCESSKEYID" : "AKIAQ3RGE76SUKXZKJOU",
+		"AWS_SECRETACCESSKEY": "S7zSD9d/fJOpK+SEcrZFc2WtogDJJv9jWc78WfcL",
+		"S3_REGION": "us-west-1",
+		"S3_ACL": "public-read",
+		"S3_BUCKET_NAME": "myseattime-dev",
+		"S3_CLUBKEY": "clubs/",
+		"S3_URL": "https://myseattime-dev.s3-us-west-1.amazonaws.com"
 	}
 }
