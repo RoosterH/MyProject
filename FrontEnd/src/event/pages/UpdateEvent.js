@@ -597,6 +597,9 @@ const UpdateEvent = props => {
 							}}
 							// Confirm navigation if going to a path that does not start with current path:
 							when={(crntLocation, nextLocation) => {
+								// remove ClubRedirectURL from memory
+								clubAuthContext.setClubRedirectURL(null);
+								// OKLeavePage meaning form was not touched yet
 								if (
 									OKLeavePage ||
 									nextLocation.pathname === '/clubs/auth'

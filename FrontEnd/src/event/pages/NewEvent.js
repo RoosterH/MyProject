@@ -93,10 +93,6 @@ const NewEvent = props => {
 	const [address, setAddress] = useState('');
 	const [description, setDescription] = useState('');
 	const [instruction, setInstruction] = useState('');
-	// todo: retrieve file from Reader: const [image, setImage] = useState();
-	// todo: const [courseMap, setCourseMap] = useState('');
-	// let image = undefined;
-	// let courseMap = undefined;
 
 	// initialize local storage
 	// Get the existing data
@@ -145,14 +141,6 @@ const NewEvent = props => {
 		if (eventFormData.instruction) {
 			setInstruction(eventFormData.instruction);
 		}
-		// if (eventFormData.image) {
-		//  //setImage(eventFormData.image);
-		// //setImageOK(false);
-		// }
-		// if (eventFormData.courseMap) {
-		// setCourseMap(eventFormData.courseMap);
-		// setCourseMapOK(false);
-		// }
 	} else if (!initialized) {
 		setInitialized(true);
 		// initialize localStorage
@@ -170,8 +158,6 @@ const NewEvent = props => {
 		eventFormData['address'] = '';
 		eventFormData['description'] = '';
 		eventFormData['instruction'] = '';
-		// eventFormData['image'] = undefined;
-		// eventFormData['courseMap'] = undefined;
 		localStorage.setItem(
 			'eventFormData',
 			JSON.stringify(eventFormData)
@@ -187,7 +173,6 @@ const NewEvent = props => {
 		// editorState: new EditorState.createEmpty(),
 		name: name,
 		type: type,
-		// image: image,
 		startDate: startDate,
 		endDate: endDate,
 		regStartDate: regStartDate,
@@ -196,7 +181,6 @@ const NewEvent = props => {
 		address: address,
 		description: description,
 		instruction: instruction
-		// courseMap: courseMap
 	};
 
 	const updateEventFormData = (key, value) => {
@@ -236,8 +220,6 @@ const NewEvent = props => {
 			formData.append('address', values.address);
 			formData.append('description', values.description);
 			formData.append('instruction', values.instruction);
-			// formData.append('image', values.image);
-			// formData.append('courseMap', values.courseMap);
 			const [
 				responseData,
 				responseStatus,
@@ -359,22 +341,6 @@ const NewEvent = props => {
 			return error;
 		}
 	);
-
-	const validateImageSize = value => {
-		let error;
-		if (value && value.size > 1500000) {
-			error = 'File size needs to be smaller than 1.5MB';
-		}
-		return error;
-	};
-
-	const validateCourseMapSize = value => {
-		let error;
-		if (value && value.size > 1500000) {
-			error = 'File size needs to be smaller than 1.5MB';
-		}
-		return error;
-	};
 	/***** End of Form Validation *****/
 
 	const eventForm = values => (
@@ -737,6 +703,9 @@ const NewEvent = props => {
 							// We don't want to confirm navigation when OKLeavePage === true and redirect to '/clubs/auth' due to
 							// authentication issue
 							when={(crntLocation, nextLocation) => {
+								// remove ClubRedirectURL from memory
+								clubAuthContext.setClubRedirectURL(null);
+								// OKLeavePage meaning form was not touched yet
 								if (OKLeavePage) {
 									formContext.setIsInsideForm(false);
 									removeEventFormData();

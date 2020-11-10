@@ -354,7 +354,7 @@ const NewCar = setFieldValue => {
 			formData.append('FCompression', values.FCompression);
 			formData.append('RCompression', values.RCompression);
 			formData.append('note', values.note);
-			formData.append('image', values.image);
+			formData.append('carImage', values.image);
 
 			const [
 				responseData,
@@ -369,7 +369,6 @@ const NewCar = setFieldValue => {
 					Authorization: 'Bearer ' + userAuthContext.userToken
 				}
 			);
-			console.log('responseData = ', responseData);
 			setOKLeavePage(true);
 			// Redirect the club to a diffrent page
 			history.push(`/users/garagewrapper/${userAuthContext.userId}`);
@@ -1466,6 +1465,9 @@ const NewCar = setFieldValue => {
 							// We don't want to confirm navigation when OKLeavePage === true and redirect to '/users/auth' due to
 							// authentication issue
 							when={(crntLocation, nextLocation) => {
+								// remove UserRedirectURL from memory
+								userAuthContext.setUserRedirectURL(null);
+								// OKLeavePage meaning form was not touched yet
 								if (OKLeavePage) {
 									formContext.setIsInsideForm(false);
 									removeCarFormData();

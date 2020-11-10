@@ -436,7 +436,6 @@ const getEventForm = async (req, res, next) => {
 	// 3. return initialized db if nothing found
 	let entryFormData = event.entryFormData;
 	if (!entryFormData || entryFormData.length === 0) {
-		console.log('442 here ');
 		if (club.entryFormTemplate.length > 0) {
 			entryFormData = club.entryFormTemplate;
 			res.status(200).json(entryFormData);

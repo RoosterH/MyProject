@@ -51,7 +51,12 @@ const ClubAuth = () => {
 					}
 				);
 
+				console.log(
+					'clubRedirect = ',
+					clubAuthContext.clubRedirectURL
+				);
 				if (clubAuthContext.clubRedirectURL) {
+					console.log('inside clubRedirect');
 					clubAuthContext.clubLogin(
 						responseData.token,
 						responseData.clubId,
@@ -100,7 +105,7 @@ const ClubAuth = () => {
 					'passwordValidation',
 					values.passwordValidation
 				);
-				formData.append('image', values.image);
+				formData.append('clubImage', values.image);
 
 				// the request needs to match backend clubsRoutes /signup route
 				// With fromData, headers cannot be {Content-Type: application/json}

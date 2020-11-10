@@ -125,7 +125,7 @@ const EventPhotos = props => {
 	const submitHandler = async (values, actions) => {
 		try {
 			const formData = new FormData();
-			formData.append('image', values.image);
+			formData.append('eventImage', values.image);
 			formData.append('courseMap', values.courseMap);
 
 			await sendRequest(
@@ -252,6 +252,9 @@ const EventPhotos = props => {
 							// We don't want to confirm navigation when OKLeavePage === true and redirect to '/clubs/auth' due to
 							// authentication issue
 							when={(crntLocation, nextLocation) => {
+								// remove ClubRedirectURL from memory
+								clubAuthContext.setClubRedirectURL(null);
+								// OKLeavePage meaning form was not touched yet
 								if (OKLeavePage) {
 									formContext.setIsInsideForm(false);
 									removeEventFormData();

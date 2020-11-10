@@ -44,8 +44,6 @@ const UserCarsItem = props => {
 
 	const changeCarHandler = async () => {
 		try {
-			console.log('props.entryId = ', props.entryId);
-			console.log('carid = ', props.id);
 			const [
 				responseData,
 				responseStatus,

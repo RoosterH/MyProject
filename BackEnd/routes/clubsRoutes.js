@@ -19,7 +19,7 @@ router.post(
 	'/signup',
 	// single file, 'image' is the key name in the request body
 	// that is associated with the uploading file
-	fileUpload.single('image'),
+	fileUpload.single('clubImage'),
 	[
 		check('name').not().isEmpty(),
 		check('email').normalizeEmail().isEmail(),

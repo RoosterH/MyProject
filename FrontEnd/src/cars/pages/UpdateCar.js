@@ -429,7 +429,7 @@ const UpdateCar = setFieldValue => {
 			formData.append('FCompression', values.FCompression);
 			formData.append('RCompression', values.RCompression);
 			formData.append('note', values.note);
-			formData.append('image', values.image);
+			formData.append('carImage', values.image);
 
 			await sendRequest(
 				process.env.REACT_APP_BACKEND_URL + `/cars/${carId}`,
@@ -1527,6 +1527,9 @@ const UpdateCar = setFieldValue => {
 							// We don't want to confirm navigation when OKLeavePage === true and redirect to '/users/auth' due to
 							// authentication issue
 							when={(crntLocation, nextLocation) => {
+								// remove UserRedirectURL from memory
+								userAuthContext.setUserRedirectURL(null);
+								// OKLeavePage meaning form was not touched yet
 								if (OKLeavePage) {
 									formContext.setIsInsideForm(false);
 									removeCarFormData();

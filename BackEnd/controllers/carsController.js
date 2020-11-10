@@ -251,8 +251,7 @@ const createCar = async (req, res, next) => {
 		return next(error);
 	}
 
-	console.log('');
-	let imagePath = req.files.image[0].location;
+	let imagePath = req.file.location;
 	const newCar = new Car({
 		userId: userId,
 		userName: user.userName,
@@ -429,8 +428,8 @@ const updateCar = async (req, res, next) => {
 	}
 
 	let imagePath = car.image;
-	if (req.files.image) {
-		imagePath = req.files.image[0].location;
+	if (req.file) {
+		imagePath = req.file.location;
 	}
 	car.year = year;
 	car.make = make;

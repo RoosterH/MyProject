@@ -410,6 +410,9 @@ const EventRegistration = props => {
 							// We don't want to confirm navigation when OKLeavePage === true and redirect to '/clubs/auth' due to
 							// authentication issue
 							when={(crntLocation, nextLocation) => {
+								// remove ClubRedirectURL from memory
+								clubAuthContext.setClubRedirectURL(null);
+								// OKLeavePage meaning form was not touched yet
 								if (OKLeavePage) {
 									formContext.setIsInsideForm(false);
 									removeEventFormData();

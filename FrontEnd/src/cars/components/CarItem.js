@@ -64,7 +64,8 @@ const CarItem = props => {
 				{
 					'Content-Type': 'application/json',
 					// adding JWT to header for authentication
-					Authorization: 'Bearer ' + userAuthContext.userToken
+					Authorization: 'Bearer ' + userAuthContext.userToken,
+					path: 'cars'
 				}
 			);
 			setActive(!active);

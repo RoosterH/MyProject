@@ -162,9 +162,6 @@ const SubmitEntry = props => {
 				}
 			);
 
-			console.log('responseData = ', responseData);
-			console.log('responseStatus = ', responseStatus);
-			console.log('responseMessage = ', responseMessage);
 			if (responseData.entry) {
 				// add entry to localStrorage, in EventItem.js, we look for entries from there
 				// to identify entry status. This is for performance boost.
@@ -319,6 +316,9 @@ const SubmitEntry = props => {
 							// We don't want to confirm navigation when OKLeavePage === true and redirect to '/clubs/auth' due to
 							// authentication issue
 							when={(crntLocation, nextLocation) => {
+								// remove UserRedirectURL from memory
+								userAuthContext.setUserRedirectURL(null);
+								// OKLeavePage meaning form was not touched yet
 								if (OKLeavePage) {
 									formContext.setIsInsideForm(false);
 									removeEventFormData();

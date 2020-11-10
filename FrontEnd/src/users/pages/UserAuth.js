@@ -108,7 +108,7 @@ const UserAuth = () => {
 					'passwordValidation',
 					values.passwordValidation
 				);
-				formData.append('image', values.image);
+				formData.append('userImage', values.image);
 
 				// the request needs to match backend usersRoutes /signup route
 				// With fromData, headers cannot be {Content-Type: application/json}

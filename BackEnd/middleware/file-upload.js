@@ -53,8 +53,9 @@ const fileUpload = multer({
 		acl: 'public-read', // Owner gets FULL_CONTROL. The AllUsers group gets READ access.
 		s3: s3,
 		bucket: process.env.S3_BUCKET_NAME,
-		serverSideEncryption: 'AES256',
-		// withoute contentType image will be downloaded instead of been displayed
+		// No need to provide serverSideEncryption, just click on S3 bucket or folder to enable it
+		// serverSideEncryption: 'AES256',
+		// Withoute contentType image will be downloaded instead of been displayed
 		contentType: multerS3.AUTO_CONTENT_TYPE,
 		metadata: (req, file, cb) => {
 			const ext = MIME_TYPE_MAP[file.mimetype];
@@ -63,7 +64,21 @@ const fileUpload = multer({
 		key: (req, file, cb) => {
 			const UUID = uuid();
 			const ext = MIME_TYPE_MAP[file.mimetype];
-			cb(null, 'clubs/' + UUID + '.' + ext);
+
+			let S3Folder;
+			if (file.fieldname === 'userImage') {
+				S3Folder = 'users';
+			} else if (file.fieldname === 'clubImage') {
+				S3Folder = 'clubs';
+			} else if (file.fieldname === 'eventImage') {
+				S3Folder = 'events';
+			} else if (file.fieldname === 'courseMap') {
+				S3Folder = 'courseMaps';
+			} else if (file.fieldname === 'carImage') {
+				S3Folder = 'cars';
+			}
+
+			cb(null, S3Folder + '/' + UUID + '.' + ext);
 		}
 	}),
 	fileFilter: (req, file, cb) => {

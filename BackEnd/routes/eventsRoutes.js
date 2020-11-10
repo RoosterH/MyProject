@@ -69,8 +69,9 @@ let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');
 // only clubs are able to create an event
 router.post(
 	'/',
+	//  actually we dont need this but because we are using formData at front end so we have to have it
 	fileUpload.fields([
-		{ name: 'image', maxCount: 1 },
+		{ name: 'eventImage', maxCount: 1 },
 		{ name: 'courseMap', maxCount: 1 }
 	]),
 	[
@@ -99,7 +100,7 @@ router.post(
 router.patch(
 	'/photos/:eid',
 	fileUpload.fields([
-		{ name: 'image', maxCount: 1 },
+		{ name: 'eventImage', maxCount: 1 },
 		{ name: 'courseMap', maxCount: 1 }
 	]),
 	eventsController.updateEventPhotos
@@ -118,8 +119,9 @@ router.patch(
 
 router.patch(
 	'/:eid',
+	//  actually we dont need this but because we are using formData at front end so we have to have it
 	fileUpload.fields([
-		{ name: 'image', maxCount: 1 },
+		{ name: 'eventImage', maxCount: 1 },
 		{ name: 'courseMap', maxCount: 1 }
 	]),
 	[

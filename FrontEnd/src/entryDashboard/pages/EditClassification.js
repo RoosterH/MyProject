@@ -203,6 +203,9 @@ const EditClassification = props => {
 							// We don't want to confirm navigation when OKLeavePage === true and redirect to '/clubs/auth' due to
 							// authentication issue
 							when={(crntLocation, nextLocation) => {
+								// remove UserRedirectURL from memory
+								userAuthContext.setUserRedirectURL(null);
+								// OKLeavePage meaning form was not touched yet
 								if (OKLeavePage) {
 									formContext.setIsInsideForm(false);
 									return false;

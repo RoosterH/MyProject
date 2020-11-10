@@ -24,7 +24,9 @@ export const ClubAuthContext = createContext({
 	insideForm: false,
 	clubLogin: () => {},
 	clubLogout: () => {},
-	setIsInsideForm: () => {}
+	setIsInsideForm: () => {},
+	clubRedirectURL: null,
+	setClubRedirectURL: () => {}
 });
 
 export const UserAuthContext = createContext({
@@ -34,8 +36,8 @@ export const UserAuthContext = createContext({
 	userName: null,
 	userEntries: null,
 	userImage: null,
-	url: null,
+	userRedirectURL: null,
 	userLogin: () => {},
 	userLogout: () => {},
-	setRedirectURL: () => {}
+	setUserRedirectURL: () => {}
 });

@@ -23,7 +23,7 @@ router.get('/:cid', carsController.getCarById);
 // only users are able to create an car
 router.post(
 	'/',
-	fileUpload.fields([{ name: 'image', maxCount: 1 }]),
+	fileUpload.single('carImage'),
 	[
 		(check('active').isEmpty(),
 		check('year').isLength({ min: 4 }),
@@ -47,7 +47,7 @@ router.patch('/activate/:cid', carsController.activateCar);
 
 router.patch(
 	'/:cid',
-	fileUpload.fields([{ name: 'image', maxCount: 1 }]),
+	fileUpload.single('carImage'),
 	[
 		(check('active').isEmpty(),
 		check('year').isLength({ min: 4 }),

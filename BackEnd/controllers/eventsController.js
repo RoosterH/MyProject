@@ -13,7 +13,6 @@ const Event = require('../models/event');
 const Club = require('../models/club');
 
 // const mongooseUniqueValidator = require('mongoose-unique-validator');
-const fileUpload = require('../middleware/file-upload');
 const { min } = require('moment');
 const entry = require('../models/entry');
 
@@ -728,9 +727,9 @@ const updateEventPhotos = async (req, res, next) => {
 	}
 
 	// example of req.files =  [Object: null prototype] {
-	// 	image: [
+	// 	eventImage: [
 	// 	  {
-	// 		fieldname: 'image',
+	// 		fieldname: 'eventImage',
 	// 		originalname: '56270082_2262210193836118_5490618536881553408_o-1024x683.jpg',
 	// 		encoding: '7bit',
 	// 		mimetype: 'image/jpeg',
@@ -757,9 +756,9 @@ const updateEventPhotos = async (req, res, next) => {
 	// check whether image or courseMap been changed or not
 	let imagePath, courseMapPath;
 	// if new req has image, we want to unlink the old image
-	if (req.files.image) {
-		// in route, we have max count: 1, so  reg.files.image is an array
-		imagePath = req.files.image[0].location;
+	if (req.files.eventImage) {
+		// in route, we have max count: 1, so  reg.files.eventImage is an array
+		imagePath = req.files.eventImage[0].location;
 		// default value is 'UNDEFINED' set in createEvent
 		if (event.image !== 'UNDEFINED') {
 			fs.unlink(event.image, err => {
@@ -1347,7 +1346,9 @@ const createUpdateEntryForm = async (req, res, next) => {
 
 		entryFormData.map(data => {
 			event.entryFormData.push(data);
-			if (data.element === 'MultipleRadioButtonGroup') {
+			if (data === null) {
+				// skip it in case front end has an issue
+			} else if (data.element === 'MultipleRadioButtonGroup') {
 				let runGroupOptionsLength = event.runGroupOptions.length;
 				let workerAssignmentsLength = event.workerAssignments.length;
 				data.options.map((option, index) => {
