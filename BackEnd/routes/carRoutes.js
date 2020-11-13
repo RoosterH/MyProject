@@ -6,6 +6,7 @@ const { check } = require('express-validator');
 
 const carsController = require('../controllers/carsController');
 const fileUpload = require('../middleware/file-upload');
+const fileUploadNew = require('../middleware/file-uploadNew');
 const checkUserAuth = require('../middleware/check-userAuth');
 
 const router = express.Router();
@@ -23,7 +24,7 @@ router.get('/:cid', carsController.getCarById);
 // only users are able to create an car
 router.post(
 	'/',
-	fileUpload.single('carImage'),
+	fileUploadNew.single('carImage'),
 	[
 		(check('active').isEmpty(),
 		check('year').isLength({ min: 4 }),

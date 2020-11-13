@@ -11,6 +11,21 @@ const { request } = require('http');
 const { compare } = require('bcryptjs');
 const { getAllUsers } = require('./usersController');
 
+// AWS SDK V2
+const aws = require('aws-sdk');
+
+//const aws = require('@aws-sdk/client-s3/');
+const s3 = new aws.S3();
+
+// s3 bucket policy:
+// Deny NULL => s3:x-amz-server-side-encrption: "true", deny request if header is NULL is true
+// Deny StringNotEquals => s3:x-amz-server-side-encrption: "AES256", deny if it's not AES256
+aws.config.update({
+	secretAccessKey: process.env.AWS_SECRETACCESSKEY,
+	accessKeyId: process.env.AWS_ACCESSKEYID,
+	region: process.env.S3_REGION
+});
+
 const errMsg = errors => {
 	var msg;
 	for (var e of errors) {
@@ -251,7 +266,25 @@ const createCar = async (req, res, next) => {
 		return next(error);
 	}
 
-	let imagePath = req.file.location;
+	// change image files name and move to different buckets in S3
+	// req.file.original.Location:
+	// https://myseattime-dev.s3.us-west-1.amazonaws.com/cars/faf21120-2533-11eb-a9c0-ed9f2385ef05.jpg-sm
+	let originalImageLocation = req.file.original.Location;
+	try {
+		originalImageLocation = S3ImageProcess(originalImageLocation);
+	} catch (err) {
+		return next(err);
+	}
+
+	let smallImageLocation = req.file.small.Location;
+	try {
+		smallImageLocation = S3ImageProcess(smallImageLocation);
+	} catch (err) {
+		return next(err);
+	}
+
+	console.log('originalImageLocation = ', originalImageLocation);
+	console.log('smallImageLocation = ', smallImageLocation);
 	const newCar = new Car({
 		userId: userId,
 		userName: user.userName,
@@ -260,7 +293,8 @@ const createCar = async (req, res, next) => {
 		make,
 		model,
 		trimLevel,
-		image: imagePath,
+		originalImage: originalImageLocation,
+		image: smallImageLocation,
 		tireBrand,
 		tireName,
 		tireFrontWidth,
@@ -315,6 +349,7 @@ const createCar = async (req, res, next) => {
 		// only both tasks succeed, we commit the transaction
 		await session.commitTransaction();
 	} catch (err) {
+		console.log('err = ', err);
 		const error = new HttpError(
 			'Create car failed. Please try again later.',
 			500
@@ -548,6 +583,84 @@ const activateCar = async (req, res, next) => {
 };
 
 const deleteCar = async (req, res, next) => {};
+
+const S3ImageProcess = fileLocation => {
+	// fileLocation = https://myseattime-dev.s3.us-west-1.amazonaws.com/cars/faf21120-2533-11eb-a9c0-ed9f2385ef05.jpg-small
+	let parseLocation = fileLocation.split('/');
+	// bucket folder name, ie. 'cars'
+	let folderName = parseLocation[parseLocation.length - 2];
+	// fileName: faf21120-2533-11eb-a9c0-ed9f2385ef05.jpg-small
+	let fileName = parseLocation[parseLocation.length - 1];
+	// parse file name
+	let parseFileName = fileName.split('.');
+	// name: faf21120-2533-11eb-a9c0-ed9f2385ef05
+	let name = parseFileName[parseFileName.length - 2];
+	// extension: jpg-small
+	let extensionSize = parseFileName[parseFileName.length - 1];
+	// break extensionSize
+	let parseExtensionSize = extensionSize.split('-');
+	// size: small
+	let size = parseExtensionSize[1];
+	// ext: jpg
+	let ext = parseExtensionSize[0];
+	// assemble new name
+	let newName = name + '-' + size + '.' + ext;
+	console.log('size = ', size);
+	console.log('newName  = ', newName);
+
+	// copy new fileName
+	var copyParams = {
+		Bucket: process.env.S3_BUCKET_NAME,
+		CopySource:
+			'/' +
+			process.env.S3_BUCKET_NAME +
+			'/' +
+			folderName +
+			'/' +
+			fileName,
+		Key: folderName + '/' + size + '/' + newName,
+		ACL: 'public-read'
+	};
+
+	// delete original file
+	var deleteParams = {
+		Bucket: process.env.S3_BUCKET_NAME,
+		Key: folderName + '/' + fileName
+	};
+
+	try {
+		s3.copyObject(copyParams, (err, data) => {
+			if (err) {
+				console.log('err in s3 copy = ', err);
+				throw 'S3 copyObject Error. Please try again.';
+			} else {
+				console.log(data);
+				s3.deleteObject(deleteParams, (err, data) => {
+					if (err) {
+						throw 'S3 deleteObject Error. Please try again.';
+						// an error occurred
+						// const error = new HttpError('S3 deleteObject error.', 500);
+						// return err;
+					} else {
+						// successful response
+						console.log(data);
+					}
+				});
+			}
+		});
+	} catch (err) {
+		throw err;
+	}
+
+	console.log(
+		'return name = ',
+		process.env.S3_URL + '/' + folderName + '/' + size + '/' + newName
+	);
+	return (
+		// https://myseattime-dev.s3-us-west-1.amazonaws.com/cars/small/841f8a40-256b-11eb-bba5-bdc4f4521391-small.jpg
+		process.env.S3_URL + '/' + folderName + '/' + size + '/' + newName
+	);
+};
 
 // export a pointer of the function
 exports.getCarById = getCarById;
