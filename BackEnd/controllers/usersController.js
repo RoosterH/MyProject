@@ -9,6 +9,7 @@ const HttpError = require('../models/httpError');
 const User = require('../models/user');
 
 const config = require('../Config/Config');
+const { S3ImageProcess } = require('../util/s3ImageProcess');
 const JWT_PRIVATE_KEY = config.JWT_PRIVATE_KEY;
 
 // GET /api/users/
@@ -121,12 +122,42 @@ const createUser = async (req, res, next) => {
 		return next(error);
 	}
 
+	// let originalImageLocation = req.file.original.Location;
+	// try {
+	// 	originalImageLocation = S3ImageProcess(originalImageLocation);
+	// } catch (err) {
+	// 	console.log('err @ originalImageLocation = ', err);
+	// 	return next(err);
+	// }
+
+	// let smallImageLocation = req.file.small.Location;
+	// try {
+	// 	smallImageLocation = S3ImageProcess(smallImageLocation);
+	// } catch (err) {
+	// 	console.log('err @ smallImageLocation = ', err);
+	// 	return next(err);
+	// }
+
+	let originalImageLocation;
+	let smallImageLocation;
+	if (req.file) {
+		let transformArray = req.file.transforms;
+		transformArray.map(transform => {
+			if (transform.id === 'original') {
+				originalImageLocation = transform.location;
+			} else if (transform.id === 'small') {
+				smallImageLocation = transform.location;
+			}
+		});
+	}
+
 	const newUser = new User({
 		userName,
 		lastName,
 		firstName,
 		email,
-		image: req.file.location,
+		originalImage: originalImageLocation,
+		image: smallImageLocation,
 		password: hashedPassword,
 		entries: []
 	});

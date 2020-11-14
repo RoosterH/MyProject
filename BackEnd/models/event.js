@@ -8,6 +8,7 @@ const Schema = mongoose.Schema;
 // each club has multiple events and each event is owned by a club
 const eventSchema = new Schema({
 	name: { type: String, required: true },
+	originalImage: { type: String, required: true },
 	image: { type: String, required: true },
 	type: { type: String, required: true },
 	// flag for multi-day events to generate entry report for each day. Mainly for run group/lunch

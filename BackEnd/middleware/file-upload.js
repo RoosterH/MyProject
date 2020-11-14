@@ -1,7 +1,9 @@
 const multer = require('multer');
-const multerS3 = require('multer-s3');
+// const multerS3 = require('multer-s3');
+const multerS3 = require('multer-s3-transform');
 const aws = require('aws-sdk');
 const { v1: uuid } = require('uuid');
+const sharp = require('sharp');
 
 const MIME_TYPE_MAP = {
 	'image/png': 'png',
@@ -19,6 +21,7 @@ aws.config.update({
 	region: process.env.S3_REGION
 });
 
+let UUID;
 const fileUpload = multer({
 	limits: 1500000, // 1.5MB file size
 	storage: multerS3({
@@ -34,7 +37,8 @@ const fileUpload = multer({
 			cb(null, { fieldName: file.fieldname });
 		},
 		key: (req, file, cb) => {
-			const UUID = uuid();
+			UUID = uuid();
+			console.log('UUID = ', UUID);
 			const ext = MIME_TYPE_MAP[file.mimetype];
 
 			console.log('file in uploadfile = ', file);
@@ -53,7 +57,80 @@ const fileUpload = multer({
 			console.log('S3Folder = ', S3Folder);
 
 			cb(null, S3Folder + '/' + UUID + '.' + ext);
-		}
+		},
+		shouldTransform: (req, file, cb) => {
+			console.log('file = ', file);
+			console.log(
+				'I am here  = ',
+				/^image/i.test(file.mimetype) &&
+					file.fieldname !== 'courseMap' &&
+					file.fieldname !== 'clubImage'
+			);
+			// is this an image type?
+			cb(
+				null,
+				/^image/i.test(file.mimetype) &&
+					file.fieldname !== 'courseMap' &&
+					file.fieldname !== 'clubImage'
+			);
+		},
+		transforms: [
+			{
+				id: 'original',
+				key: (req, file, cb) => {
+					// UUID = uuid();
+					console.log('UUID1 = ', UUID);
+					let S3Folder;
+					if (file.fieldname === 'userImage') {
+						S3Folder = 'users';
+					} else if (file.fieldname === 'clubImage') {
+						S3Folder = 'clubs';
+					} else if (file.fieldname === 'eventImage') {
+						S3Folder = 'events';
+					} else if (file.fieldname === 'courseMap') {
+						S3Folder = 'courseMaps';
+					} else if (file.fieldname === 'carImage') {
+						S3Folder = 'cars';
+					}
+
+					cb(
+						null,
+						S3Folder + '/' + 'original' + '/' + UUID + '-original.jpg'
+					);
+				},
+				transform: (req, file, cb) => {
+					cb(null, sharp().jpeg({ quality: 100 }));
+				}
+			},
+			{
+				id: 'small',
+				key: (req, file, cb) => {
+					console.log('UUID2 = ', UUID);
+					let S3Folder;
+					if (file.fieldname === 'userImage') {
+						S3Folder = 'users';
+					} else if (file.fieldname === 'clubImage') {
+						S3Folder = 'clubs';
+					} else if (file.fieldname === 'eventImage') {
+						S3Folder = 'events';
+					} else if (file.fieldname === 'courseMap') {
+						S3Folder = 'courseMaps';
+					} else if (file.fieldname === 'carImage') {
+						S3Folder = 'cars';
+					}
+					cb(
+						null,
+						S3Folder + '/' + 'small' + '/' + UUID + '-small.jpg'
+					);
+				},
+				transform: (req, file, cb) => {
+					cb(
+						null,
+						sharp().resize({ width: 300 }).jpeg({ quality: 100 })
+					);
+				}
+			}
+		]
 	}),
 	fileFilter: (req, file, cb) => {
 		// if extention is not defined in MIME_TYPE_MAP, it will return undefined

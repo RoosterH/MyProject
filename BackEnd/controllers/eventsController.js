@@ -15,6 +15,7 @@ const Club = require('../models/club');
 // const mongooseUniqueValidator = require('mongoose-unique-validator');
 const { min } = require('moment');
 const entry = require('../models/entry');
+const { S3ImageProcess } = require('../util/s3ImageProcess');
 
 const errMsg = errors => {
 	var msg;
@@ -590,6 +591,7 @@ const createEvent = async (req, res, next) => {
 		clubId: clubId,
 		clubName: club.name,
 		clubImage: club.image,
+		originalImage: 'UNDEFINED',
 		image: 'UNDEFINED',
 		published: false,
 		entryFormData: [],
@@ -753,35 +755,109 @@ const updateEventPhotos = async (req, res, next) => {
 	// 	  }
 	// 	]
 	//   }
+
 	// check whether image or courseMap been changed or not
-	let imagePath, courseMapPath;
-	// if new req has image, we want to unlink the old image
-	if (req.files.eventImage) {
-		// in route, we have max count: 1, so  reg.files.eventImage is an array
-		imagePath = req.files.eventImage[0].location;
-		// default value is 'UNDEFINED' set in createEvent
-		if (event.image !== 'UNDEFINED') {
-			fs.unlink(event.image, err => {
-				console.log(err);
-			});
+	let smallImageLocation, originalImageLocation;
+	let courseMapPath;
+	if (req.files) {
+		if (req.files.eventImage) {
+			let eventImage = req.files.eventImage[0];
+			if (eventImage) {
+				eventImage.transforms.map(transform => {
+					if (transform.id === 'original') {
+						originalImageLocation = transform.location;
+						event.originalImage = originalImageLocation;
+					} else if (transform.id === 'small') {
+						smallImageLocation = transform.location;
+						event.image = smallImageLocation;
+					}
+				});
+			}
 		}
-	}
-	if (req.files.courseMap) {
-		// in route, we have max count: 1, so  reg.files.courseMap is an array
-		courseMapPath = req.files.courseMap[0].location;
-		if (event.courseMap) {
-			fs.unlink(event.courseMap, err => {
-				console.log(err);
-			});
+		// we do not resize courseMap to small size
+		if (req.files.courseMap) {
+			let courseMap = req.files.courseMap[0];
+			if (courseMap) {
+				courseMapPath = courseMap.location;
+				event.courseMap = courseMapPath;
+			}
 		}
 	}
 
-	if (imagePath) {
-		event.image = imagePath;
-	}
-	if (courseMapPath) {
-		event.courseMap = courseMapPath;
-	}
+	// check whether image or courseMap been changed or not
+	// let smallImageLocation, originalImageLocation;
+	// if new req has image, we want to unlink the old image
+	// console.log('req.files = ', req.files);
+	// console.log('============================================');
+	// if (req.files.eventImage) {
+	// 	// in route, we have max count: 1, so  reg.files.eventImage is an array
+	// 	console.log(
+	// 		'req.files.eventImage[0] = ',
+	// 		req.files.eventImage[0]
+	// 	);
+	// 	originalImageLocation = req.files.eventImage[0].original.Location;
+	// 	console.log('originalImageLocation = ', originalImageLocation);
+	// 	console.log('============================================');
+	// 	console.log('req.files.courseMap = ', req.files.courseMap);
+	// 	console.log(
+	// 		'courseMapPath = ',
+	// 		req.files.courseMap[0].original.Location
+	// 	);
+	// 	console.log('============================================');
+	// 	try {
+	// 		originalImageLocation = S3ImageProcess(originalImageLocation);
+	// 	} catch (err) {
+	// 		console.log('err @ originalImageLocation = ', err);
+	// 		return next(err);
+	// 	}
+
+	// 	smallImageLocation = req.files.eventImage[0].small.Location;
+	// 	console.log('smallImageLocation = ', smallImageLocation);
+	// 	try {
+	// 		smallImageLocation = S3ImageProcess(smallImageLocation);
+	// 	} catch (err) {
+	// 		console.log('err @ smallImageLocation = ', err);
+	// 		return next(err);
+	// 	}
+
+	// 	// default value is 'UNDEFINED' set in createEvent
+	// 	if (event.image !== 'UNDEFINED') {
+	// 		// fs.unlink(event.image, err => {
+	// 		// 	console.log(err);
+	// 		// });
+	// 	}
+	// }
+
+	// let courseMapPath;
+	// if (req.files.courseMap) {
+	// 	// in route, we have max count: 1, so  reg.files.courseMap is an array
+	// 	// courseMapPath = req.files.courseMap[0].original.Location;
+	// 	courseMapPath = req.files.courseMap[0].original.Location;
+	// 	console.log('courseMapPath = ', courseMapPath);
+	// 	try {
+	// 		courseMapPath = S3ImageProcess(courseMapPath);
+	// 	} catch (err) {
+	// 		console.log('err @ courseMapPath = ', err);
+	// 		return next(err);
+	// 	}
+
+	// 	event.courseMap = courseMapPath;
+	// 	// if (event.courseMap) {
+	// 	// fs.unlink(event.courseMap, err => {
+	// 	// 	console.log(err);
+	// 	// });
+	// 	// }
+	// }
+
+	// if (originalImageLocation) {
+	// 	event.originalImage = originalImageLocation;
+	// }
+	// if (smallImageLocation) {
+	// 	event.image = smallImageLocation;
+	// }
+	// if (courseMapPath) {
+	// 	event.courseMap = courseMapPath;
+	// }
 
 	// set published to false. User needs to re-publish the event
 	event.published = false;
@@ -1227,14 +1303,14 @@ const deleteEvent = async (req, res, next) => {
 		await entryReport.remove({ session: session });
 
 		if (event.image !== 'UNDEFINED' && event.image) {
-			fs.unlink(event.image, err => {
-				console.log('unlink event image error = ', err);
-			});
+			// fs.unlink(event.image, err => {
+			// 	console.log('unlink event image error = ', err);
+			// });
 		}
 		if (event.courseMap) {
-			fs.unlink(event.courseMap, err => {
-				console.log('unlink course map error = ', err);
-			});
+			// fs.unlink(event.courseMap, err => {
+			// 	console.log('unlink course map error = ', err);
+			// });
 		}
 
 		/**

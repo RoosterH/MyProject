@@ -6,6 +6,7 @@ const { check } = require('express-validator');
 const moment = require('moment');
 
 const eventsController = require('../controllers/eventsController');
+const fileUploadResizeS3 = require('../middleware/file-uploadResizeS3');
 const fileUpload = require('../middleware/file-upload');
 const checkClubAuth = require('../middleware/check-clubAuth');
 const checkUserAuth = require('../middleware/check-userAuth');
@@ -99,6 +100,7 @@ router.post(
 
 router.patch(
 	'/photos/:eid',
+	// fileUploadResizeS3.fields([
 	fileUpload.fields([
 		{ name: 'eventImage', maxCount: 1 },
 		{ name: 'courseMap', maxCount: 1 }

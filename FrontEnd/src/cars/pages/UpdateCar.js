@@ -102,9 +102,7 @@ const UpdateCar = setFieldValue => {
 
 	let initialValues = {};
 
-	console.log('before queryCar1');
 	useEffect(() => {
-		console.log('in queryCar1');
 		const queryCar = async () => {
 			try {
 				const [
@@ -171,7 +169,6 @@ const UpdateCar = setFieldValue => {
 	// If no existing data, create an array; otherwise retrieve it
 	carFormData = carFormData ? JSON.parse(carFormData) : {};
 
-	console.log('initialized = ', initialized);
 	// local storage gets the higest priority
 	// get from localStorage
 	if (
@@ -179,7 +176,6 @@ const UpdateCar = setFieldValue => {
 		carFormData &&
 		moment(carFormData.expirationDate) > moment()
 	) {
-		console.log('inside moment');
 		setInitialized(true);
 		// Form data
 		if (carFormData.year) {
@@ -290,7 +286,6 @@ const UpdateCar = setFieldValue => {
 		}
 	} else if (!initialized && loadedCar) {
 		setInitialized(true);
-		console.log('in localstorage');
 		// initialize localStorage
 		carFormData['expirationDate'] = moment(
 			moment().add(1, 'days'),
@@ -377,8 +372,6 @@ const UpdateCar = setFieldValue => {
 		image: image
 	};
 
-	console.log('init = ', initialValues);
-
 	const updateCarFormData = (key, value) => {
 		const storageData = JSON.parse(
 			localStorage.getItem('carFormData')
@@ -441,8 +434,8 @@ const UpdateCar = setFieldValue => {
 				}
 			);
 			setOKLeavePage(true);
-			// Redirect the club to a diffrent page
-			history.push(`/users/garage/${userAuthContext.userId}`);
+			// Redirect to user garage page
+			history.push(`/users/garagewrapper/${userAuthContext.userId}`);
 		} catch (err) {}
 	};
 

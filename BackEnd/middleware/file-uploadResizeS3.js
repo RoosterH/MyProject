@@ -1,5 +1,5 @@
 const multer = require('multer');
-const multerS3 = require('multer-s3');
+// const multerS3 = require('multer-s3');
 const s3Storage = require('multer-sharp-s3');
 const aws = require('aws-sdk');
 const { v1: uuid } = require('uuid');
@@ -20,7 +20,7 @@ aws.config.update({
 	region: process.env.S3_REGION
 });
 
-const fileUploadNew = multer({
+const fileUploadResizeS3 = multer({
 	limits: 1500000, // 1.5MB file size
 	storage: s3Storage({
 		ACL: 'public-read', // Owner gets FULL_CONTROL. The AllUsers group gets READ access.
@@ -29,7 +29,7 @@ const fileUploadNew = multer({
 		// No need to provide serverSideEncryption, just click on S3 bucket or folder to enable it
 		// serverSideEncryption: 'AES256',
 		// Withoute contentType image will be downloaded instead of been displayed
-		contentType: multerS3.AUTO_CONTENT_TYPE,
+		// contentType: multerS3.AUTO_CONTENT_TYPE,
 		metadata: (req, file, cb) => {
 			const ext = MIME_TYPE_MAP[file.mimetype];
 			cb(null, { fieldName: file.fieldname });
@@ -38,7 +38,6 @@ const fileUploadNew = multer({
 			const UUID = uuid();
 			const ext = MIME_TYPE_MAP[file.mimetype];
 
-			console.log('file in uploadfile = ', file);
 			let S3Folder;
 			if (file.fieldname === 'userImage') {
 				S3Folder = 'users';
@@ -51,14 +50,13 @@ const fileUploadNew = multer({
 			} else if (file.fieldname === 'carImage') {
 				S3Folder = 'cars';
 			}
-			console.log('S3Folder = ', S3Folder);
 
 			cb(null, S3Folder + '/' + UUID + '.jpg');
 		},
 		// must set multiple to true to have multiple resizing
 		multiple: true,
 		resize: [{ suffix: 'small', width: 300 }, { suffix: 'original' }],
-		toFormat: { type: 'jpeg', optins: { quality: 100 } }
+		toFormat: { type: 'jpeg', options: { quality: 100 } }
 	}),
 	fileFilter: (req, file, cb) => {
 		// if extention is not defined in MIME_TYPE_MAP, it will return undefined
@@ -69,7 +67,7 @@ const fileUploadNew = multer({
 		cb(error, isValid);
 	}
 });
-module.exports = fileUploadNew;
+module.exports = fileUploadResizeS3;
 
 // **** Example of how to store image in the local drive **** //
 // Execute multer as a function that we can pass configuration object.
