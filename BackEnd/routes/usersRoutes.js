@@ -6,7 +6,6 @@ const { check } = require('express-validator');
 const usersController = require('../controllers/usersController');
 const carsController = require('../controllers/carsController');
 const fileUpload = require('../middleware/file-upload');
-// const fileUploadResizeS3 = require('../middleware/file-uploadResizeS3');
 const checkUserAuth = require('../middleware/check-userAuth');
 const { route } = require('./clubsRoutes');
 const { Router } = require('express');
@@ -19,7 +18,6 @@ router.get('/:uid', usersController.getUserById);
 
 router.post(
 	'/signup',
-	// fileUploadResizeS3.single('userImage'),
 	fileUpload.single('userImage'),
 	[
 		check('userName').not().isEmpty(),

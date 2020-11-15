@@ -6,7 +6,6 @@ const { check } = require('express-validator');
 
 const carsController = require('../controllers/carsController');
 const fileUpload = require('../middleware/file-upload');
-// const fileUploadResizeS3 = require('../middleware/file-uploadResizeS3');
 const checkUserAuth = require('../middleware/check-userAuth');
 
 const router = express.Router();
@@ -24,7 +23,6 @@ router.get('/:cid', carsController.getCarById);
 // only users are able to create an car
 router.post(
 	'/',
-	// fileUploadResizeS3.single('carImage'),
 	fileUpload.single('carImage'),
 	[
 		(check('active').isEmpty(),
@@ -49,7 +47,6 @@ router.patch('/activate/:cid', carsController.activateCar);
 
 router.patch(
 	'/:cid',
-	// fileUploadResizeS3.single('carImage'),
 	fileUpload.single('carImage'),
 	[
 		(check('active').isEmpty(),

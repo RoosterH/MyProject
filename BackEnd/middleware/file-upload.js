@@ -21,6 +21,38 @@ aws.config.update({
 	region: process.env.S3_REGION
 });
 
+// Format of req.file using multer-s3-transform
+// req.file =  {
+// 	fieldname: 'carImage',
+// 	originalname: 'Princess_Peach.png',
+// 	encoding: '7bit',
+// 	mimetype: 'image/png',
+// 	transforms: [
+// 	  {
+// 		id: 'small',
+// 		size: 43312,
+// 		bucket: 'myseattime-dev',
+// 		key: 'cars/small/c510d150-2776-11eb-89a5-25f841de659d-small.jpg',
+// 		acl: 'public-read',
+// 		contentType: 'image/png',
+// 		metadata: [Object],
+// 		location: 'https://myseattime-dev.s3.us-west-1.amazonaws.com/cars/small/c510d150-2776-11eb-89a5-25f841de659d-small.jpg',
+// 		etag: '"2b3dbad5050460e3d6f3c5bc681d40c8"'
+// 	  },
+// 	  {
+// 		id: 'original',
+// 		size: 418497,
+// 		bucket: 'myseattime-dev',
+// 		key: 'cars/original/c510d150-2776-11eb-89a5-25f841de659d-original.jpg',
+// 		acl: 'public-read',
+// 		contentType: 'image/png',
+// 		metadata: [Object],
+// 		location: 'https://myseattime-dev.s3.us-west-1.amazonaws.com/cars/original/c510d150-2776-11eb-89a5-25f841de659d-original.jpg',
+// 		etag: '"87043120ba61e0e084b303205991daf1"'
+// 	  }
+// 	]
+//   }
+
 let UUID;
 const fileUpload = multer({
 	limits: 1500000, // 1.5MB file size
@@ -54,7 +86,6 @@ const fileUpload = multer({
 			} else if (file.fieldname === 'carImage') {
 				S3Folder = 'cars';
 			}
-			console.log('S3Folder = ', S3Folder);
 
 			cb(null, S3Folder + '/' + UUID + '.' + ext);
 		},

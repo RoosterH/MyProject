@@ -10,7 +10,6 @@ const fileUpload = require('../middleware/file-upload');
 const { request } = require('http');
 const { compare } = require('bcryptjs');
 const { getAllUsers } = require('./usersController');
-const { S3ImageProcess } = require('../util/s3ImageProcess');
 
 const errMsg = errors => {
 	var msg;
@@ -255,24 +254,6 @@ const createCar = async (req, res, next) => {
 	// change image files name and move to different buckets in S3
 	// req.file.original.Location:
 	// https://myseattime-dev.s3.us-west-1.amazonaws.com/cars/faf21120-2533-11eb-a9c0-ed9f2385ef05.jpg-sm
-	// let originalImageLocation = req.file.original.Location;
-	// try {
-	// 	originalImageLocation = S3ImageProcess(originalImageLocation);
-	// } catch (err) {
-	// 	console.log('err @ originalImageLocation = ', err);
-	// 	return next(err);
-	// }
-
-	// let smallImageLocation = req.file.small.Location;
-	// try {
-	// 	smallImageLocation = S3ImageProcess(smallImageLocation);
-	// } catch (err) {
-	// 	console.log('err @ smallImageLocation = ', err);
-	// 	return next(err);
-	// }
-
-	console.log('req.file = ', req.file);
-	console.log('req.file.original = ', req.file.transforms);
 	let originalImageLocation;
 	let smallImageLocation;
 	if (req.file) {
@@ -462,35 +443,8 @@ const updateCar = async (req, res, next) => {
 		return next(error);
 	}
 
-	// let originalImageLocation = car.originalImage;
-	// let smallImageLocation = car.image;
-	// if (req.file) {
-	// 	// change image files name and move to different buckets in S3
-	// 	// req.file.original.Location:
-	// 	// https://myseattime-dev.s3.us-west-1.amazonaws.com/cars/faf21120-2533-11eb-a9c0-ed9f2385ef05.jpg-sm
-	// 	originalImageLocation = req.file.original.Location;
-	// 	try {
-	// 		// move image to a different subfolder in S3, returning the new URI
-	// 		originalImageLocation = S3ImageProcess(originalImageLocation);
-	// 	} catch (err) {
-	// 		console.log('err @ originalImageLocation = ', err);
-	// 		return next(err);
-	// 	}
-
-	// 	smallImageLocation = req.file.small.Location;
-	// 	try {
-	// 		smallImageLocation = S3ImageProcess(smallImageLocation);
-	// 	} catch (err) {
-	// 		console.log('err @ smallImageLocation = ', err);
-	// 		return next(err);
-	// 	}
-
-	// 	imagePath = req.file.location;
-	// }
-
 	let originalImageLocation = car.originalImage;
 	let smallImageLocation = car.image;
-
 	if (req.file) {
 		let transformArray = req.file.transforms;
 		transformArray.map(transform => {

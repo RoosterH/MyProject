@@ -12,10 +12,8 @@ const EntryReport = require('../models/entryReport');
 const Event = require('../models/event');
 const Club = require('../models/club');
 
-// const mongooseUniqueValidator = require('mongoose-unique-validator');
 const { min } = require('moment');
 const entry = require('../models/entry');
-const { S3ImageProcess } = require('../util/s3ImageProcess');
 
 const errMsg = errors => {
 	var msg;
@@ -728,34 +726,6 @@ const updateEventPhotos = async (req, res, next) => {
 		return next(error);
 	}
 
-	// example of req.files =  [Object: null prototype] {
-	// 	eventImage: [
-	// 	  {
-	// 		fieldname: 'eventImage',
-	// 		originalname: '56270082_2262210193836118_5490618536881553408_o-1024x683.jpg',
-	// 		encoding: '7bit',
-	// 		mimetype: 'image/jpeg',
-	// 		size: 81674,
-	// 		bucket: 'myseattime-dev',
-	// 		key: 'clubs/undefined.jpeg',
-	// 		acl: 'public-read',
-	// 		contentType: 'application/octet-stream',
-	// 		contentDisposition: null,
-	// 		storageClass: 'STANDARD',
-	// 		serverSideEncryption: null,
-	// 		metadata: [Object],
-	// 		location: 'https://myseattime-dev.s3.us-west-1.amazonaws.com/clubs/undefined.jpeg',
-	// 		etag: '"6bf661ffa6920a78556a3669d25d87e8"',
-	// 		versionId: undefined
-	// 	  }
-	// 	],
-	// 	courseMap: [
-	// 	  {
-	// 		...........
-	// 	  }
-	// 	]
-	//   }
-
 	// check whether image or courseMap been changed or not
 	let smallImageLocation, originalImageLocation;
 	let courseMapPath;
@@ -783,81 +753,6 @@ const updateEventPhotos = async (req, res, next) => {
 			}
 		}
 	}
-
-	// check whether image or courseMap been changed or not
-	// let smallImageLocation, originalImageLocation;
-	// if new req has image, we want to unlink the old image
-	// console.log('req.files = ', req.files);
-	// console.log('============================================');
-	// if (req.files.eventImage) {
-	// 	// in route, we have max count: 1, so  reg.files.eventImage is an array
-	// 	console.log(
-	// 		'req.files.eventImage[0] = ',
-	// 		req.files.eventImage[0]
-	// 	);
-	// 	originalImageLocation = req.files.eventImage[0].original.Location;
-	// 	console.log('originalImageLocation = ', originalImageLocation);
-	// 	console.log('============================================');
-	// 	console.log('req.files.courseMap = ', req.files.courseMap);
-	// 	console.log(
-	// 		'courseMapPath = ',
-	// 		req.files.courseMap[0].original.Location
-	// 	);
-	// 	console.log('============================================');
-	// 	try {
-	// 		originalImageLocation = S3ImageProcess(originalImageLocation);
-	// 	} catch (err) {
-	// 		console.log('err @ originalImageLocation = ', err);
-	// 		return next(err);
-	// 	}
-
-	// 	smallImageLocation = req.files.eventImage[0].small.Location;
-	// 	console.log('smallImageLocation = ', smallImageLocation);
-	// 	try {
-	// 		smallImageLocation = S3ImageProcess(smallImageLocation);
-	// 	} catch (err) {
-	// 		console.log('err @ smallImageLocation = ', err);
-	// 		return next(err);
-	// 	}
-
-	// 	// default value is 'UNDEFINED' set in createEvent
-	// 	if (event.image !== 'UNDEFINED') {
-	// 		// fs.unlink(event.image, err => {
-	// 		// 	console.log(err);
-	// 		// });
-	// 	}
-	// }
-
-	// let courseMapPath;
-	// if (req.files.courseMap) {
-	// 	// in route, we have max count: 1, so  reg.files.courseMap is an array
-	// 	// courseMapPath = req.files.courseMap[0].original.Location;
-	// 	courseMapPath = req.files.courseMap[0].original.Location;
-	// 	console.log('courseMapPath = ', courseMapPath);
-	// 	try {
-	// 		courseMapPath = S3ImageProcess(courseMapPath);
-	// 	} catch (err) {
-	// 		console.log('err @ courseMapPath = ', err);
-	// 		return next(err);
-	// 	}
-
-	// 	event.courseMap = courseMapPath;
-	// 	// if (event.courseMap) {
-	// 	// fs.unlink(event.courseMap, err => {
-	// 	// 	console.log(err);
-	// 	// });
-	// 	// }
-	// }
-
-	// if (originalImageLocation) {
-	// 	event.originalImage = originalImageLocation;
-	// }
-	// if (smallImageLocation) {
-	// 	event.image = smallImageLocation;
-	// }
-	// if (courseMapPath) {
-	// 	event.courseMap = courseMapPath;
-	// }
 
 	// set published to false. User needs to re-publish the event
 	event.published = false;
