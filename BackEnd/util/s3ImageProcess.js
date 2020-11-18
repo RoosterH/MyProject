@@ -1,5 +1,8 @@
 const aws = require('aws-sdk'); // AWS SDK V2
 
+// This function uses AWS SDK to simulate move a file from one folder to the other folder in the same bucket.
+// 1. copy files from one folder to a different folder in the same bucket.
+// 2. After copying, it deletes the original file.
 const S3ImageProcess = fileLocation => {
 	// fileLocation = https://myseattime-dev.s3.us-west-1.amazonaws.com/cars/faf21120-2533-11eb-a9c0-ed9f2385ef05.jpg-small
 	let parseLocation = fileLocation.split('/');
@@ -63,6 +66,7 @@ const S3ImageProcess = fileLocation => {
 				throw 'S3 copyObject Error. Please try again.';
 			} else {
 				console.log(data);
+				// delete after copy, delete must happen if there is no error for copyObject
 				s3.deleteObject(deleteParams, (err, data) => {
 					if (err) {
 						throw 'S3 deleteObject Error. Please try again.';

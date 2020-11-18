@@ -14,6 +14,9 @@ const clubSchema = new Schema({
 	},
 	password: { type: String, required: true, minlength: 6 },
 	passwordValidation: { type: String, minlength: 6 },
+	// there is no resized image for club, originalImage is uploaded from clubs
+	originalImage: { type: String, require: true },
+	// image points to CloudFront
 	image: { type: String, require: true },
 	// because a club could have multiple events so we need to use array. [] means array
 	// using ref as a foreing key referring to Event

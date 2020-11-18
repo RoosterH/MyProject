@@ -2,7 +2,7 @@ import React from 'react';
 
 import Card from '../../shared/components/UIElements/Card';
 import Image from '../../shared/components/UIElements/Image';
-import OFFCOURSE from './OffCourse.jpg';
+import OFFCOURSE from './webp/OffCourse.webp';
 
 const Error = () => {
 	return (

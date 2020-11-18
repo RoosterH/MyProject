@@ -123,6 +123,7 @@ const createUser = async (req, res, next) => {
 
 	let originalImageLocation;
 	let smallImageLocation;
+	let cloudFrontImageLocation;
 	if (req.file) {
 		let transformArray = req.file.transforms;
 		transformArray.map(transform => {
@@ -130,6 +131,10 @@ const createUser = async (req, res, next) => {
 				originalImageLocation = transform.location;
 			} else if (transform.id === 'small') {
 				smallImageLocation = transform.location;
+				cloudFrontImageLocation = smallImageLocation.replace(
+					process.env.S3_URL,
+					process.env.CLOUDFRONT_URL
+				);
 			}
 		});
 	}
@@ -140,7 +145,8 @@ const createUser = async (req, res, next) => {
 		firstName,
 		email,
 		originalImage: originalImageLocation,
-		image: smallImageLocation,
+		smallImage: smallImageLocation,
+		image: cloudFrontImageLocation,
 		password: hashedPassword,
 		entries: []
 	});

@@ -30,7 +30,7 @@ const getAllEvents = async (req, res, next) => {
 	try {
 		events = await Event.find(
 			{},
-			'-entryFormData -entries -waitlist -totalCap -totalEntries -numGroups -capDistribution -groupEntries'
+			'-entryFormData -totalCap -numGroups -capDistribution -originalImage -smallImage -originalCourseMap'
 		).sort({
 			startDate: 1,
 			endDate: 1
@@ -63,7 +63,7 @@ const getEventById = async (req, res, next) => {
 	try {
 		event = await Event.findById(
 			eventId,
-			'-entryFormData -entries -waitlist -totalCap -totalEntries -numGroups -capDistribution -groupEntries'
+			'-entryFormData -totalCap -numGroups -capDistribution -originalImage -smallImage -originalCourseMap'
 		);
 	} catch (err) {
 		// this error is displayed if the request to the DB had some issues
@@ -90,13 +90,12 @@ const getEventById = async (req, res, next) => {
 			getters: true,
 			transform: (doc, ret, opt) => {
 				delete ret['entryFormData'];
-				delete ret['entries'];
-				delete ret['waitlist'];
 				delete ret['totalCap'];
-				delete ret['totalEntries'];
 				delete ret['numGroups'];
 				delete ret['capDistribution'];
-				delete ret['groupEntries'];
+				delete ret['originalCourseMap'];
+				delete ret['originalImage'];
+				delete ret['smallImage'];
 				return ret;
 			}
 		})
@@ -176,14 +175,11 @@ const getEventsByClubId = async (req, res, next) => {
 					delete ret['courseMap'];
 					delete ret['clubImage'];
 					delete ret['entryFormData'];
-					delete ret['entries'];
-					delete ret['waitlist'];
-					delete ret['full'];
 					delete ret['totalCap'];
-					delete ret['totalEntries'];
 					delete ret['numGroups'];
 					delete ret['capDistribution'];
-					delete ret['groupEntries'];
+					delete ret['originalImage'];
+					delete ret['smallImage'];
 					return ret;
 				}
 			})
@@ -230,14 +226,11 @@ const getEventsByOwnerClubId = async (req, res, next) => {
 				getters: true,
 				transform: (doc, ret, opt) => {
 					delete ret['entryFormData'];
-					delete ret['entries'];
-					delete ret['waitlist'];
-					delete ret['full'];
 					delete ret['totalCap'];
-					delete ret['totalEntries'];
 					delete ret['numGroups'];
 					delete ret['capDistribution'];
-					delete ret['groupEntries'];
+					delete ret['originalImage'];
+					delete ret['smallImage'];
 					return ret;
 				}
 			})
@@ -286,14 +279,11 @@ const getPublishedEventsByOwnerClubId = async (req, res, next) => {
 				getters: true,
 				transform: (doc, ret, opt) => {
 					delete ret['entryFormData'];
-					delete ret['entries'];
-					delete ret['waitlist'];
 					delete ret['totalCap'];
-					delete ret['full'];
-					delete ret['totalEntries'];
 					delete ret['numGroups'];
 					delete ret['capDistribution'];
-					delete ret['groupEntries'];
+					delete ret['originalImage'];
+					delete ret['smallImage'];
 					return ret;
 				}
 			})
@@ -472,7 +462,7 @@ const getEventsByDate = async (req, res, next) => {
 				startDate: { $gte: startDate, $lte: endDate },
 				published: true
 			},
-			'-entryFormData -entries -waitlist -full -totalCap -totalEntries -numGroups -capDistribution -groupEntries -published'
+			'-entryFormData -totalCap -numGroups -capDistribution -published -originalImage -smallImage -originalCourseMap'
 		).sort({
 			endDate: 1
 		});
@@ -590,6 +580,7 @@ const createEvent = async (req, res, next) => {
 		clubName: club.name,
 		clubImage: club.image,
 		originalImage: 'UNDEFINED',
+		smallImage: 'UNDEFINED',
 		image: 'UNDEFINED',
 		published: false,
 		entryFormData: [],
@@ -739,7 +730,11 @@ const updateEventPhotos = async (req, res, next) => {
 						event.originalImage = originalImageLocation;
 					} else if (transform.id === 'small') {
 						smallImageLocation = transform.location;
-						event.image = smallImageLocation;
+						event.smallImage = smallImageLocation;
+						event.image = smallImageLocation.replace(
+							process.env.S3_URL,
+							process.env.CLOUDFRONT_URL
+						);
 					}
 				});
 			}
@@ -749,7 +744,11 @@ const updateEventPhotos = async (req, res, next) => {
 			let courseMap = req.files.courseMap[0];
 			if (courseMap) {
 				courseMapPath = courseMap.location;
-				event.courseMap = courseMapPath;
+				event.originalCourseMap = courseMapPath;
+				event.courseMap = courseMapPath.replace(
+					process.env.S3_URL,
+					process.env.CLOUDFRONT_URL
+				);
 			}
 		}
 	}
@@ -760,7 +759,13 @@ const updateEventPhotos = async (req, res, next) => {
 		await event.save();
 		res.status(200).json({
 			event: event.toObject({
-				getters: true
+				getters: true,
+				transform: (doc, ret, opt) => {
+					delete ret['originalCourseMap'];
+					delete ret['originalImage'];
+					delete ret['smallImage'];
+					return ret;
+				}
 			})
 		});
 	} catch (err) {

@@ -253,7 +253,7 @@ const createCar = async (req, res, next) => {
 
 	// change image files name and move to different buckets in S3
 	// req.file.original.Location:
-	// https://myseattime-dev.s3.us-west-1.amazonaws.com/cars/faf21120-2533-11eb-a9c0-ed9f2385ef05.jpg-sm
+	// https://myseattime-dev.s3.us-west-1.amazonaws.com/cars/faf21120-2533-11eb-a9c0-ed9f2385ef05-small.jpg
 	let originalImageLocation;
 	let smallImageLocation;
 	if (req.file) {
@@ -266,6 +266,10 @@ const createCar = async (req, res, next) => {
 			}
 		});
 	}
+	let cloudFrontImageLocation = smallImageLocation.replace(
+		process.env.S3_URL,
+		process.env.CLOUDFRONT_URL
+	);
 	const newCar = new Car({
 		userId: userId,
 		userName: user.userName,
@@ -275,7 +279,8 @@ const createCar = async (req, res, next) => {
 		model,
 		trimLevel,
 		originalImage: originalImageLocation,
-		image: smallImageLocation,
+		smallImage: smallImageLocation,
+		image: cloudFrontImageLocation,
 		tireBrand,
 		tireName,
 		tireFrontWidth,
@@ -338,7 +343,15 @@ const createCar = async (req, res, next) => {
 		return next(error);
 	}
 
-	res.status(201).json({ car: newCar.toObject({ getters: true }) });
+	res.status(201).json({
+		car: newCar.toObject({
+			getters: true,
+			transform: (doc, ret, opt) => {
+				delete ret['originalImage'];
+				delete ret['smallImage'];
+			}
+		})
+	});
 };
 
 // PATCH /api/cars/:cid
@@ -461,7 +474,11 @@ const updateCar = async (req, res, next) => {
 	car.model = model;
 	car.trimLevel = trimLevel;
 	car.originalImage = originalImageLocation;
-	car.image = smallImageLocation;
+	car.smallImage = smallImageLocation;
+	car.image = smallImageLocation.replace(
+		process.env.S3_URL,
+		process.env.CLOUDFRONT_URL
+	);
 	car.tireBrand = tireBrand;
 	car.tireName = tireName;
 	car.tireFrontWidth = tireFrontWidth;
@@ -503,7 +520,15 @@ const updateCar = async (req, res, next) => {
 		return next(error);
 	}
 
-	res.status(201).json({ car: car.toObject({ getters: true }) });
+	res.status(201).json({
+		car: car.toObject({
+			getters: true,
+			transform: (doc, ret, opt) => {
+				delete ret['originalImage'];
+				delete ret['smallImage'];
+			}
+		})
+	});
 };
 
 // PATCH /api/activate/:cid

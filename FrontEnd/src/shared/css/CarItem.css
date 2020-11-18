@@ -173,7 +173,8 @@
 }
 
 .theme {
-	background: url('../utils/png/RaceCarSmall.png');
+	/* background: url('../utils/png/RaceCarSmall.png'); */
+	background: url('../utils/webp/RaceCarSmall.webp');
 	background-repeat: no-repeat;
 	background-position: center;
 	background-position-y: 7rem;
@@ -341,7 +342,8 @@
 		color: white;
 	}
 	.theme {
-		background: url('../utils/png/RaceCar.png');
+		/* background: url('../utils/png/RaceCar.png'); */
+		background: url('../utils/webp/RaceCar.webp');
 		background-repeat: no-repeat;
 		background-position: center;
 		background-position-y: 6rem;

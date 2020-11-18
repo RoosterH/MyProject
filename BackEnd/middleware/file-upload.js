@@ -1,5 +1,4 @@
 const multer = require('multer');
-// const multerS3 = require('multer-s3');
 const multerS3 = require('multer-s3-transform');
 const aws = require('aws-sdk');
 const { v1: uuid } = require('uuid');
@@ -70,10 +69,7 @@ const fileUpload = multer({
 		},
 		key: (req, file, cb) => {
 			UUID = uuid();
-			console.log('UUID = ', UUID);
 			const ext = MIME_TYPE_MAP[file.mimetype];
-
-			console.log('file in uploadfile = ', file);
 			let S3Folder;
 			if (file.fieldname === 'userImage') {
 				S3Folder = 'users';
@@ -90,13 +86,6 @@ const fileUpload = multer({
 			cb(null, S3Folder + '/' + UUID + '.' + ext);
 		},
 		shouldTransform: (req, file, cb) => {
-			console.log('file = ', file);
-			console.log(
-				'I am here  = ',
-				/^image/i.test(file.mimetype) &&
-					file.fieldname !== 'courseMap' &&
-					file.fieldname !== 'clubImage'
-			);
 			// is this an image type?
 			cb(
 				null,
@@ -110,7 +99,6 @@ const fileUpload = multer({
 				id: 'original',
 				key: (req, file, cb) => {
 					// UUID = uuid();
-					console.log('UUID1 = ', UUID);
 					let S3Folder;
 					if (file.fieldname === 'userImage') {
 						S3Folder = 'users';
@@ -126,17 +114,21 @@ const fileUpload = multer({
 
 					cb(
 						null,
-						S3Folder + '/' + 'original' + '/' + UUID + '-original.jpg'
+						S3Folder +
+							'/' +
+							'original' +
+							'/' +
+							UUID +
+							'-original.webp'
 					);
 				},
 				transform: (req, file, cb) => {
-					cb(null, sharp().jpeg({ quality: 100 }));
+					cb(null, sharp().webp({ quality: 100 }));
 				}
 			},
 			{
 				id: 'small',
 				key: (req, file, cb) => {
-					console.log('UUID2 = ', UUID);
 					let S3Folder;
 					if (file.fieldname === 'userImage') {
 						S3Folder = 'users';
@@ -151,13 +143,13 @@ const fileUpload = multer({
 					}
 					cb(
 						null,
-						S3Folder + '/' + 'small' + '/' + UUID + '-small.jpg'
+						S3Folder + '/' + 'small' + '/' + UUID + '-small.webp'
 					);
 				},
 				transform: (req, file, cb) => {
 					cb(
 						null,
-						sharp().resize({ width: 300 }).jpeg({ quality: 100 })
+						sharp().resize({ width: 300 }).webp({ quality: 100 })
 					);
 				}
 			}

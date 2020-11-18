@@ -114,11 +114,23 @@ const createClub = async (req, res, next) => {
 		return next(error);
 	}
 
+	let originalImageLocation;
+	let cloudFrontImageLocation;
+	if (req.file) {
+		console.log('original = ', req.file);
+		originalImageLocation = req.file.location;
+		cloudFrontImageLocation = originalImageLocation.replace(
+			process.env.S3_URL,
+			process.env.CLOUDFRONT_URL
+		);
+	}
+
 	// req.file.location = https://myseattime-dev.s3.us-west-1.amazonaws.com/clubs/d20e6020-1e70-11eb-96c0-19998090542e.png
 	const newClub = new Club({
 		name,
 		email,
-		image: req.file.location,
+		originalImage: originalImageLocation,
+		image: cloudFrontImageLocation,
 		password: hashedPassword,
 		events: []
 	});

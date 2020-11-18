@@ -9,6 +9,7 @@ const Schema = mongoose.Schema;
 const eventSchema = new Schema({
 	name: { type: String, required: true },
 	originalImage: { type: String, required: true },
+	smallImage: { type: String, required: true },
 	image: { type: String, required: true },
 	type: { type: String, required: true },
 	// flag for multi-day events to generate entry report for each day. Mainly for run group/lunch
@@ -25,6 +26,7 @@ const eventSchema = new Schema({
 	},
 	description: { type: String, requried: true },
 	instruction: { type: String, requried: true },
+	originalCourseMap: { type: String },
 	courseMap: { type: String },
 	// using ref as foreign key pointing to Club
 	clubId: {
@@ -48,7 +50,7 @@ const eventSchema = new Schema({
 	totalCap: { type: Number },
 	// Number of run groups in an event
 	numGroups: { type: Number, required: true },
-	// if true, we will create an array groupEntries with numGroup elements. Each element value cannot exceed totalCap / numGroups.
+	// if true, we will create an array runGroupNumEntries with numGroup elements. Each element value cannot exceed totalCap / numGroups.
 	capDistribution: { type: Boolean, required: true },
 	// Race class options defined by club in the event entry form
 	raceClassOptions: [{ type: String, requird: true }],
@@ -59,39 +61,6 @@ const eventSchema = new Schema({
 	workerAssignments: [[{ type: String, required: true }]],
 	// Lunction
 	lunchOptions: { type: [String] }
-
-	// todo removed @@@@@@@@
-	// // ! array
-	// entries: [
-	// 	[
-	// 		{
-	// 			type: mongoose.Types.ObjectId,
-	// 			required: true,
-	// 			ref: 'Entry'
-	// 		}
-	// 	]
-	// ],
-	// // ! array
-	// waitlist: [
-	// 	[
-	// 		{
-	// 			type: mongoose.Types.ObjectId,
-	// 			required: true,
-	// 			ref: 'Entry'
-	// 		}
-	// 	]
-	// ],
-	// // ! array
-	// full: [{ type: Boolean }],
-	// // Total entries allowed in an event
-	// // ! array
-	// totalEntries: [{ type: Number, required: true }],
-	// // ! array
-	// // Run Group number of entries
-	// // we use index number to represent each run group for example if there are 5 run groups,
-	// // we will have 5 elements in the array runGroupNumEntries[0] => first run group entries
-	// // runGroupNumEntries: [[{ type: Number, required: true }]],
-	// runGroupNumEntries: [[{ type: Number, require: true }]]
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

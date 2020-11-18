@@ -15,6 +15,7 @@ const carSchema = new Schema({
 	userName: { type: String, required: true },
 	active: { type: Boolean, required: true },
 	originalImage: { type: String, required: true },
+	smallImage: { type: String, required: true },
 	image: { type: String, required: true },
 	year: { type: String, required: true },
 	make: { type: String, required: true },

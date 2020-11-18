@@ -93,6 +93,7 @@ app.use((error, req, res, next) => {
 	);
 });
 
+// process.env defined in nodemon.json
 mongoose
 	.connect(
 		`mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_PASSWORD}@hungjencluster0-ahunv.mongodb.net/${process.env.MONGO_DB_NAME}?retryWrites=true&w=majority`,
