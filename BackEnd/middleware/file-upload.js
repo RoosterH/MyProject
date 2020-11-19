@@ -59,8 +59,8 @@ const fileUpload = multer({
 		acl: 'public-read', // Owner gets FULL_CONTROL. The AllUsers group gets READ access.
 		s3: s3,
 		bucket: process.env.S3_BUCKET_NAME,
-		// No need to provide serverSideEncryption, just click on S3 bucket or folder to enable it
-		// serverSideEncryption: 'AES256',
+		// Need to provide serverSideEncryption in order to match bucket setting of Server-side encryption: Amazon S3 master-key (SSE-S3)
+		serverSideEncryption: 'AES256',
 		// Withoute contentType image will be downloaded instead of been displayed
 		contentType: multerS3.AUTO_CONTENT_TYPE,
 		metadata: (req, file, cb) => {
