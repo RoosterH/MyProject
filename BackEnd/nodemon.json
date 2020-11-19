@@ -12,7 +12,7 @@
 		"S3_BUCKET_NAME_DEV": "myseattime-dev",
 		"S3_BUCKET_NAME": "myseattime-image",
 		"S3_URL_DEV": "https://myseattime-dev.s3.us-west-1.amazonaws.com",
-		"S3_URL": "https://myseattime-image.s3.us-west-1.amazonaws.com",
+		"S3_URL": "https://myseattime-image.s3.amazonaws.com",
 		"CLOUDFRONT_URL_DEV": "https://dm6o7kx2v6zc3.cloudfront.net",
 		"CLOUDFRONT_URL": "https://d1139u9qxzy8k3.cloudfront.net"
 	}
