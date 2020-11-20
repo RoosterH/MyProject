@@ -56,7 +56,9 @@ let UUID;
 const fileUpload = multer({
 	limits: 1500000, // 1.5MB file size
 	storage: multerS3({
-		acl: 'authenticated-read', //public-read: Owner gets FULL_CONTROL. The AllUsers group gets READ access.
+		// public-read: Owner gets FULL_CONTROL. The AllUsers group gets READ access.
+		// We need to use "authenticated-read" so users cannot directly GetObject from S3 bucket
+		acl: process.env.S3_ACL,
 		s3: s3,
 		bucket: process.env.S3_BUCKET_NAME,
 		// Need to provide serverSideEncryption in order to match bucket setting of Server-side encryption: Amazon S3 master-key (SSE-S3)
