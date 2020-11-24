@@ -584,12 +584,6 @@ const createEvent = async (req, res, next) => {
 		image: 'UNDEFINED',
 		published: false,
 		entryFormData: [],
-
-		// todo remove @@@@
-		// entries: [[]],
-		// waitlist: [[]],
-		// totalEntries: [],
-
 		numGroups: 0,
 		capDistribution: false,
 		raceClassOptions: [],
@@ -598,18 +592,20 @@ const createEvent = async (req, res, next) => {
 		closed: false
 	});
 
+	// ! DO NOT REMOVE
 	// ! Intentionally leave this outside of transaction.
+	// ! Once the new collection been created, comment this section of codes
 	// Because Mongoose has a bug not able to create a new DB collection during transaction,
-	// event the problem only happens at a fresh DB, we still want to leave this outside.
-	try {
-		await newEventEntryReport.save();
-	} catch (err) {
-		const error = new HttpError(
-			'Create event failed when saving newEventEntryReport. Please try again later.',
-			500
-		);
-		return next(error);
-	}
+	// even the problem only happens at a fresh DB, we still want to leave this outside.
+	// try {
+	// 	await newEventEntryReport.save();
+	// } catch (err) {
+	// 	const error = new HttpError(
+	// 		'Create event failed when saving newEventEntryReport. Please try again later.',
+	// 		500
+	// 	);
+	// 	return next(error);
+	// }
 	try {
 		/**
 		 * 2 operations here: 1. save the event to DB. 2. store the event ID to club

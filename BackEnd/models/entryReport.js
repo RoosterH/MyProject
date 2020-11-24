@@ -8,6 +8,8 @@ const Schema = mongoose.Schema;
 // Entry Report for each event. Decoupling from event table.
 const entryReportSchema = new Schema({
 	// using ref as foreign key pointing to Club
+	// due to programming challenge, we will not set required: true here
+	// but it should be.  We will always set in our code so it's safe.
 	eventId: {
 		type: mongoose.Types.ObjectId,
 		ref: 'Event'

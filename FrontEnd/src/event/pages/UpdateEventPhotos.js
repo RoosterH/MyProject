@@ -62,41 +62,6 @@ const UpdateEventPhotos = props => {
 	// eventFormData = eventFormData ? JSON.parse(eventFormData) : {};
 
 	const [OKLeavePage, setOKLeavePage] = useState(true);
-	// local storage gets the higest priority
-	// get from localStorage
-	// if (
-	// 	!initialized &&
-	// 	eventFormData &&
-	// 	moment(eventFormData.expirationDate) > moment()
-	// ) {
-	// 	setInitialized(true);
-	// 	// Form data
-	// 	if (eventFormData.image) {
-	// 		setImage(eventFormData.image);
-	// 		// setImageOK(false);
-	// 	}
-	// 	if (eventFormData.courseMap) {
-	// 		setCourseMap(eventFormData.courseMap);
-	// 		// setCourseMapOK(false);
-	// 	}
-	// } else if (!initialized) {
-	// 	setInitialized(true);
-	// 	// initialize localStorage
-	// 	eventFormData['expirationDate'] = moment(
-	// 		moment().add(1, 'days'),
-	// 		moment.ISO_8601
-	// 	);
-	// 	eventFormData['image'] = undefined;
-	// 	eventFormData['courseMap'] = undefined;
-	// 	localStorage.setItem(
-	// 		'eventFormData',
-	// 		JSON.stringify(eventFormData)
-	// 	);
-	// }
-
-	// const removeEventFormData = () => {
-	// 	localStorage.removeItem('eventFormData');
-	// };
 
 	const initialValues = {
 		image: props.event.image,

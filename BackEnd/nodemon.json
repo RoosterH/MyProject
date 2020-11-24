@@ -8,7 +8,7 @@
 		"AWS_ACCESSKEYID": "AKIAQ3RGE76SUKXZKJOU",
 		"AWS_SECRETACCESSKEY": "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",
 		"S3_REGION": "us-west-1",
-		"S3_ACL": "authenticated-read",
+		"S3_ACL": "bucket-owner-full-control",
 		"S3_BUCKET_NAME": "myseattime-dev",
 		"S3_BUCKET_NAME_PROD": "myseattime-image",
 		"S3_URL": "https://myseattime-dev.s3.us-west-1.amazonaws.com",

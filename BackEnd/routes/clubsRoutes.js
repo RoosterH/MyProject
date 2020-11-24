@@ -40,6 +40,21 @@ router.use(checkClubAuth);
 // club logout
 router.post('/logout', clubsController.logoutClub);
 
+router.patch(
+	'/profile',
+	fileUpload.fields([
+		{ name: 'clubImage', maxCount: 1 },
+		{ name: 'clubProfileImage', maxCount: 1 }
+	]),
+	[
+		check('webPage').not().isEmpty(),
+		check('faceBook').not().isEmpty(),
+		check('contactEmail').normalizeEmail().isEmail(),
+		check('description').not().isEmpty()
+	],
+	clubsController.updateClubProfile
+);
+
 // update club info
 router.patch(
 	'/:cid',
@@ -61,5 +76,7 @@ router.get('/form/:eid', clubsController.getEventForm);
 router.post('/form/:eid', clubsController.createEventForm);
 
 router.patch('/publish/:eid', clubsController.publishEvent);
+
+router.get('/profile/:cid', clubsController.getClubProfile);
 
 module.exports = router;

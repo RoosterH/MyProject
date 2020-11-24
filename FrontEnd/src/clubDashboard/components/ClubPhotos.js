@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
-import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
 
 import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
@@ -17,26 +16,10 @@ import { FormContext } from '../../shared/context/form-context';
 
 import '../../shared/css/EventForm.css';
 
-const EventPhotos = props => {
-	let eId = props.eventId;
-	const [initialized, setInitialized] = useState(false);
+const ClubPhotos = () => {
 	const clubAuthContext = useContext(ClubAuthContext);
+	const clubId = clubAuthContext.clubId;
 	const formContext = useContext(FormContext);
-
-	// contButton controls when to enable CONTINUE button, set to true after submitHandler() succeeds
-	const [contButton, setContButton] = useState(false);
-	// contButtonStatus is the return value back to NewEventManger, set to true @ CONTINUE button onClick()
-	const [contStatus, setContinueStatus] = useState(false);
-	// const continueHandler = () => {
-	// 	setContinueStatus(true);
-	// };
-
-	// return true back to NewEventManger to move to next stage
-	useEffect(() => {
-		if (contStatus) {
-			props.eventPhotosStatus(true);
-		}
-	}, [contStatus, props]);
 
 	useEffect(() => {
 		let mounted = true;
@@ -56,7 +39,7 @@ const EventPhotos = props => {
 	} = useHttpClient();
 
 	// authentication check
-	useClubLoginValidation('/clubs/events/photos');
+	useClubLoginValidation(`/clubs/photos/${clubId}`);
 
 	// If we are re-directing to this page, we want to clear up clubRedirectURL
 	let location = useLocation();
@@ -69,67 +52,64 @@ const EventPhotos = props => {
 		}
 	}, [location, clubAuthContext]);
 
-	let image = undefined;
-	let courseMap = undefined;
-
-	// initialize local storage
-	// Get the existing data
-	var eventFormData = localStorage.getItem('eventFormData');
-
-	// If no existing data, create an array; otherwise retrieve it
-	eventFormData = eventFormData ? JSON.parse(eventFormData) : {};
-
 	const [OKLeavePage, setOKLeavePage] = useState(true);
-	// local storage gets the higest priority
-	// get from localStorage
-	if (
-		!initialized &&
-		eventFormData &&
-		moment(eventFormData.expirationDate) > moment()
-	) {
-		setInitialized(true);
-		// Form data
-		if (eventFormData.image) {
-			//setImage(eventFormData.image);
-			// setImageOK(false);
-		}
-		if (eventFormData.courseMap) {
-			// setCourseMap(eventFormData.courseMap);
-			// setCourseMapOK(false);
-		}
-	} else if (!initialized) {
-		setInitialized(true);
-		// initialize localStorage
-		eventFormData['expirationDate'] = moment(
-			moment().add(1, 'days'),
-			moment.ISO_8601
-		);
-		eventFormData['image'] = undefined;
-		eventFormData['courseMap'] = undefined;
-		localStorage.setItem(
-			'eventFormData',
-			JSON.stringify(eventFormData)
-		);
-	}
-
-	const removeEventFormData = () => {
-		localStorage.removeItem('eventFormData');
-		// history.push(`/events/club/${clubAuthContext.clubId}`);
-	};
+	const [loadedImage, setLoadedImage] = useState('');
+	const [loadedProfileImage, setLoadedProfileImage] = useState('');
+	const [loadedClubProfile, setLoadedClubProfile] = useState('');
+	useEffect(() => {
+		const fetchClubProfile = async () => {
+			console.log('getting profile');
+			try {
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
+					process.env.REACT_APP_BACKEND_URL +
+						`/clubs/profile/${clubId}`,
+					'GET',
+					null,
+					{
+						// adding JWT to header for authentication, JWT contains clubId
+						Authorization: 'Bearer ' + clubAuthContext.clubToken
+					}
+				);
+				setLoadedImage(responseData.image);
+				setLoadedClubProfile(responseData.clubProfile);
+				setLoadedProfileImage(responseData.clubProfile.profileImage);
+				console.log('responseData.image = ', responseData.image);
+				console.log(
+					'responseData.clubProfile.profileImage = ',
+					responseData.clubProfile.profileImage
+				);
+			} catch (err) {}
+		};
+		fetchClubProfile();
+	}, [clubId, setLoadedImage, setLoadedProfileImage]);
 
 	const initialValues = {
-		image: image,
-		courseMap: courseMap
+		image: loadedImage,
+		profileImage: loadedProfileImage
 	};
 
+	console.log('initialValues = ', initialValues);
+	const [saveButtonEnabled, setSaveButtonEnabled] = useState(false);
 	const submitHandler = async (values, actions) => {
 		try {
 			const formData = new FormData();
-			formData.append('eventImage', values.image);
-			formData.append('courseMap', values.courseMap);
-
-			await sendRequest(
-				process.env.REACT_APP_BACKEND_URL + '/events/photos/' + eId,
+			formData.append('webPage', loadedClubProfile.webPage);
+			formData.append('faceBook', loadedClubProfile.faceBook);
+			formData.append('youTube', loadedClubProfile.youTube);
+			formData.append('contactEmail', loadedClubProfile.contactEmail);
+			formData.append('description', loadedClubProfile.description);
+			formData.append('clubImage', values.image);
+			formData.append('clubProfileImage', values.profileImage);
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL + `/clubs/profile`,
 				'PATCH',
 				formData,
 				{
@@ -138,37 +118,61 @@ const EventPhotos = props => {
 				}
 			);
 			setOKLeavePage(true);
-			// setContButton(true);
-			setContinueStatus(true);
+			setSaveButtonEnabled(false);
 		} catch (err) {}
 	};
 
-	const validateImageSize = value => {
-		console.log('value = ', value);
-		let error;
-		if (value && value.size > 1500000) {
-			error = 'File size needs to be smaller than 1.5MB';
-		}
-		if (value === undefined || !value) {
-			error = 'Please upload an event image.';
-		}
-		return error;
-	};
+	// const validateImageSize = value => {
+	// 	let error;
+	// 	if (value && value.size > 1500000) {
+	// 		error = 'File size needs to be smaller than 1.5MB';
+	// 	} else {
+	// 		setSaveButtonEnabled(true);
+	// 	}
+	// 	return error;
+	// };
 
-	const validateCourseMapSize = value => {
+	// const validateProfileImageSize = value => {
+	// 	let error;
+	// 	if (value && value.size > 1500000) {
+	// 		error = 'File size needs to be smaller than 1.5MB';
+	// 	} else {
+	// 		setSaveButtonEnabled(true);
+	// 	}
+	// 	return error;
+	// };
+
+	const [validateImageSize, setValidateImageSize] = useState(
+		() => value => {
+			let error;
+			if (value && value.size > 1500000) {
+				error = 'File size needs to be smaller than 1.5MB';
+			} else {
+				setSaveButtonEnabled(true);
+			}
+			return error;
+		}
+	);
+
+	const [
+		validateProfileImageSize,
+		setValidateProfileImageSize
+	] = useState(() => value => {
 		let error;
 		if (value && value.size > 1500000) {
 			error = 'File size needs to be smaller than 1.5MB';
+		} else {
+			setSaveButtonEnabled(true);
 		}
 		return error;
-	};
+	});
+
 	/***** End of Form Validation *****/
 
-	const eventForm = values => (
+	const clubPhotosForm = values => (
 		<div className="event-form">
 			<div className="event-form-header">
-				<h4>Please upload event image and course map</h4>
-				<h5>Course map is optional</h5>
+				<h4>Please upload club logo and profile photo</h4>
 				<hr className="event-form__hr" />
 			</div>
 			<Formik
@@ -176,12 +180,35 @@ const EventPhotos = props => {
 				initialValues={initialValues}
 				onSubmit={(values, actions) => {
 					submitHandler(values);
+					if (actions.isSubmitting) {
+						actions.setSubmitting(false);
+					}
 					if (!actions.isSubmitting) {
+						setValidateImageSize(() => value => {
+							let error;
+							if (value && value.size > 1500000) {
+								error = 'File size needs to be smaller than 1.5MB';
+							} else {
+								setSaveButtonEnabled(true);
+							}
+							return error;
+						});
+						setValidateProfileImageSize(() => value => {
+							let error;
+							if (value && value.size > 1500000) {
+								error = 'File size needs to be smaller than 1.5MB';
+							} else {
+								setSaveButtonEnabled(true);
+							}
+							return error;
+						});
 					}
 				}}>
 				{({
 					values,
 					errors,
+					handleChange,
+					handleSubmit,
 					isSubmitting,
 					isValid,
 					setFieldValue,
@@ -192,7 +219,7 @@ const EventPhotos = props => {
 						<Field
 							id="image"
 							name="image"
-							title="Event Image"
+							title="Club Logo"
 							component={ImageUploader}
 							validate={validateImageSize}
 							setFieldValue={setFieldValue}
@@ -200,6 +227,7 @@ const EventPhotos = props => {
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
 							}}
 							labelStyle="event-form__label"
 							inputStyle="event-form__field-select"
@@ -207,21 +235,19 @@ const EventPhotos = props => {
 							errorStyle="event-form__field-error"
 						/>
 						<Field
-							id="courseMap"
-							name="courseMap"
-							title="Course Map (Optional)"
+							id="profileImage"
+							name="profileImage"
+							title="Profile Image"
 							component={ImageUploader}
-							validate={validateCourseMapSize}
+							validate={validateProfileImageSize}
 							setFieldValue={setFieldValue}
-							errorMessage={errors.courseMap ? errors.courseMap : ''}
+							errorMessage={
+								errors.profileImage ? errors.profileImage : ''
+							}
 							onBlur={event => {
 								handleBlur(event);
 								setOKLeavePage(false);
-								// if (event.target.value) {
-								// 	setCourseMapOK(false);
-								// } else {
-								// 	setCourseMapOK(true);
-								// }
+								setSaveButtonEnabled(true);
 							}}
 							labelStyle="event-form__label"
 							inputStyle="event-form__field-select"
@@ -232,21 +258,14 @@ const EventPhotos = props => {
 							type="submit"
 							size="medium-block"
 							margin-left="1.5rem"
-							disabled={isSubmitting}>
-							SAVE &amp; CONTINUE
+							// cannot put isValid because not necessary to have both images uploaded at the same time
+							disabled={isSubmitting || !saveButtonEnabled}>
+							SAVE
 						</Button>
-						{/* <Button
-							type="button"
-							size="medium"
-							margin-left="1.5rem"
-							disabled={!contButton}
-							onClick={continueHandler}>
-							Continue
-						</Button> */}
 						<NavigationPrompt
 							afterConfirm={() => {
 								formContext.setIsInsideForm(false);
-								removeEventFormData();
+								// removeEventFormData();
 							}}
 							// Confirm navigation if going to a path that does not start with current path.
 							// We don't want to confirm navigation when OKLeavePage === true and redirect to '/clubs/auth' due to
@@ -257,7 +276,7 @@ const EventPhotos = props => {
 								// OKLeavePage meaning form was not touched yet
 								if (OKLeavePage) {
 									formContext.setIsInsideForm(false);
-									removeEventFormData();
+									// removeEventFormData();
 									return false;
 								} else {
 									// nextLocation.pathname !== '/clubs/auth' &&  --- adding this line causing state update on an
@@ -280,9 +299,7 @@ const EventPhotos = props => {
 											onConfirm={onConfirm}
 											contentclassName="event-item__modal-content"
 											footerclassName="event-item__modal-actions"
-											error="You sure want to leave? Unsaved data will be lost.">
-											{/* render props.children */}
-										</PromptModal>
+											error="You sure want to leave? Unsaved data will be lost."></PromptModal>
 									);
 								}
 								return (
@@ -298,6 +315,8 @@ const EventPhotos = props => {
 		</div>
 	);
 
+	console.log('saveButtonEnabled = ', saveButtonEnabled);
+
 	return (
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
@@ -306,9 +325,9 @@ const EventPhotos = props => {
 					<LoadingSpinner />
 				</div>
 			)}
-			{eventForm()}
+			{clubPhotosForm()}
 		</React.Fragment>
 	);
 };
 
-export default EventPhotos;
+export default ClubPhotos;

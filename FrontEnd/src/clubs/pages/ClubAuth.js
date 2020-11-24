@@ -248,7 +248,8 @@ const ClubAuth = () => {
 					<Form className="auth-from-container">
 						<div>
 							<label htmlFor="name" className="auth-form-label">
-								Club Name
+								Club Name (Name cannot be modified once the account
+								being created)
 							</label>
 							<Field
 								id="name"
@@ -263,7 +264,8 @@ const ClubAuth = () => {
 						</div>
 						<div>
 							<label htmlFor="email" className="auth-form-label">
-								Email
+								Email (Please use a private email address that is
+								different from your club public email)
 							</label>
 							<Field
 								id="email"
@@ -279,7 +281,7 @@ const ClubAuth = () => {
 						<Field
 							id="image"
 							name="image"
-							title="Club Image"
+							title="Club Logo"
 							component={ImageUploader}
 							validate={validateImage}
 							setFieldValue={setFieldValue}

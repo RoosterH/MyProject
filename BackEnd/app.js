@@ -3,6 +3,9 @@ const path = require('path');
 
 const express = require('express');
 var cors = require('cors');
+const stripe = require('stripe')(
+	'pk_test_51HpjVQG10ZElXQJ4LAk8pnnOuC23BzzmIBwNdIQgZf8ZjbLg5XjelbRjRP2pUWfDY556b3Y8JpJKG2hXXvBIxr830094NIq6Vu'
+);
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 // const passport = require('passport');
@@ -66,16 +69,16 @@ app.use((req, res, next) => {
 app.use((error, req, res, next) => {
 	// if req failed and it contains a file, we want to delete the file
 	if (req.file) {
-		fs.unlink(req.file.path, err => {
-			console.log(err);
-		});
+		// fs.unlink(req.file.path, err => {
+		// 	console.log(err);
+		// });
 	}
 	// req contains multiple files failed. delete them all
 	if (req.files) {
 		Object.keys(req.files).map(field => {
-			fs.unlink(req.files[field][0].path, err => {
-				console.log(err);
-			});
+			// fs.unlink(req.files[field][0].path, err => {
+			// 	console.log(err);
+			// });
 		});
 	}
 	// header has been sent meaning a response been sent already.

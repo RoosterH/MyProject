@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 
 const HttpError = require('../models/httpError');
 const Club = require('../models/club');
+const ClubProfile = require('../models/clubProfile');
 const Event = require('../models/event');
 
 const config = require('../Config/Config');
@@ -117,7 +118,6 @@ const createClub = async (req, res, next) => {
 	let originalImageLocation;
 	let cloudFrontImageLocation;
 	if (req.file) {
-		console.log('original = ', req.file);
 		originalImageLocation = req.file.location;
 		cloudFrontImageLocation = originalImageLocation.replace(
 			process.env.S3_URL,
@@ -126,7 +126,36 @@ const createClub = async (req, res, next) => {
 	}
 
 	// req.file.location = https://myseattime-dev.s3.us-west-1.amazonaws.com/clubs/d20e6020-1e70-11eb-96c0-19998090542e.png
-	const newClub = new Club({
+	// create club profile
+	// default value cannot use emptry string
+	const newClubProfile = new ClubProfile({
+		webPage: 'undefined',
+		faceBook: 'undefined',
+		youTube: 'undefined',
+		contactEmail: 'undefined',
+		description: 'undefined',
+		originalProfileImage: 'undefined',
+		profileImage: 'undefined'
+	});
+
+	// ! DO NOT REMOVE
+	// ! Intentionally leave this outside of transaction.
+	// ! Once the new collection been created, comment this section of codes
+	// ! Workaround is to create the new collection from Atlas
+	// Because Mongoose has a bug not able to create a new DB collection during transaction,
+	// even the problem only happens at a fresh DB, we still want to leave this outside.
+	// try {
+	// 	await newClubProfile.save();
+	// } catch (err) {
+	// 	console.log('154 err = ', err);
+	// 	const error = new HttpError(
+	// 		'Create club failed when saving newClubProfile. Please try again later.',
+	// 		500
+	// 	);
+	// 	return next(error);
+	// }
+
+	let newClub = new Club({
 		name,
 		email,
 		originalImage: originalImageLocation,
@@ -135,31 +164,28 @@ const createClub = async (req, res, next) => {
 		events: []
 	});
 
-	try {
-		await newClub.save();
-		// await is slow. need to send res here not outside; otherwise in case of
-		// an error res will be sent first then back to catch(err) here
-	} catch (err) {
-		const error = new HttpError(
-			'Faied to create a new club. Please try again later.',
-			500
-		);
-		return next(error);
-	}
-
-	// jwt section
 	let token;
-	// use ClubId and email as the payload
-	// private key
 	try {
+		// using transaction here to make sure all the operations are done
+		const session = await mongoose.startSession();
+		session.startTransaction();
+
+		await newClub.save({ session: session });
+		// jwt section
+		// use ClubId and email as the payload
+		// private key
 		token = jwt.sign(
 			{ clubId: newClub.id, email: newClub.email },
 			JWT_PRIVATE_KEY,
 			{ expiresIn: '1h' }
 		);
+		newClubProfile.clubId = newClub.id;
+		await newClubProfile.save({ session: session });
+		await session.commitTransaction();
 	} catch (err) {
+		console.log('193 err = ', err);
 		const error = new HttpError(
-			'Internal error. Faied to create a new club. Please try again later.',
+			'Faied to create a new club. Please try again later.',
 			500
 		);
 		return next(error);
@@ -315,6 +341,198 @@ const updateClub = async (req, res, next) => {
 	});
 };
 
+// PATCH '/api/clubs/:cid'
+const updateClubProfile = async (req, res, next) => {
+	console.log('in updateClubProfile');
+	// validate request
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		const error = new HttpError(
+			`Update club profile process failed, please check your data: ${result.array()}`,
+			422
+		);
+
+		return next(error);
+	}
+
+	const {
+		webPage,
+		faceBook,
+		youTube,
+		contactEmail,
+		description
+	} = req.body;
+
+	// use clubId from token instead of getting it from url to avoid hacking
+	// req.userData is added in check-clubAuth middleware, information comes from front end
+	// req.header.authorization
+	const clubId = req.userData;
+	let clubProfile;
+	try {
+		clubProfile = await ClubProfile.findOne({ clubId });
+	} catch (err) {
+		const error = new HttpError(
+			'Update club profile process failed, please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!clubProfile) {
+		const error = new HttpError(
+			'Update club profile failed finding profile.',
+			404
+		);
+		console.log('cannot find profile');
+		return next(error);
+	}
+
+	let club;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update club profile process internal failure @ finding club, please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'Update club profile failed finding club.',
+			404
+		);
+		console.log('cannot find club');
+		return next(error);
+	}
+
+	// update club info
+	if (webPage) {
+		clubProfile.webPage = webPage;
+	}
+	if (faceBook) {
+		clubProfile.faceBook = faceBook;
+	}
+	if (youTube) {
+		clubProfile.youTube = youTube;
+	}
+	if (contactEmail) {
+		clubProfile.contactEmail = contactEmail;
+	}
+	if (description) {
+		clubProfile.description = description;
+	}
+
+	// check whether image or profile image been changed or not
+	if (req.files) {
+		if (req.files.clubImage) {
+			let image = req.files.clubImage[0];
+			if (image) {
+				let originalImageLocation = image.location;
+				club.originamImage = originalImageLocation;
+				club.image = originalImageLocation.replace(
+					process.env.S3_URL,
+					process.env.CLOUDFRONT_URL
+				);
+			}
+		}
+		// we do not resize courseMap to small size
+		if (req.files.clubProfileImage) {
+			let clubProfileImage = req.files.clubProfileImage[0];
+			if (clubProfileImage) {
+				let profileImageLocation = clubProfileImage.location;
+				clubProfile.originalCourseMap = profileImageLocation;
+				clubProfile.profileImage = profileImageLocation.replace(
+					process.env.S3_URL,
+					process.env.CLOUDFRONT_URL
+				);
+			}
+		}
+	}
+
+	try {
+		const session = await mongoose.startSession();
+		session.startTransaction();
+		await clubProfile.save({ session: session });
+		await club.save({ session: session });
+		await session.commitTransaction();
+	} catch (err) {
+		const error = new HttpError(
+			'Update club profile process failed to save, please try again later.',
+			500
+		);
+		return next(error);
+	}
+	res.status(200).json({
+		clubProfile: clubProfile.toObject({
+			getters: true
+		})
+	});
+};
+
+// GET /api/clubs/:id
+const getClubProfile = async (req, res, next) => {
+	console.log('getClubProfile');
+	const clubId = req.userData;
+	console.log('clubId = ', clubId);
+	let clubProfile;
+	try {
+		// we don't want to return password field
+		clubProfile = await ClubProfile.findOne({ clubId: clubId });
+	} catch (err) {
+		const error = new HttpError(
+			'Get club profile process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!clubProfile) {
+		const error = new HttpError('No club profile in the DB.', 404);
+		return next(error);
+	}
+
+	if (clubProfile.webPage === 'undefined') {
+		clubProfile.webPage = '';
+	}
+	if (clubProfile.faceBook === 'undefined') {
+		clubProfile.faceBook = '';
+	}
+	if (clubProfile.youTube === 'undefined') {
+		clubProfile.youTube = '';
+	}
+	// beacuse we chage email to all lower case
+	if (clubProfile.contactEmail === 'undefined') {
+		clubProfile.contactEmail = '';
+	}
+	if (clubProfile.description === 'undefined') {
+		clubProfile.description = '';
+	}
+	if (clubProfile.profileImage === 'undefined') {
+		clubProfile.profileImage = '';
+	}
+
+	let image;
+	try {
+		const club = await Club.findById(clubId);
+		image = club.image;
+	} catch (err) {
+		const error = new HttpError(
+			'Get club profile process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	console.log('470 clubProfile = ', clubProfile);
+	res.status(200).json({ clubProfile: clubProfile, image: image });
+};
+
 // DELETE '/api/clubs/:cid'
 const deleteClub = async (req, res, next) => {
 	const clubId = req.userData; // use clubId in the jwt instaed of getting it from url
@@ -466,6 +684,8 @@ const createEventForm = async (req, res, next) => {
 
 	// Validate clubId exists. If not, sends back an error
 	let club;
+	// req.userData is added in check-clubAuth middleware, information comes from front end
+	// req.header.authorization
 	let clubId = req.userData;
 	try {
 		club = await Club.findById(clubId);
@@ -694,6 +914,8 @@ exports.getClubById = getClubById;
 exports.createClub = createClub;
 exports.loginClub = loginClub;
 exports.updateClub = updateClub;
+exports.updateClubProfile = updateClubProfile;
+exports.getClubProfile = getClubProfile;
 exports.deleteClub = deleteClub;
 exports.logoutClub = logoutClub;
 exports.getEventForm = getEventForm;

@@ -29,10 +29,15 @@ const ClubDashboardToolbar = () => {
 							Club Manager
 						</Link>
 						<div className="dropdown-content">
-							<a href="">Club Overview</a>
-							<a href="">Photo Manager</a>
-							<a href="">Manage Your Team</a>
-							<a href="">About MySeatTime</a>
+							<NavLink to={`/clubs/profileManager/${cid}`}>
+								Club Profile Manager
+							</NavLink>
+							<NavLink to={`/clubs/accountManager/${cid}`} exact>
+								accountManager
+							</NavLink>
+							<NavLink to={`/clubs/teamManager/${cid}`} exact>
+								Team Manager
+							</NavLink>
 						</div>
 					</li>
 

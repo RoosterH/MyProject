@@ -87,6 +87,12 @@ const ViewEventSelector = React.lazy(() =>
 const UpdateEvent = React.lazy(() =>
 	import('./event/pages/UpdateEvent')
 );
+const ClubProfileManager = React.lazy(() =>
+	import('./clubDashboard/components/ClubProfileManager')
+);
+const ClubPhotos = React.lazy(() =>
+	import('./clubDashboard/components/ClubPhotos')
+);
 
 // user section
 // const Users = React.lazy(() => import('./users/pages/Users'));
@@ -140,6 +146,12 @@ const App = () => {
 				<Route path="/events/:id" component={Event} exact />
 				<Route path="/clubs/clubManager/" exact>
 					<ClubManager />
+				</Route>
+				<Route path="/clubs/profileManager/:clubId" exact>
+					<ClubProfileManager />
+				</Route>
+				<Route path="/clubs/photos/:clubId" exact>
+					<ClubPhotos />
 				</Route>
 				<Route path="/clubs/eventManager/" exact>
 					<EventManager />
@@ -296,6 +308,12 @@ const App = () => {
 				</Route>
 				<Route path="/clubs/editEventManager/" exact>
 					<EditEventManager />
+				</Route>
+				<Route path="/clubs/profileManager/:clubId" exact>
+					<ClubProfileManager />
+				</Route>
+				<Route path="/clubs/photos/:clubId" exact>
+					<ClubPhotos />
 				</Route>
 				<Route
 					path="/events/editEntryManager/:id"

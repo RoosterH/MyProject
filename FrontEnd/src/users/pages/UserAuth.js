@@ -404,9 +404,6 @@ const UserAuth = () => {
 			{!isLoginMode && userSignupForm()}
 			<div className="auth-footer-div">
 				<p>No Account? Please sign up a new account.</p>
-				{/* <Button inverse to="/users/signup">
-					SIGNUP
-				</Button> */}
 				<Button size="small" inverse onClick={switchModeHandler}>
 					SWITCH TO {isLoginMode ? 'SIGNUP' : 'LOGIN'}
 				</Button>

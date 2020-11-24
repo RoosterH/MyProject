@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { IMAGE_TYPES } from '../../config/types';
 import Image from '../UIElements/Image';
 
 const ImageUploader = props => {
 	const [previewUrl, setPreviewUrl] = useState();
-	const [currentUrl, setCurrentUrl] = useState(props.field.value);
+	const [currentUrl, setCurrentUrl] = useState();
+
+	useEffect(() => {
+		setCurrentUrl(props.field.value);
+	}, [props]);
+
 	const handleImageChange = e => {
 		e.preventDefault();
 		let fileReader = new FileReader();

@@ -83,8 +83,10 @@ const fileUpload = multer({
 				S3Folder = 'courseMaps';
 			} else if (file.fieldname === 'carImage') {
 				S3Folder = 'cars';
+			} else if (file.fieldname === 'clubProfileImage') {
+				S3Folder = 'clubProfiles';
 			}
-
+			console.log('S3Folder = ', S3Folder);
 			cb(null, S3Folder + '/' + UUID + '.' + ext);
 		},
 		shouldTransform: (req, file, cb) => {
@@ -93,7 +95,8 @@ const fileUpload = multer({
 				null,
 				/^image/i.test(file.mimetype) &&
 					file.fieldname !== 'courseMap' &&
-					file.fieldname !== 'clubImage'
+					file.fieldname !== 'clubImage' &&
+					file.fieldname !== 'clubProfileImage'
 			);
 		},
 		transforms: [
@@ -108,8 +111,6 @@ const fileUpload = multer({
 						S3Folder = 'clubs';
 					} else if (file.fieldname === 'eventImage') {
 						S3Folder = 'events';
-					} else if (file.fieldname === 'courseMap') {
-						S3Folder = 'courseMaps';
 					} else if (file.fieldname === 'carImage') {
 						S3Folder = 'cars';
 					}
@@ -138,8 +139,6 @@ const fileUpload = multer({
 						S3Folder = 'clubs';
 					} else if (file.fieldname === 'eventImage') {
 						S3Folder = 'events';
-					} else if (file.fieldname === 'courseMap') {
-						S3Folder = 'courseMaps';
 					} else if (file.fieldname === 'carImage') {
 						S3Folder = 'cars';
 					}
