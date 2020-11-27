@@ -87,11 +87,23 @@ const ViewEventSelector = React.lazy(() =>
 const UpdateEvent = React.lazy(() =>
 	import('./event/pages/UpdateEvent')
 );
+const ClubProfileViewer = React.lazy(() =>
+	import('./clubDashboard/components/ClubProfileViewer')
+);
 const ClubProfileManager = React.lazy(() =>
 	import('./clubDashboard/components/ClubProfileManager')
 );
 const ClubPhotos = React.lazy(() =>
 	import('./clubDashboard/components/ClubPhotos')
+);
+const ClubAccountManager = React.lazy(() =>
+	import('./clubDashboard/components/ClubAccountManager')
+);
+const ClubCredential = React.lazy(() =>
+	import('./clubDashboard/components/ClubCredential')
+);
+const ClubAccount = React.lazy(() =>
+	import('./clubDashboard/components/ClubAccount')
 );
 
 // user section
@@ -147,11 +159,23 @@ const App = () => {
 				<Route path="/clubs/clubManager/" exact>
 					<ClubManager />
 				</Route>
+				<Route path="/clubs/profile/:clubId" exact>
+					<ClubProfileViewer />
+				</Route>
 				<Route path="/clubs/profileManager/:clubId" exact>
 					<ClubProfileManager />
 				</Route>
 				<Route path="/clubs/photos/:clubId" exact>
 					<ClubPhotos />
+				</Route>
+				<Route path="/clubs/accountManager/:clubId" exact>
+					<ClubAccountManager />
+				</Route>
+				<Route path="/clubs/credential/:clubId" exact>
+					<ClubCredential />
+				</Route>
+				<Route path="/clubs/account/:clubId" exact>
+					<ClubAccount />
 				</Route>
 				<Route path="/clubs/eventManager/" exact>
 					<EventManager />
@@ -308,6 +332,18 @@ const App = () => {
 				</Route>
 				<Route path="/clubs/editEventManager/" exact>
 					<EditEventManager />
+				</Route>
+				<Route path="/clubs/profile/:clubId" exact>
+					<ClubProfileViewer />
+				</Route>
+				<Route path="/clubs/accountManager/:clubId" exact>
+					<ClubAccountManager />
+				</Route>
+				<Route path="/clubs/credential/:clubId" exact>
+					<ClubCredential />
+				</Route>
+				<Route path="/clubs/account/:clubId" exact>
+					<ClubAccount />
 				</Route>
 				<Route path="/clubs/profileManager/:clubId" exact>
 					<ClubProfileManager />

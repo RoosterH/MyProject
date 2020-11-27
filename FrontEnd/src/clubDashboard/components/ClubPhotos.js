@@ -58,7 +58,6 @@ const ClubPhotos = () => {
 	const [loadedClubProfile, setLoadedClubProfile] = useState('');
 	useEffect(() => {
 		const fetchClubProfile = async () => {
-			console.log('getting profile');
 			try {
 				const [
 					responseData,
@@ -77,11 +76,6 @@ const ClubPhotos = () => {
 				setLoadedImage(responseData.image);
 				setLoadedClubProfile(responseData.clubProfile);
 				setLoadedProfileImage(responseData.clubProfile.profileImage);
-				console.log('responseData.image = ', responseData.image);
-				console.log(
-					'responseData.clubProfile.profileImage = ',
-					responseData.clubProfile.profileImage
-				);
 			} catch (err) {}
 		};
 		fetchClubProfile();
@@ -92,7 +86,6 @@ const ClubPhotos = () => {
 		profileImage: loadedProfileImage
 	};
 
-	console.log('initialValues = ', initialValues);
 	const [saveButtonEnabled, setSaveButtonEnabled] = useState(false);
 	const submitHandler = async (values, actions) => {
 		try {
@@ -314,8 +307,6 @@ const ClubPhotos = () => {
 			</Formik>
 		</div>
 	);
-
-	console.log('saveButtonEnabled = ', saveButtonEnabled);
 
 	return (
 		<React.Fragment>

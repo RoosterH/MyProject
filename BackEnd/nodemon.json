@@ -8,12 +8,14 @@
 		"AWS_ACCESSKEYID": "AKIAQ3RGE76SUKXZKJOU",
 		"AWS_SECRETACCESSKEY": "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",
 		"S3_REGION": "us-west-1",
-		"S3_ACL": "bucket-owner-full-control",
+		"S3_ACL": "public-read",
 		"S3_BUCKET_NAME": "myseattime-dev",
 		"S3_BUCKET_NAME_PROD": "myseattime-image",
 		"S3_URL": "https://myseattime-dev.s3.us-west-1.amazonaws.com",
 		"S3_URL_PROD": "https://myseattime-image.s3.us-west-1.amazonaws.com",
 		"CLOUDFRONT_URL": "https://dm6o7kx2v6zc3.cloudfront.net",
-		"CLOUDFRONT_URL_PROD": "https://d1139u9qxzy8k3.cloudfront.net"
+		"CLOUDFRONT_URL_PROD": "https://d1139u9qxzy8k3.cloudfront.net",
+		"JWT_PRIVATE_KEY": "MySeatTime_38_718GT4_PDK",
+		"CRYPTO_SECRET_KEY": "MySeatTime_38_718GT4RS_PDK-ahzer"
 	}
 }

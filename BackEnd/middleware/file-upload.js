@@ -86,7 +86,6 @@ const fileUpload = multer({
 			} else if (file.fieldname === 'clubProfileImage') {
 				S3Folder = 'clubProfiles';
 			}
-			console.log('S3Folder = ', S3Folder);
 			cb(null, S3Folder + '/' + UUID + '.' + ext);
 		},
 		shouldTransform: (req, file, cb) => {

@@ -176,6 +176,8 @@ const UserAuth = () => {
 		let error;
 		if (!value) {
 			error = 'Password is required.';
+		} else if (value.length < 6) {
+			error = 'Minimum password length is 6 characters.';
 		}
 		return error;
 	};
@@ -211,6 +213,7 @@ const UserAuth = () => {
 								type="text"
 								validate={validateEmail}
 								className="auth-form-input"
+								autoComplete="username"
 							/>
 							{touched.email && errors.email && (
 								<div className="auth-form-error">{errors.email}</div>
@@ -223,9 +226,10 @@ const UserAuth = () => {
 							<Field
 								id="password"
 								name="password"
-								type="text"
+								type="password"
 								validate={validatePassword}
 								className="auth-form-input"
+								autoComplete="new-password"
 							/>
 							{touched.password && errors.password && (
 								<div className="auth-form-error">
@@ -325,6 +329,7 @@ const UserAuth = () => {
 								type="text"
 								validate={validateEmail}
 								className="auth-form-input"
+								autoComplete="username"
 							/>
 							{touched.email && errors.email && (
 								<div className="auth-form-error">{errors.email}</div>
@@ -349,14 +354,15 @@ const UserAuth = () => {
 
 						<div>
 							<label htmlFor="password" className="auth-form-label">
-								Password
+								Password (minimum 6 characters)
 							</label>
 							<Field
 								id="password"
 								name="password"
-								type="text"
+								type="password"
 								validate={validatePassword}
 								className="auth-form-input"
+								autoComplete="new-password"
 							/>
 							{touched.password && errors.password && (
 								<div className="auth-form-error">
@@ -373,7 +379,7 @@ const UserAuth = () => {
 							<Field
 								id="passwordValidation"
 								name="passwordValidation"
-								type="text"
+								type="password"
 								validate={validatePassword}
 								className="auth-form-input"
 							/>

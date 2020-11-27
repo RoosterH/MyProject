@@ -33,6 +33,12 @@
 	margin: 0rem 0.1rem 0.2rem 1.5rem;
 }
 
+.event-form__label_inline {
+	display: inline-block;
+	font-size: 15px;
+	margin: 0rem 0.1rem 0.2rem 1.5rem;
+}
+
 .event-form__label_startdate {
 	display: inline-block;
 	font-size: 15px;
@@ -66,6 +72,18 @@
 	display: block;
 	/* without solid, color does not work properly */
 	border-style: solid;
+	border-color: #c2c2c2;
+	font-size: 15px;
+	font-family: 'Montserrat', sans-serif;
+	width: 90%;
+	margin: 0rem 0.1rem 0.5rem 1.5rem;
+}
+
+.event-form__field_radio {
+	display: block;
+	/* without solid, color does not work properly */
+	border-style: dashed;
+	border-width: 1px;
 	border-color: #c2c2c2;
 	font-size: 15px;
 	font-family: 'Montserrat', sans-serif;

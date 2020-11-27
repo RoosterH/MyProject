@@ -872,6 +872,7 @@ const createUpdateEventRegistration = async (req, res, next) => {
 		entryReport.full.push(false);
 	}
 
+	console.log('875 capDistribution = ', capDistribution);
 	event.numGroups = numGroups;
 	event.capDistribution = capDistribution;
 	// set published to false to force re-publish
@@ -881,7 +882,6 @@ const createUpdateEventRegistration = async (req, res, next) => {
 	// if capDistribution is true, we will create numGroups groups.
 	// Each group can only have totalCap / numGroups participants
 	// add day1 runGroupNumEntries
-	// if (capDistribution) {
 	// re-init array before push
 	entryReport.runGroupNumEntries = [];
 
@@ -891,7 +891,6 @@ const createUpdateEventRegistration = async (req, res, next) => {
 		group.push(0);
 	}
 	entryReport.runGroupNumEntries.push(group);
-	// }
 
 	// day1 already been added previously
 	// here we are adding day2, day3 ... etc. runGroupNumEntries
@@ -903,19 +902,27 @@ const createUpdateEventRegistration = async (req, res, next) => {
 		let dayDiff = endDate.diff(startDate, 'days');
 		// originally each field already has one element so we only need to add numDays elements to it
 		for (let i = 0; i < dayDiff; ++i) {
+			// For update case, we already have entries added so we want to skip adding more
 			let entry = [];
-			entryReport.entries.push(entry);
-			let wlist = [];
-			entryReport.waitlist.push(wlist);
-			entryReport.full.push(false);
-			if (capDistribution) {
-				// run group is named starting from 0 so there is no problem to match with index
-				let group = [];
-				for (let i = 0; i < numGroups; ++i) {
-					group.push(0);
-				}
-				entryReport.runGroupNumEntries.push(group);
+			if (entryReport.entries.length !== dayDiff + 1) {
+				entryReport.entries.push(entry);
 			}
+			// For update case, we already have waitlist added so we want to skip adding more
+			let wlist = [];
+			if (entryReport.waitlist.length !== dayDiff + 1) {
+				entryReport.waitlist.push(wlist);
+			}
+
+			entryReport.full.push(false);
+
+			// We will always create runGroupNumEntries[] for multiple days
+			// but it will only be used if capDistribution option is checked
+			// run group is named starting from 0 so there is no problem to match with index
+			let group = [];
+			for (let i = 0; i < numGroups; ++i) {
+				group.push(0);
+			}
+			entryReport.runGroupNumEntries.push(group);
 		}
 	}
 

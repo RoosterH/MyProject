@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import Button from '../../shared/components/FormElements/Button';
 import ClubProfile from './ClubProfile';
 import ClubPhotos from './ClubPhotos';
+import ClubProfileViewer from './ClubProfileViewer';
 import '../../shared/css/EventForm.css';
 import '../../event/components/EventItem.css';
 import './ClubManager.css';
@@ -17,43 +18,48 @@ const ClubProfileManager = () => {
 	const [photoClass, setPhotoClass] = useState(
 		'editeventmanager-grey'
 	);
-	const [viewClubProfile, setViewClubProfile] = useState(false);
-	const [viewClubProfileClass, setViewClubProfileClass] = useState(
-		'editeventmanager-grey'
-	);
+	const [clubProfileViewer, setClubProfileViewer] = useState(false);
+	const [
+		clubProfileViewerClass,
+		setClubProfileViewerClass
+	] = useState('editeventmanager-grey');
 
 	const clubProfileClickHandler = () => {
 		setClubProfile(true);
 		setClubProfileClass('editeventmanager-orange');
 		setPhoto(false);
 		setPhotoClass('editeventmanager-grey');
-		setViewClubProfile(false);
-		setViewClubProfileClass('editeventmanager-grey');
+		setClubProfileViewer(false);
+		setClubProfileViewerClass('editeventmanager-grey');
 	};
 	const photoClickHandler = () => {
 		setClubProfile(false);
 		setClubProfileClass('editeventmanager-grey');
 		setPhoto(true);
 		setPhotoClass('editeventmanager-orange');
-		setViewClubProfile(false);
-		setViewClubProfileClass('editeventmanager-grey');
+		setClubProfileViewer(false);
+		setClubProfileViewerClass('editeventmanager-grey');
 	};
-	const viewClubProfileClickHandler = () => {
+	const clubProfileViewerClickHandler = () => {
 		setClubProfile(false);
 		setClubProfileClass('editeventmanager-grey');
 		setPhoto(false);
 		setPhotoClass('editeventmanager-grey');
-		setViewClubProfile(true);
-		setViewClubProfileClass('editeventmanager-orange');
+		setClubProfileViewer(true);
+		setClubProfileViewerClass('editeventmanager-orange');
 	};
 
 	// set defualt page, if none is false, we will use eventInfo as default
-	if (!clubProfile && !photo && !viewClubProfile) {
+	if (!clubProfile && !photo && !clubProfileViewer) {
 		clubProfileClickHandler();
 	}
 
 	return (
 		<React.Fragment>
+			<div className="list-header clearfix">
+				<div className="h3">Profile Manager</div>
+			</div>
+
 			{/* Edit Event Manager Tabs*/}
 			<div className="eventmanager">
 				<div className="dashboard-tabs activity-sections">
@@ -72,21 +78,16 @@ const ClubProfileManager = () => {
 							Photos
 						</Button>
 						<Button
-							size={viewClubProfileClass}
+							size={clubProfileViewerClass}
 							autoFocus
-							onClick={viewClubProfileClickHandler}>
+							onClick={clubProfileViewerClickHandler}>
 							View Club Profile
 						</Button>
 					</ul>
 					<div className="tab-content">
 						{clubProfile && <ClubProfile />}
 						{photo && <ClubPhotos />}
-						{/* {formBuilder && (
-							<UpdateFormBuilder
-								profile={profile}
-								returnNewEvent={updateProfile}
-							/>
-						)}  */}
+						{clubProfileViewer && <ClubProfileViewer />}
 					</div>
 				</div>
 			</div>

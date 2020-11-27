@@ -6,11 +6,12 @@ const mongoose = require('mongoose');
 const HttpError = require('../models/httpError');
 const Club = require('../models/club');
 const ClubProfile = require('../models/clubProfile');
+const ClubAccount = require('../models/clubAccount');
 const Event = require('../models/event');
-
-const config = require('../Config/Config');
+const { Encrypt, Decrypt } = require('../util/crypto');
 const e = require('express');
-const JWT_PRIVATE_KEY = config.JWT_PRIVATE_KEY;
+const { on } = require('nodemon');
+const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 
 // GET /api/clubs/
 const getAllClubs = async (req, res, next) => {
@@ -134,8 +135,17 @@ const createClub = async (req, res, next) => {
 		youTube: 'undefined',
 		contactEmail: 'undefined',
 		description: 'undefined',
+		schedule: 'undefined',
 		originalProfileImage: 'undefined',
 		profileImage: 'undefined'
+	});
+
+	// create club account
+	const newClubAccount = new ClubAccount({
+		onSitePayment: 'false',
+		stripePayment: 'true',
+		stripePublicKey: undefined,
+		stripeSecretKey: undefined
 	});
 
 	// ! DO NOT REMOVE
@@ -181,6 +191,8 @@ const createClub = async (req, res, next) => {
 		);
 		newClubProfile.clubId = newClub.id;
 		await newClubProfile.save({ session: session });
+		newClubAccount.clubId = newClub.id;
+		await newClubAccount.save({ session: session });
 		await session.commitTransaction();
 	} catch (err) {
 		console.log('193 err = ', err);
@@ -272,8 +284,8 @@ const loginClub = async (req, res, next) => {
 	});
 };
 
-// PATCH '/api/clubs/:cid'
-const updateClub = async (req, res, next) => {
+// PATCH '/api/clubs/credential'
+const updateClubCredential = async (req, res, next) => {
 	// validate request
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
@@ -282,14 +294,14 @@ const updateClub = async (req, res, next) => {
 		};
 		const result = validationResult(req).formatWith(errorFormatter);
 		const error = new HttpError(
-			`Update club process failed, please check your data: ${result.array()}`,
+			`Update club credential process failed, please check your data: ${result.array()}`,
 			422
 		);
 
 		return next(error);
 	}
 
-	const { name, password, email } = req.body;
+	const { oldPassword, newPassword, passwordValidation } = req.body;
 	const clubId = req.userData; // use clubId from token instead of getting it from url to avoid hacking
 	let club;
 	try {
@@ -310,16 +322,56 @@ const updateClub = async (req, res, next) => {
 		return next(error);
 	}
 
-	// update club info
-	club.name = name;
-	club.password = password;
-	club.email = email;
+	let isValidPassword = false;
+	try {
+		isValidPassword = await bcrypt.compare(
+			oldPassword,
+			club.password
+		);
+	} catch (err) {
+		const error = new HttpError(
+			'Change club password internal failure. Please try again later',
+			500
+		);
+		return next(error);
+	}
+	if (!isValidPassword) {
+		const error = new HttpError(
+			'Please provide correct old password',
+			403
+		);
+		return next(error, false);
+	}
+
+	if (newPassword === oldPassword) {
+		const error = new HttpError(
+			'New password needs to be different from old password.',
+			403
+		);
+		return next(error);
+	}
+
+	if (newPassword !== passwordValidation) {
+		const error = new HttpError('New passwords do not match!', 403);
+		return next(error);
+	}
 
 	let hashedPassword;
 	try {
 		// set password to hashed password. genSalt = 12
-		club.password = await bcrypt.hash(password, 12);
+		hashedPassword = await bcrypt.hash(newPassword, 12);
+	} catch (err) {
+		const error = new HttpError(
+			'Faied to create a new club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
 
+	// update club info
+	club.password = hashedPassword;
+
+	try {
 		await club.save();
 	} catch (err) {
 		const error = new HttpError(
@@ -334,7 +386,12 @@ const updateClub = async (req, res, next) => {
 			getters: true,
 			// use transform to filter out password
 			transform: (doc, ret, opt) => {
+				delete ret['name'];
 				delete ret['password'];
+				delete ret['originalImage'];
+				delete ret['image'];
+				delete ret['events'];
+				delete ret['entryFormTemplagte'];
 				return ret;
 			}
 		})
@@ -343,7 +400,6 @@ const updateClub = async (req, res, next) => {
 
 // PATCH '/api/clubs/:cid'
 const updateClubProfile = async (req, res, next) => {
-	console.log('in updateClubProfile');
 	// validate request
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
@@ -364,7 +420,8 @@ const updateClubProfile = async (req, res, next) => {
 		faceBook,
 		youTube,
 		contactEmail,
-		description
+		description,
+		schedule
 	} = req.body;
 
 	// use clubId from token instead of getting it from url to avoid hacking
@@ -427,6 +484,9 @@ const updateClubProfile = async (req, res, next) => {
 	if (description) {
 		clubProfile.description = description;
 	}
+	if (schedule) {
+		clubProfile.schedule = schedule;
+	}
 
 	// check whether image or profile image been changed or not
 	if (req.files) {
@@ -475,11 +535,9 @@ const updateClubProfile = async (req, res, next) => {
 	});
 };
 
-// GET /api/clubs/:id
+// GET /api/clubs/profile/
 const getClubProfile = async (req, res, next) => {
-	console.log('getClubProfile');
 	const clubId = req.userData;
-	console.log('clubId = ', clubId);
 	let clubProfile;
 	try {
 		// we don't want to return password field
@@ -513,6 +571,9 @@ const getClubProfile = async (req, res, next) => {
 	if (clubProfile.description === 'undefined') {
 		clubProfile.description = '';
 	}
+	if (clubProfile.schedule === 'undefined') {
+		clubProfile.schedule = '';
+	}
 	if (clubProfile.profileImage === 'undefined') {
 		clubProfile.profileImage = '';
 	}
@@ -529,8 +590,179 @@ const getClubProfile = async (req, res, next) => {
 		return next(error);
 	}
 
-	console.log('470 clubProfile = ', clubProfile);
 	res.status(200).json({ clubProfile: clubProfile, image: image });
+};
+
+// PATCH '/api/clubs/:cid'
+const updateClubAccount = async (req, res, next) => {
+	// validate request
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		const error = new HttpError(
+			`Update club account process failed, please check your data: ${result.array()}`,
+			422
+		);
+
+		return next(error);
+	}
+
+	const {
+		onSitePayment,
+		stripePayment,
+		stripePublicKey,
+		stripeSecretKey
+	} = req.body;
+
+	// use clubId from token instead of getting it from url to avoid hacking
+	// req.userData is added in check-clubAuth middleware, information comes from front end
+	// req.header.authorization
+	const clubId = req.userData;
+	let clubAccount;
+	try {
+		clubAccount = await ClubAccount.findOne({ clubId });
+	} catch (err) {
+		const error = new HttpError(
+			'Update club account process failed, please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!clubAccount) {
+		const error = new HttpError(
+			'Update club account failed finding account.',
+			404
+		);
+		console.log('cannot find account');
+		return next(error);
+	}
+
+	let club;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update club account process internal failure @ finding club, please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'Update club account failed finding club.',
+			404
+		);
+		console.log('Update club account cannot find club');
+		return next(error);
+	}
+
+	clubAccount.onSitePayment = onSitePayment;
+	clubAccount.stripePayment = stripePayment;
+	clubAccount.stripePublicKey = Encrypt(stripePublicKey);
+	clubAccount.stripeSecretKey = Encrypt(stripeSecretKey);
+
+	try {
+		await clubAccount.save();
+	} catch (err) {
+		const error = new HttpError(
+			'Update club account process failed to save, please try again later.',
+			500
+		);
+		return next(error);
+	}
+	res.status(200).json({
+		clubAccount: clubAccount.toObject({
+			getters: true
+		})
+	});
+};
+
+// GET /api/clubs/account/
+const getClubAccount = async (req, res, next) => {
+	const clubId = req.userData;
+	let clubAccount;
+	try {
+		// we don't want to return password field
+		clubAccount = await ClubAccount.findOne({ clubId: clubId });
+	} catch (err) {
+		const error = new HttpError(
+			'Get club account process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!clubAccount) {
+		const error = new HttpError('No club account in the DB.', 404);
+		return next(error);
+	}
+
+	console.log(
+		'clubAccount.stripePublicKey = ',
+		clubAccount.stripePublicKey
+	);
+	if (
+		!clubAccount.stripePublicKey ||
+		Object.keys(clubAccount.stripePublicKey).length === 0
+	) {
+		clubAccount.stripePublicKey = '';
+	} else {
+		console;
+		clubAccount.stripePublicKey = Decrypt(
+			clubAccount.stripePublicKey
+		);
+	}
+	if (
+		!clubAccount.stripeSecretKey ||
+		Object.keys(clubAccount.stripeSecretKey).length === 0
+	) {
+		clubAccount.stripeSecretKey = '';
+	} else {
+		clubAccount.stripeSecretKey =
+			'***********************************************************************************************************';
+	}
+
+	res.status(200).json({
+		clubAccount: clubAccount.toObject({
+			getters: true
+		})
+	});
+};
+
+// GET /api/clubs/account/
+const getClubCredential = async (req, res, next) => {
+	const clubId = req.userData;
+	let club;
+	try {
+		// we don't want to return password field
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Get club credential process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		clubCredential: club.toObject({
+			getters: true,
+			transform: (doc, ret, opt) => {
+				delete ret['name'];
+				delete ret['password'];
+				delete ret['originalImage'];
+				delete ret['image'];
+				delete ret['events'];
+				delete ret['entryFormTemplate'];
+				return ret;
+			}
+		})
+	});
 };
 
 // DELETE '/api/clubs/:cid'
@@ -913,9 +1145,12 @@ exports.getAllClubs = getAllClubs;
 exports.getClubById = getClubById;
 exports.createClub = createClub;
 exports.loginClub = loginClub;
-exports.updateClub = updateClub;
+exports.updateClubCredential = updateClubCredential;
 exports.updateClubProfile = updateClubProfile;
 exports.getClubProfile = getClubProfile;
+exports.updateClubAccount = updateClubAccount;
+exports.getClubAccount = getClubAccount;
+exports.getClubCredential = getClubCredential;
 exports.deleteClub = deleteClub;
 exports.logoutClub = logoutClub;
 exports.getEventForm = getEventForm;

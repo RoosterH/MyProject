@@ -27,6 +27,7 @@ const SubmitEntry = props => {
 	let formAnswer = props.formAnswer;
 	const editingMode = props.editingMode;
 
+	const [totalPrice, setTotalPrice] = useState(0);
 	const {
 		isLoading,
 		error,
@@ -162,11 +163,11 @@ const SubmitEntry = props => {
 				}
 			);
 
+			console.log('responseData = ', responseData);
 			if (responseData.entry) {
 				// add entry to localStrorage, in EventItem.js, we look for entries from there
 				// to identify entry status. This is for performance boost.
 				const userData = JSON.parse(localStorage.getItem('userData'));
-				console.log('userData = ', userData);
 				if (userData) {
 					userData.userEntries.push(responseData.entry);
 					localStorage.setItem('userData', JSON.stringify(userData));
@@ -174,6 +175,8 @@ const SubmitEntry = props => {
 				// add entry to userAuthContext to have data persistency.
 				userAuthContext.userEntries.push(responseData.entry);
 			}
+			setTotalPrice(responseData.totalPrice);
+			console.log('TotalPrice = ', responseData.totalPrice);
 
 			if (responseStatus === 202) {
 				console.log('inside 202');

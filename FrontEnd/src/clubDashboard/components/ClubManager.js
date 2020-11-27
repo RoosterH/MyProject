@@ -33,7 +33,7 @@ const ManageClub = () => {
 							className="fa fa-sort-desc pull-right"
 							aria-hidden="true"
 						/>
-						Club Overview
+						Profile Manager
 					</Link>
 					<Link to={`/clubs/profileManager/${cid}`} exact="exact">
 						<p className="list-content-desc">
@@ -56,7 +56,7 @@ const ManageClub = () => {
 							information in the account manager.
 						</p>
 					</Link>
-					<Link to={`/clubs/teamManager/${cid}`} exact="exact">
+					{/* <Link to={`/clubs/teamManager/${cid}`} exact="exact">
 						<i
 							className="fa fa-sort-desc pull-right"
 							aria-hidden="true"
@@ -68,7 +68,7 @@ const ManageClub = () => {
 							Manage Your Team Invite your co-workers to access your
 							club dashboard.
 						</p>
-					</Link>
+					</Link> */}
 				</div>
 			</div>
 		</React.Fragment>

@@ -30,14 +30,14 @@ const ClubDashboardToolbar = () => {
 						</Link>
 						<div className="dropdown-content">
 							<NavLink to={`/clubs/profileManager/${cid}`}>
-								Club Profile Manager
+								Profile Manager
 							</NavLink>
 							<NavLink to={`/clubs/accountManager/${cid}`} exact>
-								accountManager
+								Account Manager
 							</NavLink>
-							<NavLink to={`/clubs/teamManager/${cid}`} exact>
+							{/* <NavLink to={`/clubs/teamManager/${cid}`} exact>
 								Team Manager
-							</NavLink>
+							</NavLink> */}
 						</div>
 					</li>
 
@@ -96,17 +96,16 @@ const ClubDashboardToolbar = () => {
 								className="fa fa-sort-desc pull-right"
 								aria-hidden="true"
 							/>
-							Communication
+							Communication Center (In development)
 						</Link>
-						<div className="dropdown-content">
-							{/* <a href="#">Add New Event</a> */}
+						{/* <div className="dropdown-content">
 							<NavLink to={'/clubs/events/new'} exact>
 								Add New Event
 							</NavLink>
 							<NavLink to={`/events/club/${cid}/`} exact>
 								CLUB EVENTS
 							</NavLink>
-						</div>
+						</div> */}
 					</li>
 
 					<li className="dashboard-nav-menu dropdown">
@@ -118,11 +117,11 @@ const ClubDashboardToolbar = () => {
 								className="fa fa-sort-desc pull-right"
 								aria-hidden="true"
 							/>
-							Nothing yet
+							{' Coming Soon '}
 						</Link>
-						<div className="dropdown-content">
+						{/* <div className="dropdown-content">
 							<a href="#">Test</a>
-						</div>
+						</div> */}
 					</li>
 				</ul>
 			</div>

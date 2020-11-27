@@ -13,6 +13,7 @@ const e = require('express');
 const { compare } = require('bcryptjs');
 
 const NOT_ATTENDING = 'Not Attending';
+const REGISTRATION = 'Registration';
 const errMsg = errors => {
 	var msg;
 	for (var e of errors) {
@@ -252,6 +253,7 @@ const createEntry = async (req, res, next) => {
 		return next(error);
 	}
 
+	let totalPrice = '0';
 	if (entry) {
 		// we should not find any entry here
 		const error = new HttpError(
@@ -290,6 +292,9 @@ const createEntry = async (req, res, next) => {
 			workerAssignment: workerAssignmentAnsTexts
 		});
 
+		// calculate price according to attendingDays * price/event
+		let attendingDays = 0;
+
 		// flag to keep track if user select "Not Attending" for everyday
 		let notAttending = true;
 		let workerNoSignup = false;
@@ -317,6 +322,7 @@ const createEntry = async (req, res, next) => {
 
 				// update runGroupNumEntries by +1
 				if (!groupFull[i]) {
+					attendingDays++;
 					let index = runGroupAnsChoices[i];
 					let numEntries =
 						entryReport.runGroupNumEntries[i][runGroupAnsChoices[i]];
@@ -334,6 +340,54 @@ const createEntry = async (req, res, next) => {
 			}
 		}
 
+		// find answer of Registration option
+		let answerRegistration = '';
+		for (let i = 0; i < answer.length; ++i) {
+			// Check name starts with "Registration", full name is "Registration-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+			if (answer[i].name.startsWith(REGISTRATION)) {
+				// value is always at index 0
+				// value: Array
+				//      0: "regRadioOption_0"
+				answerRegistration = answer[i].value[0];
+				break;
+			}
+		}
+
+		// calculate price
+		let entryFormData = event.entryFormData;
+		let dayPrice = '0';
+		console.log('entryFormData = ', entryFormData);
+		console.log('entryFormData.length = ', entryFormData.length);
+		// find entryFormData with field_name starts with "Registration", full field_name is "Registration-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+		for (let i = 0; i < entryFormData.length; ++i) {
+			console.log('entryFormData[i] = ', entryFormData[i]);
+			console.log(
+				'entryFormData[i].field_name = ',
+				entryFormData[i].field_name
+			);
+			if (entryFormData[i].field_name.startsWith(REGISTRATION)) {
+				let options = entryFormData[i].options;
+
+				for (let j = 0; j < options.length; ++j) {
+					console.log('options[j] = ', options[j]);
+					console.log('options[j].key = ', options[j].key);
+					console.log('answerRegistration = ', answerRegistration);
+					if (options[j].key === answerRegistration) {
+						dayPrice = options[j].value;
+						console.log('dayPrice = ', dayPrice);
+						break;
+					}
+				}
+				break;
+			}
+		}
+
+		console.log('attendingDays = ', attendingDays);
+
+		let totalPriceNum = attendingDays * parseFloat(dayPrice);
+		console.log('totalPriceNum = ', totalPriceNum);
+		totalPrice = totalPriceNum.toString();
+		console.log('totalPrice = ', totalPrice);
 		// If none of days has run group, return status code 406.
 		// Frontend will be able to recognize 406 and print out error message.
 		if (notAttending) {
@@ -396,14 +450,16 @@ const createEntry = async (req, res, next) => {
 	if (fullMessage !== '') {
 		res.status(202).json({
 			entry: entry.toObject({ getters: true }),
+			totalPrice: totalPrice,
 			message:
 				fullMessage +
 				'You are on the waitlist. Event club will notify you if there is a spot available.'
 		});
 	} else {
-		res
-			.status(200)
-			.json({ entry: entry.toObject({ getters: true }) });
+		res.status(200).json({
+			entry: entry.toObject({ getters: true }),
+			totalPrice: totalPrice
+		});
 	}
 };
 

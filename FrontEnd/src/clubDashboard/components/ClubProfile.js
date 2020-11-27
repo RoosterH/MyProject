@@ -45,7 +45,8 @@ const ClubProfile = () => {
 		faceBook: '',
 		youTube: '',
 		contactEmail: '',
-		description: ''
+		description: '',
+		schedule: ''
 	};
 
 	const [validateWebPage, setValidateWebPage] = useState(
@@ -93,6 +94,16 @@ const ClubProfile = () => {
 		}
 	);
 
+	const [validateSchedule, setValidateSchedule] = useState(
+		() => value => {
+			let error;
+			if (!value) {
+				error = 'Club event schedule is required.';
+			}
+			return error;
+		}
+	);
+
 	useEffect(() => {
 		const fetchClubProfile = async () => {
 			try {
@@ -127,6 +138,7 @@ const ClubProfile = () => {
 			formData.append('youTube', values.youTube);
 			formData.append('contactEmail', values.contactEmail);
 			formData.append('description', values.description);
+			formData.append('schedule', values.schedule);
 			const [
 				responseData,
 				responseStatus,
@@ -161,7 +173,8 @@ const ClubProfile = () => {
 			faceBook: loadedClubProfile.faceBook,
 			youTube: loadedClubProfile.youTube,
 			contactEmail: loadedClubProfile.contactEmail,
-			description: loadedClubProfile.description
+			description: loadedClubProfile.description,
+			schedule: loadedClubProfile.schedule
 		};
 	}
 
@@ -214,6 +227,14 @@ const ClubProfile = () => {
 							let error;
 							if (!value) {
 								error = 'Club description is required.';
+							}
+							return error;
+						});
+						setValidateSchedule(() => value => {
+							console.log('ValidateSchedule');
+							let error;
+							if (!value) {
+								error = 'Club event schedule is required.';
 							}
 							return error;
 						});
@@ -325,10 +346,35 @@ const ClubProfile = () => {
 								setOKLeavePage(false);
 								setSaveButtonEnabled(true);
 							}}
+							placeholder="About the club"
 						/>
 						{touched.description && errors.description && (
 							<div className="event-form__field-error">
 								{errors.description}
+							</div>
+						)}
+						<label htmlFor="schedule" className="event-form__label">
+							Event Schedule
+						</label>
+						<Field
+							id="schedule"
+							name="schedule"
+							as="textarea"
+							rows="15"
+							cols="50"
+							placeholder="Please enter event schedule"
+							className="event-form__field-textarea"
+							validate={validateSchedule}
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
+							}}
+							placeholder="TBD"
+						/>
+						{touched.schedule && errors.schedule && (
+							<div className="event-form__field-error">
+								{errors.schedule}
 							</div>
 						)}
 						<Button

@@ -8,8 +8,7 @@ const Event = require('../models/event');
 const HttpError = require('../models/httpError');
 const User = require('../models/user');
 
-const config = require('../Config/Config');
-const JWT_PRIVATE_KEY = config.JWT_PRIVATE_KEY;
+const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 
 // GET /api/users/
 const getAllUsers = async (req, res, next) => {

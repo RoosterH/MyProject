@@ -55,15 +55,27 @@ router.patch(
 	clubsController.updateClubProfile
 );
 
+router.patch(
+	'/account',
+	[
+		check('onSitePayment').not().isEmpty(),
+		check('stripePayment').not().isEmpty(),
+		check('stripePublicKey').not().isEmpty(),
+		check('stripeSecretKey').not().isEmpty()
+	],
+	clubsController.updateClubAccount
+);
+
 // update club info
 router.patch(
-	'/:cid',
+	'/credential',
 	[
-		check('name').not().isEmpty(),
-		check('email').normalizeEmail().isEmail(),
-		check('password').isLength({ min: 6 })
+		//check('email').normalizeEmail().isEmail(),
+		check('oldPassword').isLength({ min: 6 }),
+		check('newPassword').isLength({ min: 6 }),
+		check('passwordValidation').isLength({ min: 6 })
 	],
-	clubsController.updateClub
+	clubsController.updateClubCredential
 );
 
 // delete club
@@ -78,5 +90,11 @@ router.post('/form/:eid', clubsController.createEventForm);
 router.patch('/publish/:eid', clubsController.publishEvent);
 
 router.get('/profile/:cid', clubsController.getClubProfile);
+
+router.get('/credential/:cid', clubsController.getClubCredential);
+
+router.get('/account/:cid', clubsController.getClubAccount);
+
+router.get('/credential/:cid', clubsController.getClubCredential);
 
 module.exports = router;
