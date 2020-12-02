@@ -9,8 +9,11 @@ const Event = require('../models/event');
 const Entry = require('../models/entry');
 const EntryReport = require('../models/entryReport');
 const User = require('../models/user');
+const ClubAccount = require('../models/clubAccount');
+const Payment = require('../models/payment');
 const e = require('express');
 const { compare } = require('bcryptjs');
+const { Encrypt, Decrypt } = require('../util/crypto');
 
 const NOT_ATTENDING = 'Not Attending';
 const REGISTRATION = 'Registration';
@@ -65,7 +68,12 @@ const createEntry = async (req, res, next) => {
 		carNumber,
 		raceClass,
 		answer,
-		disclaimer
+		disclaimer,
+		paymentMethod,
+		creditCard,
+		expDate,
+		cvc,
+		entryFee
 	} = req.body;
 
 	if (!answer || answer.length === 0) {
@@ -356,38 +364,22 @@ const createEntry = async (req, res, next) => {
 		// calculate price
 		let entryFormData = event.entryFormData;
 		let dayPrice = '0';
-		console.log('entryFormData = ', entryFormData);
-		console.log('entryFormData.length = ', entryFormData.length);
 		// find entryFormData with field_name starts with "Registration", full field_name is "Registration-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
 		for (let i = 0; i < entryFormData.length; ++i) {
-			console.log('entryFormData[i] = ', entryFormData[i]);
-			console.log(
-				'entryFormData[i].field_name = ',
-				entryFormData[i].field_name
-			);
 			if (entryFormData[i].field_name.startsWith(REGISTRATION)) {
 				let options = entryFormData[i].options;
 
 				for (let j = 0; j < options.length; ++j) {
-					console.log('options[j] = ', options[j]);
-					console.log('options[j].key = ', options[j].key);
-					console.log('answerRegistration = ', answerRegistration);
 					if (options[j].key === answerRegistration) {
 						dayPrice = options[j].value;
-						console.log('dayPrice = ', dayPrice);
 						break;
 					}
 				}
 				break;
 			}
 		}
-
-		console.log('attendingDays = ', attendingDays);
-
 		let totalPriceNum = attendingDays * parseFloat(dayPrice);
-		console.log('totalPriceNum = ', totalPriceNum);
 		totalPrice = totalPriceNum.toString();
-		console.log('totalPrice = ', totalPrice);
 		// If none of days has run group, return status code 406.
 		// Frontend will be able to recognize 406 and print out error message.
 		if (notAttending) {
@@ -408,7 +400,21 @@ const createEntry = async (req, res, next) => {
 			const session = await mongoose.startSession();
 			session.startTransaction();
 			await entry.save({ session: session });
+			let entryId = entry.id;
+			let payment = new Payment({
+				entryId,
+				entryFee,
+				paymentMethod,
+				creditCard: creditCard ? Encrypt(creditCard) : {},
+				expDate: expDate ? Encrypt(expDate) : {},
+				cvc: cvc ? Encrypt(cvc) : {}
+			});
 
+			await payment.save({ session: session });
+			let paymentID = payment.id;
+			// save paymentId to entry
+			entry.paymentId = paymentID;
+			await entry.save({ session: session });
 			// store newEntry to user.envents array
 			user.entries.push(entry);
 			await user.save({ session: session });
@@ -417,6 +423,7 @@ const createEntry = async (req, res, next) => {
 			// only all tasks succeed, we commit the transaction
 			await session.commitTransaction();
 		} catch (err) {
+			console.log('426 err = ', err);
 			const error = new HttpError(
 				'Event registration process failed due to technical issue. Please try again later.',
 				500
@@ -431,7 +438,7 @@ const createEntry = async (req, res, next) => {
 			if (days > 1) {
 				fullMessage += 'Day ' + (i + 1) + ' event is Full. ';
 			} else {
-				fullMessage = 'Event is full. ';
+				fullMessage = 'Event is full. You will not be charged.';
 			}
 		} else if (groupFull[i]) {
 			if (days > 1) {
@@ -442,7 +449,11 @@ const createEntry = async (req, res, next) => {
 					runGroupAnsTexts[i] +
 					' is Full.  ';
 			} else {
-				fullMessage += runGroupAnsTexts[i] + ' group is Full.  ';
+				fullMessage +=
+					runGroupAnsTexts[i] +
+					' group is Full. You will be charged for $' +
+					totalPrice +
+					'.';
 			}
 		}
 	}
@@ -593,6 +604,9 @@ const updateClassNumber = async (req, res, next) => {
 	res.status(200).json({ entry: entry.toObject({ getters: true }) });
 };
 
+// ! ****************************
+// ! todo: re-calculate entryFee
+// ! ****************************
 const updateFormAnswer = async (req, res, next) => {
 	const entryId = req.params.entryId;
 	const userId = req.userData;
@@ -720,7 +734,6 @@ const updateFormAnswer = async (req, res, next) => {
 		let capPerGroup = Math.floor(event.totalCap / event.numGroups);
 		for (let i = 0; i < days; ++i) {
 			if (runGroupAnsTexts[i] === NOT_ATTENDING) {
-				console.log('666 group not full');
 				groupFull.push(false);
 			} else if (
 				// entryReport.runGroupNumEntries[i][j] is a 2-D array, i for day, j for group
@@ -796,18 +809,15 @@ const updateFormAnswer = async (req, res, next) => {
 			// if entry.groupWaitlist === true, entry.waitlist must be also true
 			if (onWaitlist && onGroupWaitlist) {
 				if (runGroupAnsTexts[i] !== NOT_ATTENDING) {
-					console.log('not NOT_ATTENDING');
 					// put in entries
 					let entries = entryReport.entries[i];
 					entries.push(entry.id);
 					entryReport.entries.set(i, entries);
 				} else {
-					console.log('inside not attending i = ', i);
 					// current entry is NOT_ATTENDING
 					// No need to put in entry list,
 					// reduce 1 from totalEntries
 					let oldTotalEntries = entryReport.totalEntries[i];
-					console.log('oldTotalEntries = ', oldTotalEntries);
 					entryReport.totalEntries.set(i, oldTotalEntries - 1);
 				}
 				// if current entry run group is good, remove the entry from waitlist
@@ -820,7 +830,6 @@ const updateFormAnswer = async (req, res, next) => {
 				entry.waitlist.set(i, false);
 				entry.groupWaitlist.set(i, false);
 			} else if (entryReport.entries[i].indexOf(entry.id) === -1) {
-				console.log('entries + 1');
 				// If entryReport.entries does not have this entry meaning previous choice
 				// was NOT_ATTENDING, now we need to add the entry to it. Also +1 for total
 				// entries.
@@ -839,42 +848,25 @@ const updateFormAnswer = async (req, res, next) => {
 			let newDayRunGroupEntries = [];
 			for (let j = 0; j < dayRunGroupNumEntries.length; ++j) {
 				if (j == newIndex && runGroupAnsTexts[i] !== NOT_ATTENDING) {
-					console.log('newIndex = ', newIndex);
-					console.log(
-						'adding meaningful group = ',
-						dayRunGroupNumEntries[j] + 1
-					);
 					// only increase runGroupNumEntires for meaningful groups
 					newDayRunGroupEntries.push(dayRunGroupNumEntries[j] + 1);
 				} else if (j == oldIndex && !onWaitlist) {
-					console.log('oldIndex = ', oldIndex);
-					console.log(
-						'minus meaningful group = ',
-						dayRunGroupNumEntries[j] - 1
-					);
 					newDayRunGroupEntries.push(dayRunGroupNumEntries[j] - 1);
 				} else {
 					newDayRunGroupEntries.push(dayRunGroupNumEntries[j]);
 				}
 			}
-			console.log('i = ', i);
-			console.log('newDayRunGroupEntries = ', newDayRunGroupEntries);
 			// use set to set array value => array.set(index, value)
 			entryReport.runGroupNumEntries.set(i, newDayRunGroupEntries);
-
 			runGroupChanged.push(true);
 		} else {
 			// groupFull[i] === true
 			if (entry.runGroup[i] === NOT_ATTENDING) {
-				console.log('full not attending');
 				// previous entry was NOT_ATTENDING now put the enry in the waitlist
 				// put entry in entryReport.waitlist
 				let waitlist = [];
 				waitlist = entryReport.waitlist[i];
-				console.log('waitlist 1 = ', waitlist);
 				waitlist.push(entry.id);
-				console.log('entryId = ', entry.id);
-				console.log('waitlist 2 = ', waitlist);
 				entryReport.waitlist.set(i, waitlist);
 				// entryReport.totalEntries + 1
 				let numEntries = entryReport.totalEntries[i];
@@ -918,19 +910,11 @@ const updateFormAnswer = async (req, res, next) => {
 	originalAnswer = entry.answer;
 
 	entry.answer = [];
-	console.log('originalAnswer.length = ', originalAnswer.length);
-
 	let runGroupCounter = 0;
 	answer.map((data, index) => {
-		console.log('data = ', data);
 		// if runGroup is not updated, we will not write to DB
 		if (data.name.startsWith('RunGroup')) {
 			if (!runGroupChanged[runGroupCounter]) {
-				console.log('group is full = ', runGroupCounter);
-				console.log(
-					'originalAnswer[index] = ',
-					originalAnswer[index]
-				);
 				entry.answer.push(originalAnswer[index]);
 			} else {
 				if (data.name) entry.answer.push(data);
@@ -958,7 +942,7 @@ const updateFormAnswer = async (req, res, next) => {
 		await entryReport.save({ session: session });
 		await session.commitTransaction();
 	} catch (err) {
-		console.log('err  =', err);
+		console.log('942 err  =', err);
 		const error = new HttpError(
 			'Entry update form answer connecting with DB failed. Please try again later.',
 			500
@@ -1165,7 +1149,7 @@ const deleteEntry = async (req, res, next) => {
 		// only both tasks succeed, we commit the transaction
 		await session.commitTransaction();
 	} catch (err) {
-		console.log('err = ', err);
+		console.log('1149 err = ', err);
 		const error = new HttpError(
 			'Failed to delete the event.  Please try it later.',
 			500
@@ -1174,7 +1158,7 @@ const deleteEntry = async (req, res, next) => {
 	}
 
 	res.status(200).json({
-		message: `Your entry for ${eventName} has been deleted`
+		message: `Your entry for ${eventName} has been canceled.`
 	});
 };
 
@@ -1186,8 +1170,251 @@ const getRunGroupIndex = (runGroupOptions, runGroupText) => {
 	}
 };
 
+// create entry
+const getEntryFee = async (req, res, next) => {
+	// Validate userId exists. If not, sends back an error
+	let user;
+	// req.userData is inserted in check-auth.js
+	let userId = req.userData;
+	try {
+		user = await User.findById(userId);
+	} catch (err) {
+		const error = new HttpError(
+			'getEntryFee process failed during user validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!user) {
+		const error = new HttpError(
+			'getEntryFee faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		const error = new HttpError(
+			`getEntryFee process failed. Please check your data: ${result.array()}`,
+			422
+		);
+		return next(error);
+	}
+
+	// we need to get answer from body
+	const { answer } = req.body;
+
+	if (!answer || answer.length === 0) {
+		const error = new HttpError(
+			'getEntryFee failed with empty answer.',
+			400
+		);
+		return next(error);
+	}
+
+	// Validate event exists, if not send back an error.
+	const eventId = req.params.eid;
+	let event;
+	try {
+		event = await Event.findById(eventId).populate('entryReportId');
+	} catch (err) {
+		const error = new HttpError(
+			'getEntryFee internal failure during event retrieval',
+			500
+		);
+		return next(error);
+	}
+	if (!event) {
+		const error = new HttpError(
+			'getEntryFee process internal failure',
+			404
+		);
+		return next(error);
+	}
+	let entryReport = event.entryReportId;
+	if (!entryReport) {
+		const error = new HttpError(
+			'getEntryFee process internal failure entryReport not found',
+			404
+		);
+		return next(error);
+	}
+
+	let multiDayEvent = event.multiDayEvent;
+	// validation to make sure all the field array lengths are the same
+	if (
+		entryReport.entries.length !== entryReport.waitlist.length ||
+		entryReport.entries.length !== entryReport.full.length ||
+		entryReport.entries.length !== event.runGroupOptions.length ||
+		entryReport.entries.length !==
+			entryReport.runGroupNumEntries.length ||
+		entryReport.entries.length !== entryReport.totalEntries.length
+	) {
+		const error = new HttpError(
+			'getEntryFee process internal failure array length not the same.',
+			500
+		);
+		return next(error);
+	}
+
+	let clubAccount;
+	try {
+		clubAccount = await ClubAccount.findOne({ clubId: event.clubId });
+	} catch (err) {
+		const error = new HttpError(
+			'getEntryFee internal failure @ getting club account. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!clubAccount) {
+		const error = new HttpError(
+			'getEntryFee failed. No club account in the DB.',
+			404
+		);
+		return next(error);
+	}
+	let paymentOptions = [];
+
+	if (clubAccount.onSitePayment === true) {
+		paymentOptions.push('onSite');
+	}
+	if (clubAccount.stripePayment === true) {
+		paymentOptions.push('stripe');
+	}
+
+	// find how many days
+	let days = entryReport.entries.length;
+
+	//********* This section is for parsing entry form answers **********//
+	// entry answer format:
+	// answer: Array
+	//   0: object
+	//      name: "RunGroupSingle-12EDB3DA-484C-4ECB-BB32-C3AE969A2D2F"
+	//      value: Array
+	//         0: "raceRadioOption_1"
+	// let groupFull = false;
+	let groupFull = [];
+
+	// runGroupAnsChoices is the answer index for each day, i.e., index 1 is extracted from => 0: "raceRadioOption_1"
+	// runGroups
+	let [runGroupAnsChoices, runGroupAnsTexts] = parseAnswer(
+		event.runGroupOptions,
+		answer,
+		'RunGroup'
+	);
+
+	// ! need to support single day selection for multiple day event
+	if (runGroupAnsChoices.length === 0) {
+		const error = new HttpError(
+			'Event registration answer invalid @run group. ',
+			400
+		);
+		return next(error);
+	}
+
+	// check if user has entered the event
+	let entry;
+	try {
+		entry = await Entry.findOne({
+			eventId: eventId,
+			userId: userId
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'Internal error in createEntry when retrieving entry.',
+			500
+		);
+		return next(error);
+	}
+
+	let entryFee = '0';
+	if (entry) {
+		// we should not find any entry here
+		const error = new HttpError(
+			'You already registered the event. Unable to getEntryFee',
+			400
+		);
+		return next(error);
+	} else {
+		// !entry
+		// entry not found, we can proceed to get entry free from answers
+		// calculate price according to attendingDays * price/event
+		let attendingDays = 0;
+
+		// flag to keep track if user select "Not Attending" for everyday
+		let notAttending = true;
+
+		// figure out how many attending days
+		for (let i = 0; i < days; ++i) {
+			// for multiple days events, user can choose to skip some day
+			if (runGroupAnsTexts[i] !== NOT_ATTENDING) {
+				notAttending = false;
+				attendingDays++;
+			}
+		}
+
+		// find answer of Registration option to get pricing per day
+		let answerRegistration = '';
+		for (let i = 0; i < answer.length; ++i) {
+			// Check name starts with "Registration", full name is "Registration-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+			if (answer[i].name.startsWith(REGISTRATION)) {
+				// value is always at index 0
+				// value: Array
+				//      0: "regRadioOption_0"
+				answerRegistration = answer[i].value[0];
+				break;
+			}
+		}
+
+		// calculate price
+		let entryFormData = event.entryFormData;
+		let feePerDay = '0';
+		// find entryFormData with field_name starts with "Registration", full field_name is "Registration-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+		for (let i = 0; i < entryFormData.length; ++i) {
+			if (entryFormData[i].field_name.startsWith(REGISTRATION)) {
+				let options = entryFormData[i].options;
+
+				for (let j = 0; j < options.length; ++j) {
+					if (options[j].key === answerRegistration) {
+						feePerDay = options[j].value;
+						break;
+					}
+				}
+				break;
+			}
+		}
+
+		let totalFees = attendingDays * parseFloat(feePerDay);
+		entryFee = totalFees.toString();
+		// If none of days has run group, return status code 406.
+		// Frontend will be able to recognize 406 and print out error message.
+		if (notAttending) {
+			const error = new HttpError(
+				'You need to sign up at least one day. Your entry was not accepted.',
+				406
+			);
+			return next(error);
+		}
+	}
+
+	res.status(200).json({
+		entryFee: entryFee,
+		// paymentOptions contains "stripe" and/or "onSite"
+		paymentOptions: paymentOptions
+	});
+};
+
 exports.createEntry = createEntry;
 exports.updateCar = updateCar;
 exports.updateClassNumber = updateClassNumber;
 exports.updateFormAnswer = updateFormAnswer;
 exports.deleteEntry = deleteEntry;
+exports.getEntryFee = getEntryFee;

@@ -207,33 +207,6 @@ const EventRegistration = props => {
 		}
 	);
 
-	// const [
-	// 	validateCapDistribution,
-	// 	setValidateCapDistribution
-	// ] = useState(() => values => {
-	// 	let error;
-	// 	if (!values.capDistribution) {
-	// 		return error;
-	// 	}
-
-	// 	if (values.totalCap === '') {
-	// 		console.log('totalCap first');
-	// 		error = 'You must enter Total Participants first.';
-	// 	}
-	// 	if (values.numGroups === '') {
-	// 		console.log('totalCap first');
-	// 		error += 'You must enter Number of Groups first.';
-	// 	}
-	// 	if (!(parseInt(values.totalCap) / parseInt(values.numGroups))
-	// 			.isInteger
-	// 	) {
-	// 		error =
-	// 			'Please make sure (Total Participants(/(Number of Groups) can be evenly distributed.';
-	// 	}
-	// 	return error;
-	// });
-	/***** End of Form Validation *****/
-
 	const publishHandler = async () => {
 		try {
 			await sendRequest(

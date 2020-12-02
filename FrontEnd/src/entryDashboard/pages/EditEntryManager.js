@@ -14,7 +14,6 @@ import { UserAuthContext } from '../../shared/context/auth-context';
 import './Entry.css';
 
 const EditEntryManager = props => {
-	console.log('props.location.state = ', props.location.state);
 	const eventId = useParams().id;
 	const [eventName, setEventName] = useState('');
 	// Allow users to cancel registration after reg is closed. Currently un-supported,

@@ -230,6 +230,28 @@
 	margin: 1rem 2rem 2rem 1.5rem;
 }
 
+.button--small-block-payment {
+	display: block;
+	padding: 0.2rem 0.2rem 0.2rem 0.2rem;
+	font-size: 12px;
+	font-family: 'Montserrat', sans-serif;
+	background: transparent;
+	color: #106daf;
+	width: 10rem;
+	margin: 2rem 2rem 2rem 1.5rem;
+}
+
+.button--small-block-onsite-stripe {
+	display: block;
+	padding: 0.2rem 0.2rem 0.2rem 0.2rem;
+	font-size: 12px;
+	font-family: 'Montserrat', sans-serif;
+	background: transparent;
+	color: #106daf;
+	width: 10rem;
+	margin: 2rem 2rem 2rem 1.5rem;
+}
+
 .button--small-block--inverse {
 	color: white;
 	background: #bebcba;

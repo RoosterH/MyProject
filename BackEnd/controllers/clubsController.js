@@ -142,8 +142,8 @@ const createClub = async (req, res, next) => {
 
 	// create club account
 	const newClubAccount = new ClubAccount({
-		onSitePayment: 'false',
-		stripePayment: 'true',
+		onSitePayment: false,
+		stripePayment: true,
 		stripePublicKey: undefined,
 		stripeSecretKey: undefined
 	});
@@ -687,7 +687,6 @@ const getClubAccount = async (req, res, next) => {
 	const clubId = req.userData;
 	let clubAccount;
 	try {
-		// we don't want to return password field
 		clubAccount = await ClubAccount.findOne({ clubId: clubId });
 	} catch (err) {
 		const error = new HttpError(
@@ -706,6 +705,7 @@ const getClubAccount = async (req, res, next) => {
 		'clubAccount.stripePublicKey = ',
 		clubAccount.stripePublicKey
 	);
+	// check wheather Stripe keys been created or not
 	if (
 		!clubAccount.stripePublicKey ||
 		Object.keys(clubAccount.stripePublicKey).length === 0

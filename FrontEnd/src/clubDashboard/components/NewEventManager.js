@@ -116,7 +116,7 @@ const NewEventManager = () => {
 		}
 	}, [formBuilderStatus, registrationClickHandler]);
 
-	// getting continue status back from <FormBuilder />
+	// getting continue status back from <EventRegistration />
 	const [registrationStatus, setRegistrationStatus] = useState(false);
 	const RegistrationHandler = status => {
 		if (status) {

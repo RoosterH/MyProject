@@ -131,8 +131,10 @@ const ClubAccount = () => {
 				process.env.REACT_APP_BACKEND_URL + `/clubs/account`,
 				'PATCH',
 				JSON.stringify({
-					onSitePayment: values.onSitePayment,
-					stripePayment: values.stripePayment,
+					onSitePayment:
+						values.onSitePayment === 'true' ? true : false,
+					stripePayment:
+						values.stripePayment === 'true' ? true : false,
 					stripePublicKey: values.stripePublicKey,
 					stripeSecretKey: values.stripeSecretKey
 				}),
@@ -160,8 +162,12 @@ const ClubAccount = () => {
 
 	if (loadedClubAccount) {
 		initialValues = {
-			onSitePayment: loadedClubAccount.onSitePayment,
-			stripePayment: loadedClubAccount.stripePayment,
+			onSitePayment: loadedClubAccount.onSitePayment
+				? 'true'
+				: 'false',
+			stripePayment: loadedClubAccount.stripePayment
+				? 'true'
+				: 'false',
 			stripePublicKey: loadedClubAccount.stripePublicKey,
 			stripeSecretKey: loadedClubAccount.stripeSecretKey
 		};
@@ -230,7 +236,7 @@ const ClubAccount = () => {
 										setSaveButtonEnabled(true);
 									}}
 								/>
-								Yes
+								&nbsp;Yes
 							</label>
 							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 							<label>
@@ -244,7 +250,7 @@ const ClubAccount = () => {
 										setSaveButtonEnabled(true);
 									}}
 								/>
-								No
+								&nbsp;No
 							</label>
 						</div>
 						<br />
@@ -266,7 +272,7 @@ const ClubAccount = () => {
 										setSaveButtonEnabled(true);
 									}}
 								/>
-								Yes
+								&nbsp;Yes
 							</label>
 							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 							<label>
@@ -280,7 +286,7 @@ const ClubAccount = () => {
 										setSaveButtonEnabled(true);
 									}}
 								/>
-								No
+								&nbsp;No
 							</label>
 						</div>
 						<br />

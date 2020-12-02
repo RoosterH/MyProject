@@ -28,6 +28,7 @@ const EventForm = props => {
 		clearError
 	} = useHttpClient();
 
+	// this is a callback for ReactFormGenerator
 	const getNewEntry = newEntry => {
 		props.getNewEntry(newEntry);
 	};

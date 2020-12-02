@@ -34,6 +34,12 @@ router.post(
 	entriesController.createEntry
 );
 
+router.post(
+	'/entryFee/:eid',
+	[check('answer').not().isEmpty()],
+	entriesController.getEntryFee
+);
+
 router.patch(
 	'/car/:entryId',
 	[check('carId').not().isEmpty()],

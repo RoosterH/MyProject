@@ -3,6 +3,7 @@ import { Link, useLocation, useHistory } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
+import Cleave from 'cleave.js/react';
 
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
@@ -16,6 +17,7 @@ import { FormContext } from '../../shared/context/form-context';
 
 import '../../shared/css/EventForm.css';
 
+import STRIPE from '../../shared/utils/webp/Stripe.webp';
 const SubmitEntry = props => {
 	const history = useHistory();
 	let entryId = props.entryId;
@@ -27,7 +29,15 @@ const SubmitEntry = props => {
 	let formAnswer = props.formAnswer;
 	const editingMode = props.editingMode;
 
-	const [totalPrice, setTotalPrice] = useState(0);
+	console.log('editingMode = ', editingMode);
+	// entry fee for the event
+	const [entryFee, setEntryFee] = useState(0);
+	// club payment options
+	const [stripe, setStripe] = useState(false);
+	const [onSite, setOnSite] = useState(false);
+	const [hideCCField, setHideCCField] = useState(true);
+	const [succeed, setSucceed] = useState(false);
+
 	const {
 		isLoading,
 		error,
@@ -80,6 +90,49 @@ const SubmitEntry = props => {
 		}
 	}, [location, userAuthContext]);
 
+	useEffect(() => {
+		const getEntryFeePaymentOption = async () => {
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL +
+					`/entries/entryFee/${eventId}`,
+				'POST',
+				JSON.stringify({
+					answer: formAnswer
+				}),
+				{
+					'Content-type': 'application/json',
+					// adding JWT to header for authentication
+					Authorization: 'Bearer ' + userAuthContext.userToken
+				}
+			);
+			setEntryFee(responseData.entryFee);
+			let paymentOptions = responseData.paymentOptions;
+			if (paymentOptions.indexOf('onSite') > -1) {
+				setOnSite(true);
+			}
+			if (paymentOptions.indexOf('stripe') > -1) {
+				setStripe(true);
+				setHideCCField(false);
+			}
+		};
+		if (!editingMode) {
+			getEntryFeePaymentOption();
+		}
+	}, [
+		editingMode,
+		sendRequest,
+		setEntryFee,
+		setOnSite,
+		setStripe,
+		eventId,
+		formAnswer,
+		userAuthContext.userToken
+	]);
+
 	const [disclaimer, setDisclaimer] = useState(false);
 
 	// initialize local storage
@@ -121,7 +174,11 @@ const SubmitEntry = props => {
 	};
 
 	const initialValues = {
-		acceptDisclaimer: editingMode ? true : false
+		acceptDisclaimer: editingMode ? true : false,
+		paymentMethod: stripe ? 'stripe' : 'onSite',
+		creditCard: '',
+		expirationDate: '',
+		cvc: ''
 	};
 
 	const [validateDisclaimer, setValidateDisclaimer] = useState(
@@ -133,11 +190,52 @@ const SubmitEntry = props => {
 			return error;
 		}
 	);
+	const [validatePaymentMethod, setValidatePaymentMethod] = useState(
+		() => value => {
+			let error;
+			if (!value) {
+				error = 'You must select a payment method.';
+			}
+			return error;
+		}
+	);
+
+	const [validateCreditCard, setValidateCreditCard] = useState(
+		() => value => {
+			let error;
+			if (!value) {
+				error = 'Please provide credit card number';
+			}
+			return error;
+		}
+	);
+
+	const [
+		validateExpirationDate,
+		setValidateExpirationDate
+	] = useState(() => value => {
+		let error;
+		if (!value) {
+			error = 'Please enter expiration date';
+		}
+		return error;
+	});
+
+	const [validateCVC, setValidateCVC] = useState(() => value => {
+		let error;
+		if (!value) {
+			error = 'Please enter CVC';
+		}
+		return error;
+	});
 
 	const submitHandler = async values => {
 		// return back to NewEntryManager
 		let disclaimer = values.acceptDisclaimer;
-
+		let paymentMethod = values.paymentMethod;
+		let creditCard = values.creditCard;
+		let expDate = values.expirationDate;
+		let cvc = values.cvc;
 		try {
 			// we need to use JSON.stringify to send array objects.
 			// FormData with JSON.stringify not working
@@ -154,7 +252,12 @@ const SubmitEntry = props => {
 					carNumber: carNumber,
 					raceClass: raceClass,
 					answer: formAnswer,
-					disclaimer: disclaimer
+					disclaimer: disclaimer,
+					paymentMethod: paymentMethod,
+					creditCard: creditCard,
+					expDate: expDate,
+					cvc: cvc,
+					entryFee: entryFee
 				}),
 				{
 					'Content-type': 'application/json',
@@ -162,8 +265,6 @@ const SubmitEntry = props => {
 					Authorization: 'Bearer ' + userAuthContext.userToken
 				}
 			);
-
-			console.log('responseData = ', responseData);
 			if (responseData.entry) {
 				// add entry to localStrorage, in EventItem.js, we look for entries from there
 				// to identify entry status. This is for performance boost.
@@ -175,13 +276,15 @@ const SubmitEntry = props => {
 				// add entry to userAuthContext to have data persistency.
 				userAuthContext.userEntries.push(responseData.entry);
 			}
-			setTotalPrice(responseData.totalPrice);
-			console.log('TotalPrice = ', responseData.totalPrice);
+			setEntryFee(responseData.entryFee);
 
 			if (responseStatus === 202) {
-				console.log('inside 202');
 				// either group is full or event is full
 				setStatusMessage(responseMessage);
+				setSucceed(true);
+			} else if (responseStatus === 200) {
+				setStatusMessage('Registration Submitted Successfully.');
+				setSucceed(true);
 			}
 
 			setContinueStatus(true);
@@ -221,6 +324,68 @@ const SubmitEntry = props => {
 		} catch (err) {}
 	};
 
+	const creditCardComponent = ({
+		field,
+		handleBlur,
+		handleChange,
+		form: { touched, errors }
+	}) => {
+		return (
+			<React.Fragment>
+				<div className="event-form__field-creditcard">
+					<Cleave
+						{...field}
+						placeholder="Credit card number"
+						options={{ creditCard: true }}
+					/>
+				</div>
+				{touched[field.name] && errors[field.name] && (
+					<div className="event-form__field-creditcard-error">
+						{errors[field.name]}
+					</div>
+				)}
+			</React.Fragment>
+		);
+	};
+
+	const expirationDateComponent = ({
+		field,
+		handleBlur,
+		handleChange,
+		form: { touched, errors }
+	}) => {
+		return (
+			<React.Fragment>
+				<div className="event-form__field-creditcard">
+					<Cleave
+						{...field}
+						placeholder="Exp Date MM/YY"
+						options={{ date: true, datePattern: ['m', 'y'] }}
+					/>
+				</div>
+				{touched[field.name] && errors[field.name] && (
+					<div className="event-form__field-creditcard-error">
+						{errors[field.name]}
+					</div>
+				)}
+			</React.Fragment>
+		);
+	};
+
+	const [submitButtonClass, setSubmitButtonClass] = useState(
+		'small-block'
+	);
+	useEffect(() => {
+		if (onSite && stripe) {
+			setSubmitButtonClass('small-block-onsite-stripe');
+		} else if (stripe) {
+			setSubmitButtonClass('small-block-stripe');
+		} else {
+			// onSite
+			setSubmitButtonClass('small-block');
+		}
+	}, [stripe, onSite, setSubmitButtonClass]);
+
 	const eventForm = values => (
 		<div className="event-form">
 			<div className="event-form-header">
@@ -232,6 +397,46 @@ const SubmitEntry = props => {
 				initialValues={initialValues}
 				onSubmit={(values, actions) => {
 					submitHandler(values);
+					if (!actions.isSubmitting) {
+						setValidateDisclaimer(() => value => {
+							let error;
+							if (!value) {
+								console.log('error disclaimer');
+								error =
+									'You must agree with disclaimer to register event.';
+							}
+							return error;
+						});
+						setValidatePaymentMethod(() => value => {
+							let error;
+							if (!value) {
+								console.log('error payment');
+								error = 'You must select a payment method.';
+							}
+							return error;
+						});
+						setValidateCreditCard(() => value => {
+							let error;
+							if (!value) {
+								error = 'Please provide credit card number';
+							}
+							return error;
+						});
+						setValidateExpirationDate(() => value => {
+							let error;
+							if (!value) {
+								error = 'Please enter expiration date';
+							}
+							return error;
+						});
+						setValidateCVC(() => value => {
+							let error;
+							if (!value) {
+								error = 'Please enter CVC';
+							}
+							return error;
+						});
+					}
 				}}>
 				{({
 					values,
@@ -242,10 +447,11 @@ const SubmitEntry = props => {
 					setFieldValue,
 					submitted,
 					touched,
-					handleBlur
+					handleBlur,
+					handleChange
 				}) => (
 					<Form className="event-form-container">
-						<label className="event-form__checkbox">
+						<label className="event-form__paymentmethod">
 							MySeatTime waiver <br />
 							By registering for this event, you acknowledge that all
 							the charges are handled by event organizers.
@@ -253,8 +459,6 @@ const SubmitEntry = props => {
 							refunds of any kind. View the MySeatTime.com terms for
 							details.{' '}
 						</label>
-						<br />
-						<br />
 						<br />
 						<label className="event-form__checkbox">
 							<Field
@@ -269,13 +473,211 @@ const SubmitEntry = props => {
 							&nbsp; I accept the charge and cancellation terms and
 							conditions.
 						</label>
+						<label className="event-form__checkbox">
+							<b>Total Entry Due: ${entryFee}</b>
+						</label>
+						{stripe && onSite && (
+							<div
+								id="paymentMethod"
+								className="event-form__paymentmethod">
+								Please Select Payment Methord:
+								<div role="group" aria-labelledby="paymentMethod">
+									<label className="event-form__field_radio">
+										<Field
+											type="radio"
+											name="paymentMethod"
+											value="onSite"
+											validate={validatePaymentMethod}
+											onChange={event => {
+												handleChange(event);
+												setHideCCField(true);
+											}}
+										/>
+										&nbsp;&nbsp;&nbsp;&nbsp;
+										<i className="fal fa-money-bill fa-2x " />
+										&nbsp;&nbsp; On-Site
+									</label>
+									<label className="event-form__field_radio">
+										<Field
+											type="radio"
+											name="paymentMethod"
+											value="stripe"
+											validate={validatePaymentMethod}
+											onChange={event => {
+												handleChange(event);
+												setHideCCField(false);
+											}}
+										/>{' '}
+										<img
+											src={STRIPE}
+											alt="Stripe"
+											className="stripe"
+										/>
+									</label>
+									{!hideCCField && (
+										<React.Fragment>
+											<Field
+												id="creditCard"
+												name="creditCard"
+												values={values}
+												label="creditCard"
+												onBlur={event => {
+													handleBlur(event);
+													setOKLeavePage(false);
+												}}
+												handleChange={event => {
+													console.log('name = ', event.name);
+													console.log(
+														'value1 = ',
+														event.target.rawValue
+													);
+													handleChange(event.target.rawValue);
+												}}
+												component={creditCardComponent}
+												validate={validateCreditCard}
+											/>
+											<Field
+												id="expirationDate"
+												name="expirationDate"
+												values={values}
+												label="expirationDate"
+												onBlur={event => {
+													handleBlur(event);
+													setOKLeavePage(false);
+												}}
+												handleChange={event => {
+													handleChange(event.target.rawValue);
+												}}
+												component={expirationDateComponent}
+												validate={validateExpirationDate}
+											/>
+											<div className="event-form__field-creditcard">
+												<Field
+													id="cvc"
+													name="cvc"
+													type="text"
+													placeholder="CVC"
+													validate={validateCVC}
+													onBlur={event => {
+														handleBlur(event);
+														setOKLeavePage(false);
+													}}
+												/>
+											</div>
+											{touched.cvc && errors.cvc && (
+												<div className="event-form__field-creditcard-error">
+													{errors.cvc}
+												</div>
+											)}
+										</React.Fragment>
+									)}
+								</div>
+							</div>
+						)}
+						{stripe && !onSite && (
+							<React.Fragment>
+								<div
+									id="paymentMethod"
+									className="event-form__paymentmethod">
+									Please Select Payment Methord:
+									<div role="group" aria-labelledby="paymentMethod">
+										<label className="event-form__field_radio">
+											<Field
+												type="radio"
+												name="paymentMethod"
+												value="stripe"
+												validate={validatePaymentMethod}
+											/>{' '}
+											<img
+												src={STRIPE}
+												alt="Stripe"
+												className="stripe"
+											/>
+										</label>
+										<Field
+											id="creditCard"
+											name="creditCard"
+											values={values}
+											label="creditCard"
+											onBlur={event => {
+												handleBlur(event);
+												setOKLeavePage(false);
+											}}
+											handleChange={event => {
+												console.log('name = ', event.name);
+												console.log(
+													'value1 = ',
+													event.target.rawValue
+												);
+												handleChange(event.target.rawValue);
+											}}
+											component={creditCardComponent}
+											validate={validateCreditCard}
+										/>
+										<Field
+											id="expirationDate"
+											name="expirationDate"
+											values={values}
+											label="expirationDate"
+											onBlur={event => {
+												handleBlur(event);
+												setOKLeavePage(false);
+											}}
+											handleChange={event => {
+												handleChange(event.target.rawValue);
+											}}
+											component={expirationDateComponent}
+											validate={validateExpirationDate}
+										/>
+										<div className="event-form__field-creditcard">
+											<Field
+												id="cvc"
+												name="cvc"
+												type="text"
+												placeholder="CVC"
+												validate={validateCVC}
+												onBlur={event => {
+													handleBlur(event);
+													setOKLeavePage(false);
+												}}
+											/>
+										</div>
+										{touched.cvc && errors.cvc && (
+											<div className="event-form__field-creditcard-error">
+												{errors.cvc}
+											</div>
+										)}
+									</div>
+								</div>
+							</React.Fragment>
+						)}
+						{!stripe && onSite && (
+							<div
+								id="paymentMethod"
+								className="event-form__checkbox">
+								Please Select Payment Methord:
+								<div role="group" aria-labelledby="paymentMethod">
+									<label className="event-form__field_radio">
+										<Field
+											type="radio"
+											name="paymentMethod"
+											value="onSite"
+											validate={validatePaymentMethod}
+										/>
+										&nbsp;&nbsp;&nbsp;&nbsp;
+										<i className="fal fa-money-bill fa-2x " />
+										&nbsp;&nbsp; On-Site
+									</label>
+								</div>
+							</div>
+						)}
+						{/* !dirty is to grey out button when the form first gets loaded */}
 						{!editingMode && (
 							<Button
 								type="submit"
-								size="small-block"
-								margin-left="1.5rem"
+								size="small-block-payment"
 								disabled={
-									isSubmitting || !(isValid && dirty) || submitted
+									isSubmitting || !isValid || !dirty || submitted
 								}>
 								SUBMIT
 							</Button>
@@ -285,28 +687,31 @@ const SubmitEntry = props => {
 								type="button"
 								size="small-block-warning"
 								margin-left="1.5rem"
-								disabled={isSubmitting}
+								disabled={isSubmitting || !isValid}
 								onClick={openDELHandler}>
 								CANCEL REGISTRATION
 							</Button>
 						)}
-						<Link
-							to={{
-								pathname: `/events/entrylist/${eventId}`,
-								state: {
-									displayName: true,
-									eventName: eventName,
-									eventId: eventId
-								}
-							}}>
-							<Button
-								type="button"
-								size="small-block"
-								margin-left="1.5rem"
-								disabled={!continueStatus && !editingMode}>
-								VIEW EVENT ENTRY LIST
-							</Button>
-						</Link>
+						{(editingMode || succeed) && (
+							<Link
+								to={{
+									pathname: `/events/entrylist/${eventId}`,
+									state: {
+										displayName: true,
+										eventName: eventName,
+										eventId: eventId
+									}
+								}}
+								className="event-form__link">
+								<Button
+									type="button"
+									size="small-block"
+									margin-left="1.5rem"
+									disabled={!continueStatus && !editingMode}>
+									VIEW EVENT ENTRY LIST
+								</Button>
+							</Link>
+						)}
 						<div className="event-form-errmsg">
 							{statusMessage && <p> {statusMessage} </p>}
 						</div>
@@ -403,6 +808,7 @@ const SubmitEntry = props => {
 					<LoadingSpinner />
 				</div>
 			)}
+
 			{eventForm()}
 		</React.Fragment>
 	);

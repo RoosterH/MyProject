@@ -12,6 +12,10 @@ const entrySchema = new Schema({
 		required: true,
 		ref: 'User'
 	},
+	paymentId: {
+		type: mongoose.Types.ObjectId,
+		ref: 'Payment'
+	},
 	userLastName: { type: String, required: true },
 	userFirstName: { type: String, required: true },
 	userName: { type: String, required: true },
