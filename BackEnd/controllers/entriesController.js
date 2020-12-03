@@ -604,9 +604,6 @@ const updateClassNumber = async (req, res, next) => {
 	res.status(200).json({ entry: entry.toObject({ getters: true }) });
 };
 
-// ! ****************************
-// ! todo: re-calculate entryFee
-// ! ****************************
 const updateFormAnswer = async (req, res, next) => {
 	const entryId = req.params.entryId;
 	const userId = req.userData;
@@ -783,6 +780,8 @@ const updateFormAnswer = async (req, res, next) => {
 		return next(error);
 	}
 
+	// calculate price according to attendingDays * price/event
+	let attendingDays = 0;
 	let groupFullMsg = '';
 	let runGroupChanged = [];
 	for (let i = 0; i < days; ++i) {
@@ -791,6 +790,7 @@ const updateFormAnswer = async (req, res, next) => {
 		// old run group same as new run group, skip
 		if (oldIndex == newIndex) {
 			runGroupChanged.push(false);
+			++attendingDays;
 			continue;
 		}
 
@@ -813,6 +813,7 @@ const updateFormAnswer = async (req, res, next) => {
 					let entries = entryReport.entries[i];
 					entries.push(entry.id);
 					entryReport.entries.set(i, entries);
+					++attendingDays;
 				} else {
 					// current entry is NOT_ATTENDING
 					// No need to put in entry list,
@@ -841,6 +842,7 @@ const updateFormAnswer = async (req, res, next) => {
 					i,
 					entryReport.totalEntries[i] + 1
 				);
+				++attendingDays;
 			}
 
 			// we have checked current entry run group is different from previous entry run group
@@ -901,9 +903,43 @@ const updateFormAnswer = async (req, res, next) => {
 					} run group.`;
 				}
 				runGroupChanged.push(false);
+				++attendingDays;
 			}
 		}
 	}
+
+	// This section is to find the dayPrice to calculate entry fee
+	// we always want to get retrieve the answer from the form to get the dayPrice because it may be changed
+	// find answer of Registration option
+	let answerRegistration = '';
+	for (let i = 0; i < answer.length; ++i) {
+		// Check name starts with "Registration", full name is "Registration-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+		if (answer[i].name.startsWith(REGISTRATION)) {
+			// value is always at index 0
+			// value: Array
+			//      0: "regRadioOption_0"
+			answerRegistration = answer[i].value[0];
+			break;
+		}
+	}
+	let entryFormData = event.entryFormData;
+	let dayPrice = '0';
+	// find entryFormData with field_name starts with "Registration", full field_name is "Registration-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+	for (let i = 0; i < entryFormData.length; ++i) {
+		if (entryFormData[i].field_name.startsWith(REGISTRATION)) {
+			let options = entryFormData[i].options;
+
+			for (let j = 0; j < options.length; ++j) {
+				if (options[j].key === answerRegistration) {
+					dayPrice = options[j].value;
+					break;
+				}
+			}
+			break;
+		}
+	}
+	let totalPriceNum = attendingDays * parseFloat(dayPrice);
+	totalPrice = totalPriceNum.toString();
 
 	// override answers
 	let originalAnswer = [];
@@ -934,12 +970,29 @@ const updateFormAnswer = async (req, res, next) => {
 		entry.workerAssignment.set(i, workerAssignmentAnsTexts[i]);
 	}
 
+	let paymentId = entry.paymentId;
+	console.log('974 paymentId = ', paymentId);
+
+	let payment;
+	try {
+		payment = await Payment.findById(paymentId);
+	} catch (err) {
+		console.log('980 err  =', err);
+		const error = new HttpError(
+			'Entry update form answer failed to retrieve payment DB failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	console.log('976 payment = ', payment);
+	payment.entryFee = totalPrice;
 	try {
 		const session = await mongoose.startSession();
 		session.startTransaction();
 		// save entry first because entry has less requests than event
 		await entry.save({ session: session });
 		await entryReport.save({ session: session });
+		await payment.save({ session: session });
 		await session.commitTransaction();
 	} catch (err) {
 		console.log('942 err  =', err);
@@ -956,18 +1009,22 @@ const updateFormAnswer = async (req, res, next) => {
 				entry: entry.toObject({ getters: true }),
 				message:
 					groupFullMsg +
-					' Please try a different group or cancel the registration if you cannot make it.'
+					' Please try a different group or cancel the registration if you cannot make it.' +
+					'Entry Fee is $' +
+					totalPrice +
+					'.'
 			});
 		} else {
 			res.status(202).json({
 				entry: entry.toObject({ getters: true }),
-				message: groupFullMsg
+				message: groupFullMsg + 'Entry Fee is $' + totalPrice + '.'
 			});
 		}
 	} else {
-		res
-			.status(200)
-			.json({ entry: entry.toObject({ getters: true }) });
+		res.status(200).json({
+			entry: entry.toObject({ getters: true }),
+			message: 'Entry Fee is $' + totalPrice + '.'
+		});
 	}
 };
 
@@ -1336,13 +1393,27 @@ const getEntryFee = async (req, res, next) => {
 	}
 
 	let entryFee = '0';
+	let paymentMethod = '';
+	let creditCard = '';
+	let expDate = '';
+	let cvc = '';
 	if (entry) {
-		// we should not find any entry here
-		const error = new HttpError(
-			'You already registered the event. Unable to getEntryFee',
-			400
-		);
-		return next(error);
+		// get entry fee from payment
+		let payment;
+		try {
+			payment = await Payment.findById(entry.paymentId);
+		} catch (err) {
+			const error = new HttpError(
+				'Internal error in getEntryFee when retrieving payment.',
+				500
+			);
+			return next(error);
+		}
+		entryFee = payment.entryFee;
+		paymentMethod = payment.paymentMethod;
+		creditCard = Decrypt(payment.creditCard);
+		expDate = Decrypt(payment.expDate);
+		cvc = Decrypt(payment.cvc);
 	} else {
 		// !entry
 		// entry not found, we can proceed to get entry free from answers
@@ -1381,7 +1452,6 @@ const getEntryFee = async (req, res, next) => {
 		for (let i = 0; i < entryFormData.length; ++i) {
 			if (entryFormData[i].field_name.startsWith(REGISTRATION)) {
 				let options = entryFormData[i].options;
-
 				for (let j = 0; j < options.length; ++j) {
 					if (options[j].key === answerRegistration) {
 						feePerDay = options[j].value;
@@ -1406,9 +1476,14 @@ const getEntryFee = async (req, res, next) => {
 	}
 
 	res.status(200).json({
-		entryFee: entryFee,
-		// paymentOptions contains "stripe" and/or "onSite"
-		paymentOptions: paymentOptions
+		entryFee,
+		// paymentOptions is the payment options offered by club that contains "stripe" and/or "onSite"
+		paymentOptions,
+		// paymentMethod is what user chose how to pay for the entry fee
+		paymentMethod,
+		creditCard,
+		expDate,
+		cvc
 	});
 };
 

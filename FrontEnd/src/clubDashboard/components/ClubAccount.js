@@ -295,12 +295,12 @@ const ClubAccount = () => {
 							className="event-form__label_inline">
 							Stripe Publishable Key
 						</label>
-						<button
+						<span
 							type="button"
 							className="showPasswordButton"
 							onClick={toggleShowPublicKeyButton}>
 							{showPublicKeyButton}
-						</button>
+						</span>
 						<Field
 							id="stripePublicKey"
 							name="stripePublicKey"

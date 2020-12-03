@@ -16,8 +16,9 @@ import { UserAuthContext } from '../../shared/context/auth-context';
 import { FormContext } from '../../shared/context/form-context';
 
 import '../../shared/css/EventForm.css';
-
+import './Entry.css';
 import STRIPE from '../../shared/utils/webp/Stripe.webp';
+
 const SubmitEntry = props => {
 	const history = useHistory();
 	let entryId = props.entryId;
@@ -35,8 +36,33 @@ const SubmitEntry = props => {
 	// club payment options
 	const [stripe, setStripe] = useState(false);
 	const [onSite, setOnSite] = useState(false);
+	// initial values for payment method, this is where we want to set the radio button initially
+	const [paymentMethodInit, setPaymentMethodInit] = useState(
+		'stripe'
+	);
+	// For EditingMode, user previously select payment method
+	const [paymentMethod, setPaymentMethod] = useState();
+	const [creditCard, setCreditCard] = useState('');
+	const [expDate, setExpDate] = useState('');
+	const [cvc, setCVC] = useState('');
 	const [hideCCField, setHideCCField] = useState(true);
 	const [succeed, setSucceed] = useState(false);
+
+	// This section controls hide/show credit card/exp date/cvc
+	const [showPublicKey, setShowPublicKey] = useState(false);
+	const toggleShowPublicKeyButton = () => {
+		setShowPublicKey(!showPublicKey);
+	};
+	const [showPublicKeyButton, setShowPublicKeyButton] = useState(
+		<i className="fa fa-eye-slash" />
+	);
+	useEffect(() => {
+		if (showPublicKey) {
+			setShowPublicKeyButton(<i className="fa fa-eye" />);
+		} else {
+			setShowPublicKeyButton(<i className="fa fa-eye-slash " />);
+		}
+	}, [showPublicKey, setShowPublicKeyButton]);
 
 	const {
 		isLoading,
@@ -110,6 +136,7 @@ const SubmitEntry = props => {
 				}
 			);
 			setEntryFee(responseData.entryFee);
+			// paymentOptions is the payment options offered by club that contains "stripe" and/or "onSite"
 			let paymentOptions = responseData.paymentOptions;
 			if (paymentOptions.indexOf('onSite') > -1) {
 				setOnSite(true);
@@ -118,10 +145,19 @@ const SubmitEntry = props => {
 				setStripe(true);
 				setHideCCField(false);
 			}
+			// for EditingMode
+			// paymentMethod is what user chose how to pay for the entry fee
+			let paymentMethod = responseData.paymentMethod;
+			if (paymentMethod === 'onSite') {
+				setPaymentMethod('onSite');
+			} else {
+				setPaymentMethod('stripe');
+			}
+			setCreditCard(responseData.creditCard);
+			setExpDate(responseData.expDate);
+			setCVC(responseData.cvc);
 		};
-		if (!editingMode) {
-			getEntryFeePaymentOption();
-		}
+		getEntryFeePaymentOption();
 	}, [
 		editingMode,
 		sendRequest,
@@ -173,12 +209,22 @@ const SubmitEntry = props => {
 		localStorage.removeItem('eventFormData');
 	};
 
+	useEffect(() => {
+		if (paymentMethod) {
+			setPaymentMethodInit(paymentMethod);
+		} else if (stripe) {
+			setPaymentMethodInit('stripe');
+		} else {
+			setPaymentMethodInit('onSite');
+		}
+	}, [stripe, onSite, paymentMethod]);
+
 	const initialValues = {
 		acceptDisclaimer: editingMode ? true : false,
-		paymentMethod: stripe ? 'stripe' : 'onSite',
-		creditCard: '',
-		expirationDate: '',
-		cvc: ''
+		paymentMethod: paymentMethodInit,
+		creditCard: creditCard,
+		expirationDate: expDate,
+		cvc: cvc
 	};
 
 	const [validateDisclaimer, setValidateDisclaimer] = useState(
@@ -328,11 +374,12 @@ const SubmitEntry = props => {
 		field,
 		handleBlur,
 		handleChange,
-		form: { touched, errors }
+		form: { touched, errors },
+		className
 	}) => {
 		return (
 			<React.Fragment>
-				<div className="event-form__field-creditcard">
+				<div className={className}>
 					<Cleave
 						{...field}
 						placeholder="Credit card number"
@@ -516,26 +563,32 @@ const SubmitEntry = props => {
 									</label>
 									{!hideCCField && (
 										<React.Fragment>
-											<Field
-												id="creditCard"
-												name="creditCard"
-												values={values}
-												label="creditCard"
-												onBlur={event => {
-													handleBlur(event);
-													setOKLeavePage(false);
-												}}
-												handleChange={event => {
-													console.log('name = ', event.name);
-													console.log(
-														'value1 = ',
-														event.target.rawValue
-													);
-													handleChange(event.target.rawValue);
-												}}
-												component={creditCardComponent}
-												validate={validateCreditCard}
-											/>
+											<div style={{ position: 'relative' }}>
+												<Field
+													id="creditCard"
+													name="creditCard"
+													show={showPublicKey}
+													values={values}
+													onBlur={event => {
+														handleBlur(event);
+														setOKLeavePage(false);
+													}}
+													handleChange={event => {
+														console.log('name = ', event.name);
+														console.log(
+															'value1 = ',
+															event.target.rawValue
+														);
+														handleChange(event.target.rawValue);
+													}}
+													component={creditCardComponent}
+													validate={validateCreditCard}
+													className="event-form__field-creditcard-inline"
+												/>
+												{/* <span onClick={toggleShowPublicKeyButton}>
+													{showPublicKeyButton}
+												</span> */}
+											</div>
 											<Field
 												id="expirationDate"
 												name="expirationDate"
@@ -550,6 +603,7 @@ const SubmitEntry = props => {
 												}}
 												component={expirationDateComponent}
 												validate={validateExpirationDate}
+												className="event-form__field_creditcard"
 											/>
 											<div className="event-form__field-creditcard">
 												<Field
@@ -672,16 +726,14 @@ const SubmitEntry = props => {
 							</div>
 						)}
 						{/* !dirty is to grey out button when the form first gets loaded */}
-						{!editingMode && (
-							<Button
-								type="submit"
-								size="small-block-payment"
-								disabled={
-									isSubmitting || !isValid || !dirty || submitted
-								}>
-								SUBMIT
-							</Button>
-						)}
+						<Button
+							type="submit"
+							size="small-block-payment"
+							disabled={
+								isSubmitting || !isValid || !dirty || submitted
+							}>
+							SUBMIT
+						</Button>
 						{editingMode && (
 							<Button
 								type="button"

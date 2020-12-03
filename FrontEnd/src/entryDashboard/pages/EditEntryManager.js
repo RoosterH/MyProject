@@ -306,6 +306,7 @@ const EditEntryManager = props => {
 								editingMode={true}
 								eventId={eventId}
 								eventName={eventName}
+								formAnswer={entry.answer}
 							/>
 						)}
 					</div>

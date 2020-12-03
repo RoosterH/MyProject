@@ -420,12 +420,15 @@ export default class ReactForm extends React.Component {
 								Authorization: 'Bearer ' + this.userToken
 							}
 						);
+						console.log("responseMessage = ", responseMessage);
 						if (responseStatus === 202) {
 							// either group is full or event is full
 							this.fullMessage = responseMessage;
 						} else {
-							this.fullMessage = 'NO';
+							// if status is 200, we want to print out Total Price so this is not a fullMessage
+							this.fullMessage = 'NO ' + responseMessage;;
 						}
+						console.log("this.fullMessage = ", this.fullMessage);
 						this.getNewEntry(responseData.entry);
 					} catch (err) {}
 				} else {
@@ -741,7 +744,7 @@ export default class ReactForm extends React.Component {
 									</a>
 								)}
 							</div>
-							{this.fullMessage !== 'NO' && (
+							{this.fullMessage && !this.fullMessage.startsWith('NO') && (
 								<p
 									style={{
 										color: 'red'
@@ -750,13 +753,14 @@ export default class ReactForm extends React.Component {
 									{this.fullMessage}{' '}
 								</p>
 							)}
-							{this.fullMessage === 'NO' && (
+							{this.fullMessage && this.fullMessage.startsWith('NO') && (
 								<p
 									style={{
 										color: 'green'
 									}}>
 									{' '}
 									Your entry is successfully submitted.{' '}
+									{this.fullMessage.slice(3)}{' '}
 								</p>
 							)}
 						</form>

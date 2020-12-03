@@ -151,3 +151,7 @@
 
 	text-align: center;
 }
+
+.password {
+	-webkit-text-security: disc;
+}
