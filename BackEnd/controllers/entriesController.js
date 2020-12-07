@@ -14,6 +14,7 @@ const Payment = require('../models/payment');
 const e = require('express');
 const { compare } = require('bcryptjs');
 const { Encrypt, Decrypt } = require('../util/crypto');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const NOT_ATTENDING = 'Not Attending';
 const REGISTRATION = 'Registration';
@@ -70,10 +71,12 @@ const createEntry = async (req, res, next) => {
 		answer,
 		disclaimer,
 		paymentMethod,
-		creditCard,
-		expDate,
-		cvc,
-		entryFee
+		// creditCard,
+		// expDate,
+		// cvc,
+		entryFee,
+		stripeSetupIntentId,
+		stripePaymentMethod
 	} = req.body;
 
 	if (!answer || answer.length === 0) {
@@ -396,6 +399,7 @@ const createEntry = async (req, res, next) => {
 			);
 			return next(error);
 		}
+
 		try {
 			const session = await mongoose.startSession();
 			session.startTransaction();
@@ -403,17 +407,19 @@ const createEntry = async (req, res, next) => {
 			let entryId = entry.id;
 			let payment = new Payment({
 				entryId,
-				entryFee,
+				entryFee: totalPrice,
 				paymentMethod,
-				creditCard: creditCard ? Encrypt(creditCard) : {},
-				expDate: expDate ? Encrypt(expDate) : {},
-				cvc: cvc ? Encrypt(cvc) : {}
+				stripeSetupIntentId,
+				stripePaymentMethod
+				// creditCard: creditCard ? Encrypt(creditCard) : {},
+				// expDate: expDate ? Encrypt(expDate) : {},
+				// cvc: cvc ? Encrypt(cvc) : {}
 			});
 
 			await payment.save({ session: session });
-			let paymentID = payment.id;
+			let paymentId = payment.id;
 			// save paymentId to entry
-			entry.paymentId = paymentID;
+			entry.paymentId = paymentId;
 			await entry.save({ session: session });
 			// store newEntry to user.envents array
 			user.entries.push(entry);
@@ -469,7 +475,8 @@ const createEntry = async (req, res, next) => {
 	} else {
 		res.status(200).json({
 			entry: entry.toObject({ getters: true }),
-			totalPrice: totalPrice
+			totalPrice: totalPrice,
+			email: user.email
 		});
 	}
 };
@@ -662,7 +669,7 @@ const updateFormAnswer = async (req, res, next) => {
 
 	if (!answer || answer.length === 0) {
 		const error = new HttpError(
-			'Entry submission failed with empty answer.',
+			'UpdateFormAnswer Entry submission failed with empty answer.',
 			400
 		);
 		return next(error);
@@ -1055,6 +1062,83 @@ const isWorkerSignedUp = (
 	return true;
 };
 
+const updatePayment = async (req, res, next) => {
+	const entryId = req.params.entryId;
+	const userId = req.userData;
+
+	let entry;
+	try {
+		entry = await Entry.findOne({
+			_id: entryId,
+			userId: userId
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'Update payment process failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!entry) {
+		const error = new HttpError(
+			'Could not find entry to update race class/car number.',
+			404
+		);
+		return next(error);
+	}
+
+	let payment;
+	try {
+		payment = await Payment.findById(entry.paymentId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update payment process failed @ retrieving payment. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!payment) {
+		const error = new HttpError(
+			'Update payment process failed @ finding payment. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	const { paymentMethod, creditCard, expDate, cvc } = req.body;
+
+	if (paymentMethod === 'stripe') {
+		if (creditCard === '' || expDate === '' || cvc === '') {
+			const error = new HttpError(
+				'Update payment process failed. Please provide credit card information.',
+				500
+			);
+			return next(error);
+		}
+	}
+
+	// we will wipe credit card information if paymentMethod is 'onSite'
+	payment.paymentMethod = paymentMethod;
+	payment.creditCard =
+		paymentMethod === 'stripe' ? Encrypt(creditCard) : '';
+	payment.expDate =
+		paymentMethod === 'stripe' ? Encrypt(expDate) : '';
+	payment.cvc = paymentMethod === 'stripe' ? Encrypt(cvc) : '';
+
+	try {
+		await payment.save();
+	} catch (err) {
+		const error = new HttpError(
+			'Entry update class connecting with DB failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	res.status(200).json({ entry: entry.toObject({ getters: true }) });
+};
+
 const deleteEntry = async (req, res, next) => {
 	// Validate event exists, if not send back an error.
 	const entryId = req.params.entryId;
@@ -1192,6 +1276,20 @@ const deleteEntry = async (req, res, next) => {
 		entryReport.totalEntries.set(i, numEntries - 1);
 	}
 
+	// delete payment record
+	let payment;
+	try {
+		payment = await Payment.findById(entry.paymentId);
+		console.log('1276 payment = ', payment);
+	} catch (err) {
+		console.log('1200 err = ', err);
+		const error = new HttpError(
+			'Failed to delete the event @retrieving payment.  Please try it later.',
+			500
+		);
+		return next(error);
+	}
+
 	// remove entry from user entries
 	user.entries.pull(entryId);
 	try {
@@ -1200,13 +1298,17 @@ const deleteEntry = async (req, res, next) => {
 		const session = await mongoose.startSession();
 		session.startTransaction();
 		await user.save({ session: session });
-		await entry.remove({ session: session });
+		// remove payment
+		if (payment) {
+			await payment.remove({ session: session });
+		}
+		await await entry.remove({ session: session });
 		// remove entryReport
 		await entryReport.save({ session: session });
 		// only both tasks succeed, we commit the transaction
 		await session.commitTransaction();
 	} catch (err) {
-		console.log('1149 err = ', err);
+		console.log('1223 err = ', err);
 		const error = new HttpError(
 			'Failed to delete the event.  Please try it later.',
 			500
@@ -1411,9 +1513,15 @@ const getEntryFee = async (req, res, next) => {
 		}
 		entryFee = payment.entryFee;
 		paymentMethod = payment.paymentMethod;
-		creditCard = Decrypt(payment.creditCard);
-		expDate = Decrypt(payment.expDate);
-		cvc = Decrypt(payment.cvc);
+		if (payment.creditCard) {
+			creditCard = Decrypt(payment.creditCard);
+		}
+		if (payment.expDate) {
+			expDate = Decrypt(payment.expDate);
+		}
+		if (payment.cvc) {
+			cvc = Decrypt(payment.cvc);
+		}
 	} else {
 		// !entry
 		// entry not found, we can proceed to get entry free from answers
@@ -1491,5 +1599,6 @@ exports.createEntry = createEntry;
 exports.updateCar = updateCar;
 exports.updateClassNumber = updateClassNumber;
 exports.updateFormAnswer = updateFormAnswer;
+exports.updatePayment = updatePayment;
 exports.deleteEntry = deleteEntry;
 exports.getEntryFee = getEntryFee;

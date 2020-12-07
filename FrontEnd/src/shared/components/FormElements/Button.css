@@ -18,11 +18,13 @@
 	outline: none;
 }
 
-/* .button:hover,
+.button:hover {
+	background: #f0a544;
+}
+
 .button:active {
-	background: #fd6248;
-	border-color: #fd6248;
-} */
+	background: #e68910;
+}
 
 .button--inverse {
 	background: transparent;
@@ -310,6 +312,35 @@
 .button--entryform--back:hover {
 	background: rgb(64, 244, 250);
 	color: rgb(28, 8, 211);
+}
+
+.button--stripe {
+	font: inherit;
+	background-color: transparent;
+	padding: 0.2rem 0.5rem;
+	margin: 0rem 0.1rem 0rem 0.1rem;
+	border: 1px solid #585655;
+	border-radius: 4px;
+	color: rgb(0, 0, 0);
+	cursor: pointer;
+	text-decoration: none;
+	display: inline-block;
+}
+
+.button--stripe deafult {
+	background: #ffffff;
+}
+
+.button--stripe:focus {
+	outline: none;
+}
+
+.button--stripe:hover {
+	background: #f0a544;
+}
+
+.button--stripe:active {
+	background: #e68910;
 }
 
 @media (max-width: 780px) {

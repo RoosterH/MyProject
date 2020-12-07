@@ -8,9 +8,15 @@ const paymentSchema = new Schema({
 	},
 	entryFee: { type: String, required: true, default: '0' },
 	paymentMethod: { type: String, required: true, default: 'stripe' },
-	creditCard: { type: Object, required: true, default: {} },
-	expDate: { type: Object, required: true, default: {} },
-	cvc: { type: Object, required: true, default: {} }
+	stripeSetupIntentId: {
+		type: String,
+		required: true,
+		default: '0000'
+	},
+	stripePaymentMethod: { type: Object, required: true, default: {} }
+	// creditCard: { type: Object, required: true, default: {} },
+	// expDate: { type: Object, required: true, default: {} },
+	// cvc: { type: Object, required: true, default: {} }
 });
 
 module.exports = mongoose.model('Payment', paymentSchema);

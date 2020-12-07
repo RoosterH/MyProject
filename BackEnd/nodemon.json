@@ -16,6 +16,8 @@
 		"CLOUDFRONT_URL": "https://dm6o7kx2v6zc3.cloudfront.net",
 		"CLOUDFRONT_URL_PROD": "https://d1139u9qxzy8k3.cloudfront.net",
 		"JWT_PRIVATE_KEY": "MySeatTime_38_718GT4_PDK",
-		"CRYPTO_SECRET_KEY": "MySeatTime_38_718GT4RS_PDK-ahzer"
+		"CRYPTO_SECRET_KEY": "MySeatTime_38_718GT4RS_PDK-ahzer",
+		"STRIPE_PUBLISHABLE_KEY": "pk_test_51HpjVQG10ZElXQJ4LAk8pnnOuC23BzzmIBwNdIQgZf8ZjbLg5XjelbRjRP2pUWfDY556b3Y8JpJKG2hXXvBIxr830094NIq6Vu",
+		"STRIPE_SECRET_KEY": "sk_test_51HpjVQG10ZElXQJ4Ckiy0PacgFEKbc2poPbjnJW3Ps9cyvnlXOoryAUFDmJXUol7ZRKuIj62lqGVFfiZMdd71zKb00MmakrOiZ"
 	}
 }

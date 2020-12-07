@@ -15,6 +15,8 @@ const userSchema = new Schema({
 		set: v => v.toLowerCase()
 	},
 	password: { type: String, required: true, minlength: 6 },
+	// stripe customer obj
+	stripeCustomerId: { type: String, required: true },
 	passwordValidation: { type: String, minlength: 6 },
 	originalImage: { type: String, require: true },
 	smallImage: { type: String, require: true },

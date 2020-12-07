@@ -3,9 +3,6 @@ const path = require('path');
 
 const express = require('express');
 var cors = require('cors');
-const stripe = require('stripe')(
-	'pk_test_51HpjVQG10ZElXQJ4LAk8pnnOuC23BzzmIBwNdIQgZf8ZjbLg5XjelbRjRP2pUWfDY556b3Y8JpJKG2hXXvBIxr830094NIq6Vu'
-);
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 // const passport = require('passport');
@@ -17,6 +14,7 @@ const eventsRoutes = require('./routes/eventsRoutes');
 const usersRoutes = require('./routes/usersRoutes');
 const entriesRoutes = require('./routes/entriesRoutes');
 const carsRoutes = require('./routes/carRoutes');
+const stripeRoutes = require('./routes/stripeRoutes');
 const HttpError = require('./models/httpError');
 
 const app = express();
@@ -56,6 +54,7 @@ app.use('/api/clubs/', clubsRoutes);
 app.use('/api/entries/', entriesRoutes);
 app.use('/api/events/', eventsRoutes);
 app.use('/api/users/', usersRoutes);
+app.use('/api/stripe/', stripeRoutes);
 
 // this route is for the requests that are not in any of the routes
 app.use((req, res, next) => {

@@ -7,6 +7,7 @@ const Entry = require('../models/entry');
 const Event = require('../models/event');
 const HttpError = require('../models/httpError');
 const User = require('../models/user');
+const Stripe = require('./stripeController');
 
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 
@@ -94,15 +95,31 @@ const createUser = async (req, res, next) => {
 		existingUser = await User.findOne({ email: email });
 	} catch (err) {
 		const error = new HttpError(
-			'Signed up email validation failed. Please try again later',
+			'Sign up email validation failed. Please try again later',
 			500
 		);
 		return next(error);
 	}
-
 	if (existingUser) {
 		const error = new HttpError(
-			'Signup failed. Please contact our administrator if you continue to have the same issue.',
+			'Signup failed. Email has been used to sign up.',
+			422
+		);
+		return next(error);
+	}
+
+	try {
+		existingUser = await User.findOne({ userName: userName });
+	} catch (err) {
+		const error = new HttpError(
+			'Sign up username validation failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+	if (existingUser) {
+		const error = new HttpError(
+			'UserName has been taken, please choose a different one.',
 			422
 		);
 		return next(error);
@@ -139,10 +156,14 @@ const createUser = async (req, res, next) => {
 	}
 
 	const newUser = new User({
-		userName,
-		lastName,
-		firstName,
-		email,
+		userName: userName.toLowerCase(),
+		lastName:
+			lastName.charAt(0).toUpperCase() +
+			lastName.slice(1).toLowerCase(),
+		firstName:
+			firstName.charAt(0).toUpperCase() +
+			firstName.slice(1).toLowerCase(),
+		email: email.toLowerCase(),
 		originalImage: originalImageLocation,
 		smallImage: smallImageLocation,
 		image: cloudFrontImageLocation,
@@ -150,11 +171,30 @@ const createUser = async (req, res, next) => {
 		entries: []
 	});
 
+	// create Stripe customer obj
+	let customer;
+	try {
+		customer = await Stripe.createCustomer(
+			email,
+			lastName + ', ' + firstName
+		);
+	} catch (err) {
+		const error = new HttpError(
+			'createUser failed @ Stripe createCustomer, please try again.',
+			500
+		);
+		return next(error);
+	}
+	console.log('custoemr = ', customer);
+	// save stripe customer id
+	newUser.stripeCustomerId = customer.id;
+
 	try {
 		await newUser.save();
-		// await is slow. need to send res here not outside; otherwise in case of
+		// await is slow. need to send res outside not here; otherwise in case of
 		// an error res will be sent first then back to catch(err) here
 	} catch (err) {
+		console.log('createUser err = ', err);
 		const error = new HttpError(
 			'Faied to create a new user. Please try again later.',
 			500

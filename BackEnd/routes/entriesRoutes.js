@@ -1,5 +1,5 @@
 /**
- * This route is for /api/events
+ * This route is for /api/entries
  */
 const express = require('express');
 const { check } = require('express-validator');
@@ -29,7 +29,17 @@ router.post(
 		check('carNumber').not().isEmpty(),
 		check('raceClass').not().isEmpty(),
 		check('answer').not().isEmpty(),
-		check('disclaimer').not().equals(true)
+		check('disclaimer').not().equals(true),
+		check('paymentMethod').not().isEmpty(),
+		check('entryFee').not().isEmpty(),
+		check('stripePaymentMethod')
+			.not()
+			.isEmpty()
+			.exists({ paymentMethod: 'stripe' }),
+		check('stripeSetupIntentId')
+			.not()
+			.isEmpty()
+			.exists({ paymentMethod: 'stripe' })
 	],
 	entriesController.createEntry
 );
@@ -59,6 +69,12 @@ router.patch(
 	'/formAnswer/:entryId',
 	[check('formAnswer').not().isEmpty()],
 	entriesController.updateFormAnswer
+);
+
+router.patch(
+	'/payment/:entryId',
+	[check('paymentMethod').not().isEmpty()],
+	entriesController.updatePayment
 );
 
 router.delete('/:entryId', entriesController.deleteEntry);
