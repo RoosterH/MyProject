@@ -175,8 +175,8 @@ const createUser = async (req, res, next) => {
 	let customer;
 	try {
 		customer = await Stripe.createCustomer(
-			email,
-			lastName + ', ' + firstName
+			lastName + ', ' + firstName,
+			email
 		);
 	} catch (err) {
 		const error = new HttpError(

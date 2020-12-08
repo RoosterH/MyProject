@@ -2,8 +2,7 @@ import React, {
 	useCallback,
 	useContext,
 	useState,
-	useEffect,
-	useRef
+	useEffect
 } from 'react';
 
 import { useHttpClient } from '../../shared/hooks/http-hook';
@@ -15,6 +14,8 @@ import MaterialTable from './MaterialTable';
 import './ClubManager.css';
 import '../../shared/components/FormElements/Button.css';
 import { set } from 'date-fns';
+
+const NOT_ATTENDING = 'Not Attending';
 
 const EntryListForUsers = props => {
 	let displayName = props.location.state.displayName;
@@ -125,6 +126,10 @@ const EntryListForUsers = props => {
 					let entryData = [];
 					let entries = responseData.entryData[i];
 					for (var j = 0; j < entries.length; ++j) {
+						// filter out NOT_ATTENDING entries
+						if (entries[j].runGroup[i] === NOT_ATTENDING) {
+							continue;
+						}
 						let entry;
 						if (displayName) {
 							entry = {

@@ -37,10 +37,14 @@ const toolbar = {
 	}
 };
 
+const DEBUG = process.env.DEBUG_MODE;
+
 export default class FormElementsEdit extends React.Component {
 	constructor(props) {
 		super(props);
-		console.log('props = ', props);
+		if (DEBUG) {
+			console.log('props = ', props);
+		}
 		this.state = {
 			element: this.props.element,
 			data: this.props.data,
@@ -53,7 +57,9 @@ export default class FormElementsEdit extends React.Component {
 	}
 
 	editElementProp(elemProperty, targProperty, e) {
-		console.log('editElementProp');
+		if (DEBUG) {
+			console.log('editElementProp');
+		}
 		// elemProperty could be content or label
 		// targProperty could be value or checked
 		const this_element = this.state.element;
@@ -77,11 +83,12 @@ export default class FormElementsEdit extends React.Component {
 	// editorContent: EditorState (Editor Object), we can use editorContent.getCurrentContent() to get current
 	//  content in the editor
 	onEditorStateChange(index, property, editorContent) {
-		console.log('onEditStateChange');
-		console.log('property = ', property);
-		console.log('index = ', index);
-		console.log('editorContent = ', editorContent);
-
+		if (DEBUG) {
+			console.log('onEditStateChange');
+			console.log('property = ', property);
+			console.log('index = ', index);
+			console.log('editorContent = ', editorContent);
+		}
 		// html is something like <strong>Registration Options</strong>
 		const html = draftToHtml(
 			convertToRaw(editorContent.getCurrentContent())
@@ -91,13 +98,19 @@ export default class FormElementsEdit extends React.Component {
 			.replace(/(?:\r\n|\r|\n)/g, ' ');
 
 		const this_element = this.state.element;
-		console.log('this.state = ', this.state);
-		console.log('this_element = ', this_element);
+		if (DEBUG) {
+			console.log('this.state = ', this.state);
+			console.log('this_element = ', this_element);
+		}
 		this_element[property] = html;
-
-		console.log('html = ', html);
-		console.log('this_element2 = ', this_element);
-		console.log('this_element[property] = ', this_element[property]);
+		if (DEBUG) {
+			console.log('html = ', html);
+			console.log('this_element2 = ', this_element);
+			console.log(
+				'this_element[property] = ',
+				this_element[property]
+			);
+		}
 		this.setState({
 			element: this_element,
 			dirty: true
@@ -105,15 +118,19 @@ export default class FormElementsEdit extends React.Component {
 	}
 
 	updateElement() {
-		console.log('updateElement');
+		if (DEBUG) {
+			console.log('updateElement');
+		}
 		const this_element = this.state.element;
 		// to prevent ajax calls with no change
 		if (this.state.dirty) {
-			console.log(
-				'this.props.updateElement = ',
-				this.props.updateElement
-			);
-			console.log('this.props.preview = ', this.props.preview);
+			if (DEBUG) {
+				console.log(
+					'this.props.updateElement = ',
+					this.props.updateElement
+				);
+				console.log('this.props.preview = ', this.props.preview);
+			}
 			// calls this.props.preview.updateElement
 			this.props.updateElement.call(this.props.preview, this_element);
 			this.setState({ dirty: false });
@@ -121,7 +138,9 @@ export default class FormElementsEdit extends React.Component {
 	}
 
 	convertFromHTML(content) {
-		console.log('convertFromHTML');
+		if (DEBUG) {
+			console.log('convertFromHTML');
+		}
 		const newContent = convertFromHTML(content);
 		if (
 			!newContent.contentBlocks ||
@@ -344,24 +363,31 @@ export default class FormElementsEdit extends React.Component {
 		// get current text for text editor, we will use it to set as default text of Editor
 		let editorState;
 		if (this.props.element.hasOwnProperty('name')) {
-			console.log('name = ', this.props.element.name);
+			if (DEBUG) {
+				console.log('name = ', this.props.element.name);
+			}
 			editorState = this.convertFromHTML(this.props.element.name);
 		}
 		if (this.props.element.hasOwnProperty('content')) {
-			console.log('content = ', this.props.element.content);
+			if (DEBUG) {
+				console.log('content = ', this.props.element.content);
+			}
 			editorState = this.convertFromHTML(this.props.element.content);
 		}
 		if (this.props.element.hasOwnProperty('label')) {
-			console.log('label = ', this.props.element.label);
+			if (DEBUG) {
+				console.log('label = ', this.props.element.label);
+			}
 			editorState = this.convertFromHTML(this.props.element.label);
 		}
-
-		console.log('this.state.element = ', this.state.element);
-		console.log(
-			'this.state.element.element = ',
-			this.state.element.element
-		);
-		console.log('this.editElementProp = ', this.editElementProp);
+		if (DEBUG) {
+			console.log('this.state.element = ', this.state.element);
+			console.log(
+				'this.state.element.element = ',
+				this.state.element.element
+			);
+			console.log('this.editElementProp = ', this.editElementProp);
+		}
 
 		// deal with nested option such as MultipleRadioButtonGroup options,
 		// each option of nested option, we need to create an object
@@ -372,11 +398,15 @@ export default class FormElementsEdit extends React.Component {
 				// Because create(item) will add "text", if opt.text is there meaning it's been
 				// created
 				if (!opt.text) {
-					console.log('371 opt = ', opt);
+					if (DEBUG) {
+						console.log('371 opt = ', opt);
+					}
 					// Create option as an component because here option is also a component,
 					// so it has all the componenet info.
 					let elementOption = this.create(opt);
-					console.log('elementOption = ', elementOption);
+					if (DEBUG) {
+						console.log('elementOption = ', elementOption);
+					}
 					optionComponents.push(elementOption);
 				} else {
 					optionComponents.push(opt);
@@ -1125,11 +1155,13 @@ export default class FormElementsEdit extends React.Component {
 				{nested &&
 					this.props.element.hasOwnProperty('options') &&
 					this.props.element.options.map((opt, index) => {
-						console.log('1128 opt = ', opt);
-						console.log(
-							'1122 this.props.preview.state.data = ',
-							this.props.preview.state.data
-						);
+						if (DEBUG) {
+							console.log('1128 opt = ', opt);
+							console.log(
+								'1122 this.props.preview.state.data = ',
+								this.props.preview.state.data
+							);
+						}
 						// this.props.element.options contains radioButton groups object such as "Day 1 Lunch" and "Day 2 Lunch"
 						return (
 							// data, updateElement and preview are from parent because this is

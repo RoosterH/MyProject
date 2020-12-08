@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link, useLocation, useHistory } from 'react-router-dom';
-import { useField, Field, Form, Formik } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
-import Cleave from 'cleave.js/react';
+// import Cleave from 'cleave.js/react';
 
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
@@ -22,11 +22,11 @@ import { Elements } from '@stripe/react-stripe-js';
 import STRIPE from '../../shared/utils/webp/Stripe.webp';
 import CardSetupForm from '../components/CardSetupForm';
 import { loadStripe } from '@stripe/stripe-js';
-import { set } from 'date-fns';
-const stripePromise = loadStripe(
-	// process.env.STRIPE_PUBLISHABLE_KEY
-	'pk_test_51HpjVQG10ZElXQJ4LAk8pnnOuC23BzzmIBwNdIQgZf8ZjbLg5XjelbRjRP2pUWfDY556b3Y8JpJKG2hXXvBIxr830094NIq6Vu'
-);
+
+// const stripePromise = loadStripe(
+// 	// process.env.STRIPE_PUBLISHABLE_KEY
+// 	'pk_test_51HpjVQG10ZElXQJ4LAk8pnnOuC23BzzmIBwNdIQgZf8ZjbLg5XjelbRjRP2pUWfDY556b3Y8JpJKG2hXXvBIxr830094NIq6Vu'
+// );
 
 const SubmitEntry = props => {
 	const history = useHistory();
@@ -46,6 +46,13 @@ const SubmitEntry = props => {
 		clearError
 	} = useHttpClient();
 
+	const [stripePromise, setStripePromise] = useState(
+		loadStripe(
+			// process.env.STRIPE_PUBLISHABLE_KEY
+			'pk_test_51HpjVQG10ZElXQJ4LAk8pnnOuC23BzzmIBwNdIQgZf8ZjbLg5XjelbRjRP2pUWfDY556b3Y8JpJKG2hXXvBIxr830094NIq6Vu'
+		)
+	);
+
 	// entry fee for the event
 	const [entryFee, setEntryFee] = useState(0);
 	// club payment options
@@ -62,10 +69,11 @@ const SubmitEntry = props => {
 	const [cvc, setCVC] = useState('');
 	const [hideCCField, setHideCCField] = useState(true);
 	const [succeed, setSucceed] = useState(false);
-	const [clientSecret, setClientSecret] = useState('');
 	const [email, setEmail] = useState('');
-	const [redirectStripe, setRedirectStripe] = useState(false);
-	const [stripePaymentMethod, setStripePaymentMethod] = useState();
+	const [
+		stripePaymentMethodId,
+		setStripePaymentMethodId
+	] = useState();
 	const [stripeError, setStripeError] = useState();
 	const [stripeSetupIntentId, setStripeSetupIntentId] = useState();
 
@@ -76,9 +84,6 @@ const SubmitEntry = props => {
 
 	// This section controls hide/show credit card/exp date/cvc
 	const [showPublicKey, setShowPublicKey] = useState(false);
-	const toggleShowPublicKeyButton = () => {
-		setShowPublicKey(!showPublicKey);
-	};
 	const [showPublicKeyButton, setShowPublicKeyButton] = useState(
 		<i className="fa fa-eye-slash" />
 	);
@@ -247,12 +252,13 @@ const SubmitEntry = props => {
 		}
 	}, [stripe, onSite, paymentMethod]);
 
+	console.log('paymentMethodInit = ', paymentMethodInit);
 	const initialValues = {
 		acceptDisclaimer: editingMode ? true : false,
-		paymentMethod: paymentMethodInit,
-		creditCardField: creditCard,
-		expDateField: expDate,
-		cvcField: cvc
+		paymentMethod: paymentMethodInit
+		// creditCardField: creditCard,
+		// expDateField: expDate,
+		// cvcField: cvc
 	};
 
 	const [validateDisclaimer, setValidateDisclaimer] = useState(
@@ -325,9 +331,11 @@ const SubmitEntry = props => {
 					'PATCH',
 					JSON.stringify({
 						paymentMethod: paymentMethod,
-						creditCard: creditCard,
-						expDate: expDate,
-						cvc: cvc
+						// creditCard: creditCard,
+						// expDate: expDate,
+						// cvc: cvc
+						stripeSetupIntentId: stripeSetupIntentId,
+						stripePaymentMethodId: stripePaymentMethodId
 					}),
 					{
 						'Content-type': 'application/json',
@@ -379,12 +387,12 @@ const SubmitEntry = props => {
 						answer: formAnswer,
 						disclaimer: disclaimer,
 						paymentMethod: paymentMethod,
-						creditCard: creditCard,
-						expDate: expDate,
-						cvc: cvc,
+						// creditCard: creditCard,
+						// expDate: expDate,
+						// cvc: cvc,
 						entryFee: entryFee,
 						stripeSetupIntentId: stripeSetupIntentId,
-						stripePaymentMethod: stripePaymentMethod
+						stripePaymentMethodId: stripePaymentMethodId
 					}),
 					{
 						'Content-type': 'application/json',
@@ -409,9 +417,7 @@ const SubmitEntry = props => {
 					userAuthContext.userEntries.push(responseData.entry);
 				}
 				setEntryFee(responseData.entryFee);
-				setClientSecret(responseData.clientSecret);
 				setEmail(responseData.email);
-				setRedirectStripe(true);
 
 				if (responseStatus === 202) {
 					// either group is full or event is full
@@ -458,28 +464,28 @@ const SubmitEntry = props => {
 		} catch (err) {}
 	};
 
-	const CustomField = ({ label, ...props }) => {
-		const [field, meta, helpers] = useField(props);
-		return (
-			<>
-				<Cleave
-					{...field}
-					placeholder={props.placeholder}
-					options={props.options}
-					type={props.type}
-					className={props.className}
-				/>
-				{props.icon && (
-					<span onClick={toggleShowPublicKeyButton}>
-						{showPublicKeyButton}
-					</span>
-				)}
-				{meta.touched && meta.error ? (
-					<div className={props.errorClassName}>{meta.error}</div>
-				) : null}
-			</>
-		);
-	};
+	// const CustomField = ({ label, ...props }) => {
+	// 	const [field, meta, helpers] = useField(props);
+	// 	return (
+	// 		<>
+	// 			<Cleave
+	// 				{...field}
+	// 				placeholder={props.placeholder}
+	// 				options={props.options}
+	// 				type={props.type}
+	// 				className={props.className}
+	// 			/>
+	// 			{props.icon && (
+	// 				<span onClick={toggleShowPublicKeyButton}>
+	// 					{showPublicKeyButton}
+	// 				</span>
+	// 			)}
+	// 			{meta.touched && meta.error ? (
+	// 				<div className={props.errorClassName}>{meta.error}</div>
+	// 			) : null}
+	// 		</>
+	// 	);
+	// };
 
 	const [submitButtonClass, setSubmitButtonClass] = useState(
 		'small-block'
@@ -495,10 +501,16 @@ const SubmitEntry = props => {
 		}
 	}, [stripe, onSite, setSubmitButtonClass]);
 
+	console.log(
+		'stripe && !stripePaymentMethodId = ',
+		stripe && !stripePaymentMethodId
+	);
+
 	const eventForm = values => (
 		<div className="event-form">
 			<div className="event-form-header">
-				<h4>Event Submission</h4>
+				{!editingMode && <h4>Event Submission</h4>}
+				{editingMode && <h4>Payment Method</h4>}
 				<hr className="event-form__hr" />
 			</div>
 			<Formik
@@ -599,8 +611,10 @@ const SubmitEntry = props => {
 											name="paymentMethod"
 											value="onSite"
 											validate={validatePaymentMethod}
-											disabled={stripe && stripePaymentMethod}
+											disabled={stripe && stripePaymentMethodId}
+											checked={values.paymentMethod === 'onSite'}
 											onChange={event => {
+												setFieldValue('paymentMethod', 'onSite');
 												handleChange(event);
 												setHideCCField(true);
 											}}
@@ -610,13 +624,15 @@ const SubmitEntry = props => {
 									</label>
 									<label className="event-form__field_paymentOption">
 										<Field
-											label="Stripe- this will re-direct you to Stripe to setup your credit card."
+											label="Stripe"
 											type="radio"
 											name="paymentMethod"
 											value="stripe"
 											validate={validatePaymentMethod}
-											disabled={stripe && stripePaymentMethod}
+											disabled={stripe && stripePaymentMethodId}
+											checked={values.paymentMethod === 'stripe'}
 											onChange={event => {
+												setFieldValue('paymentMethod', 'stripe');
 												handleChange(event);
 												setHideCCField(false);
 											}}
@@ -631,9 +647,9 @@ const SubmitEntry = props => {
 									{!hideCCField && (
 										<div className="">
 											<label className="event-form__label">
-												Charge woill be made by event organizer later.
-												Credit card information is now stored at
-												Stripe. MYSeatTime does not store credit card
+												Charge will be made by event organizer. Credit
+												card information is saved at Stripe.
+												MYSeatTime does not store credit card
 												information.{' '}
 											</label>
 											<Elements stripe={stripePromise}>
@@ -641,8 +657,8 @@ const SubmitEntry = props => {
 													userName={userName}
 													email={email}
 													eventId={eventId}
-													getStripePaymentMethod={
-														getStripePaymentMethod
+													getStripePaymentMethodId={
+														getStripePaymentMethodId
 													}
 													getStripeError={getStripeError}
 													getStripeSetupIntentId={
@@ -655,6 +671,7 @@ const SubmitEntry = props => {
 									{/* {!hideCCField && (
 										<React.Fragment>
 											<div style={{ position: 'relative' }}>
+												// To set type as text or password, Formik CustomField works but not with component
 												<CustomField
 													name="creditCardField"
 													type={showPublicKey ? 'text' : 'password'}
@@ -801,16 +818,17 @@ const SubmitEntry = props => {
 								</div>
 							</div>
 						)}
-						{/* !dirty is to grey out button when the form first gets loaded */}
+						{/* cannot add !dirty here because Stripe Element is not part of our form*/}
 						<Button
 							type="submit"
 							size="small-block-payment"
 							disabled={
 								isSubmitting ||
 								!isValid ||
-								!dirty ||
 								submitted ||
-								(stripe && !stripePaymentMethod)
+								(values.paymentMethod === 'stripe' &&
+									stripe &&
+									!stripePaymentMethodId)
 							}>
 							SUBMIT
 						</Button>
@@ -839,7 +857,7 @@ const SubmitEntry = props => {
 									type="button"
 									size="small-block"
 									margin-left="1.5rem"
-									disabled={!editingMode}>
+									disabled={!editingMode && !succeed}>
 									VIEW EVENT ENTRY LIST
 								</Button>
 							</Link>
@@ -905,16 +923,15 @@ const SubmitEntry = props => {
 	const getStripeSetupIntentId = setupIntentId => {
 		// send back to backend to save for future payment
 		if (setupIntentId) {
-			console.log('setupIntentId = ', setupIntentId);
 			setStripeSetupIntentId(setupIntentId);
 		}
 	};
 
-	const getStripePaymentMethod = paymentMethod => {
+	const getStripePaymentMethodId = paymentMethodId => {
 		// send back to backend to save for future payment
-		if (paymentMethod) {
-			console.log('payment_method = ', paymentMethod);
-			setStripePaymentMethod(paymentMethod);
+		if (paymentMethodId) {
+			console.log('payment_methodID = ', paymentMethodId);
+			setStripePaymentMethodId(paymentMethodId);
 		}
 	};
 

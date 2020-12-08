@@ -12,6 +12,7 @@ import HeaderBar from './header-bar';
 
 import './form-elements.css';
 
+const DEBUG = process.env.DEBUG_MODE;
 const FormElements = {};
 const myxss = new xss.FilterXSS({
 	whiteList: {
@@ -57,7 +58,9 @@ const ComponentLabel = props => {
 };
 
 const GroupComponentLabel = props => {
-	console.log('group props = ', props);
+	if (DEBUG) {
+		console.log('group props = ', props);
+	}
 	// This displays group option label on the Form
 	return (
 		<label className={props.className || ''}>
@@ -75,7 +78,9 @@ const ComponentHeader = props => {
 	if (props.mutable) {
 		return null;
 	}
-	console.log('ComponentHeader props = ', props);
+	if (DEBUG) {
+		console.log('ComponentHeader props = ', props);
+	}
 	return (
 		<div>
 			{props.data.pageBreakBefore && (
@@ -742,8 +747,10 @@ class RadioButtons extends React.Component {
 						props.name = self.props.data.field_name;
 						props.type = 'radio';
 						props.value = option.value;
-						console.log('radio mutable = ', self.props.mutable);
-						console.log('radio props = ', self.props);
+						if (DEBUG) {
+							console.log('radio mutable = ', self.props.mutable);
+							console.log('radio props = ', self.props);
+						}
 						if (self.props.mutable) {
 							props.defaultChecked =
 								self.props.defaultValue !== null &&
@@ -762,8 +769,10 @@ class RadioButtons extends React.Component {
 									className="custom-control-input"
 									ref={c => {
 										if (c && self.props.mutable) {
-											console.log('Radio c = ', c);
-											console.log('self.options = ', self.options);
+											if (DEBUG) {
+												console.log('Radio c = ', c);
+												console.log('self.options = ', self.options);
+											}
 											self.options[`child_ref_${option.key}`] = c;
 										}
 									}}
@@ -958,7 +967,9 @@ class Camera extends React.Component {
 				sourceDataURL = `data:image/png;base64,${this.props.defaultValue}`;
 			}
 		}
-		console.log('sourceDataURL', sourceDataURL);
+		if (DEBUG) {
+			console.log('sourceDataURL', sourceDataURL);
+		}
 		return (
 			<div className={baseClasses}>
 				<ComponentHeader {...this.props} />
@@ -1203,7 +1214,9 @@ class MultipleRadioButtonGroup extends React.Component {
 	constructor(props) {
 		super(props);
 		this.options = {};
-		console.log('props.defaultValue = ', props.defaultValue);
+		if (DEBUG) {
+			console.log('props.defaultValue = ', props.defaultValue);
+		}
 
 		this.defaultValue = {};
 
@@ -1214,11 +1227,13 @@ class MultipleRadioButtonGroup extends React.Component {
 				this.defaultValue[key] = option[key];
 			});
 		}
-		console.log('this.defaultValue = ', this.defaultValue);
-		// this.options.options = {};
-		// this.inputField = React.createRef();
-		console.log('props = ', props);
-		console.log('1209 this.options = ', this.options);
+		if (DEBUG) {
+			console.log('this.defaultValue = ', this.defaultValue);
+			// this.options.options = {};
+			// this.inputField = React.createRef();
+			console.log('props = ', props);
+			console.log('1209 this.options = ', this.options);
+		}
 	}
 
 	render() {
@@ -1242,15 +1257,16 @@ class MultipleRadioButtonGroup extends React.Component {
 		if (this.props.data.pageBreakBefore) {
 			baseClasses += ' alwaysbreak';
 		}
-		console.log(
-			'this.props.data.options = ',
-			this.props.data.options
-		);
-		console.log(
-			'this.props.data.content = ',
-			this.props.data.content
-		);
-
+		if (DEBUG) {
+			console.log(
+				'this.props.data.options = ',
+				this.props.data.options
+			);
+			console.log(
+				'this.props.data.content = ',
+				this.props.data.content
+			);
+		}
 		return (
 			<React.Fragment>
 				<div className={baseClasses}>
@@ -1267,12 +1283,16 @@ class MultipleRadioButtonGroup extends React.Component {
 						{/* Label for the Group  */}
 						<ComponentLabel className="form-label" {...this.props} />
 						{this.props.data.options.map((option, index) => {
-							console.log('option = ', option);
+							if (DEBUG) {
+								console.log('option = ', option);
+							}
 							// To create form we will use key, to regenerate form we will use field_name.
 							const this_key = option.key
 								? `preview_${option.key}`
 								: `preview_${option.field_name}`;
-							console.log('this_key = ', this_key);
+							if (DEBUG) {
+								console.log('this_key = ', this_key);
+							}
 							const props = {};
 							// props.name = self.props.data.field_name;
 							props.name = option.field_name;
@@ -1315,28 +1335,35 @@ class MultipleRadioButtonGroup extends React.Component {
 										{option.options.map((opt, index) => {
 											// this_key = preview_lunchRadioOption_1
 											const this_key = `preview_${opt.key}`;
-											console.log('this_key 1305 = ', this_key);
+											if (DEBUG) {
+												console.log('this_key 1305 = ', this_key);
+											}
 											const props = {};
 											props.name = option.field_name;
 											props.type = 'radio';
 											props.value = opt.value;
-
-											console.log('self.props = ', self.props);
-											console.log('1312 props.name = ', props.name);
-											console.log('opt = ', opt);
-											console.log('props.value = ', opt.value);
+											if (DEBUG) {
+												console.log('self.props = ', self.props);
+												console.log('1312 props.name = ', props.name);
+												console.log('opt = ', opt);
+												console.log('props.value = ', opt.value);
+											}
 
 											// self.props => "MultipleRadioButtonGroup" big component information
 											// props.name = "Lunch2-8FA19AEA-7166-4CDC-8463-4150B1F56941"
 											// opt = {value: "1", text: "Hamburger $1", key: "lunchRadioOption2_0"}
 											if (self.props.mutable) {
-												console.log('mutable true');
+												if (DEBUG) {
+													console.log('mutable true');
+												}
 												let key = opt.key ? opt.key : opt.field_name;
-												console.log('opt.key = ', opt.key);
-												console.log(
-													'opt.field_name = ',
-													opt.field_name
-												);
+												if (DEBUG) {
+													console.log('opt.key = ', opt.key);
+													console.log(
+														'opt.field_name = ',
+														opt.field_name
+													);
+												}
 
 												// props.defaultChecked =
 												// 	self.props.defaultValue !== null &&
@@ -1350,27 +1377,31 @@ class MultipleRadioButtonGroup extends React.Component {
 												// 	'defaultChecked = ',
 												// 	props.defaultChecked
 												// );
-
-												console.log(
-													'this.defaultValue[option.field_name]  = ',
-													this.defaultValue[props.name]
-												);
-												console.log('key = ', key);
+												if (DEBUG) {
+													console.log(
+														'this.defaultValue[option.field_name]  = ',
+														this.defaultValue[props.name]
+													);
+													console.log('key = ', key);
+												}
 												props.defaultChecked =
 													this.defaultValue !== null &&
 													this.defaultValue !== undefined &&
 													this.defaultValue[props.name] === key;
-
-												console.log(
-													'props.defaultChecked = ',
-													props.defaultChecked
-												);
+												if (DEBUG) {
+													console.log(
+														'props.defaultChecked = ',
+														props.defaultChecked
+													);
+												}
 											}
 
 											if (this.props.read_only) {
 												props.disabled = 'disabled';
 											}
-											console.log('key = ', this_key + index);
+											if (DEBUG) {
+												console.log('key = ', this_key + index);
+											}
 
 											return (
 												<div className={classNames} key={this_key}>
@@ -1378,19 +1409,23 @@ class MultipleRadioButtonGroup extends React.Component {
 														id={'fid_' + this_key}
 														className="custom-control-input"
 														ref={c => {
-															console.log('c = ', c);
+															if (DEBUG) {
+																console.log('c = ', c);
+															}
 															let optionKey = option.key
 																? option.key
 																: option.field_name;
 															if (c && self.props.mutable) {
-																console.log(
-																	' 1359 self.options = ',
-																	self.options
-																);
-																console.log(
-																	'1390 key = ',
-																	`child_ref_${option.key}_${opt.key}`
-																);
+																if (DEBUG) {
+																	console.log(
+																		' 1359 self.options = ',
+																		self.options
+																	);
+																	console.log(
+																		'1390 key = ',
+																		`child_ref_${option.key}_${opt.key}`
+																	);
+																}
 																self.options[
 																	`child_ref_${option.key}_${opt.key}`
 																] = c;

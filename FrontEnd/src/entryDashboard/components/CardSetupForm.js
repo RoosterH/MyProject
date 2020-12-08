@@ -35,50 +35,44 @@ const CardSetupForm = props => {
 		clearError();
 	};
 
-	// request backend to create setupIntent, we need client_secret and intentId
+	// Re-use SetupIntent from before causes "setup_intent_unexpected_state" error.
+	// So, for both editing and non-editing modes, we always want to create a new SetupIntent and
+	// use it to get a PaymentMethod.
 	useEffect(() => {
 		const getSetupIntent = async () => {
 			let responseData, responseStatus, responseMessage;
 			try {
+				// request backend to create setupIntent, we need client_secret and intentId
 				[
 					responseData,
 					responseStatus,
 					responseMessage
 				] = await sendRequest(
-					process.env.REACT_APP_BACKEND_URL + `/stripe/setupIntent/`,
-					'POST',
-					JSON.stringify({
-						eventId: props.eventId
-					}),
+					process.env.REACT_APP_BACKEND_URL +
+						`/stripe/newSetupIntent/${props.eventId}`,
+					'GET',
+					null,
 					{
-						'Content-type': 'application/json',
-						// adding JWT to header for authentication
 						Authorization: 'Bearer ' + userAuthContext.userToken
 					}
 				);
 			} catch (err) {
 				console.log('err = ', err);
 			}
-			console.log(
-				'responseData.setupIntent.client_secret = ',
-				responseData.setupIntent.client_secret
-			);
-			console.log(
-				'responseData.setupIntent.id = ',
-				responseData.setupIntent.id
-			);
 			setClientSecret(responseData.setupIntent.client_secret);
 			setSetupIntentId(responseData.setupIntent.id);
 			setEmail(responseData.email);
 		};
+
 		if (userAuthContext.userToken) {
+			console.log('calling getSetupIntent');
 			getSetupIntent();
 		}
 	}, [
+		props.eventId,
+		userAuthContext.userToken,
 		setClientSecret,
 		setSetupIntentId,
-		userAuthContext.userToken,
-		props.eventId,
 		sendRequest
 	]);
 
@@ -122,7 +116,10 @@ const CardSetupForm = props => {
 				'result.setupIntent.payment_method = ',
 				result.setupIntent.payment_method
 			);
-			props.getStripePaymentMethod(result.setupIntent.payment_method);
+			// result.setupIntent.payment_method returns PaymentMethod ID not the object
+			props.getStripePaymentMethodId(
+				result.setupIntent.payment_method
+			);
 			setSubmitted(true);
 		}
 	};

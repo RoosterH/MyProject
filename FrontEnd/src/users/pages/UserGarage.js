@@ -96,7 +96,6 @@ const UserGarage = props => {
 					userData.garage = responseData.cars;
 					localStorage.setItem('userData', JSON.stringify(userData));
 				} else {
-					console.log('not the owner');
 					let garages = JSON.parse(localStorage.getItem('garages'))
 						? JSON.parse(localStorage.getItem('garages'))
 						: [];

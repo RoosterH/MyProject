@@ -13,7 +13,11 @@ const paymentSchema = new Schema({
 		required: true,
 		default: '0000'
 	},
-	stripePaymentMethod: { type: Object, required: true, default: {} }
+	stripePaymentMethodId: {
+		type: String,
+		required: true,
+		default: '0000'
+	}
 	// creditCard: { type: Object, required: true, default: {} },
 	// expDate: { type: Object, required: true, default: {} },
 	// cvc: { type: Object, required: true, default: {} }

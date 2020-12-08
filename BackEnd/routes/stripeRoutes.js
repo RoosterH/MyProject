@@ -19,10 +19,12 @@ router.use(checkUserAuth);
 router.post('/session/', stripeController.createSession);
 
 // get setup intent to setup user stripe paymentMethod
-router.post(
-	'/setupIntent',
-	[check('eventId').not().isEmpty()],
-	stripeController.createSetupIntent
+router.get(
+	'/newSetupIntent/:eventId',
+	stripeController.getNewSetupIntent
 );
+
+// get original setupIntent from payment
+router.get('/setupIntent/:entryId', stripeController.getSetupIntent);
 
 module.exports = router;

@@ -102,13 +102,11 @@ const EventForm = props => {
 							Authorization: 'Bearer ' + userAuthContext.userToken
 						}
 					);
-					console.log('responseData = ', responseData);
 					if (responseData) {
 						setEventName(responseData.eventName);
 						setNewEntry(responseData.entry);
 						setFormAnswer(responseData.entry.answer);
 						setFormData(responseData.entryFormData);
-						console.log('answer = ', responseData.entry.answer);
 					}
 				} else {
 					const [
@@ -124,7 +122,6 @@ const EventForm = props => {
 							Authorization: 'Bearer ' + userAuthContext.userToken
 						}
 					);
-					console.log('responseData = ', responseData);
 					if (responseData) {
 						setEventName(responseData.eventName);
 						setFormData(responseData.entryFormData);

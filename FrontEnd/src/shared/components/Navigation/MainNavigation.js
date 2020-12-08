@@ -59,7 +59,7 @@ const MainNavigation = props => {
 				<h1 className="main-navigation__menu_title">
 					{!isClubLoggedIn && (
 						<Link to="/" style={{ textDecoration: 'none' }}>
-							MySeatTime
+							MYSeatTime
 						</Link>
 					)}
 					{isClubLoggedIn && 'MySeatTime'}

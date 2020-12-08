@@ -76,7 +76,7 @@ const createEntry = async (req, res, next) => {
 		// cvc,
 		entryFee,
 		stripeSetupIntentId,
-		stripePaymentMethod
+		stripePaymentMethodId
 	} = req.body;
 
 	if (!answer || answer.length === 0) {
@@ -410,7 +410,7 @@ const createEntry = async (req, res, next) => {
 				entryFee: totalPrice,
 				paymentMethod,
 				stripeSetupIntentId,
-				stripePaymentMethod
+				stripePaymentMethodId
 				// creditCard: creditCard ? Encrypt(creditCard) : {},
 				// expDate: expDate ? Encrypt(expDate) : {},
 				// cvc: cvc ? Encrypt(cvc) : {}
@@ -682,6 +682,7 @@ const updateFormAnswer = async (req, res, next) => {
 	// find how many days
 	let days = entryReport.entries.length;
 
+	console.log('days = ', days);
 	let eventFull = [];
 	for (let i = 0; i < days; ++i) {
 		if (
@@ -795,7 +796,10 @@ const updateFormAnswer = async (req, res, next) => {
 		let oldIndex = runGroupsIndex[i];
 		let newIndex = runGroupAnsChoices[i];
 		// old run group same as new run group, skip
-		if (oldIndex == newIndex) {
+		if (
+			oldIndex == newIndex &&
+			runGroupAnsTexts[i] !== NOT_ATTENDING
+		) {
 			runGroupChanged.push(false);
 			++attendingDays;
 			continue;
@@ -812,9 +816,14 @@ const updateFormAnswer = async (req, res, next) => {
 			}
 			runGroupChanged.push(false);
 		} else if (!groupFull[i]) {
+			console.log('day i ', i);
 			// check if the previous entry was on the group waitlist
 			// if entry.groupWaitlist === true, entry.waitlist must be also true
 			if (onWaitlist && onGroupWaitlist) {
+				console.log(
+					'on waitlist runGroupAnsTexts[i] = ',
+					runGroupAnsTexts[i]
+				);
 				if (runGroupAnsTexts[i] !== NOT_ATTENDING) {
 					// put in entries
 					let entries = entryReport.entries[i];
@@ -838,6 +847,10 @@ const updateFormAnswer = async (req, res, next) => {
 				entry.waitlist.set(i, false);
 				entry.groupWaitlist.set(i, false);
 			} else if (entryReport.entries[i].indexOf(entry.id) === -1) {
+				console.log(
+					'entryReport.entries[i].indexOf(entry.id) = ',
+					entryReport.entries[i].indexOf(entry.id)
+				);
 				// If entryReport.entries does not have this entry meaning previous choice
 				// was NOT_ATTENDING, now we need to add the entry to it. Also +1 for total
 				// entries.
@@ -850,6 +863,16 @@ const updateFormAnswer = async (req, res, next) => {
 					entryReport.totalEntries[i] + 1
 				);
 				++attendingDays;
+			} else {
+				// current entry run group is different from previous entry run group
+				console.log(
+					'current entry run group is different from previous entry run group'
+				);
+				// current choice is not NOT_ATTENDING
+				if (runGroupAnsTexts[i] !== NOT_ATTENDING) {
+					console.log('870 adding ++ attendingDays');
+					++attendingDays;
+				}
 			}
 
 			// we have checked current entry run group is different from previous entry run group
@@ -914,6 +937,8 @@ const updateFormAnswer = async (req, res, next) => {
 			}
 		}
 	}
+
+	console.log('933 attendingDays = ', attendingDays);
 
 	// This section is to find the dayPrice to calculate entry fee
 	// we always want to get retrieve the answer from the form to get the dayPrice because it may be changed
@@ -1107,31 +1132,59 @@ const updatePayment = async (req, res, next) => {
 		return next(error);
 	}
 
-	const { paymentMethod, creditCard, expDate, cvc } = req.body;
+	let {
+		paymentMethod,
+		stripeSetupIntentId,
+		stripePaymentMethodId
+	} = req.body;
 
 	if (paymentMethod === 'stripe') {
-		if (creditCard === '' || expDate === '' || cvc === '') {
+		// if (creditCard === '' || expDate === '' || cvc === '') {
+		if (
+			stripeSetupIntentId === '' ||
+			stripeSetupIntentId === undefined ||
+			stripePaymentMethodId === '' ||
+			stripePaymentMethodId === undefined
+		) {
 			const error = new HttpError(
-				'Update payment process failed. Please provide credit card information.',
+				'Update payment process failed. Missing stripe information.',
 				500
 			);
 			return next(error);
 		}
+	} else {
+		// need to set default value
+		if (
+			stripeSetupIntentId === '' ||
+			stripeSetupIntentId === undefined
+		) {
+			stripeSetupIntentId = '0000';
+		}
+		if (
+			stripePaymentMethodId === '' ||
+			stripePaymentMethodId === undefined
+		) {
+			stripePaymentMethodId = '0000';
+		}
 	}
+	console.log('1151 stripeSetupIntentId = ', stripeSetupIntentId);
+	console.log('1151 stripePaymentMethodId = ', stripePaymentMethodId);
+	console.log('payment = ', payment);
 
 	// we will wipe credit card information if paymentMethod is 'onSite'
 	payment.paymentMethod = paymentMethod;
-	payment.creditCard =
-		paymentMethod === 'stripe' ? Encrypt(creditCard) : '';
-	payment.expDate =
-		paymentMethod === 'stripe' ? Encrypt(expDate) : '';
-	payment.cvc = paymentMethod === 'stripe' ? Encrypt(cvc) : '';
-
+	// payment.creditCard =
+	// 	paymentMethod === 'stripe' ? Encrypt(creditCard) : '';
+	// payment.expDate =
+	// 	paymentMethod === 'stripe' ? Encrypt(expDate) : '';
+	// payment.cvc = paymentMethod === 'stripe' ? Encrypt(cvc) : '';
+	payment.stripeSetupIntentId = stripeSetupIntentId;
+	payment.stripePaymentMethodId = stripePaymentMethodId;
 	try {
 		await payment.save();
 	} catch (err) {
 		const error = new HttpError(
-			'Entry update class connecting with DB failed. Please try again later.',
+			'Entry update payment connecting with DB failed. Please try again later.',
 			500
 		);
 		return next(error);

@@ -3,6 +3,8 @@ import MaterialTable from './MaterialTable';
 
 import '../../shared/components/FormElements/Button.css';
 
+const NOT_ATTENDING = 'Not Attending';
+
 const EntryReport = props => {
 	const [days, setDays] = useState(
 		props.entryReportData.entryData
@@ -116,6 +118,9 @@ const EntryReport = props => {
 			let entryData = [];
 			let entries = eventEntryList[i];
 			for (var j = 0; j < entries.length; ++j) {
+				if (entries[j].runGroup[i] === NOT_ATTENDING) {
+					continue;
+				}
 				let entry = {
 					lastName: entries[j].userLastName,
 					firstName: entries[j].userFirstName,

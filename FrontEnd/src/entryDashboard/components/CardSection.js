@@ -15,8 +15,6 @@ const CARD_ELEMENT_OPTIONS = {
 			'::placeholder': {
 				color: '#aab7c4'
 			}
-			// width: '30em',
-			// height: '2em'
 		},
 		invalid: {
 			color: '#fa755a',
