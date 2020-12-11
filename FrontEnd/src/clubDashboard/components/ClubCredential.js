@@ -171,7 +171,7 @@ const ClubCredential = () => {
 	const credentialForm = () => (
 		<div className="event-form">
 			<div className="event-form-header">
-				<h4>Club credential information</h4>
+				<h4>Club Credentials</h4>
 				<hr className="event-form__hr" />
 			</div>
 			<Formik

@@ -95,6 +95,9 @@ router.get('/credential/:cid', clubsController.getClubCredential);
 
 router.get('/account/:cid', clubsController.getClubAccount);
 
-router.get('/credential/:cid', clubsController.getClubCredential);
+router.get(
+	'/stripeAccount/:cid',
+	clubsController.getClubStripeAccount
+);
 
 module.exports = router;

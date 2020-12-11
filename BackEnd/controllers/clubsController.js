@@ -11,7 +11,9 @@ const Event = require('../models/event');
 const { Encrypt, Decrypt } = require('../util/crypto');
 const e = require('express');
 const { on } = require('nodemon');
+
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
+const Stripe = require('./stripeController.js');
 
 // GET /api/clubs/
 const getAllClubs = async (req, res, next) => {
@@ -682,9 +684,18 @@ const updateClubAccount = async (req, res, next) => {
 	});
 };
 
-// GET /api/clubs/account/
+// GET /api/clubs/account/:cid
 const getClubAccount = async (req, res, next) => {
+	let clubIdParam = req.params.cid;
 	const clubId = req.userData;
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'Get club account process failed.  You are not allowed to get club account.',
+			403
+		);
+		return next(error);
+	}
+
 	let clubAccount;
 	try {
 		clubAccount = await ClubAccount.findOne({ clubId: clubId });
@@ -705,14 +716,13 @@ const getClubAccount = async (req, res, next) => {
 		'clubAccount.stripePublicKey = ',
 		clubAccount.stripePublicKey
 	);
-	// check wheather Stripe keys been created or not
+	// check wheather Stripe keys been created or not, if it's default {} length is 0
 	if (
 		!clubAccount.stripePublicKey ||
 		Object.keys(clubAccount.stripePublicKey).length === 0
 	) {
 		clubAccount.stripePublicKey = '';
 	} else {
-		console;
 		clubAccount.stripePublicKey = Decrypt(
 			clubAccount.stripePublicKey
 		);
@@ -734,9 +744,18 @@ const getClubAccount = async (req, res, next) => {
 	});
 };
 
-// GET /api/clubs/account/
+// GET /api/clubs/credential/:cid
 const getClubCredential = async (req, res, next) => {
+	let clubIdParam = req.params.cid;
 	const clubId = req.userData;
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'Get club credential process failed.  You are not allowed to get club credential.',
+			403
+		);
+		return next(error);
+	}
+
 	let club;
 	try {
 		// we don't want to return password field
@@ -762,6 +781,69 @@ const getClubCredential = async (req, res, next) => {
 				return ret;
 			}
 		})
+	});
+};
+
+// GET /api/clubs/stripeAccount/:cid
+const getClubStripeAccount = async (req, res, next) => {
+	console.log('790 in getClubStripeAccount');
+	let clubIdParam = req.params.cid;
+	const clubId = req.userData;
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'Get club stripe account process failed.  You are not allowed to get club stripe account.',
+			403
+		);
+		return next(error);
+	}
+
+	let clubAccount;
+	try {
+		// we don't want to return password field
+		clubAccount = await ClubAccount.findOne({ clubId: clubId });
+	} catch (err) {
+		const error = new HttpError(
+			'Get club stripe account process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!clubAccount) {
+		const error = new HttpError(
+			'Get club stripe account process failed. Please report it to admin.',
+			500
+		);
+		return next(error);
+	}
+
+	let stripeAccountId;
+	if (
+		!clubAccount.stripeAccountId ||
+		Object.keys(clubAccount.stripeAccountId).length === 0
+	) {
+		stripeAccountId === '';
+	} else {
+		stripeAccountId = Decrypt(clubAccount.stripeAccountId);
+	}
+	console.log('stripeAccountId = ', stripeAccountId);
+
+	let stripeAccount = null;
+	try {
+		if (stripeAccountId !== '' && stripeAccountId !== undefined) {
+			stripeAccount = await Stripe.getAccount(stripeAccountId);
+		}
+	} catch (err) {
+		console.log('err = ', err);
+		const error = new HttpError(
+			'Get club stripe account process failed. Unable to retrieve account from Stripe. Please try again.',
+			500
+		);
+		return next(error);
+	}
+	console.log('stripeAccount2 = ', stripeAccount);
+
+	res.status(200).json({
+		stripeAccount: stripeAccount
 	});
 };
 
@@ -1151,6 +1233,7 @@ exports.getClubProfile = getClubProfile;
 exports.updateClubAccount = updateClubAccount;
 exports.getClubAccount = getClubAccount;
 exports.getClubCredential = getClubCredential;
+exports.getClubStripeAccount = getClubStripeAccount;
 exports.deleteClub = deleteClub;
 exports.logoutClub = logoutClub;
 exports.getEventForm = getEventForm;

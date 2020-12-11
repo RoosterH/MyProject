@@ -166,3 +166,30 @@
 	display: inline-block;
 	outline: none;
 }
+
+.stripeconnect-container {
+	/* padding-block-end: 10rem; */
+	width: 70%;
+	margin: 0 auto;
+}
+
+.stripeconnect {
+	display: block;
+	width: 200px;
+	height: 35px;
+	margin: 0.5rem 1rem 1rem 1.5rem;
+}
+
+.stripeMessage {
+	margin: 0.5rem 1rem 1rem 1.5rem;
+	font-size: 16px;
+	font-weight: 600;
+	color: rgb(5, 184, 5);
+}
+
+.stripeMessageErr {
+	margin: 0.5rem 1rem 1rem 1.5rem;
+	font-size: 16px;
+	font-weight: 600;
+	color: rgb(204, 103, 9);
+}

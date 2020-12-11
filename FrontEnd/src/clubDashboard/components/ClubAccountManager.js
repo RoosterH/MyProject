@@ -1,16 +1,29 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import Button from '../../shared/components/FormElements/Button';
 import ClubCredential from './ClubCredential';
+import ClubStripe from './ClubStripe';
 import ClubAccount from './ClubAccount';
+import RedirectExternalURL from '../../shared/hooks/redirectExternalURL';
 import '../../shared/css/EventForm.css';
 import '../../event/components/EventItem.css';
 import './ClubManager.css';
+import ClubAuthConetxt, {
+	ClubAuthContext
+} from '../../shared/context/auth-context';
+import { Redirect } from 'react-router-dom';
 
 const ClubAccountManager = () => {
+	const history = useHistory();
+	const clubAuthContext = useContext(ClubAuthContext);
 	// eventInfo controls what to display in Tab Content
 	const [credential, setCredential] = useState(false);
 	// eventInfoClass contorls className used for Button
 	const [credentialClass, setCredentialClass] = useState(
+		'editeventmanager-grey'
+	);
+	const [stripe, setStripe] = useState(false);
+	const [stripeClass, setStripeClass] = useState(
 		'editeventmanager-grey'
 	);
 	const [account, setAccount] = useState(false);
@@ -18,21 +31,48 @@ const ClubAccountManager = () => {
 		'editeventmanager-grey'
 	);
 
+	const [stripeConnectURL, setStripeConnectURL] = useState();
+
+	const getStripeConnectURL = url => {
+		setStripeConnectURL(url);
+	};
+
+	useEffect(() => {
+		if (stripeConnectURL) {
+			console.log('found stripe URL = ', stripeConnectURL);
+			clubAuthContext.setClubRedirectURL(stripeConnectURL);
+			history.push('/stripeConnect/');
+		}
+	}, [stripeConnectURL]);
+
 	const credentialClickHandler = () => {
 		setCredential(true);
 		setCredentialClass('editeventmanager-orange');
+		setStripe(false);
+		setStripeClass('editeventmanager-grey');
 		setAccount(false);
 		setAccountClass('editeventmanager-grey');
 	};
+	const stripeClickHandler = () => {
+		setCredential(false);
+		setCredentialClass('editeventmanager-grey');
+		setStripe(true);
+		setStripeClass('editeventmanager-orange');
+		setAccount(false);
+		setAccountClass('editeventmanager-grey');
+	};
+
 	const accountClickHandler = () => {
 		setCredential(false);
 		setCredentialClass('editeventmanager-grey');
+		setStripe(false);
+		setStripeClass('editeventmanager-grey');
 		setAccount(true);
 		setAccountClass('editeventmanager-orange');
 	};
 
 	// set defualt page, if none is false, we will use eventInfo as default
-	if (!credential && !account) {
+	if (!credential && !stripe && !account) {
 		credentialClickHandler();
 	}
 
@@ -54,18 +94,31 @@ const ClubAccountManager = () => {
 							Club Credential
 						</Button>
 						<Button
+							size={stripeClass}
+							autoFocus
+							onClick={stripeClickHandler}>
+							Stripe
+						</Button>
+						<Button
 							size={accountClass}
 							autoFocus
 							onClick={accountClickHandler}>
-							Account
+							Payment
 						</Button>
 					</ul>
 					<div className="tab-content">
 						{credential && <ClubCredential />}
+						{stripe && (
+							<ClubStripe getStripeConnectURL={getStripeConnectURL} />
+						)}
 						{account && <ClubAccount />}
 					</div>
 				</div>
 			</div>
+
+			{/* {stripeConnectURL && (
+				<RedirectExternalURL url={stripeConnectURL} />
+			)} */}
 		</React.Fragment>
 	);
 };

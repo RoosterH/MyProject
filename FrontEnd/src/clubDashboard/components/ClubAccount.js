@@ -12,7 +12,6 @@ import PromptModal from '../../shared/components/UIElements/PromptModal';
 
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { ClubAuthContext } from '../../shared/context/auth-context';
-import { FormContext } from '../../shared/context/form-context';
 
 import '../../shared/css/EventForm.css';
 import './ClubManager.css';
@@ -176,7 +175,7 @@ const ClubAccount = () => {
 	const accountForm = () => (
 		<div className="event-form">
 			<div className="event-form-header">
-				<h4>Please enter club payment information</h4>
+				<h4>Select Customer Payment Methods</h4>
 				<hr className="event-form__hr" />
 			</div>
 			<Formik
@@ -255,7 +254,7 @@ const ClubAccount = () => {
 						</div>
 						<br />
 						<div id="my-radio-group" className="event-form__label">
-							Stripe Payment:
+							Stripe Payment: (Stripe Connect Account Required)
 						</div>
 						<div
 							role="group"
@@ -290,7 +289,7 @@ const ClubAccount = () => {
 							</label>
 						</div>
 						<br />
-						<label
+						{/* <label
 							htmlFor="stripePublicKey"
 							className="event-form__label_inline">
 							Stripe Publishable Key
@@ -317,8 +316,8 @@ const ClubAccount = () => {
 							<div className="event-form__field-error">
 								{errors.stripePublicKey}
 							</div>
-						)}
-						<label
+						)} */}
+						{/* <label
 							htmlFor="stripeSecretKey"
 							className="event-form__label">
 							Stripe Secret Key (For security, this key will not be
@@ -340,7 +339,7 @@ const ClubAccount = () => {
 							<div className="event-form__field-error">
 								{errors.stripeSecretKey}
 							</div>
-						)}
+						)} */}
 						<Button
 							type="submit"
 							size="medium"

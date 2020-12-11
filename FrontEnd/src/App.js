@@ -17,6 +17,7 @@ import { useUserAuth } from './shared/hooks/userAuth-hook';
 
 import { FormContext } from './shared/context/form-context';
 import { useFormHook } from './shared/hooks/form-hook';
+import RedirectExternalURL from './shared/hooks/redirectExternalURL';
 
 import './shared/css/Auth.css';
 
@@ -105,6 +106,12 @@ const ClubCredential = React.lazy(() =>
 const ClubAccount = React.lazy(() =>
 	import('./clubDashboard/components/ClubAccount')
 );
+const ClubStripe = React.lazy(() =>
+	import('./clubDashboard/components/ClubStripe')
+);
+const ClubStripeConnect = React.lazy(() =>
+	import('./clubDashboard/components/ClubStripeConnect')
+);
 
 // user section
 // const Users = React.lazy(() => import('./users/pages/Users'));
@@ -177,6 +184,12 @@ const App = () => {
 				<Route path="/clubs/account/:clubId" exact>
 					<ClubAccount />
 				</Route>
+				<Route path="/clubs/stripe/:clubId" exact>
+					<ClubStripe />
+				</Route>
+				<Route path="/clubs/stripeconnect/:clubId" exact>
+					<ClubStripeConnect />
+				</Route>
 				<Route path="/clubs/eventManager/" exact>
 					<EventManager />
 				</Route>
@@ -212,6 +225,9 @@ const App = () => {
 				</Route>
 				<Route path="/events/update/:id" exact>
 					<UpdateEvent />
+				</Route>
+				<Route path="/stripeConnect/" exact>
+					<RedirectExternalURL />
 				</Route>
 				<Route path="/error" exact>
 					<Error />
@@ -344,6 +360,9 @@ const App = () => {
 				</Route>
 				<Route path="/clubs/account/:clubId" exact>
 					<ClubAccount />
+				</Route>
+				<Route path="/clubs/stripe/:clubId" exact>
+					<ClubStripe />
 				</Route>
 				<Route path="/clubs/profileManager/:clubId" exact>
 					<ClubProfileManager />

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const DEFAULT_STRIPE_ID = '0000';
 
 const paymentSchema = new Schema({
 	entryId: {
@@ -11,12 +12,12 @@ const paymentSchema = new Schema({
 	stripeSetupIntentId: {
 		type: String,
 		required: true,
-		default: '0000'
+		default: DEFAULT_STRIPE_ID
 	},
 	stripePaymentMethodId: {
 		type: String,
 		required: true,
-		default: '0000'
+		default: DEFAULT_STRIPE_ID
 	}
 	// creditCard: { type: Object, required: true, default: {} },
 	// expDate: { type: Object, required: true, default: {} },

@@ -11,6 +11,7 @@ const checkUserAuth = require('../middleware/check-userAuth');
 
 const router = express.Router();
 
+// ********* USER SECTION *******************//
 // adding checkAuth middleware here will ensure all the requests below
 // need to be authenticated
 router.use(checkUserAuth);
@@ -24,7 +25,14 @@ router.get(
 	stripeController.getNewSetupIntent
 );
 
+// ! NOT USED
+// This route is not used beacuse re-using SetupIntent with new PaymentMethod will be causing SetupIntent state isssue
 // get original setupIntent from payment
 router.get('/setupIntent/:entryId', stripeController.getSetupIntent);
+
+// ********* CLUB SECTION *******************//
+router.use(checkClubAuth);
+
+router.get('/connect/', stripeController.getConnect);
 
 module.exports = router;

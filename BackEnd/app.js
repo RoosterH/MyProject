@@ -15,9 +15,14 @@ const usersRoutes = require('./routes/usersRoutes');
 const entriesRoutes = require('./routes/entriesRoutes');
 const carsRoutes = require('./routes/carRoutes');
 const stripeRoutes = require('./routes/stripeRoutes');
+const stripeWebhookRoutes = require('./routes/stripeWebhookRoutes');
 const HttpError = require('./models/httpError');
 
 const app = express();
+
+// ! this has to be placed above bodyParser.json()
+// need to use bodyParser.raw for Stripe webhook, otherwise it won't parse req.body correctly
+app.use('/webhook', bodyParser.raw({ type: '*/*' }));
 
 // bodyParser.json() will parse the json to js data structure such as array then call next automatically.
 app.use(bodyParser.json());
@@ -55,6 +60,7 @@ app.use('/api/entries/', entriesRoutes);
 app.use('/api/events/', eventsRoutes);
 app.use('/api/users/', usersRoutes);
 app.use('/api/stripe/', stripeRoutes);
+app.use('/webhook/', stripeWebhookRoutes);
 
 // this route is for the requests that are not in any of the routes
 app.use((req, res, next) => {
