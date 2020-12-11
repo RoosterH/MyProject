@@ -199,7 +199,6 @@ const getSetupIntent = async (req, res, next) => {
 		return next(error);
 	}
 
-	console.log('189 setupIntent  = ', setupIntent);
 	res.status(200).json({
 		setupIntent: setupIntent,
 		email: user.email
@@ -208,11 +207,8 @@ const getSetupIntent = async (req, res, next) => {
 
 // route GET /stripe/connect, redirect clubs to stripe to setup connect account
 const getConnect = async (req, res, next) => {
-	console.log('in getConnect');
-
 	// req.userData is inserted in check-auth.js
 	let clubId = req.userData;
-	console.log('clubId = ', clubId);
 	let club;
 	try {
 		club = await Club.findById(clubId);
@@ -231,7 +227,6 @@ const getConnect = async (req, res, next) => {
 		);
 		return next(error);
 	}
-	console.log('in getConnect club = ', club);
 
 	try {
 		// create stripe standard account. For standard type, cannot supply capablities
@@ -239,11 +234,8 @@ const getConnect = async (req, res, next) => {
 			type: 'standard',
 			email: club.email
 		});
-		console.log('account = ', account);
-		// req.session.accountID = account.id;
-
+		// origin is our end point
 		const origin = `${req.headers.origin}`;
-		console.log('origin = ', origin);
 
 		// get account link, we will re-direct user to this link to setup account
 		const accountLinkURL = await generateAccountLink(
@@ -251,7 +243,6 @@ const getConnect = async (req, res, next) => {
 			origin,
 			club.id
 		);
-		console.log('');
 		let clubAccount;
 		try {
 			clubAccount = await ClubAccount.findOne({ clubId: club.id });

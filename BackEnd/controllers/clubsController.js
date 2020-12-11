@@ -146,8 +146,7 @@ const createClub = async (req, res, next) => {
 	const newClubAccount = new ClubAccount({
 		onSitePayment: false,
 		stripePayment: true,
-		stripePublicKey: undefined,
-		stripeSecretKey: undefined
+		stripeAccountId: undefined
 	});
 
 	// ! DO NOT REMOVE
@@ -612,12 +611,7 @@ const updateClubAccount = async (req, res, next) => {
 		return next(error);
 	}
 
-	const {
-		onSitePayment,
-		stripePayment,
-		stripePublicKey,
-		stripeSecretKey
-	} = req.body;
+	const { onSitePayment, stripePayment } = req.body;
 
 	// use clubId from token instead of getting it from url to avoid hacking
 	// req.userData is added in check-clubAuth middleware, information comes from front end
@@ -665,8 +659,6 @@ const updateClubAccount = async (req, res, next) => {
 
 	clubAccount.onSitePayment = onSitePayment;
 	clubAccount.stripePayment = stripePayment;
-	clubAccount.stripePublicKey = Encrypt(stripePublicKey);
-	clubAccount.stripeSecretKey = Encrypt(stripeSecretKey);
 
 	try {
 		await clubAccount.save();
@@ -710,31 +702,6 @@ const getClubAccount = async (req, res, next) => {
 	if (!clubAccount) {
 		const error = new HttpError('No club account in the DB.', 404);
 		return next(error);
-	}
-
-	console.log(
-		'clubAccount.stripePublicKey = ',
-		clubAccount.stripePublicKey
-	);
-	// check wheather Stripe keys been created or not, if it's default {} length is 0
-	if (
-		!clubAccount.stripePublicKey ||
-		Object.keys(clubAccount.stripePublicKey).length === 0
-	) {
-		clubAccount.stripePublicKey = '';
-	} else {
-		clubAccount.stripePublicKey = Decrypt(
-			clubAccount.stripePublicKey
-		);
-	}
-	if (
-		!clubAccount.stripeSecretKey ||
-		Object.keys(clubAccount.stripeSecretKey).length === 0
-	) {
-		clubAccount.stripeSecretKey = '';
-	} else {
-		clubAccount.stripeSecretKey =
-			'***********************************************************************************************************';
 	}
 
 	res.status(200).json({
@@ -786,7 +753,6 @@ const getClubCredential = async (req, res, next) => {
 
 // GET /api/clubs/stripeAccount/:cid
 const getClubStripeAccount = async (req, res, next) => {
-	console.log('790 in getClubStripeAccount');
 	let clubIdParam = req.params.cid;
 	const clubId = req.userData;
 	if (clubIdParam !== clubId) {
@@ -817,6 +783,7 @@ const getClubStripeAccount = async (req, res, next) => {
 	}
 
 	let stripeAccountId;
+	// check wheather Stripe AccountId been created or not, if it's default {} length is 0
 	if (
 		!clubAccount.stripeAccountId ||
 		Object.keys(clubAccount.stripeAccountId).length === 0
@@ -825,7 +792,6 @@ const getClubStripeAccount = async (req, res, next) => {
 	} else {
 		stripeAccountId = Decrypt(clubAccount.stripeAccountId);
 	}
-	console.log('stripeAccountId = ', stripeAccountId);
 
 	let stripeAccount = null;
 	try {
@@ -840,7 +806,6 @@ const getClubStripeAccount = async (req, res, next) => {
 		);
 		return next(error);
 	}
-	console.log('stripeAccount2 = ', stripeAccount);
 
 	res.status(200).json({
 		stripeAccount: stripeAccount

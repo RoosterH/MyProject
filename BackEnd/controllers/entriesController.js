@@ -71,9 +71,6 @@ const createEntry = async (req, res, next) => {
 		answer,
 		disclaimer,
 		paymentMethod,
-		// creditCard,
-		// expDate,
-		// cvc,
 		entryFee,
 		stripeSetupIntentId,
 		stripePaymentMethodId
@@ -411,9 +408,6 @@ const createEntry = async (req, res, next) => {
 				paymentMethod,
 				stripeSetupIntentId,
 				stripePaymentMethodId
-				// creditCard: creditCard ? Encrypt(creditCard) : {},
-				// expDate: expDate ? Encrypt(expDate) : {},
-				// cvc: cvc ? Encrypt(cvc) : {}
 			});
 
 			await payment.save({ session: session });
@@ -681,8 +675,6 @@ const updateFormAnswer = async (req, res, next) => {
 
 	// find how many days
 	let days = entryReport.entries.length;
-
-	console.log('days = ', days);
 	let eventFull = [];
 	for (let i = 0; i < days; ++i) {
 		if (
@@ -816,14 +808,9 @@ const updateFormAnswer = async (req, res, next) => {
 			}
 			runGroupChanged.push(false);
 		} else if (!groupFull[i]) {
-			console.log('day i ', i);
 			// check if the previous entry was on the group waitlist
 			// if entry.groupWaitlist === true, entry.waitlist must be also true
 			if (onWaitlist && onGroupWaitlist) {
-				console.log(
-					'on waitlist runGroupAnsTexts[i] = ',
-					runGroupAnsTexts[i]
-				);
 				if (runGroupAnsTexts[i] !== NOT_ATTENDING) {
 					// put in entries
 					let entries = entryReport.entries[i];
@@ -847,10 +834,6 @@ const updateFormAnswer = async (req, res, next) => {
 				entry.waitlist.set(i, false);
 				entry.groupWaitlist.set(i, false);
 			} else if (entryReport.entries[i].indexOf(entry.id) === -1) {
-				console.log(
-					'entryReport.entries[i].indexOf(entry.id) = ',
-					entryReport.entries[i].indexOf(entry.id)
-				);
 				// If entryReport.entries does not have this entry meaning previous choice
 				// was NOT_ATTENDING, now we need to add the entry to it. Also +1 for total
 				// entries.
@@ -865,12 +848,8 @@ const updateFormAnswer = async (req, res, next) => {
 				++attendingDays;
 			} else {
 				// current entry run group is different from previous entry run group
-				console.log(
-					'current entry run group is different from previous entry run group'
-				);
 				// current choice is not NOT_ATTENDING
 				if (runGroupAnsTexts[i] !== NOT_ATTENDING) {
-					console.log('870 adding ++ attendingDays');
 					++attendingDays;
 				}
 			}
@@ -938,8 +917,6 @@ const updateFormAnswer = async (req, res, next) => {
 		}
 	}
 
-	console.log('933 attendingDays = ', attendingDays);
-
 	// This section is to find the dayPrice to calculate entry fee
 	// we always want to get retrieve the answer from the form to get the dayPrice because it may be changed
 	// find answer of Registration option
@@ -1003,8 +980,6 @@ const updateFormAnswer = async (req, res, next) => {
 	}
 
 	let paymentId = entry.paymentId;
-	console.log('974 paymentId = ', paymentId);
-
 	let payment;
 	try {
 		payment = await Payment.findById(paymentId);
@@ -1016,7 +991,6 @@ const updateFormAnswer = async (req, res, next) => {
 		);
 		return next(error);
 	}
-	console.log('976 payment = ', payment);
 	payment.entryFee = totalPrice;
 	try {
 		const session = await mongoose.startSession();
@@ -1027,7 +1001,6 @@ const updateFormAnswer = async (req, res, next) => {
 		await payment.save({ session: session });
 		await session.commitTransaction();
 	} catch (err) {
-		console.log('942 err  =', err);
 		const error = new HttpError(
 			'Entry update form answer connecting with DB failed. Please try again later.',
 			500
@@ -1139,7 +1112,6 @@ const updatePayment = async (req, res, next) => {
 	} = req.body;
 
 	if (paymentMethod === 'stripe') {
-		// if (creditCard === '' || expDate === '' || cvc === '') {
 		if (
 			stripeSetupIntentId === '' ||
 			stripeSetupIntentId === undefined ||
@@ -1167,17 +1139,9 @@ const updatePayment = async (req, res, next) => {
 			stripePaymentMethodId = '0000';
 		}
 	}
-	console.log('1151 stripeSetupIntentId = ', stripeSetupIntentId);
-	console.log('1151 stripePaymentMethodId = ', stripePaymentMethodId);
-	console.log('payment = ', payment);
 
 	// we will wipe credit card information if paymentMethod is 'onSite'
 	payment.paymentMethod = paymentMethod;
-	// payment.creditCard =
-	// 	paymentMethod === 'stripe' ? Encrypt(creditCard) : '';
-	// payment.expDate =
-	// 	paymentMethod === 'stripe' ? Encrypt(expDate) : '';
-	// payment.cvc = paymentMethod === 'stripe' ? Encrypt(cvc) : '';
 	payment.stripeSetupIntentId = stripeSetupIntentId;
 	payment.stripePaymentMethodId = stripePaymentMethodId;
 	try {
@@ -1333,9 +1297,7 @@ const deleteEntry = async (req, res, next) => {
 	let payment;
 	try {
 		payment = await Payment.findById(entry.paymentId);
-		console.log('1276 payment = ', payment);
 	} catch (err) {
-		console.log('1200 err = ', err);
 		const error = new HttpError(
 			'Failed to delete the event @retrieving payment.  Please try it later.',
 			500
@@ -1361,7 +1323,6 @@ const deleteEntry = async (req, res, next) => {
 		// only both tasks succeed, we commit the transaction
 		await session.commitTransaction();
 	} catch (err) {
-		console.log('1223 err = ', err);
 		const error = new HttpError(
 			'Failed to delete the event.  Please try it later.',
 			500
@@ -1549,9 +1510,6 @@ const getEntryFee = async (req, res, next) => {
 
 	let entryFee = '0';
 	let paymentMethod = '';
-	let creditCard = '';
-	let expDate = '';
-	let cvc = '';
 	if (entry) {
 		// get entry fee from payment
 		let payment;
@@ -1566,15 +1524,6 @@ const getEntryFee = async (req, res, next) => {
 		}
 		entryFee = payment.entryFee;
 		paymentMethod = payment.paymentMethod;
-		if (payment.creditCard) {
-			creditCard = Decrypt(payment.creditCard);
-		}
-		if (payment.expDate) {
-			expDate = Decrypt(payment.expDate);
-		}
-		if (payment.cvc) {
-			cvc = Decrypt(payment.cvc);
-		}
 	} else {
 		// !entry
 		// entry not found, we can proceed to get entry free from answers
@@ -1641,10 +1590,7 @@ const getEntryFee = async (req, res, next) => {
 		// paymentOptions is the payment options offered by club that contains "stripe" and/or "onSite"
 		paymentOptions,
 		// paymentMethod is what user chose how to pay for the entry fee
-		paymentMethod,
-		creditCard,
-		expDate,
-		cvc
+		paymentMethod
 	});
 };
 

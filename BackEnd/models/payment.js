@@ -19,9 +19,6 @@ const paymentSchema = new Schema({
 		required: true,
 		default: DEFAULT_STRIPE_ID
 	}
-	// creditCard: { type: Object, required: true, default: {} },
-	// expDate: { type: Object, required: true, default: {} },
-	// cvc: { type: Object, required: true, default: {} }
 });
 
 module.exports = mongoose.model('Payment', paymentSchema);
