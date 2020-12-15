@@ -59,9 +59,7 @@ router.patch(
 	'/account',
 	[
 		check('onSitePayment').not().isEmpty(),
-		check('stripePayment').not().isEmpty(),
-		check('stripePublicKey').not().isEmpty(),
-		check('stripeSecretKey').not().isEmpty()
+		check('stripePayment').not().isEmpty()
 	],
 	clubsController.updateClubAccount
 );

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const { Encrypt, Decrypt } = require('../util/crypto');
 
 const clubAccountSchema = new Schema({
 	clubId: {
@@ -8,7 +9,11 @@ const clubAccountSchema = new Schema({
 	},
 	onSitePayment: { type: Boolean, required: true },
 	stripePayment: { type: Boolean, required: true },
-	stripeAccountId: { type: Object, required: true, default: {} }
+	stripeAccountId: {
+		type: Object,
+		required: true,
+		default: {}
+	}
 });
 
 module.exports = mongoose.model('ClubAccount', clubAccountSchema);

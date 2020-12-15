@@ -35,6 +35,10 @@ const CardSetupForm = props => {
 		clearError();
 	};
 
+	// ************* Stripe Flow **************************** //
+	// 1. use SetupIntent to get clien_secret
+	// 2. Use client_secret to confirmCardSetup that will create paymentMethod with card details
+
 	// Re-use SetupIntent from before causes "setup_intent_unexpected_state" error.
 	// So, for both editing and non-editing modes, we always want to create a new SetupIntent and
 	// use it to get a PaymentMethod.

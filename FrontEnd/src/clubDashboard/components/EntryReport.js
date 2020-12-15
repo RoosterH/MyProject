@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import MaterialTable from './MaterialTable';
+import MaterialTableEntryReport from './MaterialTableEntryReport';
 
 import '../../shared/components/FormElements/Button.css';
 
 const NOT_ATTENDING = 'Not Attending';
 
 const EntryReport = props => {
+	// days = how many days for this event
 	const [days, setDays] = useState(
 		props.entryReportData.entryData
 			? props.entryReportData.entryData.length
@@ -46,8 +47,6 @@ const EntryReport = props => {
 	);
 
 	const [showLoading, setShowLoading] = useState(true);
-
-	// days = how many days for this event
 
 	// create an array from day 1 to loop through when we are rendering day buttons
 	const [dayArray, setDayArray] = useState([]);
@@ -215,7 +214,7 @@ const EntryReport = props => {
 			{daySelection > 0 &&
 				entryListArray.length > 0 &&
 				waitlistArray.length > 0 && (
-					<MaterialTable
+					<MaterialTableEntryReport
 						entryList={entryListArray[daySelection - 1]}
 						waitlist={waitlistArray[daySelection - 1]}
 						displayName={true}

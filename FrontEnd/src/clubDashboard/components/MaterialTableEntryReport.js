@@ -1,11 +1,12 @@
 import React from 'react';
 import MaterialTable from 'material-table';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
+import PromptModal from '../../shared/components/UIElements/PromptModal';
 
 import './ClubManager.css';
 import { TramOutlined } from '@material-ui/icons';
 
-const MyMaterialTable = props => {
+const MaterialTableEntryReport = props => {
 	let entryList = props.entryList;
 	let waitlist = props.waitlist;
 	let displayName = props.displayName;
@@ -194,4 +195,4 @@ const MyMaterialTable = props => {
 	);
 };
 
-export default MyMaterialTable;
+export default MaterialTableEntryReport;

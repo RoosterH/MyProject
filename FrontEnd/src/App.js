@@ -64,14 +64,17 @@ const RegistrationManager = React.lazy(() =>
 const EventReportSelector = React.lazy(() =>
 	import('./clubDashboard/components/EventReportSelector')
 );
+const PaymentCenterSelector = React.lazy(() =>
+	import('./clubDashboard/components/PaymentCenterSelector')
+);
 const EditEventSelector = React.lazy(() =>
 	import('./clubDashboard/components/EditEventSelector')
 );
 const EntryListForUsers = React.lazy(() =>
 	import('./clubDashboard/components/EntryListForUsers')
 );
-const MaterialTable = React.lazy(() =>
-	import('./clubDashboard/components/MaterialTable')
+const MaterialTableEntryReport = React.lazy(() =>
+	import('./clubDashboard/components/MaterialTableEntryReport')
 );
 
 const Events = React.lazy(() => import('./events/pages/Events'));
@@ -156,7 +159,8 @@ const App = () => {
 		routes = (
 			<Switch>
 				<Route path="/" exact>
-					<Clubs />
+					<ClubManager />
+					{/* <Clubs /> */}
 				</Route>
 				<Route path="/events/club/:clubId" exact>
 					<ClubEvents />
@@ -210,6 +214,9 @@ const App = () => {
 				</Route>
 				<Route path="/clubs/viewEventSelector/:clubId" exact>
 					<ViewEventSelector />
+				</Route>
+				<Route path="/clubs/paymentCenterSelector/:clubId" exact>
+					<PaymentCenterSelector />
 				</Route>
 				<Route path="/events/formbuilder/:id" exact>
 					<FormBuilder />
@@ -274,7 +281,7 @@ const App = () => {
 				/>
 				<Route
 					path="/events/entrylistMaterialTable/:eid"
-					component={MaterialTable}
+					component={MaterialTableEntryReport}
 					exact
 				/>
 				<Route path="/events/entry/:carId" exact>
@@ -334,6 +341,9 @@ const App = () => {
 				<Route path="/clubs/eventReportSelector/:clubId" exact>
 					<EventReportSelector />
 				</Route>
+				<Route path="/clubs/paymentCenterSelector/:clubId" exact>
+					<PaymentCenterSelector />
+				</Route>
 				<Route path="/clubs/events/new" exact>
 					<NewEvent />
 				</Route>
@@ -363,6 +373,9 @@ const App = () => {
 				</Route>
 				<Route path="/clubs/stripe/:clubId" exact>
 					<ClubStripe />
+				</Route>
+				<Route path="/clubs/stripeconnect/:clubId" exact>
+					<ClubStripeConnect />
 				</Route>
 				<Route path="/clubs/profileManager/:clubId" exact>
 					<ClubProfileManager />
@@ -408,7 +421,7 @@ const App = () => {
 				</Route>
 				<Route
 					path="/events/entrylistMaterialTable/:eid"
-					component={MaterialTable}
+					component={MaterialTableEntryReport}
 					exact
 				/>
 				{/* End of page refresh section */}

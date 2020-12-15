@@ -18,6 +18,12 @@ const paymentSchema = new Schema({
 		type: String,
 		required: true,
 		default: DEFAULT_STRIPE_ID
+	},
+	// paymentStatus: "Unpaid", "Paid", "Authentication", "Declined"
+	paymentStatus: {
+		type: String,
+		required: true,
+		default: 'Unpaid'
 	}
 });
 

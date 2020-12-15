@@ -22,7 +22,7 @@ const EventManager = () => {
 							className="fa fa-sort-desc pull-right"
 							aria-hidden="true"
 						/>
-						Entry Report Manager
+						Entry Report
 					</Link>
 					<Link
 						to={`/clubs/eventReportSelector/${cid}`}
@@ -31,22 +31,21 @@ const EventManager = () => {
 							Read all sort of entry reports here.
 						</p>
 					</Link>
-
-					<Link to={`/clubs/editEventSelector/${cid}`} exact="exact">
+					<Link
+						to={`/clubs/paymentCenterSelector/${cid}`}
+						exact="exact">
 						<i
 							className="fa fa-sort-desc pull-right"
 							aria-hidden="true"
 						/>
-						Waitlist
+						Payment Center
 					</Link>
 					<Link to={`/clubs/editEventSelector/${cid}`} exact="exact">
 						<p className="list-content-desc">
-							Want to edit an existing event? Pick the one you want to
-							edit.
+							Charge your customers here.
 						</p>
 					</Link>
-
-					<Link to={`/clubs/ownerClubEvents/${cid}`} exact="exact">
+					{/* <Link to={`/clubs/ownerClubEvents/${cid}`} exact="exact">
 						<i
 							className="fa fa-sort-desc pull-right"
 							aria-hidden="true"
@@ -58,7 +57,7 @@ const EventManager = () => {
 							view events in published layout. Pick the one you want
 							to view.
 						</p>
-					</Link>
+					</Link> */}
 				</div>
 			</div>
 		</React.Fragment>

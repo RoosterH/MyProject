@@ -50,11 +50,6 @@ const ClubAuth = () => {
 						'Content-Type': 'application/json'
 					}
 				);
-
-				console.log(
-					'clubRedirect = ',
-					clubAuthContext.clubRedirectURL
-				);
 				if (clubAuthContext.clubRedirectURL) {
 					console.log('inside clubRedirect');
 					clubAuthContext.clubLogin(

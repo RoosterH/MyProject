@@ -9,7 +9,7 @@ import { useHttpClient } from '../../shared/hooks/http-hook';
 import { UserAuthContext } from '../../shared/context/auth-context';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
-import MaterialTable from './MaterialTable';
+import MaterialTableEntryReport from './MaterialTableEntryReport';
 
 import './ClubManager.css';
 import '../../shared/components/FormElements/Button.css';
@@ -286,7 +286,7 @@ const EntryListForUsers = props => {
 			{daySelection &&
 				entryListArray.length > 0 &&
 				waitlistArray.length > 0 && (
-					<MaterialTable
+					<MaterialTableEntryReport
 						entryList={entryListArray[daySelection - 1]}
 						waitlist={waitlistArray[daySelection - 1]}
 						displayName={displayName}

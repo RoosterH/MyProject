@@ -9,13 +9,13 @@ export const EntryFormOptions = () => [
 		required: true,
 		options: [
 			{
-				value: '50',
-				text: 'AAS Member $50',
+				value: '55',
+				text: 'Online Registration $55',
 				key: `regRadioOption_0`
 			},
 			{
-				value: '60',
-				text: 'AAS Member $60',
+				value: '50',
+				text: 'On-Site Registration $50',
 				key: `regRadioOption_1`
 			}
 		]

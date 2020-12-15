@@ -1,23 +1,33 @@
 const fs = require('fs'); // file system, a nodejs module
+const e = require('express');
 
 const { validationResult } = require('express-validator');
 const HttpError = require('../models/httpError');
 const moment = require('moment');
 const mongoose = require('mongoose');
 
+const Club = require('../models/club');
 const Event = require('../models/event');
 const Entry = require('../models/entry');
 const EntryReport = require('../models/entryReport');
 const User = require('../models/user');
 const ClubAccount = require('../models/clubAccount');
 const Payment = require('../models/payment');
-const e = require('express');
+const Stripe = require('./stripeController');
+
 const { compare } = require('bcryptjs');
 const { Encrypt, Decrypt } = require('../util/crypto');
+const clubAccount = require('../models/clubAccount');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const NOT_ATTENDING = 'Not Attending';
 const REGISTRATION = 'Registration';
+const ONSITE = 'onSite';
+const STRIPE = 'stripe';
+const PAID = 'Paid';
+const AUTHENTICATION = 'Authentication';
+const DECLINED = 'Declined';
+
 const errMsg = errors => {
 	var msg;
 	for (var e of errors) {
@@ -580,7 +590,6 @@ const updateClassNumber = async (req, res, next) => {
 		);
 		return next(error);
 	}
-
 	if (!entry) {
 		const error = new HttpError(
 			'Could not find entry to update race class/car number.',
@@ -1140,7 +1149,7 @@ const updatePayment = async (req, res, next) => {
 		}
 	}
 
-	// we will wipe credit card information if paymentMethod is 'onSite'
+	// Wipe out credit card information if paymentMethod is ONSITE
 	payment.paymentMethod = paymentMethod;
 	payment.stripeSetupIntentId = stripeSetupIntentId;
 	payment.stripePaymentMethodId = stripePaymentMethodId;
@@ -1457,7 +1466,7 @@ const getEntryFee = async (req, res, next) => {
 	let paymentOptions = [];
 
 	if (clubAccount.onSitePayment === true) {
-		paymentOptions.push('onSite');
+		paymentOptions.push(ONSITE);
 	}
 	if (clubAccount.stripePayment === true) {
 		paymentOptions.push('stripe');
@@ -1594,6 +1603,170 @@ const getEntryFee = async (req, res, next) => {
 	});
 };
 
+const chargeEntry = async (req, res, next) => {
+	let entryId = req.params.entryId;
+	console.log('1601 entryId = ', entryId);
+	let club;
+	let clubId = req.userData;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		console.log('1605 err = ', err);
+		const error = new HttpError(
+			'chargeEntry process failed during club validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!club) {
+		const error = new HttpError(
+			'chargeEntry process faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+	let clubAccount;
+	try {
+		clubAccount = await ClubAccount.findById(club.accountId);
+	} catch (err) {
+		const error = new HttpError(
+			'chargeEntry internal failure @ getting club account. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!clubAccount) {
+		const error = new HttpError(
+			'chargeEntry failed. No club account in the DB.',
+			404
+		);
+		return next(error);
+	}
+	let entry;
+	try {
+		entry = await Entry.findById(entryId);
+	} catch (err) {
+		console.log('1624 err = ', err);
+		const error = new HttpError(
+			'chargeEntry process failed @ getting entry. Please try again later',
+			500
+		);
+		return next(error);
+	}
+	if (!entry) {
+		const error = new HttpError(
+			'chargeEntry Could not find entry.',
+			404
+		);
+		return next(error);
+	}
+
+	let user;
+	try {
+		user = await User.findById(entry.userId);
+	} catch (err) {
+		console.log('1646 err = ', err);
+		const error = new HttpError(
+			'chargeEntry process failed @ getting user. Please try again later',
+			500
+		);
+		return next(error);
+	}
+	if (!user) {
+		const error = new HttpError(
+			'chargeEntry Could not find user.',
+			404
+		);
+		return next(error);
+	}
+
+	let paymentId = entry.paymentId;
+	console.log('paymentId = ', paymentId);
+	let payment;
+	try {
+		payment = await Payment.findById(paymentId);
+	} catch (err) {
+		console.log('1640 err  =', err);
+		const error = new HttpError(
+			'chargeEntry failed to retrieve payment DB failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!payment) {
+		const error = new HttpError(
+			'chargeEntry failed finding payment.',
+			500
+		);
+		return next(error);
+	}
+	let paymentMethod = payment.paymentMethod;
+	if (paymentMethod === ONSITE) {
+		payment.paymentStatus = PAID;
+	} else if (paymentMethod === STRIPE) {
+		console.log('in stripe');
+		// create paymentIntent
+		let paymentIntent;
+		try {
+			paymentIntent = await Stripe.createPaymentIntent(
+				user.stripeCustomerId,
+				payment.stripePaymentMethodId,
+				payment.entryFee,
+				Decrypt(clubAccount.stripeAccountId)
+			);
+			console.log('paymentIntent = ', paymentIntent);
+			payment.paymentStatus = PAID;
+		} catch (err) {
+			console.log('1663 err  =', err);
+			let error;
+			if (err.code === 'authentication_required') {
+				// Bring the customer back on-session to authenticate the purchase
+				// You can do this by sending an email or app notification to let them know
+				// the off-session purchase failed
+				// Use the PM ID and client_secret to authenticate the purchase
+				// without asking your customers to re-enter their details
+				error = new HttpError(
+					'Charge failed. Customer Authentication required. Please contact customer.',
+					500
+				);
+			} else if (err.code) {
+				// The card was declined for other reasons (e.g. insufficient funds)
+				// Bring the customer back on-session to ask them for a new payment method
+				error = new HttpError(
+					'Charge failed. Card was declined. Please contact customer.',
+					500
+				);
+			} else {
+				console.log('Unknown error occurred', err);
+				error = new HttpError(
+					'Charge failed. Unknown error occurred. Please try again later.',
+					500
+				);
+			}
+			return next(error);
+		}
+	} else {
+		const error = new HttpError('Payment method error.', 500);
+		return next(error);
+	}
+	try {
+		console.log('1726 payment =', payment);
+		await payment.save();
+	} catch (err) {
+		console.log('1730 err  =', err);
+		const error = new HttpError(
+			'chargeEntry failed saving payment. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	return res.status(200).json({
+		charged: true
+	});
+};
+
 exports.createEntry = createEntry;
 exports.updateCar = updateCar;
 exports.updateClassNumber = updateClassNumber;
@@ -1601,3 +1774,4 @@ exports.updateFormAnswer = updateFormAnswer;
 exports.updatePayment = updatePayment;
 exports.deleteEntry = deleteEntry;
 exports.getEntryFee = getEntryFee;
+exports.chargeEntry = chargeEntry;

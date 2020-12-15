@@ -47,7 +47,6 @@ const EventList = props => {
 					id={event.id}
 					name={event.name}
 					type={event.type}
-					// image={process.env.REACT_APP_ASSET_URL + `/${event.image}`}
 					image={event.image}
 					clubName={event.clubName}
 					clubId={event.clubId}
@@ -60,6 +59,7 @@ const EventList = props => {
 					readOnly={props.readOnly}
 					signup={signup[event.id]}
 					entryReportManager={props.entryReportManager}
+					paymentCenter={props.paymentCenter}
 				/>
 			))}
 		</ul>

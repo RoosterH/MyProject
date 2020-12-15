@@ -331,9 +331,6 @@ const SubmitEntry = props => {
 					'PATCH',
 					JSON.stringify({
 						paymentMethod: paymentMethod,
-						// creditCard: creditCard,
-						// expDate: expDate,
-						// cvc: cvc
 						stripeSetupIntentId: stripeSetupIntentId,
 						stripePaymentMethodId: stripePaymentMethodId
 					}),
@@ -387,9 +384,6 @@ const SubmitEntry = props => {
 						answer: formAnswer,
 						disclaimer: disclaimer,
 						paymentMethod: paymentMethod,
-						// creditCard: creditCard,
-						// expDate: expDate,
-						// cvc: cvc,
 						entryFee: entryFee,
 						stripeSetupIntentId: stripeSetupIntentId,
 						stripePaymentMethodId: stripePaymentMethodId

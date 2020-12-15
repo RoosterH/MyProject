@@ -21,7 +21,7 @@ const HttpError = require('./models/httpError');
 const app = express();
 
 // ! this has to be placed above bodyParser.json()
-// need to use bodyParser.raw for Stripe webhook, otherwise it won't parse req.body correctly
+// stripe webhook needs to use raw body to content type application/json need to use bodyParser.raw for Stripe webhook, otherwise it won't parse req.body correctly
 app.use('/webhook', bodyParser.raw({ type: '*/*' }));
 
 // bodyParser.json() will parse the json to js data structure such as array then call next automatically.

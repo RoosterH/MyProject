@@ -11,9 +11,14 @@ import { ClubAuthContext } from '../../shared/context/auth-context';
 const ClubEvents = props => {
 	// readoOnly false is for Club EditEvents; true is for Club EventManager View Events and users and non-owner club
 	let readOnly = props.readOnly ? props.readOnly : false;
-	// registration is true is for Registration Manager
+	// entryReportManager is true is for entry Report Manager
 	let entryReportManager = props.entryReportManager
 		? props.entryReportManager
+		: false;
+
+	// paymentCenter is true is for payment center
+	let paymentCenter = props.paymentCenter
+		? props.paymentCenter
 		: false;
 
 	const [loadedEvents, setLoadedEvents] = useState();
@@ -60,6 +65,20 @@ const ClubEvents = props => {
 								Authorization: 'Bearer ' + clubAuthContext.clubToken
 							}
 						);
+					} else if (paymentCenter) {
+						[
+							responseData,
+							responseStatus,
+							responseMessage
+						] = await sendRequest(
+							process.env.REACT_APP_BACKEND_URL +
+								`/events/ownerClubPublished/${clubId}`,
+							'GET',
+							null,
+							{
+								Authorization: 'Bearer ' + clubAuthContext.clubToken
+							}
+						);
 					} else {
 						[
 							responseData,
@@ -92,7 +111,7 @@ const ClubEvents = props => {
 			}
 		};
 		fetechEvents();
-	}, [sendRequest, clubId, entryReportManager]);
+	}, [sendRequest, clubId, entryReportManager, paymentCenter]);
 
 	// calling EventsList from EventsList.js where it passes EVENTS to child EventsList
 	// just treat the following call as EventsList(items = EVENTS); items is the props
@@ -114,6 +133,7 @@ const ClubEvents = props => {
 					displayPublished={true}
 					readOnly={readOnly}
 					entryReportManager={entryReportManager}
+					paymentCenter={paymentCenter}
 				/>
 			)}
 		</React.Fragment>

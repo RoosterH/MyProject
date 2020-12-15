@@ -8,6 +8,7 @@ import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 
+import STRIPE_VERIFICATION from '../../shared/utils/webp/StripeVerifyAccount.webp';
 import '../../shared/css/EventForm.css';
 import './ClubManager.css';
 
@@ -149,20 +150,28 @@ const ClubStripe = props => {
 					</p>
 				)}
 				{stripeAccount && detailsSubmitted && !chargesEnabled && (
-					<p className="stripeMessageErr">
-						Your Stripe Connect Account setup has missing required
-						information! Please{' '}
-						{/* with noopener it opens link in a new tab */}
-						<a
-							rel="noopener noreferrer"
-							href="https://dashboard.stripe.com"
-							target="_blank">
-							login Stripe
-						</a>{' '}
-						to complete it. If you do not see any reminder message on
-						top of Stripe Dashoard, please wait for 30 minutes to
-						check again.
-					</p>
+					<React.Fragment>
+						<p className="stripeMessageErr">
+							Your Stripe Connect Account setup has missing required
+							information! Please{' '}
+							{/* with noopener it opens link in a new tab */}
+							<a
+								rel="noopener noreferrer"
+								href="https://dashboard.stripe.com"
+								target="_blank">
+								login Stripe
+							</a>{' '}
+							to complete it. If you do not see{' '}
+							<b className="stripeVerify">
+								Finish verifying your accoung
+							</b>{' '}
+							message on top of Stripe Dashoard, please wait for 30
+							minutes to check again. There will be 2 verifications
+							even it says all caught up. After 2nd verification,
+							please wait for 5 minutes and refresh this page to check
+							the status.
+						</p>
+					</React.Fragment>
 				)}
 				{stripeAccount && !detailsSubmitted && (
 					<React.Fragment>

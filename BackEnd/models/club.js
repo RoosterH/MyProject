@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
-
 const Schema = mongoose.Schema;
+const { Encrypt, Decrypt } = require('../util/crypto');
 
 const clubSchema = new Schema({
 	// uniquie: true meaning create an index for this property for fast query
@@ -26,7 +26,19 @@ const clubSchema = new Schema({
 			ref: 'Event'
 		}
 	],
-	entryFormTemplate: { type: Array }
+	entryFormTemplate: { type: Array },
+	accountId: {
+		type: mongoose.Types.ObjectId,
+		required: true,
+		ref: 'ClubAccount',
+		default: '000000000000'
+	},
+	profileId: {
+		type: mongoose.Types.ObjectId,
+		required: true,
+		ref: 'ClubProfile',
+		default: '000000000000'
+	}
 });
 
 // uniqueValidator is to make sure the email is unique in MongoDB

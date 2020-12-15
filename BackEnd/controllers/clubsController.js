@@ -14,6 +14,7 @@ const { on } = require('nodemon');
 
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 const Stripe = require('./stripeController.js');
+const { request } = require('express');
 
 // GET /api/clubs/
 const getAllClubs = async (req, res, next) => {
@@ -176,11 +177,11 @@ const createClub = async (req, res, next) => {
 	});
 
 	let token;
+	let counter = 0;
 	try {
 		// using transaction here to make sure all the operations are done
 		const session = await mongoose.startSession();
 		session.startTransaction();
-
 		await newClub.save({ session: session });
 		// jwt section
 		// use ClubId and email as the payload
@@ -191,9 +192,13 @@ const createClub = async (req, res, next) => {
 			{ expiresIn: '1h' }
 		);
 		newClubProfile.clubId = newClub.id;
-		await newClubProfile.save({ session: session });
+		let profile = await newClubProfile.save({ session: session });
 		newClubAccount.clubId = newClub.id;
-		await newClubAccount.save({ session: session });
+		let account = await newClubAccount.save({ session: session });
+		console.log('account = ', account);
+		newClub.profileId = profile.id;
+		newClub.accountId = account.id;
+		await newClub.save({ session: session });
 		await session.commitTransaction();
 	} catch (err) {
 		console.log('193 err = ', err);
@@ -1089,7 +1094,6 @@ const publishEvent = async (req, res, next) => {
 		);
 		return next(error);
 	}
-
 	if (!club) {
 		const error = new HttpError(
 			'Create event form process faied with unauthorized request. Forgot to login?',

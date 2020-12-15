@@ -193,3 +193,8 @@
 	font-weight: 600;
 	color: rgb(204, 103, 9);
 }
+
+.stripeVerify {
+	background-color: rgb(245, 177, 245);
+	color: black;
+}

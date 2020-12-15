@@ -3,6 +3,7 @@ const HttpError = require('../models/httpError');
 const Club = require('../models/club.js');
 const ClubAccount = require('../models/clubAccount.js');
 const Entry = require('../models/entry');
+const Event = require('../models/event');
 const Payment = require('../models/payment');
 const User = require('../models/user');
 const { Encrypt, Decrypt } = require('../util/crypto');
@@ -15,7 +16,6 @@ const errMsg = errors => {
 };
 // use lowercase for external stripe and uppercase for stripeController
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const webhook_secret = 'whsec_oaurDI365lzbrjHo7eW60hh3u5LqsJ5q';
 const DEFAULT_STRIPE_ID = '0000';
 
 // route /stripe/session, create a session for later charge
@@ -47,6 +47,23 @@ const getNewSetupIntent = async (req, res, next) => {
 	// ! todo- get club stripe ID to setup on_behalf_of
 	// use eventId to get club and its clubStripeId, so we can set on_behalf_of the hosting club
 	const eventId = req.params.eventId;
+	let stripeAccountId;
+	try {
+		let event = await Event.findById(eventId);
+		let clubId = event.clubId;
+		let club = await Club.findById(clubId);
+		let accountId = club.accountId;
+		let account = await ClubAccount.findById(accountId);
+		stripeAccountId = Decrypt(account.stripeAccountId);
+		console.log('stripe 58 stripeAccountId = ', stripeAccountId);
+	} catch (err) {
+		console.log('stripeController 59 err = ', err);
+		const error = new HttpError(
+			'getNewSetupIntent process failed during stripeAccountId retrieval. Please try again later.',
+			500
+		);
+		return next(error);
+	}
 
 	let user;
 	// req.userData is inserted in check-auth.js
@@ -74,8 +91,8 @@ const getNewSetupIntent = async (req, res, next) => {
 	try {
 		setupIntent = await stripe.setupIntents.create({
 			customer: user.stripeCustomerId,
-			payment_method_types: ['card']
-			// on_behalf_of: {clubStripeID}
+			payment_method_types: ['card'],
+			on_behalf_of: stripeAccountId
 		});
 	} catch (err) {
 		console.log('Stripe createSetupIntent error = ', err);
@@ -85,7 +102,7 @@ const getNewSetupIntent = async (req, res, next) => {
 		);
 		return next(error);
 	}
-
+	console.log('stripe 105 setupIntent = ', setupIntent);
 	res.status(200).json({
 		setupIntent: setupIntent,
 		email: user.email
@@ -293,10 +310,6 @@ const generateAccountLink = (accountID, origin, clubId) => {
 		.then(link => link.url);
 };
 
-const handleAccountUpdate = account => {
-	// Fulfill the purchase.
-};
-
 // ***************** Utility Functions ****************************** //
 // internal API, called upon creating a user
 const createCustomer = async (name, email) => {
@@ -319,10 +332,39 @@ const getAccount = async accountId => {
 	try {
 		account = await stripe.accounts.retrieve(accountId);
 	} catch (err) {
-		console.log('Stripe getAccount error = ', err);
+		// Error code will be authentication_required if authentication is needed
+		console.log('Error code is: ', err.code);
+		const paymentIntentRetrieved = await stripe.paymentIntents.retrieve(
+			err.raw.payment_intent.id
+		);
+		console.log('PI retrieved: ', paymentIntentRetrieved.id);
 		throw err;
 	}
 	return account;
+};
+
+const createPaymentIntent = async (
+	customerId,
+	paymentMethodId,
+	amount,
+	stripeAccountId
+) => {
+	let paymentIntent;
+	console.log('amount = ', amount);
+	try {
+		paymentIntent = await stripe.paymentIntents.create({
+			amount: amount * 100,
+			currency: 'usd',
+			customer: customerId,
+			payment_method: paymentMethodId,
+			off_session: true,
+			confirm: true,
+			on_behalf_of: stripeAccountId
+		});
+	} catch (err) {
+		throw err;
+	}
+	return paymentIntent;
 };
 
 exports.createSession = createSession;
@@ -331,3 +373,4 @@ exports.getNewSetupIntent = getNewSetupIntent;
 exports.getSetupIntent = getSetupIntent;
 exports.getConnect = getConnect;
 exports.getAccount = getAccount;
+exports.createPaymentIntent = createPaymentIntent;

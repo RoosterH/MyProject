@@ -11,6 +11,8 @@ const Entry = require('../models/entry');
 const EntryReport = require('../models/entryReport');
 const Event = require('../models/event');
 const Club = require('../models/club');
+const User = require('../models/user');
+const Payment = require('../models/payment');
 
 const { min } = require('moment');
 const entry = require('../models/entry');
@@ -351,6 +353,14 @@ const getEntryReport = async (req, res, next) => {
 				);
 				return next(error);
 			}
+			if (!entry) {
+				const error = new HttpError(
+					'Internal error entry not found in getEntryReport.',
+					500
+				);
+				return next(error);
+			}
+
 			// add car to entry
 			let car =
 				entry.carId.year +
@@ -447,6 +457,155 @@ const getEntryReport = async (req, res, next) => {
 		raceClassOptions: event.raceClassOptions,
 		runGroupOptions: event.runGroupOptions,
 		workerAssignments: event.workerAssignments
+	});
+};
+
+// GET /api/events/entryreport/:eid - this is for Club
+const getPaymentReport = async (req, res, next) => {
+	// req.params is getting the eid from url, such as /api/events/:id
+	const eventId = req.params.eid;
+	let event;
+	try {
+		event = await Event.findById(eventId).populate('entryReportId');
+	} catch (err) {
+		console.log('err = ', err);
+		// this error is displayed if the request to the DB had some issues
+		const error = new HttpError(
+			'Cannot find the event in getPaymentReport. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'Could not find the event in getPaymentReport. Please try later.',
+			404
+		);
+		return next(error);
+	}
+
+	let entryReport = event.entryReportId;
+	if (!entryReport) {
+		const error = new HttpError(
+			'Could not find the event entry report in getPaymentReport. Please try later.',
+			404
+		);
+		return next(error);
+	}
+
+	// get entires
+	let entries = entryReport.entries;
+	// if there is no entry, should not have a waitlist, either.
+	if (entries.length === 0) {
+		res.status(404).json({
+			entryData: [],
+			waitlist: []
+		});
+	}
+
+	let days = entries.length;
+	let mutipleDayEntryData = [];
+	for (let i = 0; i < days; ++i) {
+		let entryData = [];
+		let eList = entries[i];
+		for (let j = 0; j < eList.length; ++j) {
+			let entry;
+			try {
+				entry = await Entry.findById(eList[j]).populate('carId');
+			} catch (err) {
+				const error = new HttpError(
+					'Cannot find the entry in getPaymentReport. Please try again later.',
+					500
+				);
+				return next(error);
+			}
+			if (!entry) {
+				const error = new HttpError(
+					'Internal error entry not found in getPaymentReport.',
+					500
+				);
+				return next(error);
+			}
+
+			let user;
+			try {
+				user = await User.findById(entry.userId);
+			} catch (err) {
+				const error = new HttpError(
+					'Cannot find the user in getPaymentReport. Please try again later.',
+					500
+				);
+				return next(error);
+			}
+			if (!user) {
+				const error = new HttpError(
+					'Internal error user not found in getPaymentReport.',
+					500
+				);
+				return next(error);
+			}
+			// use {strict:false} to add undefined attribute in schema to existing json obj
+			entry.set('email', user.email, { strict: false });
+
+			// get payment data
+			let payment;
+			try {
+				payment = await Payment.findById(entry.paymentId);
+			} catch (err) {
+				const error = new HttpError(
+					'DB error at finding the payment in getPaymentReport. Please try again later.',
+					500
+				);
+				return next(error);
+			}
+			if (!payment) {
+				const error = new HttpError(
+					'Cannot find the payment in getPaymentReport.',
+					500
+				);
+				return next(error);
+			}
+			// adding entryFee and paymentMethod to entry to return to Frontend
+			entry.set('entryFee', payment.entryFee, { strict: false });
+			entry.set('paymentMethod', payment.paymentMethod, {
+				strict: false
+			});
+			entry.set('paymentStatus', payment.paymentStatus, {
+				strict: false
+			});
+			entryData.push(entry);
+		}
+		mutipleDayEntryData.push(entryData);
+	}
+
+	res.status(200).json({
+		eventName: event.name,
+		entryData: mutipleDayEntryData.map(entryData =>
+			entryData.map(data =>
+				data.toObject({
+					getters: true,
+					transform: (doc, ret, opt) => {
+						delete ret['userId'];
+						delete ret['userName'];
+						delete ret['answer'];
+						delete ret['groupWaitlist'];
+						delete ret['raceClass'];
+						delete ret['waitlist'];
+						delete ret['workerAssignment'];
+						delete ret['clubId'];
+						delete ret['clubName'];
+						delete ret['eventId'];
+						delete ret['eventName'];
+						delete ret['carId'];
+						delete ret['disclaimer'];
+						delete ret['time'];
+						delete ret['published'];
+						return ret;
+					}
+				})
+			)
+		)
 	});
 };
 
@@ -872,7 +1031,6 @@ const createUpdateEventRegistration = async (req, res, next) => {
 		entryReport.full.push(false);
 	}
 
-	console.log('875 capDistribution = ', capDistribution);
 	event.numGroups = numGroups;
 	event.capDistribution = capDistribution;
 	// set published to false to force re-publish
@@ -1325,7 +1483,7 @@ const createUpdateEntryForm = async (req, res, next) => {
 
 		entryFormData.map(data => {
 			event.entryFormData.push(data);
-			if (data === null) {
+			if (data === null || data === undefined) {
 				// skip it in case front end has an issue
 			} else if (data.element === 'MultipleRadioButtonGroup') {
 				let runGroupOptionsLength = event.runGroupOptions.length;
@@ -1734,6 +1892,7 @@ exports.getEventsByOwnerClubId = getEventsByOwnerClubId;
 exports.getPublishedEventsByOwnerClubId = getPublishedEventsByOwnerClubId;
 exports.getOwnerClubEvent = getOwnerClubEvent;
 exports.getEntryReport = getEntryReport;
+exports.getPaymentReport = getPaymentReport;
 exports.getEntryForm = getEntryForm;
 exports.createUpdateEntryForm = createUpdateEntryForm;
 exports.getEntryReportForUsers = getEntryReportForUsers;

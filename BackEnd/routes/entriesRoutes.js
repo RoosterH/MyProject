@@ -6,17 +6,10 @@ const { check } = require('express-validator');
 
 const entriesController = require('../controllers/entriesController');
 const checkUserAuth = require('../middleware/check-userAuth');
-
+const checkClubAuth = require('../middleware/check-clubAuth');
 const router = express.Router();
 
-// pass the pointer of the function, we don't want to execute here.
-// Express will use the pointer to execute the function when it's needed
-// router.get('/', eventsController.getAllEvents);
-
-// router.get('/:eid', eventsController.getEventById);
-
-// router.get('/club/:cid', eventsController.getEventsByClubId);
-
+// *************** USER Section ****************************//
 // adding checkAuth middleware here will ensure all the requests below
 // need to be authenticated
 router.use(checkUserAuth);
@@ -32,7 +25,7 @@ router.post(
 		check('disclaimer').not().equals(true),
 		check('paymentMethod').not().isEmpty(),
 		check('entryFee').not().isEmpty(),
-		check('stripePaymentMethod')
+		check('stripePaymentMethodId')
 			.not()
 			.isEmpty()
 			.exists({ paymentMethod: 'stripe' }),
@@ -78,5 +71,12 @@ router.patch(
 );
 
 router.delete('/:entryId', entriesController.deleteEntry);
+
+// *************** CLUB Section ****************************//
+// adding checkAuth middleware here will ensure all the requests below
+// need to be authenticated
+router.use(checkClubAuth);
+
+router.post('/charge/:entryId', entriesController.chargeEntry);
 
 module.exports = router;

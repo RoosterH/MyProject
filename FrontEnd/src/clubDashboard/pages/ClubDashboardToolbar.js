@@ -78,12 +78,16 @@ const ClubDashboardToolbar = () => {
 						</Link>
 						<div className="dropdown-content">
 							<NavLink to={`/clubs/eventReportSelector/${cid}`} exact>
-								Entry Report Manager
+								Entry Report
 							</NavLink>
-							<a href="#">Waitlist</a>
-							<a href="#">Pending Waitlist Invitations</a>
+							<NavLink
+								to={`/clubs/paymentCenterSelector/${cid}`}
+								exact>
+								Payment Center
+							</NavLink>
+							{/* <a href="#">Pending Waitlist Invitations</a>
 							<a href="#">Detailed Analytics</a>
-							<a href="#">User Credits</a>
+							<a href="#">User Credits</a> */}
 						</div>
 					</li>
 
