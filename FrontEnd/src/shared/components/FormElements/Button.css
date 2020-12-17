@@ -139,12 +139,28 @@
 	width: 8rem;
 	text-align: center;
 }
+.button--small-green:disabled {
+	background: #888684;
+	border-color: #888684;
+	color: white;
+}
 
 .button--small-grey {
 	font-size: small;
 	font-family: 'Montserrat', sans-serif;
 	background: #888684;
 	border-color: #888684;
+	color: #ffffff;
+	margin: 0rem;
+	width: 8rem;
+	text-align: center;
+}
+
+.button--small-red {
+	font-size: small;
+	font-family: 'Montserrat', sans-serif;
+	background: #c7380d;
+	border-color: #c7380d;
 	color: #ffffff;
 	margin: 0rem;
 	width: 8rem;
@@ -386,6 +402,12 @@
 		width: 6rem;
 		text-align: center;
 	}
+	.button--small-green:disabled {
+		background: #888684;
+		border-color: #888684;
+		color: white;
+	}
+
 	.button--small-grey {
 		font-size: 12px;
 		font-family: 'Montserrat', sans-serif;
@@ -394,6 +416,16 @@
 		color: #ffffff;
 		margin: 0rem;
 		padding: 0.2rem 0.5rem;
+		width: 6rem;
+		text-align: center;
+	}
+	.button--small-red {
+		font-size: 12px;
+		font-family: 'Montserrat', sans-serif;
+		background: #c7380d;
+		border-color: #c7380d;
+		color: #ffffff;
+		margin: 0rem;
 		width: 6rem;
 		text-align: center;
 	}

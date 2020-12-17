@@ -102,12 +102,9 @@ const getCarsByUserId = async (req, res, next) => {
 		return next(error);
 	}
 	if (!user.garage || user.garage.length === 0) {
-		// const error = new HttpError('Could not find any car.', 404);
-		// return next(error);
-		res.status(404).json({
+		return res.status(404).json({
 			cars: []
 		});
-		return next();
 	}
 
 	let garage = [];

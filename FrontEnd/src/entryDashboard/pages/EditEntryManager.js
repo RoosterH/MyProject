@@ -45,6 +45,7 @@ const EditEntryManager = props => {
 	const [entryCarId, setEntryCarId] = useState();
 	const [carNumber, setCarNumber] = useState();
 	const [raceClass, setRaceClass] = useState();
+	const [paymentStatus, setPaymentStatus] = useState();
 
 	// only get entry data from backend at the very beginning,
 	// Whenever we modify the entry information in sub-tabs, we use getNewEntry to receive new entry
@@ -68,11 +69,13 @@ const EditEntryManager = props => {
 					}
 				);
 			} catch (err) {}
+			console.log('responseData = ', responseData);
 			setEntry(responseData.entry);
 			setEntryCarId(responseData.entry.carId);
 			setEntryId(responseData.entry.id);
 			setCarNumber(responseData.entry.carNumber);
 			setRaceClass(responseData.entry.raceClass);
+			setPaymentStatus(responseData.paymentStatus);
 		};
 		getEntry();
 	}, []);
@@ -307,6 +310,7 @@ const EditEntryManager = props => {
 								eventId={eventId}
 								eventName={eventName}
 								formAnswer={entry.answer}
+								paymentStatus={paymentStatus}
 							/>
 						)}
 					</div>

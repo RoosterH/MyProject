@@ -18,7 +18,6 @@ const Encrypt = text => {
 };
 
 const Decrypt = hash => {
-	console.log('hash = ', hash);
 	const decipher = crypto.createDecipheriv(
 		algorithm,
 		secretKey,

@@ -3,7 +3,7 @@ import { Link, useLocation, useHistory } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
-// import Cleave from 'cleave.js/react';
+import { useStripe, Elements } from '@stripe/react-stripe-js';
 
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
@@ -18,15 +18,16 @@ import { FormContext } from '../../shared/context/form-context';
 import '../../shared/css/EventForm.css';
 import './Entry.css';
 
-import { Elements } from '@stripe/react-stripe-js';
 import STRIPE from '../../shared/utils/webp/Stripe.webp';
 import CardSetupForm from '../components/CardSetupForm';
 import { loadStripe } from '@stripe/stripe-js';
+import CardAuthorization from '../components/CardAuthorization';
 
-// const stripePromise = loadStripe(
-// 	// process.env.STRIPE_PUBLISHABLE_KEY
-// 	'pk_test_51HpjVQG10ZElXQJ4LAk8pnnOuC23BzzmIBwNdIQgZf8ZjbLg5XjelbRjRP2pUWfDY556b3Y8JpJKG2hXXvBIxr830094NIq6Vu'
-// );
+import './Entry.css';
+
+const PAID = 'Paid';
+const DECLINED = 'Declined';
+const AUTHENTICATION = 'Require Authentication';
 
 const SubmitEntry = props => {
 	const history = useHistory();
@@ -38,7 +39,13 @@ const SubmitEntry = props => {
 	let raceClass = props.raceClass;
 	let formAnswer = props.formAnswer;
 	const editingMode = props.editingMode;
+	const [paymentStatus, setPaymentStatus] = useState(
+		props.paymentStatus
+	);
 
+	const updatePaymentStatus = paymentStatus => {
+		setPaymentStatus(paymentStatus);
+	};
 	const {
 		isLoading,
 		error,
@@ -53,10 +60,69 @@ const SubmitEntry = props => {
 		)
 	);
 
+	// control wheather to show the field or not
+	const disableOnSite = paymentStatus => {
+		if (
+			paymentStatus === PAID ||
+			paymentStatus === DECLINED ||
+			paymentStatus === AUTHENTICATION
+		) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+	const disableStripe = paymentStatus => {
+		if (paymentStatus === PAID) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+	const paymentStatusMessage = () => {
+		if (paymentStatus === PAID) {
+			return (
+				<p className="paymentmessage-paid">
+					Your payment has been charged. Thanks for your payment.
+				</p>
+			);
+		} else if (paymentStatus === 'Unpaid') {
+			return (
+				<p className="paymentmessage-unpaid">
+					You can modify your payment method.
+				</p>
+			);
+		} else if (paymentStatus === DECLINED) {
+			return (
+				<p className="paymentmessage-declined">
+					Your card was declined. Please provide a new card.
+				</p>
+			);
+		} else if (paymentStatus === AUTHENTICATION) {
+			return (
+				<p className="paymentmessage-declined">
+					Your authentication is required for payment charge. Please
+					authenticate by clicking the button below.
+				</p>
+			);
+		}
+	};
+	const disableCancel = paymentStatus => {
+		if (
+			paymentStatus === PAID ||
+			paymentStatus === DECLINED ||
+			paymentStatus === AUTHENTICATION
+		) {
+			return true;
+		}
+
+		return false;
+	};
+
 	// entry fee for the event
 	const [entryFee, setEntryFee] = useState(0);
 	// club payment options
-	const [stripe, setStripe] = useState(false);
+	const [stripePay, setStripePay] = useState(false);
 	const [onSite, setOnSite] = useState(false);
 	// initial values for payment method, this is where we want to set the radio button initially
 	const [paymentMethodInit, setPaymentMethodInit] = useState(
@@ -64,10 +130,10 @@ const SubmitEntry = props => {
 	);
 	// For EditingMode, user previously select payment method
 	const [paymentMethod, setPaymentMethod] = useState();
-	const [creditCard, setCreditCard] = useState('');
-	const [expDate, setExpDate] = useState('');
-	const [cvc, setCVC] = useState('');
+	// controller to hide Stripe credit card field
 	const [hideCCField, setHideCCField] = useState(true);
+	// controller to show Stripe Authentication Button
+	const [showAuthentication, setShowAuthentication] = useState(false);
 	const [succeed, setSucceed] = useState(false);
 	const [email, setEmail] = useState('');
 	const [
@@ -82,21 +148,8 @@ const SubmitEntry = props => {
 		setFoundError(null);
 	};
 
-	// This section controls hide/show credit card/exp date/cvc
-	const [showPublicKey, setShowPublicKey] = useState(false);
-	const [showPublicKeyButton, setShowPublicKeyButton] = useState(
-		<i className="fa fa-eye-slash" />
-	);
-	useEffect(() => {
-		if (showPublicKey) {
-			setShowPublicKeyButton(<i className="fa fa-eye" />);
-		} else {
-			setShowPublicKeyButton(<i className="fa fa-eye-slash " />);
-		}
-	}, [showPublicKey, setShowPublicKeyButton]);
-
+	// Error Modal error message
 	const [foundError, setFoundError] = useState();
-
 	useEffect(() => {
 		if (error) {
 			console.log('http error');
@@ -177,11 +230,8 @@ const SubmitEntry = props => {
 				setOnSite(true);
 			}
 			if (paymentOptions.indexOf('stripe') > -1) {
-				setStripe(true);
+				setStripePay(true);
 			}
-			setCreditCard(responseData.creditCard);
-			setExpDate(responseData.expDate);
-			setCVC(responseData.cvc);
 		};
 		getEntryFeePaymentOption();
 	}, [
@@ -189,7 +239,7 @@ const SubmitEntry = props => {
 		sendRequest,
 		setEntryFee,
 		setOnSite,
-		setStripe,
+		setStripePay,
 		eventId,
 		formAnswer,
 		userAuthContext.userToken
@@ -239,26 +289,34 @@ const SubmitEntry = props => {
 		if (paymentMethod) {
 			setPaymentMethodInit(paymentMethod);
 			if (paymentMethod === 'stripe') {
-				setHideCCField(false);
+				if (paymentStatus === AUTHENTICATION) {
+					// showing Authentication button instead
+					setHideCCField(true);
+					setShowAuthentication(true);
+				} else {
+					setHideCCField(false);
+				}
 			} else {
 				setHideCCField(true);
 			}
-		} else if (stripe) {
+		} else if (stripePay) {
 			setPaymentMethodInit('stripe');
-			setHideCCField(false);
+			if (paymentStatus === AUTHENTICATION) {
+				// showing Authentication button instead
+				setHideCCField(true);
+				setShowAuthentication(true);
+			} else {
+				setHideCCField(false);
+			}
 		} else {
 			setPaymentMethodInit('onSite');
 			setHideCCField(true);
 		}
-	}, [stripe, onSite, paymentMethod]);
+	}, [stripePay, onSite, paymentMethod, paymentStatus]);
 
-	console.log('paymentMethodInit = ', paymentMethodInit);
 	const initialValues = {
 		acceptDisclaimer: editingMode ? true : false,
 		paymentMethod: paymentMethodInit
-		// creditCardField: creditCard,
-		// expDateField: expDate,
-		// cvcField: cvc
 	};
 
 	const [validateDisclaimer, setValidateDisclaimer] = useState(
@@ -280,43 +338,10 @@ const SubmitEntry = props => {
 		}
 	);
 
-	const [validateCreditCard, setValidateCreditCard] = useState(
-		() => value => {
-			let error;
-			if (!value) {
-				error = 'Please provide credit card number';
-			}
-			return error;
-		}
-	);
-
-	const [validateExpDate, setValidateExpDate] = useState(
-		() => value => {
-			let error;
-			if (!value) {
-				error = 'Please enter expiration date';
-			}
-			return error;
-		}
-	);
-
-	const [validateCVC, setValidateCVC] = useState(() => value => {
-		let error;
-		if (!value) {
-			error = 'Please enter CVC';
-		}
-		return error;
-	});
-
 	const submitHandler = async values => {
 		// wipe out credit card info if paymentMethod is onSite
 		let disclaimer = values.acceptDisclaimer;
 		let paymentMethod = values.paymentMethod;
-		let creditCard =
-			paymentMethod === 'stripe' ? values.creditCardField : '';
-		let expDate =
-			paymentMethod === 'stripe' ? values.expDateField : '';
-		let cvc = paymentMethod === 'stripe' ? values.cvcField : '';
 		if (editingMode) {
 			try {
 				// we need to use JSON.stringify to send array objects.
@@ -458,46 +483,23 @@ const SubmitEntry = props => {
 		} catch (err) {}
 	};
 
-	// const CustomField = ({ label, ...props }) => {
-	// 	const [field, meta, helpers] = useField(props);
-	// 	return (
-	// 		<>
-	// 			<Cleave
-	// 				{...field}
-	// 				placeholder={props.placeholder}
-	// 				options={props.options}
-	// 				type={props.type}
-	// 				className={props.className}
-	// 			/>
-	// 			{props.icon && (
-	// 				<span onClick={toggleShowPublicKeyButton}>
-	// 					{showPublicKeyButton}
-	// 				</span>
-	// 			)}
-	// 			{meta.touched && meta.error ? (
-	// 				<div className={props.errorClassName}>{meta.error}</div>
-	// 			) : null}
-	// 		</>
-	// 	);
-	// };
-
 	const [submitButtonClass, setSubmitButtonClass] = useState(
 		'small-block'
 	);
 	useEffect(() => {
-		if (onSite && stripe) {
+		if (onSite && stripePay) {
 			setSubmitButtonClass('small-block-onsite-stripe');
-		} else if (stripe) {
+		} else if (stripePay) {
 			setSubmitButtonClass('small-block-stripe');
 		} else {
 			// onSite
 			setSubmitButtonClass('small-block');
 		}
-	}, [stripe, onSite, setSubmitButtonClass]);
+	}, [stripePay, onSite, setSubmitButtonClass]);
 
 	console.log(
 		'stripe && !stripePaymentMethodId = ',
-		stripe && !stripePaymentMethodId
+		stripePay && !stripePaymentMethodId
 	);
 
 	const eventForm = values => (
@@ -527,27 +529,6 @@ const SubmitEntry = props => {
 							if (!value) {
 								console.log('error payment');
 								error = 'You must select a payment method.';
-							}
-							return error;
-						});
-						setValidateCreditCard(() => value => {
-							let error;
-							if (!value) {
-								error = 'Please provide credit card number';
-							}
-							return error;
-						});
-						setValidateExpDate(() => value => {
-							let error;
-							if (!value) {
-								error = 'Please enter expiration date';
-							}
-							return error;
-						});
-						setValidateCVC(() => value => {
-							let error;
-							if (!value) {
-								error = 'Please enter CVC';
 							}
 							return error;
 						});
@@ -592,7 +573,10 @@ const SubmitEntry = props => {
 						<b className="event-form__checkbox">
 							Total Entry Due: ${entryFee}
 						</b>
-						{stripe && onSite && (
+						<b className="event-form__checkbox">
+							{paymentStatusMessage()}
+						</b>
+						{stripePay && onSite && (
 							<div
 								id="paymentMethod"
 								className="event-form__paymentmethod">
@@ -605,7 +589,10 @@ const SubmitEntry = props => {
 											name="paymentMethod"
 											value="onSite"
 											validate={validatePaymentMethod}
-											disabled={stripe && stripePaymentMethodId}
+											disabled={
+												(stripePay && stripePaymentMethodId) ||
+												disableOnSite(paymentStatus)
+											}
 											checked={values.paymentMethod === 'onSite'}
 											onChange={event => {
 												setFieldValue('paymentMethod', 'onSite');
@@ -623,7 +610,10 @@ const SubmitEntry = props => {
 											name="paymentMethod"
 											value="stripe"
 											validate={validatePaymentMethod}
-											disabled={stripe && stripePaymentMethodId}
+											disabled={
+												(stripePay && stripePaymentMethodId) ||
+												disableStripe(paymentStatus)
+											}
 											checked={values.paymentMethod === 'stripe'}
 											onChange={event => {
 												setFieldValue('paymentMethod', 'stripe');
@@ -638,7 +628,7 @@ const SubmitEntry = props => {
 											className="stripe"
 										/>
 									</label>
-									{!hideCCField && (
+									{!hideCCField && !disableStripe(paymentStatus) && (
 										<div className="">
 											<label className="event-form__label">
 												Charge will be made by event organizer. Credit
@@ -662,137 +652,75 @@ const SubmitEntry = props => {
 											</Elements>
 										</div>
 									)}
-									{/* {!hideCCField && (
-										<React.Fragment>
-											<div style={{ position: 'relative' }}>
-												// To set type as text or password, Formik CustomField works but not with component
-												<CustomField
-													name="creditCardField"
-													type={showPublicKey ? 'text' : 'password'}
-													placeholder="Credit Card Number"
-													values={values}
-													validate={validateCreditCard}
-													options={{ creditCard: true }}
-													icon={true}
-													onBlur={event => {
-														handleBlur(event);
-														setOKLeavePage(false);
-													}}
-													className="event-form__field-creditcard-inline"
-													errorClassName="event-form__field-creditcard-error"
-												/>
-											</div>
-											<CustomField
-												name="expDateField"
-												type={showPublicKey ? 'text' : 'password'}
-												placeholder="Exp Date MM/YY"
-												options={{
-													date: true,
-													datePattern: ['m', 'y']
-												}}
-												values={values}
-												validate={validateExpDate}
-												onBlur={event => {
-													handleBlur(event);
-													setOKLeavePage(false);
-												}}
-												className="event-form__field-expdate"
-												errorClassName="event-form__field-creditcard-error"
+									{showAuthentication && (
+										<Elements stripe={stripePromise}>
+											<CardAuthorization
+												entryId={entryId}
+												updatePaymentStatus={updatePaymentStatus}
 											/>
-											<CustomField
-												name="cvcField"
-												type={showPublicKey ? 'text' : 'password'}
-												placeholder="CVC"
-												values={values}
-												validate={validateCVC}
-												onBlur={event => {
-													handleBlur(event);
-													setOKLeavePage(false);
-												}}
-												className="event-form__field-cvc"
-												errorClassName="event-form__field-creditcard-error"
-											/>
-										</React.Fragment>
-									)} */}
+										</Elements>
+									)}
 								</div>
 							</div>
 						)}
-						{stripe && !onSite && (
-							<React.Fragment>
-								<div
-									id="paymentMethod"
-									className="event-form__paymentmethod">
-									Please Select Payment Methord:
-									<div role="group" aria-labelledby="paymentMethod">
-										<label className="event-form__field_radio">
-											<Field
-												type="radio"
-												name="paymentMethod"
-												value="stripe"
-												validate={validatePaymentMethod}
-											/>{' '}
-											<img
-												src={STRIPE}
-												alt="Stripe"
-												className="stripe"
-											/>
-										</label>
-									</div>
-								</div>
-								{/* {!hideCCField && (
-									<React.Fragment>
-										<div style={{ position: 'relative' }}>
-											<CustomField
-												name="creditCardField"
-												type={showPublicKey ? 'text' : 'password'}
-												placeholder="Credit Card Number"
-												values={values}
-												validate={validateCreditCard}
-												options={{ creditCard: true }}
-												icon={true}
-												onBlur={event => {
-													handleBlur(event);
-													setOKLeavePage(false);
-												}}
-												className="event-form__field-creditcard-inline"
-												errorClassName="event-form__field-creditcard-error"
-											/>
+						{stripePay && !onSite && (
+							<div
+								id="paymentMethod"
+								className="event-form__paymentmethod">
+								Please Select Payment Methord:
+								<div role="group" aria-labelledby="paymentMethod">
+									<label className="event-form__field_radio">
+										<Field
+											type="radio"
+											name="paymentMethod"
+											value="stripe"
+											validate={validatePaymentMethod}
+											disabled={
+												(stripePay && stripePaymentMethodId) ||
+												disableStripe(paymentStatus)
+											}
+											checked={values.paymentMethod === 'stripe'}
+											onChange={event => {
+												setFieldValue('paymentMethod', 'stripe');
+												handleChange(event);
+												setHideCCField(false);
+											}}
+										/>{' '}
+										Stripe &nbsp;
+										<img
+											src={STRIPE}
+											alt="Stripe"
+											className="stripe"
+										/>
+									</label>
+									{!hideCCField && !disableStripe(paymentStatus) && (
+										<div className="">
+											<label className="event-form__label">
+												Charge will be made by event organizer. Credit
+												card information is saved at Stripe.
+												MYSeatTime does not store credit card
+												information.{' '}
+											</label>
+											<Elements stripe={stripePromise}>
+												<CardSetupForm
+													userName={userName}
+													email={email}
+													eventId={eventId}
+													getStripePaymentMethodId={
+														getStripePaymentMethodId
+													}
+													getStripeError={getStripeError}
+													getStripeSetupIntentId={
+														getStripeSetupIntentId
+													}
+												/>
+											</Elements>
 										</div>
-										<CustomField
-											name="expDateField"
-											type={showPublicKey ? 'text' : 'password'}
-											placeholder="Exp Date MM/YY"
-											options={{
-												date: true,
-												datePattern: ['m', 'y']
-											}}
-											values={values}
-											validate={validateExpDate}
-											onBlur={event => {
-												handleBlur(event);
-												setOKLeavePage(false);
-											}}
-											className="event-form__field-expdate"
-											errorClassName="event-form__field-creditcard-error"
-										/>
-										<CustomField
-											name="cvcField"
-											type={showPublicKey ? 'text' : 'password'}
-											placeholder="CVC"
-											values={values}
-											validate={validateCVC}
-											onBlur={event => {
-												handleBlur(event);
-												setOKLeavePage(false);
-											}}
-											className="event-form__field-cvc"
-											errorClassName="event-form__field-creditcard-error"
-										/>
-									</React.Fragment>
-								)} */}
-							</React.Fragment>
+									)}
+								</div>
+							</div>
 						)}
-						{!stripe && onSite && (
+						{!stripePay && onSite && (
 							<div
 								id="paymentMethod"
 								className="event-form__checkbox">
@@ -804,6 +732,7 @@ const SubmitEntry = props => {
 											name="paymentMethod"
 											value="onSite"
 											validate={validatePaymentMethod}
+											disabled={disableOnSite(paymentStatus)}
 										/>
 										&nbsp;&nbsp;&nbsp;&nbsp;
 										<i className="fal fa-money-bill fa-2x " />
@@ -821,12 +750,12 @@ const SubmitEntry = props => {
 								!isValid ||
 								submitted ||
 								(values.paymentMethod === 'stripe' &&
-									stripe &&
+									stripePay &&
 									!stripePaymentMethodId)
 							}>
 							SUBMIT
 						</Button>
-						{editingMode && (
+						{editingMode && !disableCancel(paymentStatus) && (
 							<Button
 								type="button"
 								size="small-block-warning"
@@ -970,24 +899,6 @@ const SubmitEntry = props => {
 				</div>
 			)}
 			{eventForm()}
-			{/* {!redirectStripe && eventForm()} */}
-			{/* {redirectStripe && (
-				<div className="">
-					<label className="event-form__label">
-						Your credit card information will be saved to Stripe.
-						MYSeatTime does not save it.{' '}
-					</label>
-					<Elements stripe={stripePromise}>
-						<CardSetupForm
-							userName={userName}
-							email={email}
-							clientSecret={clientSecret}
-							getStripePaymentMethod={getStripePaymentMethod}
-							getStripeError={getStripeError}
-						/>
-					</Elements>
-				</div>
-			)} */}
 		</React.Fragment>
 	);
 };

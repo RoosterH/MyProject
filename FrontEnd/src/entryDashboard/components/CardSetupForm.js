@@ -154,7 +154,6 @@ const CardSetupForm = props => {
 					Save Card to Stripe
 				</Button>
 			</div>
-			{/* </form> */}
 		</React.Fragment>
 	);
 };

@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const { Encrypt, Decrypt } = require('../util/crypto');
 
 const clubAccountSchema = new Schema({
 	clubId: {
@@ -9,6 +8,8 @@ const clubAccountSchema = new Schema({
 	},
 	onSitePayment: { type: Boolean, required: true },
 	stripePayment: { type: Boolean, required: true },
+
+	// stripeAccountId is encrypted
 	stripeAccountId: {
 		type: Object,
 		required: true,

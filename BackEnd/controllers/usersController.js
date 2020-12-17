@@ -6,8 +6,9 @@ const mongoose = require('mongoose');
 const Entry = require('../models/entry');
 const Event = require('../models/event');
 const HttpError = require('../models/httpError');
-const User = require('../models/user');
+const Payment = require('../models/payment');
 const Stripe = require('./stripeController');
+const User = require('../models/user');
 
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 
@@ -534,7 +535,6 @@ const getEntry = async (req, res, next) => {
 		);
 		return next(error);
 	}
-
 	if (!entry) {
 		const error = new HttpError(
 			'Could not find entry for this user.',
@@ -543,10 +543,29 @@ const getEntry = async (req, res, next) => {
 		return next(error);
 	}
 
+	let payment;
+	try {
+		payment = await Payment.findById(entry.paymentId);
+	} catch (err) {
+		const error = new HttpError(
+			'Get user entry process failed @ getting payment. Please try again later',
+			500
+		);
+		return next(error);
+	}
+	if (!payment) {
+		const error = new HttpError(
+			'Could not find payment for this entry.',
+			404
+		);
+		return next(error);
+	}
+
 	res.status(200).json({
 		entry: entry.toObject({
 			getters: true
-		})
+		}),
+		paymentStatus: payment.paymentStatus
 	});
 };
 

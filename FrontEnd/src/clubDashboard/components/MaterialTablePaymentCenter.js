@@ -8,23 +8,45 @@ import './ClubManager.css';
 import { TramOutlined } from '@material-ui/icons';
 
 const MaterialTableEntryReport = props => {
+	// callbacks from parent
 	const getEmail = props.getEmail;
+	const getPaymentStatus = props.getPaymentStatus;
+
 	let entryList = props.entryList;
 	let eventName = props.eventName;
 	let showLoading = props.showLoading;
-	const [buttonText, setButtonText] = useState('Charge');
-	const [buttonClassName, setButtonClassName] = useState(
-		'small-green'
-	);
+
+	// cannot use useState to set button text and className because it will
+	// apply to all buttons
+	const getButtonClassName = paymentStatus => {
+		if (paymentStatus === 'Unpaid' || paymentStatus === 'Paid') {
+			// for Paid, we will disable the button and css is controlled by :disable
+			return 'small-green';
+		} else if (
+			paymentStatus === 'Declined' ||
+			paymentStatus === 'Require Authentication'
+		) {
+			return 'small-red';
+		}
+	};
+
+	const getButtonText = paymentStatus => {
+		if (paymentStatus === 'Unpaid') {
+			return 'CHARGE';
+		} else if (paymentStatus === 'Paid') {
+			return 'PAID';
+		} else if (paymentStatus === 'Declined') {
+			return 'DECLINED';
+		} else if (paymentStatus === 'Require Authentication') {
+			return 'Auth';
+		}
+	};
 	const [selectedRow, setSelectedRow] = useState(null);
-	const [data, setData] = useState();
-	console.log('paymentStatus = ', props);
 
 	return (
 		<React.Fragment>
 			<div className="entrylist-table">
 				<MaterialTable
-					// data={data}
 					data={entryList}
 					title={`${eventName} Entry List`}
 					isLoading={showLoading}
@@ -73,16 +95,12 @@ const MaterialTableEntryReport = props => {
 								onClick={event => {
 									// return email back to parent to send request to backend
 									getEmail(props.data.email);
+									getPaymentStatus(props.data.paymentStatus);
 									props.action.onClick(event, props.data);
 								}}
-								size={
-									props.data && props.data.paymentStatus === 'Paid'
-										? 'small-grey'
-										: 'small-green'
-								}>
-								{props.data && props.data.paymentStatus === 'Paid'
-									? 'Charged'
-									: 'Charge'}
+								size={getButtonClassName(props.data.paymentStatus)}
+								disabled={props.data.paymentStatus === 'Paid'}>
+								{getButtonText(props.data.paymentStatus)}
 							</Button>
 						),
 						OverlayLoading: props => (
@@ -104,12 +122,9 @@ const MaterialTableEntryReport = props => {
 							icon: 'Charge',
 							tooltip: 'Charge User',
 							onClick: (event, rowData) => {
-								// need to call setData here to have table re-render with new value
 								setTimeout(() => {
-									// const dataUpdate = rowData;
-									// console.log('dataUpdate = ', dataUpdate);
-									// dataUpdate[rowData.tableData.id] = data;
-									setData(rowData);
+									// need to set timeout to have the table load the new value
+									// console.log('rowData = ', rowData);
 								}, 2000);
 							}
 						}

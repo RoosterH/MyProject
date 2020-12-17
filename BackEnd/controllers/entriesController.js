@@ -18,15 +18,18 @@ const Stripe = require('./stripeController');
 const { compare } = require('bcryptjs');
 const { Encrypt, Decrypt } = require('../util/crypto');
 const clubAccount = require('../models/clubAccount');
+const { CodeStarNotifications } = require('aws-sdk');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const NOT_ATTENDING = 'Not Attending';
 const REGISTRATION = 'Registration';
 const ONSITE = 'onSite';
 const STRIPE = 'stripe';
+const UNPAID = 'Unpaid';
 const PAID = 'Paid';
-const AUTHENTICATION = 'Authentication';
+const AUTHENTICATION = 'Require Authentication';
 const DECLINED = 'Declined';
+const DEFAULT_STRIPE_ID = '0000';
 
 const errMsg = errors => {
 	var msg;
@@ -1139,13 +1142,13 @@ const updatePayment = async (req, res, next) => {
 			stripeSetupIntentId === '' ||
 			stripeSetupIntentId === undefined
 		) {
-			stripeSetupIntentId = '0000';
+			stripeSetupIntentId = DEFAULT_STRIPE_ID;
 		}
 		if (
 			stripePaymentMethodId === '' ||
 			stripePaymentMethodId === undefined
 		) {
-			stripePaymentMethodId = '0000';
+			stripePaymentMethodId = DEFAULT_STRIPE_ID;
 		}
 	}
 
@@ -1153,6 +1156,7 @@ const updatePayment = async (req, res, next) => {
 	payment.paymentMethod = paymentMethod;
 	payment.stripeSetupIntentId = stripeSetupIntentId;
 	payment.stripePaymentMethodId = stripePaymentMethodId;
+	payment.paymentStatus = UNPAID;
 	try {
 		await payment.save();
 	} catch (err) {
@@ -1702,55 +1706,58 @@ const chargeEntry = async (req, res, next) => {
 		return next(error);
 	}
 	let paymentMethod = payment.paymentMethod;
+	let paymentStatus = 'Unpaid',
+		errorCode = '';
 	if (paymentMethod === ONSITE) {
-		payment.paymentStatus = PAID;
+		paymentStatus = PAID;
 	} else if (paymentMethod === STRIPE) {
 		console.log('in stripe');
 		// create paymentIntent
-		let paymentIntent;
-		try {
-			paymentIntent = await Stripe.createPaymentIntent(
-				user.stripeCustomerId,
-				payment.stripePaymentMethodId,
-				payment.entryFee,
-				Decrypt(clubAccount.stripeAccountId)
-			);
-			console.log('paymentIntent = ', paymentIntent);
-			payment.paymentStatus = PAID;
-		} catch (err) {
+		const [paymentIntent, err] = await Stripe.createPaymentIntent(
+			user.stripeCustomerId,
+			payment.stripePaymentMethodId,
+			payment.entryFee,
+			Decrypt(clubAccount.stripeAccountId)
+		);
+
+		if (err) {
 			console.log('1663 err  =', err);
-			let error;
 			if (err.code === 'authentication_required') {
+				paymentStatus = AUTHENTICATION;
 				// Bring the customer back on-session to authenticate the purchase
 				// You can do this by sending an email or app notification to let them know
 				// the off-session purchase failed
 				// Use the PM ID and client_secret to authenticate the purchase
 				// without asking your customers to re-enter their details
-				error = new HttpError(
-					'Charge failed. Customer Authentication required. Please contact customer.',
-					500
-				);
+				errorCode =
+					'Charge failed. Customer authentication required. Please contact customer to login and authorize the charge.';
 			} else if (err.code) {
+				paymentStatus = DECLINED;
 				// The card was declined for other reasons (e.g. insufficient funds)
 				// Bring the customer back on-session to ask them for a new payment method
-				error = new HttpError(
-					'Charge failed. Card was declined. Please contact customer.',
-					500
-				);
+				errorCode =
+					'Charge failed. Card was declined. Please contact customer to login and provide a different credit card.';
 			} else {
 				console.log('Unknown error occurred', err);
-				error = new HttpError(
+				const error = new HttpError(
 					'Charge failed. Unknown error occurred. Please try again later.',
 					500
 				);
+				return next(error);
 			}
-			return next(error);
+		} else {
+			paymentStatus = PAID;
 		}
+		// save paymentIntentId, if err.code is AUTHENTICATION, we need paymentIntentId to handle the post-procecssing tasks
+		console.log('paymentIntent = ', paymentIntent);
+		payment.stripePaymentIntentId = paymentIntent.id;
 	} else {
 		const error = new HttpError('Payment method error.', 500);
 		return next(error);
 	}
+
 	try {
+		payment.paymentStatus = paymentStatus;
 		console.log('1726 payment =', payment);
 		await payment.save();
 	} catch (err) {
@@ -1761,12 +1768,153 @@ const chargeEntry = async (req, res, next) => {
 		);
 		return next(error);
 	}
+	if (errorCode !== '') {
+		console.log('errorCode = ', errorCode);
+		console.log('paymentStatus = ', paymentStatus);
+		// cannot use 400, browser will error out
+		return res.status(201).json({
+			paymentStatus: paymentStatus,
+			errorCode: errorCode
+		});
+	}
 
 	return res.status(200).json({
-		charged: true
+		paymentStatus: paymentStatus,
+		errorCode: errorCode
 	});
 };
 
+// GET /authentication/:entryId returns clientSecret and paymentMethodId for frontend
+// to process
+const authentication = async (req, res, next) => {
+	console.log('in charge');
+	let entryId = req.params.entryId;
+	let entry;
+	try {
+		entry = await Entry.findById(entryId);
+	} catch (err) {
+		console.log('1794 err = ', err);
+		const error = new HttpError(
+			'authorizeCharge process failed @ getting entry. Please try again later',
+			500
+		);
+		return next(error);
+	}
+	if (!entry) {
+		const error = new HttpError(
+			'authorizeCharge Could not find entry.',
+			404
+		);
+		return next(error);
+	}
+	let paymentId = entry.paymentId;
+	let payment;
+	try {
+		payment = await Payment.findById(paymentId);
+	} catch (err) {
+		console.log('980 err  =', err);
+		const error = new HttpError(
+			'authorizeCharge failed to retrieve payment. Stripe failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!payment) {
+		const error = new HttpError(
+			'authorizeCharge failed finding payment.',
+			500
+		);
+		return next(error);
+	}
+
+	// use the declined PaymentIntent’s client secret and payment method with
+	// confirmCardPayment to allow the customer to authenticate the payment.
+	// 1. get client secret using setupIntent
+	let paymentIntent;
+	try {
+		paymentIntent = await stripe.paymentIntents.retrieve(
+			payment.stripePaymentIntentId
+		);
+	} catch (err) {
+		console.log('1836 err = ', err);
+		const error = new HttpError(
+			'authorizeCharge failed to retrieve paymentIntent. Stripe failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	console.log('paymentIntent = ', paymentIntent);
+	console.log(
+		'last_payment_error.payment_method.id = ',
+		paymentIntent.last_payment_error.payment_method.id
+	);
+
+	res.status(200).json({
+		clientSecret: paymentIntent.client_secret,
+		paymentMethodId:
+			paymentIntent.last_payment_error.payment_method.id
+	});
+};
+
+const updatePaymentStatus = async (req, res, next) => {
+	console.log('in charge');
+	let entryId = req.params.entryId;
+	let entry;
+	try {
+		entry = await Entry.findById(entryId);
+	} catch (err) {
+		console.log('1866 err = ', err);
+		const error = new HttpError(
+			'updatePaymentStatus process failed @ getting entry. Please try again later',
+			500
+		);
+		return next(error);
+	}
+	if (!entry) {
+		const error = new HttpError(
+			'updatePaymentStatus Could not find entry.',
+			404
+		);
+		return next(error);
+	}
+	let paymentId = entry.paymentId;
+	let payment;
+	try {
+		payment = await Payment.findById(paymentId);
+	} catch (err) {
+		console.log('1885 err  =', err);
+		const error = new HttpError(
+			'updatePaymentStatus failed to retrieve payment. Stripe failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!payment) {
+		const error = new HttpError(
+			'updatePaymentStatus failed finding payment.',
+			500
+		);
+		return next(error);
+	}
+	const { paymentStatus } = req.body;
+	payment.paymentStatus = paymentStatus;
+
+	try {
+		await payment.save();
+	} catch {
+		console.log('1905 err  =', err);
+		const error = new HttpError(
+			'updatePaymentStatus failed to retrieve payment. Stripe failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		paymentStatus: paymentStatus
+	});
+};
 exports.createEntry = createEntry;
 exports.updateCar = updateCar;
 exports.updateClassNumber = updateClassNumber;
@@ -1775,3 +1923,5 @@ exports.updatePayment = updatePayment;
 exports.deleteEntry = deleteEntry;
 exports.getEntryFee = getEntryFee;
 exports.chargeEntry = chargeEntry;
+exports.authentication = authentication;
+exports.updatePaymentStatus = updatePaymentStatus;

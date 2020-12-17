@@ -12,6 +12,10 @@ import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
 const NOT_ATTENDING = 'Not Attending';
+const PAID = 'Paid';
+const UNPAID = 'Unpaid';
+const AUTHENTICATION = 'Require Authentication';
+const DECLINED = 'Declined';
 
 const PaymentCenter = props => {
 	const clubAuthContext = useContext(ClubAuthContext);
@@ -22,7 +26,7 @@ const PaymentCenter = props => {
 			: 0
 	);
 	let eventEntryList = props.paymentCenterData.entryData;
-	// console.log('eventEntryList = ', eventEntryList);
+
 	// entries are the user entries
 	const [eventName, setEventName] = useState(
 		props.paymentCenterData.eventName !== ''
@@ -50,13 +54,13 @@ const PaymentCenter = props => {
 		}
 		setDayArray(tmp);
 	}, [setDayArray, days]);
-	// check the page has been initialized, if not, we want to hightlight multi-day event day button to day 1
 
+	// check the page has been initialized, if not, we want to hightlight multi-day event day button to day 1
 	const [init, setInit] = useState(false);
 	const [daySelection, setDaySelection] = useState(1);
 	// entryListArray elements are the data passing to Material-Table
 	const [entryListArray, setEntryListArray] = useState([]);
-	//***********  construct lookups ************//
+
 	//*************** compose entry list from all the entries ************/
 	useEffect(() => {
 		let entryDataArray = [];
@@ -89,7 +93,18 @@ const PaymentCenter = props => {
 		};
 	}, []);
 
-	// console.log('entryListArray111111 = ', entryListArray);
+	// return values from child MaterialTablePaymentCenter component
+	const [email, setEmail] = useState('');
+	const getEmail = email => {
+		setEmail(email);
+	};
+	const [paymentStatus, setPaymentStatus] = useState('');
+	const getPaymentStatus = paymentStatus => {
+		setPaymentStatus(paymentStatus);
+	};
+	// Error message for bad paymentStatus
+	const [paymentStatusError, setPaymentStatusError] = useState();
+
 	// callback for Day Buttons
 	const daySelectionCallback = index => {
 		// index starts from 1, because we use day 1, day 2, ...
@@ -107,13 +122,10 @@ const PaymentCenter = props => {
 		}
 	}, []);
 
-	const [email, setEmail] = useState('');
-	const getEmail = email => {
-		setEmail(email);
-	};
-
+	// renders when there is a button click on MaterialTable
 	useEffect(() => {
 		const updateEntryListArray = async () => {
+			setShowLoading(true);
 			let entryId;
 			// dayIndex is the current daySelection, we want to modify entryListArray because we will
 			// be sending it to MaterialTable
@@ -149,36 +161,102 @@ const PaymentCenter = props => {
 				);
 			} catch (err) {}
 
-			if (responseData && responseData.charged) {
-				// update entryListArray of each day
-				for (let i = 0; i < days; ++i) {
-					let index = entryListArray[i].findIndex(
-						element => element.email === email
-					);
-					if (index >= 0) {
-						entryListArray[i][index].paymentStatus = 'Paid';
+			// update entry paymentStatus
+			if (responseData && responseData.paymentStatus) {
+				if (responseData.paymentStatus === PAID) {
+					// update entryListArray of each day
+					for (let i = 0; i < days; ++i) {
+						let index = entryListArray[i].findIndex(
+							element => element.email === email
+						);
+						if (index >= 0) {
+							entryListArray[i][index].paymentStatus = PAID;
+						}
+					}
+				} else if (responseData.paymentStatus === DECLINED) {
+					// update entryListArray of each day
+					for (let i = 0; i < days; ++i) {
+						let index = entryListArray[i].findIndex(
+							element => element.email === email
+						);
+						if (index >= 0) {
+							entryListArray[i][index].paymentStatus = DECLINED;
+						}
+					}
+				} else if (responseData.paymentStatus === AUTHENTICATION) {
+					// update entryListArray of each day
+					for (let i = 0; i < days; ++i) {
+						let index = entryListArray[i].findIndex(
+							element => element.email === email
+						);
+						if (index >= 0) {
+							entryListArray[i][index].paymentStatus = AUTHENTICATION;
+						}
 					}
 				}
 			}
 
 			setEntryListArray(entryListArray);
+			// reset email to avoid accidental request to backend
+			setEmail('');
+			setShowLoading(false);
 		};
 
-		if (email !== '' && email !== undefined) {
+		// handle actions per paymentStatus
+		// if UNPAID, send charge request to backend
+		if (
+			email !== '' &&
+			email !== undefined &&
+			paymentStatus === UNPAID
+		) {
 			updateEntryListArray();
+		} else if (
+			email !== '' &&
+			email !== undefined &&
+			paymentStatus === DECLINED
+		) {
+			setPaymentStatusError(
+				'Please contact customer to login and provide a new credit card.'
+			);
+			setEmail('');
+		} else if (
+			email !== '' &&
+			email !== undefined &&
+			paymentStatus === 'Require Authentication'
+		) {
+			setPaymentStatusError(
+				'Please contact customer to login and authenticate the charge.'
+			);
+			setEmail('');
 		}
 	}, [
 		daySelection,
 		email,
+		paymentStatus,
 		eventEntryList,
 		sendRequest,
 		setEntryListArray
 	]);
 
-	// console.log('entryListArray22222 = ', entryListArray);
+	const getError = () => {
+		if (error) {
+			return error;
+		}
+		if (paymentStatusError) {
+			return paymentStatusError;
+		}
+	};
+
+	const errorClearHandler = () => {
+		clearError();
+		setPaymentStatusError();
+	};
 	return (
 		<React.Fragment>
-			<ErrorModal error={error} onClear={clearError} />
+			<ErrorModal
+				error={error || paymentStatusError}
+				onClear={errorClearHandler}
+			/>
 			{(isLoading || showLoading) && (
 				<div className="center">
 					<LoadingSpinner />
@@ -219,6 +297,7 @@ const PaymentCenter = props => {
 					}
 					showLoading={showLoading}
 					getEmail={getEmail}
+					getPaymentStatus={getPaymentStatus}
 				/>
 			)}
 		</React.Fragment>

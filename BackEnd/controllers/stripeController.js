@@ -351,6 +351,7 @@ const createPaymentIntent = async (
 ) => {
 	let paymentIntent;
 	console.log('amount = ', amount);
+	let error;
 	try {
 		paymentIntent = await stripe.paymentIntents.create({
 			amount: amount * 100,
@@ -362,9 +363,12 @@ const createPaymentIntent = async (
 			on_behalf_of: stripeAccountId
 		});
 	} catch (err) {
-		throw err;
+		paymentIntent = await stripe.paymentIntents.retrieve(
+			err.raw.payment_intent.id
+		);
+		error = err;
 	}
-	return paymentIntent;
+	return [paymentIntent, error];
 };
 
 exports.createSession = createSession;

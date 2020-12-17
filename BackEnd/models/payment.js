@@ -19,6 +19,11 @@ const paymentSchema = new Schema({
 		required: true,
 		default: DEFAULT_STRIPE_ID
 	},
+	stripePaymentIntentId: {
+		type: String,
+		required: true,
+		default: DEFAULT_STRIPE_ID
+	},
 	// paymentStatus: "Unpaid", "Paid", "Authentication", "Declined"
 	paymentStatus: {
 		type: String,

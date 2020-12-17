@@ -155,3 +155,18 @@
 .password {
 	-webkit-text-security: disc;
 }
+
+.paymentmessage-paid {
+	color: rgb(5, 161, 39);
+	font-size: 14px;
+}
+
+.paymentmessage-unpaid {
+	color: rgb(0, 0, 0);
+	font-size: 14px;
+}
+
+.paymentmessage-declined {
+	color: rgb(192, 5, 5);
+	font-size: 14px;
+}

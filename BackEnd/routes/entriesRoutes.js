@@ -43,6 +43,11 @@ router.post(
 	entriesController.getEntryFee
 );
 
+router.post(
+	'/paymentStatus/:entryId',
+	entriesController.updatePaymentStatus
+);
+
 router.patch(
 	'/car/:entryId',
 	[check('carId').not().isEmpty()],
@@ -71,6 +76,12 @@ router.patch(
 );
 
 router.delete('/:entryId', entriesController.deleteEntry);
+
+// get infromation before authorize charge
+router.get(
+	'/authentication/:entryId',
+	entriesController.authentication
+);
 
 // *************** CLUB Section ****************************//
 // adding checkAuth middleware here will ensure all the requests below
