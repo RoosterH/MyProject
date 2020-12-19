@@ -574,6 +574,7 @@ const getPaymentReport = async (req, res, next) => {
 			entry.set('paymentStatus', payment.paymentStatus, {
 				strict: false
 			});
+			entry.set('refundFee', payment.refundFee, { strict: false });
 			entryData.push(entry);
 		}
 		mutipleDayEntryData.push(entryData);

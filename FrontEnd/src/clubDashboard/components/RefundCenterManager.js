@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import EntryReport from './EntryReport';
+import RefundCenter from './RefundCenter';
 import './ClubManager.css';
 
-const EntryReportManager = props => {
-	let entryReportData = props.entryReportData;
+const RefundCenterManager = props => {
+	let refundCenterData = props.refundCenterData;
 	const [eventName, setEventName] = useState(
-		props.entryReportData.eventName !== ''
-			? props.entryReportData.eventName
+		props.refundCenterData.eventName !== ''
+			? props.refundCenterData.eventName
 			: ''
 	);
 	return (
 		<React.Fragment>
 			<div className="list-header clearfix">
 				<div className="eventname">
-					Entry Report - {eventName} &nbsp;&nbsp;&nbsp;{' '}
+					Refund Center - {eventName} &nbsp;&nbsp;&nbsp;{' '}
 				</div>
 			</div>
 
@@ -21,7 +21,7 @@ const EntryReportManager = props => {
 			<div className="eventmanager">
 				<div className="dashboard-tabs activity-sections">
 					<div className="tab-content">
-						<EntryReport entryReportData={entryReportData} />
+						<RefundCenter refundCenterData={refundCenterData} />
 					</div>
 				</div>
 			</div>
@@ -29,4 +29,4 @@ const EntryReportManager = props => {
 	);
 };
 
-export default EntryReportManager;
+export default RefundCenterManager;

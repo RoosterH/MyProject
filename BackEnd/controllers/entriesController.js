@@ -418,6 +418,7 @@ const createEntry = async (req, res, next) => {
 			let payment = new Payment({
 				entryId,
 				entryFee: totalPrice,
+				refundFee: totalPrice,
 				paymentMethod,
 				stripeSetupIntentId,
 				stripePaymentMethodId
@@ -1004,6 +1005,7 @@ const updateFormAnswer = async (req, res, next) => {
 		return next(error);
 	}
 	payment.entryFee = totalPrice;
+	payment.refundFee = totalPrice;
 	try {
 		const session = await mongoose.startSession();
 		session.startTransaction();
@@ -1609,7 +1611,6 @@ const getEntryFee = async (req, res, next) => {
 
 const chargeEntry = async (req, res, next) => {
 	let entryId = req.params.entryId;
-	console.log('1601 entryId = ', entryId);
 	let club;
 	let clubId = req.userData;
 	try {
@@ -1686,7 +1687,6 @@ const chargeEntry = async (req, res, next) => {
 	}
 
 	let paymentId = entry.paymentId;
-	console.log('paymentId = ', paymentId);
 	let payment;
 	try {
 		payment = await Payment.findById(paymentId);
@@ -1711,10 +1711,10 @@ const chargeEntry = async (req, res, next) => {
 	if (paymentMethod === ONSITE) {
 		paymentStatus = PAID;
 	} else if (paymentMethod === STRIPE) {
-		console.log('in stripe');
 		// create paymentIntent
 		const [paymentIntent, err] = await Stripe.createPaymentIntent(
 			user.stripeCustomerId,
+			user.email,
 			payment.stripePaymentMethodId,
 			payment.entryFee,
 			Decrypt(clubAccount.stripeAccountId)
@@ -1749,7 +1749,6 @@ const chargeEntry = async (req, res, next) => {
 			paymentStatus = PAID;
 		}
 		// save paymentIntentId, if err.code is AUTHENTICATION, we need paymentIntentId to handle the post-procecssing tasks
-		console.log('paymentIntent = ', paymentIntent);
 		payment.stripePaymentIntentId = paymentIntent.id;
 	} else {
 		const error = new HttpError('Payment method error.', 500);
@@ -1758,7 +1757,6 @@ const chargeEntry = async (req, res, next) => {
 
 	try {
 		payment.paymentStatus = paymentStatus;
-		console.log('1726 payment =', payment);
 		await payment.save();
 	} catch (err) {
 		console.log('1730 err  =', err);
@@ -1781,6 +1779,89 @@ const chargeEntry = async (req, res, next) => {
 	return res.status(200).json({
 		paymentStatus: paymentStatus,
 		errorCode: errorCode
+	});
+};
+
+// return required information for refund request
+const refund = async (req, res, next) => {
+	let entryId = req.params.entryId;
+	let entry;
+	try {
+		entry = await Entry.findById(entryId);
+	} catch (err) {
+		console.log('1624 err = ', err);
+		const error = new HttpError(
+			'refund process failed @ getting entry. Please try again later',
+			500
+		);
+		return next(error);
+	}
+	if (!entry) {
+		const error = new HttpError('refund Could not find entry.', 404);
+		return next(error);
+	}
+
+	let paymentId = entry.paymentId;
+	let payment;
+	try {
+		payment = await Payment.findById(paymentId);
+	} catch (err) {
+		console.log('1640 err  =', err);
+		const error = new HttpError(
+			'refund failed to retrieve payment DB failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!payment) {
+		const error = new HttpError(
+			'refund failed finding payment.',
+			500
+		);
+		return next(error);
+	}
+
+	const { refundFee } = req.body;
+	let refund;
+	try {
+		refund = await stripe.refunds.create({
+			amount: refundFee,
+			payment_intent: payment.stripePaymentIntentId
+		});
+	} catch (err) {
+		console.log('1835 err  =', err);
+		const error = new HttpError(
+			'refund failed @ stripe. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// if failed, we want to keep paymentStatus as 'Paid', so returning an error no update on status
+	if (refund.status !== 'succeeded') {
+		console.log('1843 err  =', err);
+		const error = new HttpError(
+			'Refund process failed. Please try again later. If problem persists, please have customer contact his/her credit card company.',
+			500
+		);
+		return next(error);
+	}
+
+	payment.stripeRefundId = refund.id;
+	payment.paymentStatus = 'Refunded';
+
+	try {
+		await payment.save();
+	} catch (err) {
+		console.log('1856 err  =', err);
+		const error = new HttpError(
+			'refund failed @ saving payment. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	return res.status(200).json({
+		refundStatus: true
 	});
 };
 
@@ -1923,5 +2004,6 @@ exports.updatePayment = updatePayment;
 exports.deleteEntry = deleteEntry;
 exports.getEntryFee = getEntryFee;
 exports.chargeEntry = chargeEntry;
+exports.refund = refund;
 exports.authentication = authentication;
 exports.updatePaymentStatus = updatePaymentStatus;

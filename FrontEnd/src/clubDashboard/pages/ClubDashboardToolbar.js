@@ -85,6 +85,11 @@ const ClubDashboardToolbar = () => {
 								exact>
 								Payment Center
 							</NavLink>
+							<NavLink
+								to={`/clubs/refundCenterSelector/${cid}`}
+								exact>
+								Refund Center
+							</NavLink>
 							{/* <a href="#">Pending Waitlist Invitations</a>
 							<a href="#">Detailed Analytics</a>
 							<a href="#">User Credits</a> */}

@@ -69,7 +69,6 @@ const CardSetupForm = props => {
 		};
 
 		if (userAuthContext.userToken) {
-			console.log('calling getSetupIntent');
 			getSetupIntent();
 		}
 	}, [
@@ -109,17 +108,12 @@ const CardSetupForm = props => {
 		if (result.error) {
 			setStripeLoading(false);
 			// Display result.error.message in your UI.
-			console.log('result.error = ', result.error);
 			props.getStripeError(result.error);
 		} else {
 			setStripeLoading(false);
 			// The setup has succeeded. Display a success message and send
 			// result.setupIntent.payment_method to your server to save the
 			// card to a Customer
-			console.log(
-				'result.setupIntent.payment_method = ',
-				result.setupIntent.payment_method
-			);
 			// result.setupIntent.payment_method returns PaymentMethod ID not the object
 			props.getStripePaymentMethodId(
 				result.setupIntent.payment_method

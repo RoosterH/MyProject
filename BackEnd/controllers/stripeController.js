@@ -345,6 +345,7 @@ const getAccount = async accountId => {
 
 const createPaymentIntent = async (
 	customerId,
+	email,
 	paymentMethodId,
 	amount,
 	stripeAccountId
@@ -357,6 +358,7 @@ const createPaymentIntent = async (
 			amount: amount * 100,
 			currency: 'usd',
 			customer: customerId,
+			receipt_email: email,
 			payment_method: paymentMethodId,
 			off_session: true,
 			confirm: true,

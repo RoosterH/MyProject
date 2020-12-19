@@ -3,7 +3,6 @@ import { Link, useLocation, useHistory } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
-import { useStripe, Elements } from '@stripe/react-stripe-js';
 
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
@@ -20,8 +19,9 @@ import './Entry.css';
 
 import STRIPE from '../../shared/utils/webp/Stripe.webp';
 import CardSetupForm from '../components/CardSetupForm';
+import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import CardAuthorization from '../components/CardAuthorization';
+import CardAuthentication from '../components/CardAuthentication';
 
 import './Entry.css';
 
@@ -497,11 +497,6 @@ const SubmitEntry = props => {
 		}
 	}, [stripePay, onSite, setSubmitButtonClass]);
 
-	console.log(
-		'stripe && !stripePaymentMethodId = ',
-		stripePay && !stripePaymentMethodId
-	);
-
 	const eventForm = values => (
 		<div className="event-form">
 			<div className="event-form-header">
@@ -654,7 +649,7 @@ const SubmitEntry = props => {
 									)}
 									{showAuthentication && (
 										<Elements stripe={stripePromise}>
-											<CardAuthorization
+											<CardAuthentication
 												entryId={entryId}
 												updatePaymentStatus={updatePaymentStatus}
 											/>
@@ -853,7 +848,6 @@ const SubmitEntry = props => {
 	const getStripePaymentMethodId = paymentMethodId => {
 		// send back to backend to save for future payment
 		if (paymentMethodId) {
-			console.log('payment_methodID = ', paymentMethodId);
 			setStripePaymentMethodId(paymentMethodId);
 		}
 	};

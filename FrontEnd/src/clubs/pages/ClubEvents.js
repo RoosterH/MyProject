@@ -21,6 +21,9 @@ const ClubEvents = props => {
 		? props.paymentCenter
 		: false;
 
+	// refundCenter is true is for payment center
+	let refundCenter = props.refundCenter ? props.refundCenter : false;
+
 	const [loadedEvents, setLoadedEvents] = useState();
 	const {
 		isLoading,
@@ -51,21 +54,7 @@ const ClubEvents = props => {
 				// non-owner gets only published events
 				if (ownerClubEvent) {
 					// for registration reports, we will only query published events
-					if (entryReportManager) {
-						[
-							responseData,
-							responseStatus,
-							responseMessage
-						] = await sendRequest(
-							process.env.REACT_APP_BACKEND_URL +
-								`/events/ownerClubPublished/${clubId}`,
-							'GET',
-							null,
-							{
-								Authorization: 'Bearer ' + clubAuthContext.clubToken
-							}
-						);
-					} else if (paymentCenter) {
+					if (entryReportManager || paymentCenter || refundCenter) {
 						[
 							responseData,
 							responseStatus,
@@ -134,6 +123,7 @@ const ClubEvents = props => {
 					readOnly={readOnly}
 					entryReportManager={entryReportManager}
 					paymentCenter={paymentCenter}
+					refundCenter={refundCenter}
 				/>
 			)}
 		</React.Fragment>

@@ -40,9 +40,27 @@ const EventManager = () => {
 						/>
 						Payment Center
 					</Link>
-					<Link to={`/clubs/editEventSelector/${cid}`} exact="exact">
+					<Link
+						to={`/clubs/paymentCenterSelector/${cid}`}
+						exact="exact">
 						<p className="list-content-desc">
 							Charge your customers here.
+						</p>
+					</Link>
+					<Link
+						to={`/clubs/refundCenterSelector/${cid}`}
+						exact="exact">
+						<i
+							className="fa fa-sort-desc pull-right"
+							aria-hidden="true"
+						/>
+						Refund Center
+					</Link>
+					<Link
+						to={`/clubs/refundCenterSelector/${cid}`}
+						exact="exact">
+						<p className="list-content-desc">
+							Refund your customers here.
 						</p>
 					</Link>
 					{/* <Link to={`/clubs/ownerClubEvents/${cid}`} exact="exact">

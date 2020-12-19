@@ -8,7 +8,14 @@ const paymentSchema = new Schema({
 		ref: 'Entry'
 	},
 	entryFee: { type: String, required: true, default: '0' },
+	refundFee: { type: String, required: true, default: '0' },
 	paymentMethod: { type: String, required: true, default: 'stripe' },
+	// paymentStatus: "Unpaid", "Paid", "Authentication", "Declined", "Refunded"
+	paymentStatus: {
+		type: String,
+		required: true,
+		default: 'Unpaid'
+	},
 	stripeSetupIntentId: {
 		type: String,
 		required: true,
@@ -24,11 +31,8 @@ const paymentSchema = new Schema({
 		required: true,
 		default: DEFAULT_STRIPE_ID
 	},
-	// paymentStatus: "Unpaid", "Paid", "Authentication", "Declined"
-	paymentStatus: {
-		type: String,
-		required: true,
-		default: 'Unpaid'
+	stripeRefundId: {
+		type: String
 	}
 });
 

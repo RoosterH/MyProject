@@ -67,6 +67,9 @@ const EventReportSelector = React.lazy(() =>
 const PaymentCenterSelector = React.lazy(() =>
 	import('./clubDashboard/components/PaymentCenterSelector')
 );
+const RefundCenterSelector = React.lazy(() =>
+	import('./clubDashboard/components/RefundCenterSelector')
+);
 const EditEventSelector = React.lazy(() =>
 	import('./clubDashboard/components/EditEventSelector')
 );
@@ -218,6 +221,9 @@ const App = () => {
 				<Route path="/clubs/paymentCenterSelector/:clubId" exact>
 					<PaymentCenterSelector />
 				</Route>
+				<Route path="/clubs/refundCenterSelector/:clubId" exact>
+					<RefundCenterSelector />
+				</Route>
 				<Route path="/events/formbuilder/:id" exact>
 					<FormBuilder />
 				</Route>
@@ -343,6 +349,9 @@ const App = () => {
 				</Route>
 				<Route path="/clubs/paymentCenterSelector/:clubId" exact>
 					<PaymentCenterSelector />
+				</Route>
+				<Route path="/clubs/refundCenterSelector/:clubId" exact>
+					<RefundCenterSelector />
 				</Route>
 				<Route path="/clubs/events/new" exact>
 					<NewEvent />

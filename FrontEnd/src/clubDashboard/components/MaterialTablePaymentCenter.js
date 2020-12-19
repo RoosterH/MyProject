@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Button from '../../shared/components/FormElements/Button';
 import MaterialTable from 'material-table';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
-import PromptModal from '../../shared/components/UIElements/PromptModal';
 
 import './ClubManager.css';
-import { TramOutlined } from '@material-ui/icons';
 
-const MaterialTableEntryReport = props => {
+const MaterialTablePaymentCenter = props => {
 	// callbacks from parent
 	const getEmail = props.getEmail;
 	const getPaymentStatus = props.getPaymentStatus;
@@ -19,7 +17,11 @@ const MaterialTableEntryReport = props => {
 	// cannot use useState to set button text and className because it will
 	// apply to all buttons
 	const getButtonClassName = paymentStatus => {
-		if (paymentStatus === 'Unpaid' || paymentStatus === 'Paid') {
+		if (
+			paymentStatus === 'Unpaid' ||
+			paymentStatus === 'Paid' ||
+			paymentStatus === 'Refunded'
+		) {
 			// for Paid, we will disable the button and css is controlled by :disable
 			return 'small-green';
 		} else if (
@@ -38,7 +40,9 @@ const MaterialTableEntryReport = props => {
 		} else if (paymentStatus === 'Declined') {
 			return 'DECLINED';
 		} else if (paymentStatus === 'Require Authentication') {
-			return 'Auth';
+			return "AUTH REQ'D";
+		} else if (paymentStatus === 'Refunded') {
+			return 'REFUNDED';
 		}
 	};
 	const [selectedRow, setSelectedRow] = useState(null);
@@ -99,7 +103,10 @@ const MaterialTableEntryReport = props => {
 									props.action.onClick(event, props.data);
 								}}
 								size={getButtonClassName(props.data.paymentStatus)}
-								disabled={props.data.paymentStatus === 'Paid'}>
+								disabled={
+									props.data.paymentStatus === 'Paid' ||
+									props.data.paymentStatus === 'Refunded'
+								}>
 								{getButtonText(props.data.paymentStatus)}
 							</Button>
 						),
@@ -138,4 +145,4 @@ const MaterialTableEntryReport = props => {
 	);
 };
 
-export default MaterialTableEntryReport;
+export default MaterialTablePaymentCenter;

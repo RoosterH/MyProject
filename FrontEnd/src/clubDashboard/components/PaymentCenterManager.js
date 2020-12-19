@@ -13,7 +13,7 @@ const PaymentCenterManager = props => {
 		<React.Fragment>
 			<div className="list-header clearfix">
 				<div className="eventname">
-					{eventName} &nbsp;&nbsp;&nbsp;{' '}
+					Payment Center - {eventName} &nbsp;&nbsp;&nbsp;{' '}
 				</div>
 			</div>
 

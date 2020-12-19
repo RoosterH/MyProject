@@ -6,7 +6,6 @@ import {
 } from '@stripe/react-stripe-js';
 
 import Button from '../../shared/components/FormElements/Button';
-import CardSection from './CardSection';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
@@ -14,10 +13,9 @@ import { useHttpClient } from '../../shared/hooks/http-hook';
 import { UserAuthContext } from '../../shared/context/auth-context';
 
 import './CardSectionStyles.css';
-const AUTHENTICATED = 'Authenticated';
 const PAID = 'Paid';
 
-const CardAuthorization = props => {
+const CardAuthentication = props => {
 	const entryId = props.entryId;
 	const stripe = useStripe();
 	const [stripeLoading, setStripeLoading] = useState(false);
@@ -39,7 +37,7 @@ const CardAuthorization = props => {
 		clearError();
 	};
 
-	const authorizationHandler = async () => {
+	const authenticationHandler = async () => {
 		setStripeLoading(true);
 		const [
 			responseData,
@@ -112,7 +110,7 @@ const CardAuthorization = props => {
 			{/* <form onSubmit={handleSubmit} className="cardform"> */}
 			<div className="cardform">
 				<Button
-					onClick={authorizationHandler}
+					onClick={authenticationHandler}
 					size="small-block-payment"
 					disabled={
 						stripeLoading || authenticationButtonText === PAID
@@ -124,4 +122,4 @@ const CardAuthorization = props => {
 	);
 };
 
-export default CardAuthorization;
+export default CardAuthentication;

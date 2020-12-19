@@ -10,6 +10,7 @@ import EditEventItem from '../components/EditEventItem';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import EntryReportEventItem from '../components/EntryReportEventItem';
 import PaymentCenterEventItem from '../components/PaymentCenterEventItem';
+import RefundCenterEventItem from '../components/RefundCenterEventItem';
 
 // Events is called in App.js where the route been defined
 // 2 routes to call Event component
@@ -27,6 +28,7 @@ const Event = props => {
 	const entryReportManager =
 		props.location.state.props.entryReportManager;
 	const paymentCenter = props.location.state.props.paymentCenter;
+	const refundCenter = props.location.state.props.refundCenter;
 
 	const [clubOwnerRequest, setClubOwnerRequest] = useState(false);
 	const [loadedEvent, setLoadedEvent] = useState();
@@ -52,7 +54,8 @@ const Event = props => {
 				if (
 					clubId === clubAuthContext.clubId &&
 					!entryReportManager &&
-					!paymentCenter
+					!paymentCenter &&
+					!refundCenter
 				) {
 					// this route is for owner club to query an owned event
 					[
@@ -113,6 +116,27 @@ const Event = props => {
 					);
 					setClubOwnerRequest(true);
 					setLoadedEntryData(responseData);
+				} else if (
+					clubId === clubAuthContext.clubId &&
+					refundCenter
+				) {
+					// This route is for owner club to query entry report
+					[
+						responseData,
+						responseStatus,
+						responseMessage
+					] = await sendRequest(
+						process.env.REACT_APP_BACKEND_URL +
+							`/events/paymentReport/${eId}`,
+						'GET',
+						null,
+						{
+							// adding JWT to header for authentication, JWT contains clubId
+							Authorization: 'Bearer ' + clubAuthContext.clubToken
+						}
+					);
+					setClubOwnerRequest(true);
+					setLoadedEntryData(responseData);
 				} else {
 					// this route is to query an event from users
 					[
@@ -146,7 +170,8 @@ const Event = props => {
 				clubOwnerRequest &&
 				!readOnly &&
 				!entryReportManager &&
-				!paymentCenter && <EditEventItem event={loadedEvent} />}
+				!paymentCenter &&
+				!refundCenter && <EditEventItem event={loadedEvent} />}
 			{/* For Entry Report readOnly = true && entryReportManager = true */}
 			{!isLoading &&
 				loadedEntryData &&
@@ -164,6 +189,14 @@ const Event = props => {
 					<PaymentCenterEventItem
 						paymentCenterData={loadedEntryData}
 					/>
+				)}
+			{/* For Payment Center Report readOnly = true && paymentCenter = true */}
+			{!isLoading &&
+				loadedEntryData &&
+				clubOwnerRequest &&
+				readOnly &&
+				refundCenter && (
+					<RefundCenterEventItem refundCenterData={loadedEntryData} />
 				)}
 			{/* For users, clubs don't own the event, and OwnerClub wants to view event, we will go to
 			EventItem */}
