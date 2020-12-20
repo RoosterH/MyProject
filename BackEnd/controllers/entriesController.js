@@ -139,6 +139,7 @@ const createEntry = async (req, res, next) => {
 			entryReport.runGroupNumEntries.length ||
 		entryReport.entries.length !== entryReport.totalEntries.length
 	) {
+		// debugging message
 		// console.log(
 		// 	'entryReport.entries.length = ',
 		// 	entryReport.entries.length
@@ -1868,7 +1869,6 @@ const refund = async (req, res, next) => {
 // GET /authentication/:entryId returns clientSecret and paymentMethodId for frontend
 // to process
 const authentication = async (req, res, next) => {
-	console.log('in charge');
 	let entryId = req.params.entryId;
 	let entry;
 	try {
@@ -1925,12 +1925,6 @@ const authentication = async (req, res, next) => {
 		return next(error);
 	}
 
-	console.log('paymentIntent = ', paymentIntent);
-	console.log(
-		'last_payment_error.payment_method.id = ',
-		paymentIntent.last_payment_error.payment_method.id
-	);
-
 	res.status(200).json({
 		clientSecret: paymentIntent.client_secret,
 		paymentMethodId:
@@ -1939,7 +1933,6 @@ const authentication = async (req, res, next) => {
 };
 
 const updatePaymentStatus = async (req, res, next) => {
-	console.log('in charge');
 	let entryId = req.params.entryId;
 	let entry;
 	try {

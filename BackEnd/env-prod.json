@@ -1,22 +1,20 @@
+// add these env var to Heroku
 {
 	"env": {
 		"AWS_ACCESSKEYID": "AKIAQ3RGE76SUKXZKJOU",
 		"AWS_SECRETACCESSKEY": "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",
-		"CLOUDFRONT_URL": "https://dm6o7kx2v6zc3.cloudfront.net",
-		"CLOUDFRONT_URL_PROD": "https://d1139u9qxzy8k3.cloudfront.net",
+		"CLOUDFRONT_URL": "https://d11f0ek8tswskv.cloudfront.net",
 		"CRYPTO_SECRET_KEY": "MySeatTime_38_718GT4RS_PDK-ahzer",
 		"DUMMY_CLUB_ID": "5ef702c7ba7511499165e653",
-		"GOOGLE_MAP_API_KEY": "AIzaSyACZSZtNh33iMJUXVaN4X-wOeNnlNjJajk",
 		"JWT_PRIVATE_KEY": "MySeatTime_38_718GT4_PDK",
-		"MONGO_DB_USER": "hung",
-		"MONGO_DB_PASSWORD": "hung",
-		"MONGO_DB_NAME": "MySeatTime",
-		"S3_ACL": "public-read",
-		"S3_BUCKET_NAME": "myseattime-dev",
-		"S3_BUCKET_NAME_PROD": "myseattime-image",
+		"MONGO_DB_USER": "MySeatTime",
+		"MONGO_DB_PASSWORD": "718CaymenGT4",
+		"MONGO_DB_NAME": "MySeatTime-Prod",
+		"GOOGLE_MAP_API_KEY": "AIzaSyACZSZtNh33iMJUXVaN4X-wOeNnlNjJajk",
 		"S3_REGION": "us-west-1",
-		"S3_URL": "https://myseattime-dev.s3.us-west-1.amazonaws.com",
-		"S3_URL_PROD": "https://myseattime-image.s3.us-west-1.amazonaws.com",
+		"S3_ACL": "public-read",
+		"S3_BUCKET_NAME": "myseattime-image",
+		"S3_URL": "https://myseattime-image.s3.us-west-1.amazonaws.com",
 		"STRIPE_PUBLISHABLE_KEY": "pk_test_51HpjVQG10ZElXQJ4LAk8pnnOuC23BzzmIBwNdIQgZf8ZjbLg5XjelbRjRP2pUWfDY556b3Y8JpJKG2hXXvBIxr830094NIq6Vu",
 		"STRIPE_SECRET_KEY": "sk_test_51HpjVQG10ZElXQJ4Ckiy0PacgFEKbc2poPbjnJW3Ps9cyvnlXOoryAUFDmJXUol7ZRKuIj62lqGVFfiZMdd71zKb00MmakrOiZ"
 	}

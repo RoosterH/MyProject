@@ -55,7 +55,6 @@ const getNewSetupIntent = async (req, res, next) => {
 		let accountId = club.accountId;
 		let account = await ClubAccount.findById(accountId);
 		stripeAccountId = Decrypt(account.stripeAccountId);
-		console.log('stripe 58 stripeAccountId = ', stripeAccountId);
 	} catch (err) {
 		console.log('stripeController 59 err = ', err);
 		const error = new HttpError(
@@ -102,7 +101,6 @@ const getNewSetupIntent = async (req, res, next) => {
 		);
 		return next(error);
 	}
-	console.log('stripe 105 setupIntent = ', setupIntent);
 	res.status(200).json({
 		setupIntent: setupIntent,
 		email: user.email
@@ -351,7 +349,6 @@ const createPaymentIntent = async (
 	stripeAccountId
 ) => {
 	let paymentIntent;
-	console.log('amount = ', amount);
 	let error;
 	try {
 		paymentIntent = await stripe.paymentIntents.create({

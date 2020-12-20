@@ -10,7 +10,6 @@ const ClubAccount = require('../models/clubAccount');
 const Event = require('../models/event');
 const { Encrypt, Decrypt } = require('../util/crypto');
 const e = require('express');
-const { on } = require('nodemon');
 
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 const Stripe = require('./stripeController.js');
