@@ -2,7 +2,7 @@
 	"env": {
 		"AWS_ACCESSKEYID": "AKIAQ3RGE76SUKXZKJOU",
 		"AWS_SECRETACCESSKEY": "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",
-		"CLOUDFRONT_URL": "https://dm6o7kx2v6zc3.cloudfront.net",
+		"CLOUDFRONT_URL": "https://d4di8mrzpouh7.cloudfront.net",
 		"CLOUDFRONT_URL_PROD": "https://d1139u9qxzy8k3.cloudfront.net",
 		"CRYPTO_SECRET_KEY": "MySeatTime_38_718GT4RS_PDK-ahzer",
 		"DUMMY_CLUB_ID": "5ef702c7ba7511499165e653",

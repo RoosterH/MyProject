@@ -104,6 +104,7 @@ const ClubProfileViewer = props => {
 						</div>
 					</div>
 				</section>
+				<p />
 				{/* this section is for club profile image */}
 				{/* Regitration container */}
 				<div className="section-container">

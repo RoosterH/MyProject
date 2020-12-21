@@ -16,6 +16,7 @@ const Payment = require('../models/payment');
 
 const { min } = require('moment');
 const entry = require('../models/entry');
+const { EventBridge } = require('aws-sdk');
 
 const errMsg = errors => {
 	var msg;
@@ -51,6 +52,21 @@ const getAllEvents = async (req, res, next) => {
 		return next(error);
 	}
 
+	events.map(event => {
+		event.set('image', process.env.CLOUDFRONT_URL + event.image, {
+			strict: true
+		});
+		event.set(
+			'clubImage',
+			process.env.CLOUDFRONT_URL + event.clubImage,
+			{ strict: true }
+		);
+		event.set(
+			'courseMap',
+			process.env.CLOUDFRONT_URL + event.courseMap,
+			{ strict: true }
+		);
+	});
 	res.status(200).json({
 		events: events.map(event => event.toObject({ getters: true }))
 	});
@@ -85,6 +101,21 @@ const getEventById = async (req, res, next) => {
 		);
 		return next(error);
 	}
+
+	// set path for all images
+	event.set('image', process.env.CLOUDFRONT_URL + event.image, {
+		strict: true
+	});
+	event.set(
+		'clubImage',
+		process.env.CLOUDFRONT_URL + event.clubImage,
+		{ strict: true }
+	);
+	event.set(
+		'courseMap',
+		process.env.CLOUDFRONT_URL + event.courseMap,
+		{ strict: true }
+	);
 
 	// convert Mongoose object to a normal js object and get rid of _ of _id using getters: true
 	res.status(200).json({
@@ -131,6 +162,21 @@ const getOwnerClubEvent = async (req, res, next) => {
 		return next(error);
 	}
 
+	// set path for all images
+	event.set('image', process.env.CLOUDFRONT_URL + event.image, {
+		strict: true
+	});
+	event.set(
+		'clubImage',
+		process.env.CLOUDFRONT_URL + event.clubImage,
+		{ strict: true }
+	);
+	event.set(
+		'courseMap',
+		process.env.CLOUDFRONT_URL + event.courseMap,
+		{ strict: true }
+	);
+
 	// convert Mongoose object to a normal js object and get rid of _ of _id using getters: true
 	res.status(200).json({ event: event.toObject({ getters: true }) }); // { event } => { event: event }
 };
@@ -165,6 +211,23 @@ const getEventsByClubId = async (req, res, next) => {
 		const error = new HttpError('Could not find any event.', 404);
 		return next(error);
 	}
+
+	club.events.map(event => {
+		// set path for all images
+		event.set('image', process.env.CLOUDFRONT_URL + event.image, {
+			strict: true
+		});
+		event.set(
+			'clubImage',
+			process.env.CLOUDFRONT_URL + event.clubImage,
+			{ strict: true }
+		);
+		event.set(
+			'courseMap',
+			process.env.CLOUDFRONT_URL + event.courseMap,
+			{ strict: true }
+		);
+	});
 
 	res.status(200).json({
 		events: club.events.map(event =>
@@ -222,6 +285,23 @@ const getEventsByOwnerClubId = async (req, res, next) => {
 		return next(error);
 	}
 
+	club.events.map(event => {
+		// set path for all images
+		event.set('image', process.env.CLOUDFRONT_URL + event.image, {
+			strict: true
+		});
+		event.set(
+			'clubImage',
+			process.env.CLOUDFRONT_URL + event.clubImage,
+			{ strict: true }
+		);
+		event.set(
+			'courseMap',
+			process.env.CLOUDFRONT_URL + event.courseMap,
+			{ strict: true }
+		);
+	});
+
 	res.status(200).json({
 		events: club.events.map(event =>
 			event.toObject({
@@ -274,6 +354,23 @@ const getPublishedEventsByOwnerClubId = async (req, res, next) => {
 		const error = new HttpError('Could not find any event.', 404);
 		return next(error);
 	}
+
+	club.events.map(event => {
+		// set path for all images
+		event.set('image', process.env.CLOUDFRONT_URL + event.image, {
+			strict: true
+		});
+		event.set(
+			'clubImage',
+			process.env.CLOUDFRONT_URL + event.clubImage,
+			{ strict: true }
+		);
+		event.set(
+			'courseMap',
+			process.env.CLOUDFRONT_URL + event.courseMap,
+			{ strict: true }
+		);
+	});
 
 	res.status(200).json({
 		events: club.events.map(event =>
@@ -620,7 +717,8 @@ const getEventsByDate = async (req, res, next) => {
 			{
 				type: eventType,
 				startDate: { $gte: startDate, $lte: endDate },
-				published: true
+				published: true,
+				private: false
 			},
 			'-entryFormData -totalCap -numGroups -capDistribution -published -originalImage -smallImage -originalCourseMap'
 		).sort({
@@ -643,6 +741,23 @@ const getEventsByDate = async (req, res, next) => {
 
 		return next(error);
 	}
+
+	events.map(event => {
+		// set path for all images
+		event.set('image', process.env.CLOUDFRONT_URL + event.image, {
+			strict: true
+		});
+		event.set(
+			'clubImage',
+			process.env.CLOUDFRONT_URL + event.clubImage,
+			{ strict: true }
+		);
+		event.set(
+			'courseMap',
+			process.env.CLOUDFRONT_URL + event.courseMap,
+			{ strict: true }
+		);
+	});
 
 	res.status(200).json({
 		events: events.map(event => event.toObject({ getters: true }))
@@ -883,14 +998,17 @@ const updateEventPhotos = async (req, res, next) => {
 				eventImage.transforms.map(transform => {
 					if (transform.id === 'original') {
 						originalImageLocation = transform.location;
-						event.originalImage = originalImageLocation;
-					} else if (transform.id === 'small') {
-						smallImageLocation = transform.location;
-						event.smallImage = smallImageLocation;
-						event.image = smallImageLocation.replace(
+						event.originalImage = originalImageLocation.replace(
 							process.env.S3_URL,
-							process.env.CLOUDFRONT_URL
+							''
 						);
+					} else if (transform.id === 'small') {
+						smallImageLocation = transform.location.replace(
+							process.env.S3_URL,
+							''
+						);
+						event.smallImage = smallImageLocation;
+						event.image = smallImageLocation;
 					}
 				});
 			}
@@ -900,19 +1018,35 @@ const updateEventPhotos = async (req, res, next) => {
 			let courseMap = req.files.courseMap[0];
 			if (courseMap) {
 				courseMapPath = courseMap.location;
-				event.originalCourseMap = courseMapPath;
+				event.originalCourseMap = courseMapPath.replace(
+					process.env.S3_URL,
+					''
+				);
 				event.courseMap = courseMapPath.replace(
 					process.env.S3_URL,
-					process.env.CLOUDFRONT_URL
+					''
 				);
 			}
 		}
 	}
 
-	// set published to false. User needs to re-publish the event
-	event.published = false;
 	try {
 		await event.save();
+		// set published to false. User needs to re-publish the event
+		event.published = false;
+		event.set('image', process.env.CLOUDFRONT_URL + event.image, {
+			strict: true
+		});
+		event.set(
+			'clubImage',
+			process.env.CLOUDFRONT_URL + event.clubImage,
+			{ strict: true }
+		);
+		event.set(
+			'courseMap',
+			process.env.CLOUDFRONT_URL + event.courseMap,
+			{ strict: true }
+		);
 		res.status(200).json({
 			event: event.toObject({
 				getters: true,

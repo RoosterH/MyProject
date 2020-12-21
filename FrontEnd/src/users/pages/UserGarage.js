@@ -56,7 +56,6 @@ const UserGarage = props => {
 		const fetechEvents = async () => {
 			try {
 				let responseData, responseStatus, responseMessage;
-
 				if (carSelector) {
 					[
 						responseData,

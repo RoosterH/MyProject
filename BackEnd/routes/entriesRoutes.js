@@ -25,14 +25,25 @@ router.post(
 		check('disclaimer').not().equals(true),
 		check('paymentMethod').not().isEmpty(),
 		check('entryFee').not().isEmpty(),
-		check('stripePaymentMethodId')
-			.not()
-			.isEmpty()
-			.exists({ paymentMethod: 'stripe' }),
-		check('stripeSetupIntentId')
-			.not()
-			.isEmpty()
-			.exists({ paymentMethod: 'stripe' })
+		check('paymentMethod')
+			.exists()
+			.custom((value, { req }) => {
+				if (value === 'onSite') {
+					console.log('32 onSite');
+					return true;
+				} else if (
+					// check stripePaymentMethodId and stripeSetupIntentId only if paymentMethod is 'stripe'
+					(value === 'strip' &&
+						req.body.stripePaymentMethodId === undefined) ||
+					req.body.stripePaymentMethodId === '' ||
+					req.body.stripeSetupIntentId === undefined ||
+					req.body.stripeSetupIntentId === ''
+				) {
+					return false;
+				} else {
+					return true;
+				}
+			})
 	],
 	entriesController.createEntry
 );

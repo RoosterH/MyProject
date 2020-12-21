@@ -121,11 +121,11 @@ const createClub = async (req, res, next) => {
 	let originalImageLocation;
 	let cloudFrontImageLocation;
 	if (req.file) {
-		originalImageLocation = req.file.location;
-		cloudFrontImageLocation = originalImageLocation.replace(
+		originalImageLocation = req.file.location.replace(
 			process.env.S3_URL,
-			process.env.CLOUDFRONT_URL
+			''
 		);
+		cloudFrontImageLocation = originalImageLocation;
 	}
 
 	// req.file.location = https://myseattime-dev.s3.us-west-1.amazonaws.com/clubs/d20e6020-1e70-11eb-96c0-19998090542e.png
@@ -176,7 +176,6 @@ const createClub = async (req, res, next) => {
 	});
 
 	let token;
-	let counter = 0;
 	try {
 		// using transaction here to make sure all the operations are done
 		const session = await mongoose.startSession();
@@ -499,10 +498,13 @@ const updateClubProfile = async (req, res, next) => {
 			let image = req.files.clubImage[0];
 			if (image) {
 				let originalImageLocation = image.location;
-				club.originamImage = originalImageLocation;
+				club.originalImage = originalImageLocation.replace(
+					process.env.S3_URL,
+					''
+				);
 				club.image = originalImageLocation.replace(
 					process.env.S3_URL,
-					process.env.CLOUDFRONT_URL
+					''
 				);
 			}
 		}
@@ -511,10 +513,13 @@ const updateClubProfile = async (req, res, next) => {
 			let clubProfileImage = req.files.clubProfileImage[0];
 			if (clubProfileImage) {
 				let profileImageLocation = clubProfileImage.location;
-				clubProfile.originalCourseMap = profileImageLocation;
+				clubProfile.originalProfileImage = profileImageLocation.replace(
+					process.env.S3_URL,
+					''
+				);
 				clubProfile.profileImage = profileImageLocation.replace(
 					process.env.S3_URL,
-					process.env.CLOUDFRONT_URL
+					''
 				);
 			}
 		}
@@ -533,6 +538,13 @@ const updateClubProfile = async (req, res, next) => {
 		);
 		return next(error);
 	}
+
+	// add CLOUDFRONT_URL for profileImage
+	clubProfile.set(
+		'profileImage',
+		process.env.CLOUDFRONT_URL + clubProfile.image,
+		{ strict: true }
+	);
 	res.status(200).json({
 		clubProfile: clubProfile.toObject({
 			getters: true
@@ -586,7 +598,7 @@ const getClubProfile = async (req, res, next) => {
 	let image;
 	try {
 		const club = await Club.findById(clubId);
-		image = club.image;
+		image = process.env.CLOUDFRONT_URL + club.image;
 	} catch (err) {
 		const error = new HttpError(
 			'Get club profile process failed. Please try again later.',
@@ -595,6 +607,11 @@ const getClubProfile = async (req, res, next) => {
 		return next(error);
 	}
 
+	clubProfile.set(
+		'profileImage',
+		process.env.CLOUDFRONT_URL + clubProfile.profileImage,
+		{ strict: true }
+	);
 	res.status(200).json({ clubProfile: clubProfile, image: image });
 };
 

@@ -145,12 +145,18 @@ const createUser = async (req, res, next) => {
 		let transformArray = req.file.transforms;
 		transformArray.map(transform => {
 			if (transform.id === 'original') {
-				originalImageLocation = transform.location;
+				originalImageLocation = transform.location.replace(
+					process.env.S3_URL,
+					''
+				);
 			} else if (transform.id === 'small') {
-				smallImageLocation = transform.location;
+				smallImageLocation = transform.location.replace(
+					process.env.S3_URL,
+					''
+				);
 				cloudFrontImageLocation = smallImageLocation.replace(
 					process.env.S3_URL,
-					process.env.CLOUDFRONT_URL
+					''
 				);
 			}
 		});
@@ -186,7 +192,6 @@ const createUser = async (req, res, next) => {
 		);
 		return next(error);
 	}
-	console.log('custoemr = ', customer);
 	// save stripe customer id
 	newUser.stripeCustomerId = customer.id;
 
@@ -300,13 +305,16 @@ const loginUser = async (req, res, next) => {
 		return next(error);
 	}
 
+	let cloudFrontImage =
+		process.env.CLOUDFRONT_URL + existingUser.image;
+
 	res.status(200).json({
 		userId: existingUser.id,
 		userName: existingUser.userName,
 		email: existingUser.email,
 		token: token,
 		entries: existingUser.entries,
-		image: existingUser.image
+		image: cloudFrontImage
 	});
 };
 
@@ -506,6 +514,23 @@ const getEvents = async (req, res, next) => {
 		);
 		return next(error);
 	}
+
+	events.map(event => {
+		// set path for all images
+		event.set('image', process.env.CLOUDFRONT_URL + event.image, {
+			strict: true
+		});
+		event.set(
+			'clubImage',
+			process.env.CLOUDFRONT_URL + event.clubImage,
+			{ strict: true }
+		);
+		event.set(
+			'courseMap',
+			process.env.CLOUDFRONT_URL + event.courseMap,
+			{ strict: true }
+		);
+	});
 
 	res.status(200).json({
 		events: events.map(event =>

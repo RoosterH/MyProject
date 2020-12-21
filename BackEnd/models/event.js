@@ -60,7 +60,8 @@ const eventSchema = new Schema({
 	// Worker group options defined by club in the event entry form. No need to define workGroupEntries.
 	workerAssignments: [[{ type: String, required: true }]],
 	// Lunction
-	lunchOptions: { type: [String] }
+	lunchOptions: { type: [String] },
+	private: { type: Boolean, require: true, default: false }
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

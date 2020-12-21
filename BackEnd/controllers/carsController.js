@@ -7,17 +7,6 @@ const mongoose = require('mongoose');
 const Car = require('../models/car');
 const User = require('../models/user');
 const fileUpload = require('../middleware/file-upload');
-const { request } = require('http');
-const { compare } = require('bcryptjs');
-const { getAllUsers } = require('./usersController');
-
-const errMsg = errors => {
-	var msg;
-	for (var e of errors) {
-		msg + e.param;
-	}
-	return msg;
-};
 
 // GET /api/cars/:cid
 const getCarById = async (req, res, next) => {
@@ -43,6 +32,11 @@ const getCarById = async (req, res, next) => {
 		);
 		return next(error);
 	}
+
+	// need to add cloudFront url to image
+	car.set('image', process.env.CLOUDFRONT_URL + car.image, {
+		stirct: true
+	});
 
 	// check if user owns the car
 	const userId = req.userData;
@@ -119,11 +113,22 @@ const getCarsByUserId = async (req, res, next) => {
 		garage = user.garage;
 	}
 
+	// change image path before returning to FrontEnd
+	user.garage.map(car => {
+		car.set('image', process.env.CLOUDFRONT_URL + car.image, {
+			strict: true
+		});
+	});
+
 	// check if request is coming from the same person
 	// if not, we need to chectk share setting for each car
 	if (req.userData != uId) {
 		res.status(200).json({
 			cars: garage.map(car => {
+				// car.set('image', process.env.CLOUDFRONT_URL + car.image, {
+				// 	stirct: true
+				// });
+				car.image = process.env.CLOUDFRONT_URL + car.image;
 				if (!car.share) {
 					return car.toObject({
 						getters: true,
@@ -251,21 +256,29 @@ const createCar = async (req, res, next) => {
 	// change image files name and move to different buckets in S3
 	// req.file.original.Location:
 	// https://myseattime-dev.s3.us-west-1.amazonaws.com/cars/faf21120-2533-11eb-a9c0-ed9f2385ef05-small.jpg
+	// We don't want to store S3 url nor Cloud Front URL. Because if we use different bucket, we will not be
+	// able to find them.
 	let originalImageLocation;
 	let smallImageLocation;
 	if (req.file) {
 		let transformArray = req.file.transforms;
 		transformArray.map(transform => {
 			if (transform.id === 'original') {
-				originalImageLocation = transform.location;
+				originalImageLocation = transform.location.replace(
+					process.env.S3_URL,
+					''
+				);
 			} else if (transform.id === 'small') {
-				smallImageLocation = transform.location;
+				smallImageLocation = transform.location.replace(
+					process.env.S3_URL,
+					''
+				);
 			}
 		});
 	}
 	let cloudFrontImageLocation = smallImageLocation.replace(
 		process.env.S3_URL,
-		process.env.CLOUDFRONT_URL
+		''
 	);
 	const newCar = new Car({
 		userId: userId,
@@ -459,9 +472,15 @@ const updateCar = async (req, res, next) => {
 		let transformArray = req.file.transforms;
 		transformArray.map(transform => {
 			if (transform.id === 'original') {
-				originalImageLocation = transform.location;
+				originalImageLocation = transform.location.replace(
+					process.env.S3_URL,
+					''
+				);
 			} else if (transform.id === 'small') {
-				smallImageLocation = transform.location;
+				smallImageLocation = transform.location.replace(
+					process.env.S3_URL,
+					''
+				);
 			}
 		});
 	}
@@ -472,10 +491,7 @@ const updateCar = async (req, res, next) => {
 	car.trimLevel = trimLevel;
 	car.originalImage = originalImageLocation;
 	car.smallImage = smallImageLocation;
-	car.image = smallImageLocation.replace(
-		process.env.S3_URL,
-		process.env.CLOUDFRONT_URL
-	);
+	car.image = smallImageLocation.replace(process.env.S3_URL, '');
 	car.tireBrand = tireBrand;
 	car.tireName = tireName;
 	car.tireFrontWidth = tireFrontWidth;
