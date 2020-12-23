@@ -15,6 +15,8 @@ import Modal from '../../shared/components/UIElements/Modal';
 import { UserAuthContext } from '../../shared/context/auth-context';
 import './EventItem.css';
 
+import googleMapImg from '../../shared/utils/png/GMapSmall.png';
+
 const EventItem = props => {
 	// useContext is listening to "ClubAuthContext"
 	const userAuthContext = useContext(UserAuthContext);
@@ -388,7 +390,8 @@ const EventItem = props => {
 								<Image
 									title={props.event.venue}
 									alt={props.event.venue}
-									src={require('../../shared/utils/png/GMapSmall.png')}
+									// src={require('../../shared/utils/png/GMapSmall.png')}
+									src={googleMapImg}
 									onClick={() => openMapHandler()}
 									onHoover
 								/>

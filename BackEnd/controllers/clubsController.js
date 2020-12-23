@@ -146,6 +146,7 @@ const createClub = async (req, res, next) => {
 	const newClubAccount = new ClubAccount({
 		onSitePayment: false,
 		stripePayment: true,
+		hostPrivateEvent: false,
 		stripeAccountId: undefined
 	});
 
@@ -632,8 +633,7 @@ const updateClubAccount = async (req, res, next) => {
 		return next(error);
 	}
 
-	const { onSitePayment, stripePayment } = req.body;
-
+	const { onSitePayment, stripePayment, hostPrivateEvent } = req.body;
 	// use clubId from token instead of getting it from url to avoid hacking
 	// req.userData is added in check-clubAuth middleware, information comes from front end
 	// req.header.authorization
@@ -680,6 +680,7 @@ const updateClubAccount = async (req, res, next) => {
 
 	clubAccount.onSitePayment = onSitePayment;
 	clubAccount.stripePayment = stripePayment;
+	clubAccount.hostPrivateEvent = hostPrivateEvent;
 
 	try {
 		await clubAccount.save();

@@ -30,7 +30,7 @@ const Classification = props => {
 			props.classificationStatus(continueStatus);
 			if (formValues !== undefined && formValues) {
 				props.carNumberHandler(formValues.carNumber);
-				props.raceClassHandler(formValues.raceClass);
+				// props.raceClassHandler(formValues.raceClass);
 			}
 		}
 	}, [continueStatus, props, formValues]);
@@ -57,7 +57,7 @@ const Classification = props => {
 	}, [location, userAuthContext]);
 
 	const [carNumber, setCarNumber] = useState('');
-	const [raceClass, setRaceClass] = useState('');
+	// const [raceClass, setRaceClass] = useState('');
 
 	// initialize local storage
 	// Get the existing data
@@ -79,9 +79,9 @@ const Classification = props => {
 		if (eventFormData.carNumber) {
 			setCarNumber(eventFormData.carNumber);
 		}
-		if (eventFormData.raceClass) {
-			setRaceClass(eventFormData.raceClass);
-		}
+		// if (eventFormData.raceClass) {
+		// 	setRaceClass(eventFormData.raceClass);
+		// }
 	} else if (!initialized) {
 		setInitialized(true);
 		// initialize localStorage
@@ -102,8 +102,8 @@ const Classification = props => {
 	};
 
 	const initialValues = {
-		carNumber: carNumber,
-		raceClass: raceClass
+		carNumber: carNumber
+		// raceClass: raceClass
 	};
 
 	const updateEventFormData = (key, value) => {
@@ -132,15 +132,15 @@ const Classification = props => {
 		}
 	);
 
-	const [validateRaceClass, setValidateRaceClass] = useState(
-		() => value => {
-			let error;
-			if (!value) {
-				error = 'Race class is required.';
-			}
-			return error;
-		}
-	);
+	// const [validateRaceClass, setValidateRaceClass] = useState(
+	// 	() => value => {
+	// 		let error;
+	// 		if (!value) {
+	// 			error = 'Club member # is required.';
+	// 		}
+	// 		return error;
+	// 	}
+	// );
 	/***** End of Form Validation *****/
 
 	const submitHandler = values => {
@@ -152,7 +152,7 @@ const Classification = props => {
 	const eventForm = values => (
 		<div className="event-form">
 			<div className="event-form-header">
-				<h4>Race Number and Class</h4>
+				<h4>Race Number and Club Member</h4>
 				<h5>&nbsp;All fields are required</h5>
 				<hr className="event-form__hr" />
 			</div>
@@ -195,10 +195,9 @@ const Classification = props => {
 								{errors.carNumber}
 							</div>
 						)}
-						<label htmlFor="numGroups" className="event-form__label">
-							<i className="fal fa-users-class"></i>
-							{/* <i className="fad fa-cars"></i> */}
-							&nbsp; Race Class
+						{/* <label htmlFor="numGroups" className="event-form__label">
+							<i className="fal fa-address-card"></i>
+							&nbsp; Race class
 						</label>
 						<Field
 							id="raceClass"
@@ -215,7 +214,7 @@ const Classification = props => {
 							<div className="event-form__field-error_quarter">
 								{errors.raceClass}
 							</div>
-						)}
+						)} */}
 						<Button
 							type="submit"
 							size="small-block"

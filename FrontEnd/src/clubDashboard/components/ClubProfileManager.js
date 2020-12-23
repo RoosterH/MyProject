@@ -1,8 +1,11 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
+
 import Button from '../../shared/components/FormElements/Button';
 import ClubProfile from './ClubProfile';
 import ClubPhotos from './ClubPhotos';
 import ClubProfileViewer from './ClubProfileViewer';
+import { ClubAuthContext } from '../../shared/context/auth-context';
+
 import '../../shared/css/EventForm.css';
 import '../../event/components/EventItem.css';
 import './ClubManager.css';

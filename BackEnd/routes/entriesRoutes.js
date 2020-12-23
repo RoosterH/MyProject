@@ -20,7 +20,7 @@ router.post(
 	[
 		check('carId').not().isEmpty(),
 		check('carNumber').not().isEmpty(),
-		check('raceClass').not().isEmpty(),
+		// check('raceClass').not().isEmpty(),
 		check('answer').not().isEmpty(),
 		check('disclaimer').not().equals(true),
 		check('paymentMethod').not().isEmpty(),
@@ -68,8 +68,8 @@ router.patch(
 router.patch(
 	'/classNumber/:entryId',
 	[
-		check('carNumber').not().isEmpty(),
-		check('raceClass').not().isEmpty()
+		check('carNumber').not().isEmpty()
+		// check('raceClass').not().isEmpty()
 	],
 	entriesController.updateClassNumber
 );

@@ -80,7 +80,7 @@ const createEntry = async (req, res, next) => {
 	const {
 		carId,
 		carNumber,
-		raceClass,
+		// raceClass,
 		answer,
 		disclaimer,
 		paymentMethod,
@@ -204,6 +204,17 @@ const createEntry = async (req, res, next) => {
 	// let groupFull = false;
 	let groupFull = [];
 
+	console.log('event.raceClassOptions = ', event.raceClassOptions);
+
+	let [raceClass, raceClassAnsTexts] = parseSingleDayAnswer(
+		event.raceClassOptions,
+		answer,
+		'RaceClass'
+	);
+	console.log('answer = ', answer);
+	console.log('raceClassAnsTexts = ', raceClassAnsTexts);
+	console.log('raceClass = ', raceClass);
+
 	// runGroupAnsChoices is the answer index for each day, i.e., index 1 is extracted from => 0: "raceRadioOption_1"
 	// runGroups
 	let [runGroupAnsChoices, runGroupAnsTexts] = parseAnswer(
@@ -304,7 +315,7 @@ const createEntry = async (req, res, next) => {
 			answer,
 			carId,
 			carNumber,
-			raceClass,
+			raceClass: raceClassAnsTexts,
 			disclaimer,
 			time: moment(),
 			published: true,
@@ -535,6 +546,48 @@ const parseAnswer = (options, answer, fieldName) => {
 	}
 
 	return [answerArray, textArray];
+};
+
+const parseSingleDayAnswer = (options, answer, fieldName) => {
+	console.log('options = ', options);
+	// entry answer format:
+	// answer: Array
+	//   0: object
+	//      name: "RunGroupSingle-12EDB3DA-484C-4ECB-BB32-C3AE969A2D2F"
+	//      value: Array
+	//         0: "raceRadioOption_1"
+
+	// answerIndex is index number of the answer
+	let answerIndex;
+	// answerText is corresponding text of the answer extracted from options
+	let answerText;
+	// i is the index of answer
+	// We will loop through answer, answer is sorted per sequence of the entry form,
+	for (let i = 0; i < answer.length; ++i) {
+		let name = answer[i].name;
+		let splitName = name.split('-');
+		// fieldName should start with 'RunGroup'
+		// let index = splitName[0].indexOf(fieldName);
+		let match = splitName[0].startsWith(fieldName);
+
+		// index must be 0 because "RunGroupSingle"
+		// if (index === 0) {
+		if (match) {
+			console.log('answer[i] = ', answer[i]);
+			let ansOpt = answer[i].value[0];
+			console.log('ansOpt = ', ansOpt);
+			// parse string "raceRadioOption_1"
+			res = ansOpt.split('_');
+			console.log('res = ', res);
+
+			// options[i] is the corresponding text of the answer in options
+			answerIndex = res[i];
+			// res[1] is the answer index
+			answerText = options[res[1]];
+		}
+	}
+
+	return [answerIndex, answerText];
 };
 
 const updateCar = async (req, res, next) => {
@@ -1822,33 +1875,38 @@ const refund = async (req, res, next) => {
 		return next(error);
 	}
 
-	const { refundFee } = req.body;
-	let refund;
-	try {
-		refund = await stripe.refunds.create({
-			amount: refundFee,
-			payment_intent: payment.stripePaymentIntentId
-		});
-	} catch (err) {
-		console.log('1835 err  =', err);
-		const error = new HttpError(
-			'refund failed @ stripe. Please try again later.',
-			500
-		);
-		return next(error);
-	}
+	// onSite paymentMethod
+	if (payment.paymentMethod === 'strip') {
+		// stripe payment method
+		const { refundFee } = req.body;
+		let refund;
 
-	// if failed, we want to keep paymentStatus as 'Paid', so returning an error no update on status
-	if (refund.status !== 'succeeded') {
-		console.log('1843 err  =', err);
-		const error = new HttpError(
-			'Refund process failed. Please try again later. If problem persists, please have customer contact his/her credit card company.',
-			500
-		);
-		return next(error);
-	}
+		try {
+			refund = await stripe.refunds.create({
+				amount: refundFee,
+				payment_intent: payment.stripePaymentIntentId
+			});
+		} catch (err) {
+			console.log('1835 err  =', err);
+			const error = new HttpError(
+				'refund failed @ stripe. Please try again later.',
+				500
+			);
+			return next(error);
+		}
 
-	payment.stripeRefundId = refund.id;
+		// if failed, we want to keep paymentStatus as 'Paid', so returning an error no update on status
+		if (refund.status !== 'succeeded') {
+			console.log('1843 err  =', err);
+			const error = new HttpError(
+				'Refund process failed. Please try again later. If problem persists, please have customer contact his/her credit card company.',
+				500
+			);
+			return next(error);
+		}
+
+		payment.stripeRefundId = refund.id;
+	}
 	payment.paymentStatus = 'Refunded';
 
 	try {

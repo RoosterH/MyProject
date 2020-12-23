@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import NavigationPrompt from 'react-router-navigation-prompt';
+
 import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
 import { ClubAuthContext } from '../../shared/context/auth-context';
@@ -9,6 +10,7 @@ import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 import { useHttpClient } from '../../shared/hooks/http-hook';
+import { FormContext } from '../../shared/context/form-context';
 import '../../shared/css/EventForm.css';
 import '../../event/components/EventItem.css';
 
@@ -21,6 +23,17 @@ const ClubProfile = () => {
 		clearError
 	} = useHttpClient();
 
+	const formContext = useContext(FormContext);
+	useEffect(() => {
+		let mounted = true;
+		if (mounted) {
+			formContext.setIsInsideForm(true);
+		}
+		return () => {
+			mounted = false;
+		};
+	}, [formContext]);
+
 	const clubAuthContext = useContext(ClubAuthContext);
 	const clubId = clubAuthContext.clubId;
 
@@ -29,15 +42,16 @@ const ClubProfile = () => {
 
 	// If we are re-directing to this page, we want to clear up clubRedirectURL
 	let location = useLocation();
-	let path;
 	useEffect(() => {
-		path = location.pathname;
-		let clubRedirectURL = clubAuthContext.clubRedirectURL;
-		if (path === clubRedirectURL) {
-			// re-init redirectURL after re-direction route
-			clubAuthContext.setClubRedirectURL(null);
+		if (location) {
+			let path = location.pathname;
+			let clubRedirectURL = clubAuthContext.clubRedirectURL;
+			if (path === clubRedirectURL) {
+				// re-init redirectURL after re-direction route
+				clubAuthContext.setClubRedirectURL(null);
+			}
 		}
-	}, [location]);
+	}, [location, clubAuthContext]);
 
 	const [OKLeavePage, setOKLeavePage] = useState(true);
 	let initialValues = {
@@ -391,7 +405,7 @@ const ClubProfile = () => {
 						</Button>
 						<NavigationPrompt
 							afterConfirm={() => {
-								// localStorage.removeItem('eventID');
+								formContext.setIsInsideForm(false);
 							}}
 							// Confirm navigation if going to a path that does not start with current path:
 							when={(crntLocation, nextLocation) => {
@@ -400,8 +414,10 @@ const ClubProfile = () => {
 								// OKLeavePage meaning form was not touched yet
 								if (
 									OKLeavePage ||
-									nextLocation.pathname === '/clubs/auth'
+									(nextLocation &&
+										nextLocation.pathname === '/clubs/auth')
 								) {
+									formContext.setIsInsideForm(false);
 									return false;
 								} else {
 									return (

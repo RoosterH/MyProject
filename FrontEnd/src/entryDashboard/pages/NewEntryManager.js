@@ -48,7 +48,7 @@ const NewEntryManager = props => {
 	// collect information from each tab, we will send them to backend via SUBMIT tab
 	const [carId, setCarId] = useState();
 	const [carNumber, setCarNumber] = useState();
-	const [raceClass, setRaceClass] = useState();
+	// const [raceClass, setRaceClass] = useState();
 	const [formAnswer, setFormAnswer] = useState();
 
 	const [carSelector, setCarSelector] = useState(false);
@@ -156,11 +156,11 @@ const NewEntryManager = props => {
 		}
 	};
 
-	const raceClassHandler = rclass => {
-		if (rclass) {
-			setRaceClass(rclass);
-		}
-	};
+	// const raceClassHandler = rclass => {
+	// 	if (rclass) {
+	// 		setRaceClass(rclass);
+	// 	}
+	// };
 
 	// getting continue status back from <Form />
 	const [formStatus, setFormStatus] = useState(false);
@@ -215,7 +215,7 @@ const NewEntryManager = props => {
 					<br />
 					<ul className="nav nav-tabs">
 						<li className={carSelectorClass}>Car</li>
-						<li className={classificationClass}>Classification</li>
+						<li className={classificationClass}>Car Number</li>
 						<li className={formClass}>Form</li>
 						<li className={submitClass}>Submit</li>
 					</ul>
@@ -232,7 +232,7 @@ const NewEntryManager = props => {
 							<Classification
 								classificationStatus={classificationHandler}
 								carNumberHandler={carNumberHandler}
-								raceClassHandler={raceClassHandler}
+								// raceClassHandler={raceClassHandler}
 							/>
 						)}
 						{form && (
@@ -250,7 +250,7 @@ const NewEntryManager = props => {
 								eventName={eventName}
 								carId={carId}
 								carNumber={carNumber}
-								raceClass={raceClass}
+								// raceClass={raceClass}
 								formAnswer={formAnswer}
 								editingMode={false}
 							/>

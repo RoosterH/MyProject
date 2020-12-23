@@ -36,7 +36,7 @@ const SubmitEntry = props => {
 	let eventName = props.eventName;
 	let carId = props.carId;
 	let carNumber = props.carNumber;
-	let raceClass = props.raceClass;
+	// let raceClass = props.raceClass;
 	let formAnswer = props.formAnswer;
 	const editingMode = props.editingMode;
 	const [paymentStatus, setPaymentStatus] = useState(
@@ -406,7 +406,7 @@ const SubmitEntry = props => {
 					JSON.stringify({
 						carId: carId,
 						carNumber: carNumber,
-						raceClass: raceClass,
+						// raceClass: raceClass,
 						answer: formAnswer,
 						disclaimer: disclaimer,
 						paymentMethod: paymentMethod,

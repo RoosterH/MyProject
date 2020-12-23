@@ -10,7 +10,7 @@ const EventList = props => {
 	const userAuthContext = useContext(UserAuthContext);
 	if (props.items.length === 0) {
 		return (
-			<div className="center">
+			<div className="events-list">
 				<h2>No event found.</h2>
 			</div>
 		);

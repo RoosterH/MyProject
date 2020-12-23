@@ -79,7 +79,13 @@ const ClubPhotos = () => {
 			} catch (err) {}
 		};
 		fetchClubProfile();
-	}, [clubId, setLoadedImage, setLoadedProfileImage]);
+	}, [
+		clubId,
+		setLoadedImage,
+		setLoadedProfileImage,
+		clubAuthContext.clubToken,
+		sendRequest
+	]);
 
 	const initialValues = {
 		image: loadedImage,
@@ -114,26 +120,6 @@ const ClubPhotos = () => {
 			setSaveButtonEnabled(false);
 		} catch (err) {}
 	};
-
-	// const validateImageSize = value => {
-	// 	let error;
-	// 	if (value && value.size > 1500000) {
-	// 		error = 'File size needs to be smaller than 1.5MB';
-	// 	} else {
-	// 		setSaveButtonEnabled(true);
-	// 	}
-	// 	return error;
-	// };
-
-	// const validateProfileImageSize = value => {
-	// 	let error;
-	// 	if (value && value.size > 1500000) {
-	// 		error = 'File size needs to be smaller than 1.5MB';
-	// 	} else {
-	// 		setSaveButtonEnabled(true);
-	// 	}
-	// 	return error;
-	// };
 
 	const [validateImageSize, setValidateImageSize] = useState(
 		() => value => {
@@ -258,7 +244,6 @@ const ClubPhotos = () => {
 						<NavigationPrompt
 							afterConfirm={() => {
 								formContext.setIsInsideForm(false);
-								// removeEventFormData();
 							}}
 							// Confirm navigation if going to a path that does not start with current path.
 							// We don't want to confirm navigation when OKLeavePage === true and redirect to '/clubs/auth' due to
@@ -267,9 +252,12 @@ const ClubPhotos = () => {
 								// remove ClubRedirectURL from memory
 								clubAuthContext.setClubRedirectURL(null);
 								// OKLeavePage meaning form was not touched yet
-								if (OKLeavePage) {
+								if (
+									OKLeavePage ||
+									(nextLocation &&
+										nextLocation.pathname === '/clubs/auth')
+								) {
 									formContext.setIsInsideForm(false);
-									// removeEventFormData();
 									return false;
 								} else {
 									// nextLocation.pathname !== '/clubs/auth' &&  --- adding this line causing state update on an

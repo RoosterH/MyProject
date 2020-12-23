@@ -8,6 +8,7 @@ const clubAccountSchema = new Schema({
 	},
 	onSitePayment: { type: Boolean, required: true },
 	stripePayment: { type: Boolean, required: true },
+	hostPrivateEvent: { type: Boolean, required: true, default: false },
 
 	// stripeAccountId is encrypted
 	stripeAccountId: {

@@ -203,6 +203,15 @@ const Events = () => {
 					<LoadingSpinner />
 				</div>
 			)}
+			{!isLoading && !loadedEvents && (
+				<div>
+					<p>
+						{' '}
+						&nbsp; &nbsp; &nbsp;No event found in the specified date
+						range.
+					</p>
+				</div>
+			)}
 			{!isLoading && loadedEvents && (
 				<EventsList items={loadedEvents} displayPublished={false} />
 			)}

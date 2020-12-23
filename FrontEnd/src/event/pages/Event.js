@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useParams } from 'react-router-dom';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
@@ -17,18 +18,30 @@ import RefundCenterEventItem from '../components/RefundCenterEventItem';
 // 1. path={'/events/:id'}
 // 2. In EventsItem <Link to={{pathname: `/events/${props.id}`, state: {props: props}}}> via EventWrapper
 const Event = props => {
+	// if useParams() has id meaning, this is called by pasting an event link in the browser
+	// use case such as a private event
+	let eId = useParams().id;
 	const clubAuthContext = useContext(ClubAuthContext);
 	// props is passed via Link in the format of state: {props: props}
 	// we need to get the props value using props.location.state.props.id
-	const eId = props.location.state.props.id;
-	const clubId = props.location.state.props.clubId;
-	// readOnly is to control OwnerClub View Events, we do not want to go to <EditEventItem> route
-	const readOnly = props.location.state.props.readOnly;
-	// entryReportManager is to direct the path to Entry Report Manager
-	const entryReportManager =
-		props.location.state.props.entryReportManager;
-	const paymentCenter = props.location.state.props.paymentCenter;
-	const refundCenter = props.location.state.props.refundCenter;
+	let clubId,
+		readOnly,
+		entryReportManager,
+		paymentCenter,
+		refundCenter;
+	// if called by pasting event link to the browser, props.location.state === undefined
+	if (props.location.state !== undefined) {
+		eId = props.location.state.props.id;
+		clubId = props.location.state.props.clubId;
+
+		// readOnly is to control OwnerClub View Events, we do not want to go to <EditEventItem> route
+		readOnly = props.location.state.props.readOnly;
+		// entryReportManager is to direct the path to Entry Report Manager
+		entryReportManager =
+			props.location.state.props.entryReportManager;
+		paymentCenter = props.location.state.props.paymentCenter;
+		refundCenter = props.location.state.props.refundCenter;
+	}
 
 	const [clubOwnerRequest, setClubOwnerRequest] = useState(false);
 	const [loadedEvent, setLoadedEvent] = useState();

@@ -26,6 +26,7 @@ const UpdateEventRegistration = props => {
 	let eventId = props.event.id;
 	const [initialized, setInitialized] = useState(false);
 	const clubAuthContext = useContext(ClubAuthContext);
+	const clubId = clubAuthContext.clubId;
 	const formContext = useContext(FormContext);
 	const [showSaveBtn, setShowSaveBtn] = useState(false);
 	const [published, setPublished] = useState(props.event.published);
@@ -101,6 +102,35 @@ const UpdateEventRegistration = props => {
 	const [totalCap, setTotalCap] = useState('');
 	const [numGroups, setNumGroups] = useState('');
 	const [capDistribution, setCapDistribution] = useState('');
+	const [hostPrivateEvent, setHostPrivateEvent] = useState(false);
+	const [privateEvent, setPrivateEvent] = useState(false);
+
+	useEffect(() => {
+		const getClubAccount = async () => {
+			try {
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
+					process.env.REACT_APP_BACKEND_URL +
+						`/clubs/account/${clubId}`,
+					'GET',
+					null,
+					{
+						// adding JWT to header for authentication
+						Authorization: 'Bearer ' + clubAuthContext.clubToken
+					}
+				);
+				setHostPrivateEvent(
+					responseData.clubAccount.hostPrivateEvent
+				);
+			} catch (err) {
+				console.log('err = ', err);
+			}
+		};
+		getClubAccount();
+	}, []);
 
 	// initialize local storage
 	// Get the existing data
@@ -128,6 +158,9 @@ const UpdateEventRegistration = props => {
 		if (eventFormData.capDistribution) {
 			setCapDistribution(eventFormData.capDistribution);
 		}
+		if (eventFormData.privateEvent) {
+			setPrivateEvent(eventFormData.privateEvent);
+		}
 	} else if (!initialized) {
 		setInitialized(true);
 		// initialize localStorage
@@ -138,6 +171,7 @@ const UpdateEventRegistration = props => {
 		eventFormData['totalCap'] = '';
 		eventFormData['numGroups'] = '';
 		eventFormData['capDistribution'] = '';
+		eventFormData['privateEvent'] = '';
 		localStorage.setItem(
 			'eventFormData',
 			JSON.stringify(eventFormData)
@@ -153,7 +187,8 @@ const UpdateEventRegistration = props => {
 		totalCap: props.event.totalCap,
 		numGroups: props.event.numGroups,
 		capDistribution: props.event.capDistribution,
-		multiDayEvent: props.event.multiDayEvent
+		multiDayEvent: props.event.multiDayEvent,
+		privateEvent: props.event.privateEvent
 	};
 
 	const updateEventFormData = (key, value) => {
@@ -165,15 +200,6 @@ const UpdateEventRegistration = props => {
 			'eventFormData',
 			JSON.stringify(storageData)
 		);
-	};
-
-	const [
-		capDistributionClicked,
-		setCapDistributionClicked
-	] = useState(false);
-
-	const togglecapDistribution = event => {
-		setCapDistributionClicked(event.target.checked);
 	};
 
 	const saveHandler = async (values, actions) => {
@@ -190,7 +216,8 @@ const UpdateEventRegistration = props => {
 					totalCap: values.totalCap,
 					numGroups: values.numGroups,
 					capDistribution: values.capDistribution,
-					multiDayEvent: values.multiDayEvent
+					multiDayEvent: values.multiDayEvent,
+					privateEvent: values.privateEvent
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -450,6 +477,22 @@ const UpdateEventRegistration = props => {
 								/>
 								&nbsp; You are creating a multiple day event. Please
 								check the box if each day represent a single event.
+							</label>
+						)}
+						{hostPrivateEvent && (
+							<label className="event-form__checkbox">
+								<Field
+									id="privateEvent"
+									name="privateEvent"
+									type="checkbox"
+									disabled={published}
+									onBlur={event => {
+										handleBlur(event);
+										setOKLeavePage(false);
+									}}
+								/>
+								&nbsp; Check the box if this is a private event. (A
+								private event is only visivle with the event link.)
 							</label>
 						)}
 						<Button

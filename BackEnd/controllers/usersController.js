@@ -483,8 +483,9 @@ const getEvents = async (req, res, next) => {
 	}
 
 	if (!entries || entries.length === 0) {
-		const error = new HttpError('Could not find any event.', 404);
-		return next(error);
+		return res.status(200).json({
+			events: []
+		});
 	}
 
 	let events;

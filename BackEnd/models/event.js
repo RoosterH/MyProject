@@ -61,7 +61,7 @@ const eventSchema = new Schema({
 	workerAssignments: [[{ type: String, required: true }]],
 	// Lunction
 	lunchOptions: { type: [String] },
-	private: { type: Boolean, require: true, default: false }
+	privateEvent: { type: Boolean, require: true, default: false }
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

@@ -23,7 +23,6 @@ const MaterialTableRefundCenter = props => {
 			paymentStatus === 'Paid' ||
 			paymentStatus === 'Refunded'
 		) {
-			console.log('paymentStatus = ', paymentStatus);
 			// for Paid, we will disable the button and css is controlled by :disable
 			return 'small-green';
 		} else if (

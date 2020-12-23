@@ -44,7 +44,7 @@ const EditEntryManager = props => {
 	const [entryId, setEntryId] = useState();
 	const [entryCarId, setEntryCarId] = useState();
 	const [carNumber, setCarNumber] = useState();
-	const [raceClass, setRaceClass] = useState();
+	// const [raceClass, setRaceClass] = useState();
 	const [paymentStatus, setPaymentStatus] = useState();
 
 	// only get entry data from backend at the very beginning,
@@ -74,7 +74,7 @@ const EditEntryManager = props => {
 			setEntryCarId(responseData.entry.carId);
 			setEntryId(responseData.entry.id);
 			setCarNumber(responseData.entry.carNumber);
-			setRaceClass(responseData.entry.raceClass);
+			// setRaceClass(responseData.entry.raceClass);
 			setPaymentStatus(responseData.paymentStatus);
 		};
 		getEntry();
@@ -259,7 +259,7 @@ const EditEntryManager = props => {
 							disabled={regClosed}
 							autoFocus
 							onClick={classificationClickHandler}>
-							Classification
+							Car Number
 						</Button>
 						<Button
 							size={formClass}
@@ -290,7 +290,7 @@ const EditEntryManager = props => {
 								entryId={entryId}
 								userId={userId}
 								carNumber={carNumber}
-								raceClass={raceClass}
+								// raceClass={raceClass}
 								getNewEntry={getNewEntry}
 							/>
 						)}

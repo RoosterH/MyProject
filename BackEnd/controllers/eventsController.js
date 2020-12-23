@@ -508,7 +508,6 @@ const getEntryReport = async (req, res, next) => {
 		}
 		mutipleDayWaitlistData.push(waitlistData);
 	}
-
 	res.status(200).json({
 		eventName: event.name,
 		entryData: mutipleDayEntryData.map(entryData =>
@@ -636,11 +635,12 @@ const getPaymentReport = async (req, res, next) => {
 				return next(error);
 			}
 			if (!user) {
-				const error = new HttpError(
-					'Internal error user not found in getPaymentReport.',
-					500
-				);
-				return next(error);
+				continue;
+				// const error = new HttpError(
+				// 	'Internal error user not found in getPaymentReport.',
+				// 	500
+				// );
+				// return next(error);
 			}
 			// use {strict:false} to add undefined attribute in schema to existing json obj
 			entry.set('email', user.email, { strict: false });
@@ -718,7 +718,7 @@ const getEventsByDate = async (req, res, next) => {
 				type: eventType,
 				startDate: { $gte: startDate, $lte: endDate },
 				published: true,
-				private: false
+				privateEvent: false
 			},
 			'-entryFormData -totalCap -numGroups -capDistribution -published -originalImage -smallImage -originalCourseMap'
 		).sort({
@@ -734,12 +734,13 @@ const getEventsByDate = async (req, res, next) => {
 	}
 
 	if (!events || events.length === 0) {
-		const error = new HttpError(
-			'Could not find any event with the date range',
-			404
-		);
-
-		return next(error);
+		// const error = new HttpError(
+		// 	'Could not find any event with the date range',
+		// 	404
+		// );
+		return res.status(404).json({
+			entry: []
+		});
 	}
 
 	events.map(event => {
@@ -1157,7 +1158,8 @@ const createUpdateEventRegistration = async (req, res, next) => {
 		totalCap,
 		numGroups,
 		capDistribution,
-		multiDayEvent
+		multiDayEvent,
+		privateEvent
 	} = req.body;
 	event.totalCap = totalCap;
 	if (totalCap !== undefined || totalCap !== 0) {
@@ -1171,6 +1173,7 @@ const createUpdateEventRegistration = async (req, res, next) => {
 	// set published to false to force re-publish
 	event.published = false;
 	event.multiDayEvent = multiDayEvent;
+	event.privateEvent = privateEvent;
 
 	// if capDistribution is true, we will create numGroups groups.
 	// Each group can only have totalCap / numGroups participants
@@ -1827,6 +1830,7 @@ const getEntryReportForUsers = async (req, res, next) => {
 		);
 		return next(error);
 	}
+	console.log('event = ', event);
 
 	let entryReport = event.entryReportId;
 	if (!entryReport) {
@@ -1839,6 +1843,7 @@ const getEntryReportForUsers = async (req, res, next) => {
 
 	// get entires
 	let entries = entryReport.entries;
+	console.log('entries = ', entries);
 	// if there is no entry, should not have a waitlist, either.
 	if (entries.length === 0) {
 		res.status(404).json({
@@ -1848,13 +1853,24 @@ const getEntryReportForUsers = async (req, res, next) => {
 	}
 
 	let days = entries.length;
+	console.log('days = ', days);
 	let mutipleDayEntryData = [];
 	for (let i = 0; i < days; ++i) {
 		let entryData = [];
 		let eList = entries[i];
 		for (let j = 0; j < eList.length; ++j) {
 			// add car info to entry for frontend to display the information
-			let entry = await Entry.findById(eList[j]).populate('carId');
+			let entry;
+			try {
+				entry = await Entry.findById(eList[j]).populate('carId');
+			} catch (err) {
+				const error = new HttpError(
+					'Could not find the entry druing retrieving entryReport. Please try later.',
+					404
+				);
+				return next(error);
+			}
+
 			// add car to entry
 			let car =
 				entry.carId.year +

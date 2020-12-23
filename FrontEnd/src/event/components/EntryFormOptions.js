@@ -32,63 +32,27 @@ export const EntryFormOptions = () => [
 			{
 				value: '0',
 				text: 'Morning Session 1',
-				key: `raceRadioOption_0`
+				key: `RunGroupSingle_0`
 			},
 			{
 				value: '1',
 				text: 'Morning Session 2',
-				key: `raceRadioOption_1`
+				key: `RunGroupSingle_1`
 			},
 			{
 				value: '2',
 				text: 'Afternoon Session 1',
-				key: `raceRadioOption_2`
+				key: `RunGroupSingle_2`
 			},
 			{
 				value: '3',
 				text: 'Afternoon Session 2',
-				key: `raceRadioOption_3`
+				key: `RunGroupSingle_3`
 			},
 			{
 				value: '4',
 				text: 'Afternoon Session 2',
-				key: `raceRadioOption_4`
-			}
-		]
-	},
-	{
-		key: 'Checkboxes',
-		canHaveAnswer: true,
-		name: 'Run Group Multiple Selections',
-		icon: 'far fa-check-square',
-		label: '<strong>Run Group</strong>',
-		field_name: 'RunGroupMultiple-',
-		required: true,
-		options: [
-			{
-				value: '0',
-				text: 'Morning Session 1',
-				key: `raceCheckboxOption_0`
-			},
-			{
-				value: '1',
-				text: 'Morning Session 2',
-				key: `raceCheckboxOption_1`
-			},
-			{
-				value: '2',
-				text: 'Afternoon Session 1',
-				key: `raceCheckboxOption_2`
-			},
-			{
-				value: '3',
-				text: 'Afternoon Session 2',
-				key: `raceCheckboxOption_3`
-			},
-			{
-				value: '4',
-				text: 'Afternoon Session 3',
-				key: `raceCheckboxOption_4`
+				key: `RunGroupSingle_4`
 			}
 		]
 	},
@@ -100,86 +64,187 @@ export const EntryFormOptions = () => [
 		label: '<strong>Race Class</strong>',
 		field_name: 'RaceClass-',
 		required: true,
+		canHaveDisplayHorizontal: true,
 		options: [
 			{
 				value: '0',
 				text: 'SS',
-				key: `raceClassOption_0`
+				key: `RaceClassOption_0`
 			},
 			{
 				value: '1',
 				text: 'AS',
-				key: `raceClassOption_1`
+				key: `RaceClassOption_1`
 			},
 			{
 				value: '2',
 				text: 'BS',
-				key: `raceClassOption_2`
+				key: `RaceClassOption_2`
 			},
 			{
 				value: '3',
 				text: 'CS',
-				key: `raceClassOption_3`
+				key: `RaceClassOption_3`
 			},
 			{
 				value: '4',
 				text: 'DS',
-				key: `raceClassOption_4`
+				key: `RaceClassOption_4`
 			},
 			{
 				value: '5',
 				text: 'ES',
-				key: `raceClassOption_5`
+				key: `RaceClassOption_5`
 			},
 			{
 				value: '6',
 				text: 'FS',
-				key: `raceClassOption_6`
+				key: `RaceClassOption_6`
 			},
 			{
 				value: '7',
 				text: 'GS',
-				key: `raceClassOption_7`
+				key: `RaceClassOption_7`
 			},
 			{
 				value: '8',
 				text: 'HS',
-				key: `raceClassOption_8`
+				key: `RaceClassOption_8`
 			},
 			{
 				value: '9',
-				text: 'SSP',
-				key: `raceClassOption_9`
+				text: 'SSR',
+				key: `RaceClassOption_9`
 			},
 			{
 				value: '10',
-				text: 'ASP',
-				key: `raceClassOption_10`
+				text: 'STU',
+				key: `RaceClassOption_10`
 			},
 			{
 				value: '11',
-				text: 'BSP',
-				key: `raceClassOption_11`
+				text: 'STR',
+				key: `RaceClassOption_11`
 			},
 			{
 				value: '12',
-				text: 'CSP',
-				key: `raceClassOption_12`
+				text: 'STX',
+				key: `RaceClassOption_12`
 			},
 			{
 				value: '13',
-				text: 'DSP',
-				key: `raceClassOption_13`
+				text: 'STS',
+				key: `RaceClassOption_13`
 			},
 			{
 				value: '14',
-				text: 'ESP',
-				key: `raceClassOption_14`
+				text: 'STH',
+				key: `RaceClassOption_14`
 			},
 			{
 				value: '15',
+				text: 'SSP',
+				key: `RaceClassOption_15`
+			},
+			{
+				value: '16',
+				text: 'ASP',
+				key: `RaceClassOption_16`
+			},
+			{
+				value: '17',
+				text: 'BSP',
+				key: `RaceClassOption_17`
+			},
+			{
+				value: '18',
+				text: 'CSP',
+				key: `RaceClassOption_18`
+			},
+			{
+				value: '19',
+				text: 'DSP',
+				key: `RaceClassOption_19`
+			},
+			{
+				value: '20',
+				text: 'ESP',
+				key: `RaceClassOption_20`
+			},
+			{
+				value: '21',
 				text: 'FSP',
-				key: `raceClassOption_15`
+				key: `RaceClassOption_21`
+			},
+			{
+				value: '22',
+				text: 'SSM',
+				key: `RaceClassOption_22`
+			},
+			{
+				value: '23',
+				text: 'SM',
+				key: `RaceClassOption_23`
+			},
+			{
+				value: '24',
+				text: 'SMF',
+				key: `RaceClassOption_24`
+			},
+			{
+				value: '25',
+				text: 'XP',
+				key: `RaceClassOption_25`
+			},
+			{
+				value: '26',
+				text: 'CP',
+				key: `RaceClassOption_26`
+			},
+			{
+				value: '27',
+				text: 'DP',
+				key: `RaceClassOption_27`
+			},
+			{
+				value: '28',
+				text: 'EP',
+				key: `RaceClassOption_28`
+			},
+			{
+				value: '29',
+				text: 'FP',
+				key: `RaceClassOption_29`
+			},
+			{
+				value: '30',
+				text: 'AM',
+				key: `RaceClassOption_30`
+			},
+			{
+				value: '31',
+				text: 'BM',
+				key: `RaceClassOption_31`
+			},
+			{
+				value: '32',
+				text: 'CM',
+				key: `RaceClassOption_32`
+			},
+			{
+				value: '33',
+				text: 'DM',
+				key: `RaceClassOption_DM`
+			},
+			{
+				value: '34',
+				text: 'EM',
+				key: `RaceClassOption_34`
+			},
+			{
+				value: '35',
+				text: 'FM',
+				key: `RaceClassOption_35`
 			}
 		]
 	},
@@ -580,6 +645,42 @@ export const EntryFormOptions = () => [
 					}
 				]
 			}
+			// {
+			// 	key: 'Checkboxes',
+			// 	canHaveAnswer: true,
+			// 	name: 'Run Group Multiple Selections',
+			// 	icon: 'far fa-check-square',
+			// 	label: '<strong>Run Group</strong>',
+			// 	field_name: 'RunGroupMultiple-',
+			// 	required: true,
+			// 	options: [
+			// 		{
+			// 			value: '0',
+			// 			text: 'Morning Session 1',
+			// 			key: `RunGroupMultipleOption_0`
+			// 		},
+			// 		{
+			// 			value: '1',
+			// 			text: 'Morning Session 2',
+			// 			key: `RunGroupMultipleOption_1`
+			// 		},
+			// 		{
+			// 			value: '2',
+			// 			text: 'Afternoon Session 1',
+			// 			key: `RunGroupMultipleOption_2`
+			// 		},
+			// 		{
+			// 			value: '3',
+			// 			text: 'Afternoon Session 2',
+			// 			key: `RunGroupMultipleOption_3`
+			// 		},
+			// 		{
+			// 			value: '4',
+			// 			text: 'Afternoon Session 3',
+			// 			key: `RunGroupMultipleOption_4`
+			// 		}
+			// 	]
+			// }
 		]
 	}
 	// {

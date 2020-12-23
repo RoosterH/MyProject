@@ -6,7 +6,6 @@ import NavigationPrompt from 'react-router-navigation-prompt';
 import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
-import ImageUploader from '../../shared/components/FormElements/ImageUploader';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 
@@ -30,68 +29,23 @@ const ClubAccount = () => {
 	// authentication check check whether club has logged in
 	useClubLoginValidation(`/clubs/accountManager/${clubId}`);
 
-	const [showPublicKey, setShowPublicKey] = useState(false);
-	const toggleShowPublicKeyButton = () => {
-		if (showPublicKey === false) {
-			setShowPublicKey(true);
-		} else {
-			setShowPublicKey(false);
-		}
-	};
-	const [showPublicKeyButton, setShowPublicKeyButton] = useState(
-		<i className="fal fa-eye-slash fa-lg" />
-	);
-	useEffect(() => {
-		if (showPublicKey) {
-			setShowPublicKeyButton(<i className="fal fa-eye fa-lg" />);
-		} else {
-			setShowPublicKeyButton(
-				<i className="fal fa-eye-slash fa-lg" />
-			);
-		}
-	}, [showPublicKey, setShowPublicKeyButton]);
-
 	// If we are re-directing to this page, we want to clear up clubRedirectURL
 	let location = useLocation();
-	let path;
 	useEffect(() => {
-		path = location.pathname;
+		let path = location.pathname;
 		let clubRedirectURL = clubAuthContext.clubRedirectURL;
 		if (path === clubRedirectURL) {
 			// re-init redirectURL after re-direction route
 			clubAuthContext.setClubRedirectURL(null);
 		}
-	}, [location]);
+	}, [location, clubAuthContext]);
 
 	const [OKLeavePage, setOKLeavePage] = useState('true');
 	let initialValues = {
 		onSitePayment: 'false',
 		stripePayment: 'true',
-		stripePublicKey: '',
-		stripeSecretKey: ''
+		hostPrivateEvent: false
 	};
-
-	const [
-		validateStripePublicKey,
-		setValidateStripePublicKey
-	] = useState(() => value => {
-		let error;
-		if (!value) {
-			error = 'Stripe Publishable Key is required.';
-		}
-		return error;
-	});
-
-	const [
-		validateStripeSecretKey,
-		setValidateStripeSecretKey
-	] = useState(() => value => {
-		let error;
-		if (!value) {
-			error = 'Stripe Secret Key is required.';
-		}
-		return error;
-	});
 
 	const [loadedClubAccount, setLoadedClubAccount] = useState();
 	useEffect(() => {
@@ -117,7 +71,7 @@ const ClubAccount = () => {
 			} catch (err) {}
 		};
 		fetchClubAccount();
-	}, [clubId, setLoadedClubAccount]);
+	}, [clubId, setLoadedClubAccount, sendRequest, clubAuthContext]);
 
 	const [saveButtonEnabled, setSaveButtonEnabled] = useState(false);
 	const submitHandler = async values => {
@@ -134,8 +88,7 @@ const ClubAccount = () => {
 						values.onSitePayment === 'true' ? true : false,
 					stripePayment:
 						values.stripePayment === 'true' ? true : false,
-					stripePublicKey: values.stripePublicKey,
-					stripeSecretKey: values.stripeSecretKey
+					hostPrivateEvent: values.hostPrivateEvent
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -167,8 +120,7 @@ const ClubAccount = () => {
 			stripePayment: loadedClubAccount.stripePayment
 				? 'true'
 				: 'false',
-			stripePublicKey: loadedClubAccount.stripePublicKey,
-			stripeSecretKey: loadedClubAccount.stripeSecretKey
+			hostPrivateEvent: loadedClubAccount.hostPrivateEvent
 		};
 	}
 
@@ -185,24 +137,6 @@ const ClubAccount = () => {
 					submitHandler(values);
 					if (actions.isSubmitting) {
 						actions.setSubmitting(false);
-					}
-					if (!actions.isSubmitting) {
-						setValidateStripePublicKey(() => value => {
-							console.log('ValidateStripePublicKey');
-							let error;
-							if (!value) {
-								error = 'Stripe Publishable Key is required.';
-							}
-							return error;
-						});
-						setValidateStripeSecretKey(() => value => {
-							console.log('ValidateStripeSecretKey');
-							let error;
-							if (!value) {
-								error = 'Stripe Secret Key is required.';
-							}
-							return error;
-						});
 					}
 				}}>
 				{({
@@ -288,58 +222,23 @@ const ClubAccount = () => {
 								&nbsp;No
 							</label>
 						</div>
+						<div id="my-radio-group" className="event-form__label">
+							<label>
+								<Field
+									id="hostPrivateEvent"
+									name="hostPrivateEvent"
+									type="checkbox"
+									onBlur={event => {
+										handleBlur(event);
+										setOKLeavePage(false);
+										setSaveButtonEnabled(true);
+									}}
+								/>
+								&nbsp; Check the box if your club hosts private events
+								that will be only shared by event link.
+							</label>
+						</div>
 						<br />
-						{/* <label
-							htmlFor="stripePublicKey"
-							className="event-form__label_inline">
-							Stripe Publishable Key
-						</label>
-						<span
-							type="button"
-							className="showPasswordButton"
-							onClick={toggleShowPublicKeyButton}>
-							{showPublicKeyButton}
-						</span>
-						<Field
-							id="stripePublicKey"
-							name="stripePublicKey"
-							type={showPublicKey ? 'text' : 'password'}
-							className="event-form__field"
-							validate={validateStripePublicKey}
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-								setSaveButtonEnabled(true);
-							}}
-						/>
-						{touched.stripePublicKey && errors.stripePublicKey && (
-							<div className="event-form__field-error">
-								{errors.stripePublicKey}
-							</div>
-						)} */}
-						{/* <label
-							htmlFor="stripeSecretKey"
-							className="event-form__label">
-							Stripe Secret Key (For security, this key will not be
-							displayed. )
-						</label>
-						<Field
-							id="stripeSecretKey"
-							name="stripeSecretKey"
-							type="password"
-							className="event-form__field"
-							validate={validateStripeSecretKey}
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-								setSaveButtonEnabled(true);
-							}}
-						/>
-						{touched.stripeSecretKey && errors.stripeSecretKey && (
-							<div className="event-form__field-error">
-								{errors.stripeSecretKey}
-							</div>
-						)} */}
 						<Button
 							type="submit"
 							size="medium"

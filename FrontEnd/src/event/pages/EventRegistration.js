@@ -25,6 +25,7 @@ const EventRegistration = props => {
 	let eventId = props.eventId;
 	const [initialized, setInitialized] = useState(false);
 	const clubAuthContext = useContext(ClubAuthContext);
+	const clubId = clubAuthContext.clubId;
 	const formContext = useContext(FormContext);
 
 	const [continueStatus, setContinueStatus] = useState(false);
@@ -73,6 +74,7 @@ const EventRegistration = props => {
 	const [numGroups, setNumGroups] = useState('');
 	const [capDistribution, setCapDistribution] = useState(false);
 	const [multiDayEvent, setMultiDayEvent] = useState(false);
+	const [privateEvent, setPrivateEvent] = useState(false);
 
 	// initialize local storage
 	// Get the existing data
@@ -82,6 +84,33 @@ const EventRegistration = props => {
 	eventFormData = eventFormData ? JSON.parse(eventFormData) : {};
 
 	const [OKLeavePage, setOKLeavePage] = useState(true);
+
+	// get clubAccount from backend to determine wheather to display private event checkbox
+	const [hostPrivateEvent, setHostPrivateEvent] = useState(false);
+	useEffect(() => {
+		const getClubAccount = async () => {
+			try {
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
+					process.env.REACT_APP_BACKEND_URL +
+						`/clubs/account/${clubId}`,
+					'GET',
+					null,
+					{
+						// adding JWT to header for authentication
+						Authorization: 'Bearer ' + clubAuthContext.clubToken
+					}
+				);
+				setHostPrivateEvent(responseData.clubAccount.privateEvent);
+			} catch (err) {
+				console.log('err = ', err);
+			}
+		};
+		getClubAccount();
+	}, []);
 	// local storage gets the higest priority
 	// get from localStorage
 	if (
@@ -103,6 +132,9 @@ const EventRegistration = props => {
 		if (eventFormData.multiDayEvent) {
 			setMultiDayEvent(eventFormData.multiDayEvent);
 		}
+		if (eventFormData.privateEvent) {
+			setPrivateEvent(eventFormData.privateEvent);
+		}
 	} else if (!initialized) {
 		setInitialized(true);
 		// initialize localStorage
@@ -114,6 +146,7 @@ const EventRegistration = props => {
 		eventFormData['numGroups'] = '';
 		eventFormData['capDistribution'] = false;
 		eventFormData['multiDayEvent'] = false;
+		eventFormData['privateEvent'] = false;
 		localStorage.setItem(
 			'eventFormData',
 			JSON.stringify(eventFormData)
@@ -129,7 +162,8 @@ const EventRegistration = props => {
 		totalCap: totalCap,
 		numGroups: numGroups,
 		capDistribution: capDistribution,
-		multiDayEvent: multiDayEvent
+		multiDayEvent: multiDayEvent,
+		privateEvent: privateEvent
 	};
 
 	const updateEventFormData = (key, value) => {
@@ -163,7 +197,8 @@ const EventRegistration = props => {
 					totalCap: values.totalCap,
 					numGroups: values.numGroups,
 					capDistribution: values.capDistribution,
-					multiDayEvent: values.multiDayEvent
+					multiDayEvent: values.multiDayEvent,
+					privateEvent: values.privateEvent
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -338,7 +373,6 @@ const EventRegistration = props => {
 									id="multiDayEvent"
 									name="multiDayEvent"
 									type="checkbox"
-									// validate={validateCapDistribution(values)}
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
@@ -346,6 +380,21 @@ const EventRegistration = props => {
 								/>
 								&nbsp; You are creating a multiple day event. Please
 								check the box if each day represent a single event.
+							</label>
+						)}
+						{hostPrivateEvent && (
+							<label className="event-form__checkbox">
+								<Field
+									id="privateEvent"
+									name="privateEvent"
+									type="checkbox"
+									onBlur={event => {
+										handleBlur(event);
+										setOKLeavePage(false);
+									}}
+								/>
+								&nbsp; Check the box if this is a private event. (A
+								private event is only visivle with the event link.)
 							</label>
 						)}
 						{/* error message not working */}
