@@ -152,7 +152,7 @@ const Classification = props => {
 	const eventForm = values => (
 		<div className="event-form">
 			<div className="event-form-header">
-				<h4>Race Number and Club Member</h4>
+				<h4>Car Number</h4>
 				<h5>&nbsp;All fields are required</h5>
 				<hr className="event-form__hr" />
 			</div>

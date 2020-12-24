@@ -365,6 +365,9 @@ export default class Toolbar extends React.Component {
 			item.canHaveAlternateForm !== false;
 		elementOptions.canHaveDisplayHorizontal =
 			item.canHaveDisplayHorizontal !== false;
+		if (elementOptions.canHaveDisplayHorizontal) {
+			elementOptions.inline = item.inline;
+		}
 		elementOptions.canHaveOptionCorrect =
 			item.canHaveOptionCorrect !== false;
 		elementOptions.canHaveOptionValue =

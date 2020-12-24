@@ -833,6 +833,8 @@ const createEvent = async (req, res, next) => {
 		totalEntries: []
 	});
 
+	// convert to ISO 8601 strings
+	var ISOTime = new Date(regEndDate);
 	const newEvent = new Event({
 		name,
 		type,
@@ -840,7 +842,7 @@ const createEvent = async (req, res, next) => {
 		startDate,
 		endDate,
 		regStartDate,
-		regEndDate: moment(regEndDate)
+		regEndDate: moment(ISOTime)
 			.add(23, 'h')
 			.add(59, 'm')
 			.add(59, 's')
@@ -1830,7 +1832,6 @@ const getEntryReportForUsers = async (req, res, next) => {
 		);
 		return next(error);
 	}
-	console.log('event = ', event);
 
 	let entryReport = event.entryReportId;
 	if (!entryReport) {
@@ -1843,7 +1844,6 @@ const getEntryReportForUsers = async (req, res, next) => {
 
 	// get entires
 	let entries = entryReport.entries;
-	console.log('entries = ', entries);
 	// if there is no entry, should not have a waitlist, either.
 	if (entries.length === 0) {
 		res.status(404).json({
@@ -1853,7 +1853,6 @@ const getEntryReportForUsers = async (req, res, next) => {
 	}
 
 	let days = entries.length;
-	console.log('days = ', days);
 	let mutipleDayEntryData = [];
 	for (let i = 0; i < days; ++i) {
 		let entryData = [];

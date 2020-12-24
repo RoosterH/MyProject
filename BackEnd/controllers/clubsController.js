@@ -194,7 +194,6 @@ const createClub = async (req, res, next) => {
 		let profile = await newClubProfile.save({ session: session });
 		newClubAccount.clubId = newClub.id;
 		let account = await newClubAccount.save({ session: session });
-		console.log('account = ', account);
 		newClub.profileId = profile.id;
 		newClub.accountId = account.id;
 		await newClub.save({ session: session });

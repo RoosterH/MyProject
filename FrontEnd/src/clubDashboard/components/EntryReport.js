@@ -6,10 +6,6 @@ import '../../shared/components/FormElements/Button.css';
 const NOT_ATTENDING = 'Not Attending';
 
 const EntryReport = props => {
-	console.log(
-		'props.entryReportData.raceClassOptions = ',
-		props.entryReportData.raceClassOptions
-	);
 	// days = how many days for this event
 	const [days, setDays] = useState(
 		props.entryReportData.entryData
@@ -124,7 +120,6 @@ const EntryReport = props => {
 				if (entries[j].runGroup[i] === NOT_ATTENDING) {
 					continue;
 				}
-				console.log('entries[j].raceClass = ', entries[j].raceClass);
 				let entry = {
 					lastName: entries[j].userLastName,
 					firstName: entries[j].userFirstName,
@@ -140,7 +135,6 @@ const EntryReport = props => {
 				};
 				entryData.push(entry);
 			}
-			console.log('entryData = ', entryData);
 			entryDataArray.push(entryData);
 		}
 		setEntryListArray(entryDataArray);

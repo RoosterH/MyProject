@@ -29,7 +29,6 @@ router.post(
 			.exists()
 			.custom((value, { req }) => {
 				if (value === 'onSite') {
-					console.log('32 onSite');
 					return true;
 				} else if (
 					// check stripePaymentMethodId and stripeSetupIntentId only if paymentMethod is 'stripe'

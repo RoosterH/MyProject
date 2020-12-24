@@ -170,7 +170,7 @@ export default class Preview extends React.Component {
 		}
 		const answer_data = {};
 
-		if (!data) {
+		if (!data || data.entryFormData === '[]') {
 			return;
 		}
 

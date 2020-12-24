@@ -203,17 +203,11 @@ const createEntry = async (req, res, next) => {
 	//         0: "raceRadioOption_1"
 	// let groupFull = false;
 	let groupFull = [];
-
-	console.log('event.raceClassOptions = ', event.raceClassOptions);
-
 	let [raceClass, raceClassAnsTexts] = parseSingleDayAnswer(
 		event.raceClassOptions,
 		answer,
 		'RaceClass'
 	);
-	console.log('answer = ', answer);
-	console.log('raceClassAnsTexts = ', raceClassAnsTexts);
-	console.log('raceClass = ', raceClass);
 
 	// runGroupAnsChoices is the answer index for each day, i.e., index 1 is extracted from => 0: "raceRadioOption_1"
 	// runGroups
@@ -549,7 +543,6 @@ const parseAnswer = (options, answer, fieldName) => {
 };
 
 const parseSingleDayAnswer = (options, answer, fieldName) => {
-	console.log('options = ', options);
 	// entry answer format:
 	// answer: Array
 	//   0: object
@@ -573,12 +566,9 @@ const parseSingleDayAnswer = (options, answer, fieldName) => {
 		// index must be 0 because "RunGroupSingle"
 		// if (index === 0) {
 		if (match) {
-			console.log('answer[i] = ', answer[i]);
 			let ansOpt = answer[i].value[0];
-			console.log('ansOpt = ', ansOpt);
 			// parse string "raceRadioOption_1"
 			res = ansOpt.split('_');
-			console.log('res = ', res);
 
 			// options[i] is the corresponding text of the answer in options
 			answerIndex = res[i];

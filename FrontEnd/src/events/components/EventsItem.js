@@ -16,6 +16,7 @@ const EventsItem = props => {
 				{/****** Use Link to call the next component <Event /> *******/}
 				{/* in order to pass props via Link, we need to make an object {{pathname: xxx, state: xxx}}
 				 App.js Route also needs to make a change */}
+				{/* link to <Event /> */}
 				<Link
 					to={{
 						pathname: `/events/${props.id}`,

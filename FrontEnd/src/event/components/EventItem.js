@@ -18,6 +18,8 @@ import './EventItem.css';
 import googleMapImg from '../../shared/utils/png/GMapSmall.png';
 
 const EventItem = props => {
+	// coming from Club Event Manager => View Evetns, we want to disable Register Event Button
+	const clubReadOnly = props.clubReadOnly;
 	// useContext is listening to "ClubAuthContext"
 	const userAuthContext = useContext(UserAuthContext);
 	// check whether event registration is closed by club
@@ -408,7 +410,7 @@ const EventItem = props => {
 										}
 									}}>
 									<Button
-										disabled={!openRegistration}
+										disabled={!openRegistration || clubReadOnly}
 										size="small-orange">
 										{buttonName}
 									</Button>

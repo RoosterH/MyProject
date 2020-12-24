@@ -215,10 +215,16 @@ const Event = props => {
 			EventItem */}
 			{!isLoading &&
 				loadedEvent &&
-				(!clubOwnerRequest ||
-					(clubOwnerRequest && readOnly && !entryReportManager)) && (
-					<EventItem event={loadedEvent} />
+				clubOwnerRequest &&
+				readOnly &&
+				!entryReportManager && (
+					<EventItem event={loadedEvent} clubReadOnly={true} />
 				)}
+			{/* For users, clubs don't own the event, and OwnerClub wants to view event, we will go to
+			EventItem */}
+			{!isLoading && loadedEvent && !clubOwnerRequest && (
+				<EventItem event={loadedEvent} />
+			)}
 		</React.Fragment>
 	);
 };

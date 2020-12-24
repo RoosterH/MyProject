@@ -15,6 +15,7 @@ const EventManager = () => {
 
 			<div className="list-content">
 				<div className="list-content-link">
+					{/* link to <NewEventManager /> */}
 					<Link to="/clubs/newEventManager/" exact="exact">
 						<i
 							className="fa fa-sort-desc pull-right"
@@ -28,7 +29,7 @@ const EventManager = () => {
 							new club event.
 						</p>
 					</Link>
-
+					{/* link to <EditEventSelector /> */}
 					<Link to={`/clubs/editEventSelector/${cid}`} exact="exact">
 						<i
 							className="fa fa-sort-desc pull-right"
@@ -42,7 +43,7 @@ const EventManager = () => {
 							edit.
 						</p>
 					</Link>
-
+					{/* link to <ViewEventSelector /> */}
 					<Link to={`/clubs/viewEventSelector/${cid}`} exact="exact">
 						<i
 							className="fa fa-sort-desc pull-right"

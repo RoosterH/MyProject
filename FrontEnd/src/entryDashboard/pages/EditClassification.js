@@ -53,8 +53,8 @@ const EditClassification = props => {
 	const [OKLeavePage, setOKLeavePage] = useState(true);
 
 	const initialValues = {
-		carNumber: props.carNumber,
-		raceClass: props.raceClass
+		carNumber: props.carNumber
+		// raceClass: props.raceClass
 	};
 
 	/***** Form Validation Section  *****/
@@ -72,15 +72,15 @@ const EditClassification = props => {
 		}
 	);
 
-	const [validateRaceClass, setValidateRaceClass] = useState(
-		() => value => {
-			let error;
-			if (!value) {
-				error = 'Race class is required.';
-			}
-			return error;
-		}
-	);
+	// const [validateRaceClass, setValidateRaceClass] = useState(
+	// 	() => value => {
+	// 		let error;
+	// 		if (!value) {
+	// 			error = 'Race class is required.';
+	// 		}
+	// 		return error;
+	// 	}
+	// );
 	/***** End of Form Validation *****/
 
 	if (
@@ -107,8 +107,8 @@ const EditClassification = props => {
 					`/entries/classNumber/${props.entryId}`,
 				'PATCH',
 				JSON.stringify({
-					carNumber: values.carNumber,
-					raceClass: values.raceClass
+					carNumber: values.carNumber
+					// raceClass: values.raceClass
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -173,7 +173,7 @@ const EditClassification = props => {
 							{/* <i className="fad fa-cars"></i> */}
 							&nbsp; Race Class
 						</label>
-						<Field
+						{/* <Field
 							id="raceClass"
 							name="raceClass"
 							type="text"
@@ -187,7 +187,7 @@ const EditClassification = props => {
 							<div className="event-form__field-error_quarter">
 								{errors.raceClass}
 							</div>
-						)}
+						)} */}
 						<Button
 							type="submit"
 							size="small-block"

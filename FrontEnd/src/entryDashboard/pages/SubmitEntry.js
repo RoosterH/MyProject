@@ -392,7 +392,6 @@ const SubmitEntry = props => {
 			}
 		} else {
 			try {
-				console.log('paymentMethod = ', paymentMethod);
 				// we need to use JSON.stringify to send array objects.
 				// FormData with JSON.stringify not working
 				const [
@@ -436,7 +435,7 @@ const SubmitEntry = props => {
 					// add entry to userAuthContext to have data persistency.
 					userAuthContext.userEntries.push(responseData.entry);
 				}
-				setEntryFee(responseData.entryFee);
+				setEntryFee(responseData.totalPrice);
 				setEmail(responseData.email);
 
 				if (responseStatus === 202) {

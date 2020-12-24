@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
@@ -23,13 +23,8 @@ const EventPhotos = props => {
 	const clubAuthContext = useContext(ClubAuthContext);
 	const formContext = useContext(FormContext);
 
-	// contButton controls when to enable CONTINUE button, set to true after submitHandler() succeeds
-	const [contButton, setContButton] = useState(false);
 	// contButtonStatus is the return value back to NewEventManger, set to true @ CONTINUE button onClick()
 	const [contStatus, setContinueStatus] = useState(false);
-	// const continueHandler = () => {
-	// 	setContinueStatus(true);
-	// };
 
 	// return true back to NewEventManger to move to next stage
 	useEffect(() => {
@@ -144,7 +139,6 @@ const EventPhotos = props => {
 	};
 
 	const validateImageSize = value => {
-		console.log('value = ', value);
 		let error;
 		if (value && value.size > 1500000) {
 			error = 'File size needs to be smaller than 1.5MB';
@@ -235,14 +229,6 @@ const EventPhotos = props => {
 							disabled={isSubmitting}>
 							SAVE &amp; CONTINUE
 						</Button>
-						{/* <Button
-							type="button"
-							size="medium"
-							margin-left="1.5rem"
-							disabled={!contButton}
-							onClick={continueHandler}>
-							Continue
-						</Button> */}
 						<NavigationPrompt
 							afterConfirm={() => {
 								formContext.setIsInsideForm(false);
