@@ -305,6 +305,7 @@ export const EntryFormOptions = () => [
 			{
 				key: 'RadioButtons',
 				canHaveAnswer: true,
+				// canHaveDisplayHorizontal: false,
 				name: 'Day 1',
 				label: '<strong>Day 1</strong>',
 				field_name: 'RunGroupsForMultipleDaysEventDay1-',
@@ -349,6 +350,7 @@ export const EntryFormOptions = () => [
 				label: '<strong>Day 2</strong>',
 				field_name: 'RunGroupsForMultipleDaysEventDay2-',
 				static: true,
+				// canHaveDisplayHorizontal: false,
 				options: [
 					{
 						value: '0',
@@ -402,6 +404,7 @@ export const EntryFormOptions = () => [
 				label: '<strong>Day 1</strong>',
 				field_name: 'WorkerAssignmentsForMultipleDaysEventDay1-',
 				static: true,
+				// canHaveDisplayHorizontal: false,
 				options: [
 					{
 						value: '0',
@@ -442,6 +445,7 @@ export const EntryFormOptions = () => [
 				label: '<strong>Day 2</strong>',
 				field_name: 'WorkerAssignmentsForMultipleDaysEventDay2-',
 				static: true,
+				// canHaveDisplayHorizontal: false,
 				options: [
 					{
 						value: '0',

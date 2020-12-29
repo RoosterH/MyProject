@@ -319,8 +319,11 @@ const SubmitEntry = props => {
 		paymentMethod: paymentMethodInit
 	};
 
+	const [disclaimerValue, setDisclaimerValue] = useState(false);
+
 	const [validateDisclaimer, setValidateDisclaimer] = useState(
 		() => value => {
+			setDisclaimerValue(value);
 			let error;
 			if (!value) {
 				error = 'You must agree with disclaimer to register event.';
@@ -743,6 +746,7 @@ const SubmitEntry = props => {
 							disabled={
 								isSubmitting ||
 								!isValid ||
+								!disclaimerValue ||
 								submitted ||
 								(values.paymentMethod === 'stripe' &&
 									stripePay &&

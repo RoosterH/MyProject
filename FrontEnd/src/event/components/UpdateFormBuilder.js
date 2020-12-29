@@ -155,7 +155,6 @@ const FormBuilder = props => {
 		data = fixFormData(data);
 
 		const setData = () => {
-			console.log('data = ', data);
 			// save the array to unsavedData and backend
 			// format of data: {task_data: Array(6)}
 			setUnsavedData(data.task_data);

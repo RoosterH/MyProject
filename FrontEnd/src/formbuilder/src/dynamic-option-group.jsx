@@ -14,6 +14,8 @@ import draftToHtml from 'draftjs-to-html';
 import { Editor } from 'react-draft-wysiwyg';
 import DynamicOptionList from './dynamic-option-list';
 
+const DEBUG = process.env.DEBUG_MODE;
+
 const toolbar = {
 	options: [
 		'inline',
@@ -39,13 +41,14 @@ const toolbar = {
 export default class DynamicOptionGroup extends React.Component {
 	constructor(props) {
 		super(props);
-		console.log(
-			'this.props.editElementProp = ',
-			this.props.editElementProp
-		);
-		console.log('this.props.element = ', this.props.element);
-		console.log('this.props.data = ', this.props.data);
-
+		if (DEBUG) {
+			console.log(
+				'this.props.editElementProp = ',
+				this.props.editElementProp
+			);
+			console.log('this.props.element = ', this.props.element);
+			console.log('this.props.data = ', this.props.data);
+		}
 		this.state = {
 			element: this.props.element,
 			data: this.props.data,
@@ -53,8 +56,9 @@ export default class DynamicOptionGroup extends React.Component {
 			index: this.props.index,
 			parent: this.props.parent
 		};
-
-		console.log('57 this.state = ', this.state);
+		if (DEBUG) {
+			console.log('57 this.state = ', this.state);
+		}
 	}
 
 	_setValue(text) {
@@ -81,7 +85,9 @@ export default class DynamicOptionGroup extends React.Component {
 	}
 
 	editOption(option_index, e) {
-		console.log('I am in editOption');
+		if (DEBUG) {
+			console.log('I am in editOption');
+		}
 		const this_element = this.state.element;
 		const val =
 			this_element.options[option_index].value !==
@@ -98,7 +104,9 @@ export default class DynamicOptionGroup extends React.Component {
 	}
 
 	editValue(option_index, e) {
-		console.log('I am in editValue');
+		if (DEBUG) {
+			console.log('I am in editValue');
+		}
 		const this_element = this.state.element;
 		const val =
 			e.target.value === ''
@@ -126,7 +134,9 @@ export default class DynamicOptionGroup extends React.Component {
 	}
 
 	updateOption() {
-		console.log('I am in updateOption');
+		if (DEBUG) {
+			console.log('I am in updateOption');
+		}
 		const this_element = this.state.element;
 		// to prevent ajax calls with no change
 		if (this.state.dirty) {
@@ -136,11 +146,12 @@ export default class DynamicOptionGroup extends React.Component {
 	}
 
 	addOption(index) {
-		console.log('in addOption');
-		console.log('index = ', index);
-		console.log('parent = ', this.props.parent);
-		console.log('element = ', this.state.element);
-
+		if (DEBUG) {
+			console.log('in addOption');
+			console.log('index = ', index);
+			console.log('parent = ', this.props.parent);
+			console.log('element = ', this.state.element);
+		}
 		// adding a Radio Button to parent Group
 		// Make a copy of this.state.element and modify properties
 		// We need to use Deep Copy to make sure all the information is disconnected
@@ -155,8 +166,9 @@ export default class DynamicOptionGroup extends React.Component {
 		newItem.parentId = this.props.parent.id;
 
 		this.props.parent.options.splice(index + 1, 0, newItem);
-		console.log('this.props.parent = ', this.props.parent);
-
+		if (DEBUG) {
+			console.log('this.props.parent = ', this.props.parent);
+		}
 		this.props.updateElement.call(
 			this.props.preview,
 			this.props.parent
@@ -164,9 +176,13 @@ export default class DynamicOptionGroup extends React.Component {
 	}
 
 	removeOption(index) {
-		console.log('remove index = ', index);
+		if (DEBUG) {
+			console.log('remove index = ', index);
+		}
 		const this_element = this.state.element;
-		console.log('this_element = ', this_element);
+		if (DEBUG) {
+			console.log('this_element = ', this_element);
+		}
 		// splice parent.options
 		this.props.parent.options.splice(index, 1);
 		this.props.updateElement.call(
@@ -177,16 +193,24 @@ export default class DynamicOptionGroup extends React.Component {
 
 	updateElement() {
 		const this_element = this.state.element;
-		console.log('this_element = ', this_element);
+		if (DEBUG) {
+			console.log('this_element = ', this_element);
+		}
 		// to prevent ajax calls with no change
-		console.log('this.props.preview = ', this.props.preview);
-		console.log('this.props.parent = ', this.props.parent);
+		if (DEBUG) {
+			console.log('this.props.preview = ', this.props.preview);
+			console.log('this.props.parent = ', this.props.parent);
+		}
 		const { options } = this.state.parent;
-		console.log('options = ', options);
+		if (DEBUG) {
+			console.log('options = ', options);
+		}
 		for (let i = 0; i < options.length; ++i) {
 			if (this_element.id === options[i].id) {
 				options[i] = this_element;
-				console.log('parent 2 = ', this.state.parent);
+				if (DEBUG) {
+					console.log('parent 2 = ', this.state.parent);
+				}
 				break;
 			}
 		}
@@ -201,7 +225,9 @@ export default class DynamicOptionGroup extends React.Component {
 	}
 
 	convertFromHTML(content) {
-		console.log('content = ', content);
+		if (DEBUG) {
+			console.log('content = ', content);
+		}
 		const newContent = convertFromHTML(content);
 		if (
 			!newContent.contentBlocks ||
@@ -226,18 +252,22 @@ export default class DynamicOptionGroup extends React.Component {
 			.replace(/(?:\r\n|\r|\n)/g, ' ');
 		const this_element = this.state.element;
 
-		console.log('html = ', html);
-		console.log('this.state = ', this.state);
-		console.log('this_element = ', this_element);
+		if (DEBUG) {
+			console.log('html = ', html);
+			console.log('this.state = ', this.state);
+			console.log('this_element = ', this_element);
+			console.log('property = ', property);
+		}
 
-		console.log('property = ', property);
 		this_element[property] = html;
 		this_element['text'] = html;
 		this.setState({
 			element: this_element,
 			dirty: true
 		});
-		console.log('this.state = ', this.state);
+		if (DEBUG) {
+			console.log('this.state = ', this.state);
+		}
 	}
 
 	render() {
@@ -253,28 +283,38 @@ export default class DynamicOptionGroup extends React.Component {
 			? this.props.inline
 			: false;
 
-		console.log('this.props in 228 = ', this.props);
-
+		if (DEBUG) {
+			console.log('this.props in 228 = ', this.props);
+		}
 		let editorState;
 		if (this.props.element.hasOwnProperty('name')) {
-			console.log('name this.props = ', this.props);
+			if (DEBUG) {
+				console.log('name this.props = ', this.props);
+			}
 			editorState = this.convertFromHTML(this.props.element.name);
 		}
 		if (this.props.element.hasOwnProperty('content')) {
-			console.log('content this.props = ', this.props);
+			if (DEBUG) {
+				console.log('content this.props = ', this.props);
+			}
 			editorState = this.convertFromHTML(this.props.element.content);
 		}
 		if (this.props.element.hasOwnProperty('label')) {
-			console.log('label this.props = ', this.props);
+			if (DEBUG) {
+				console.log('label this.props = ', this.props);
+			}
 			editorState = this.convertFromHTML(this.props.element.label);
 		}
 		if (this.props.element.label) {
-			console.log('label2 this.props = ', this.props.element.label);
+			if (DEBUG) {
+				console.log('label2 this.props = ', this.props.element.label);
+			}
 			editorState = this.convertFromHTML(this.props.element.label);
 		}
-
-		console.log('ALL this.props = ', this.props);
-		console.log('editorState = ', editorState);
+		if (DEBUG) {
+			console.log('ALL this.props = ', this.props);
+			console.log('editorState = ', editorState);
+		}
 		return (
 			<div className="form-group">
 				<label>Display Label &nbsp; &nbsp; &nbsp; &nbsp;</label>
@@ -324,7 +364,6 @@ export default class DynamicOptionGroup extends React.Component {
 								'checked'
 							)}
 						/>
-
 						<DynamicOptionList
 							showCorrectColumn={this.props.element.showCorrectColumn}
 							canHaveOptionCorrect={
@@ -344,12 +383,13 @@ export default class DynamicOptionGroup extends React.Component {
 							key={this.props.element.options.length}
 							parent={this.props.parent}
 						/>
-
+						{/* {this.state.element.element.canHaveDisplayHorizontal && ( */}
 						<label
 							className="custom-control-label"
 							htmlFor="display-horizontal">
 							Display horizontally
 						</label>
+						{/* )} */}
 					</div>
 				)}
 			</div>

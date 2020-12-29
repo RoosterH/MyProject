@@ -1488,6 +1488,30 @@ const getEntryFee = async (req, res, next) => {
 			entryReport.runGroupNumEntries.length ||
 		entryReport.entries.length !== entryReport.totalEntries.length
 	) {
+		console.log(
+			'entryReport.entries.length  = ',
+			entryReport.entries.length
+		);
+		console.log(
+			'entryReport.waitlist.length  = ',
+			entryReport.waitlist.length
+		);
+		console.log(
+			'entryReport.full.length  = ',
+			entryReport.full.length
+		);
+		console.log(
+			'event.runGroupOptions.length  = ',
+			event.runGroupOptions.length
+		);
+		console.log(
+			'entryReport.runGroupNumEntries.length  = ',
+			entryReport.runGroupNumEntries.length
+		);
+		console.log(
+			'entryReport.totalEntries.length  = ',
+			entryReport.totalEntries.length
+		);
 		const error = new HttpError(
 			'getEntryFee process internal failure array length not the same.',
 			500
