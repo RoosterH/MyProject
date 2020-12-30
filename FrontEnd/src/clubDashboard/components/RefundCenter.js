@@ -154,9 +154,7 @@ const RefundCenter = props => {
 					process.env.REACT_APP_BACKEND_URL +
 						`/entries/refund/${entryId}`,
 					'POST',
-					JSON.stringify({
-						refundFee: refundFee
-					}),
+					null,
 					{
 						'Content-Type': 'application/json',
 						// adding JWT to header for authentication

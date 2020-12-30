@@ -424,7 +424,7 @@ const createEntry = async (req, res, next) => {
 			let payment = new Payment({
 				entryId,
 				entryFee: totalPrice,
-				refundFee: totalPrice,
+				refundFee: totalPrice - (totalPrice * 0.029 + 0.3), // stripe fee 2.9% + 30 cents service fee is not refundable
 				paymentMethod,
 				stripeSetupIntentId,
 				stripePaymentMethodId
@@ -1049,7 +1049,8 @@ const updateFormAnswer = async (req, res, next) => {
 		return next(error);
 	}
 	payment.entryFee = totalPrice;
-	payment.refundFee = totalPrice;
+	// stripe fee 2.9% + 30 cents service fee is not refundable
+	payment.refundFee = totalPrice - (totalPrice * 0.029 + 0.3);
 	try {
 		const session = await mongoose.startSession();
 		session.startTransaction();
@@ -1779,7 +1780,7 @@ const chargeEntry = async (req, res, next) => {
 	if (paymentMethod === ONSITE) {
 		paymentStatus = PAID;
 	} else if (paymentMethod === STRIPE) {
-		// create paymentIntent
+		// create paymentIntent, calling stripe.paymentIntents.create
 		const [paymentIntent, err] = await Stripe.createPaymentIntent(
 			user.stripeCustomerId,
 			user.email,
@@ -1890,14 +1891,12 @@ const refund = async (req, res, next) => {
 	}
 
 	// onSite paymentMethod
-	if (payment.paymentMethod === 'strip') {
+	if (payment.paymentMethod === 'stripe') {
 		// stripe payment method
-		const { refundFee } = req.body;
 		let refund;
-
 		try {
 			refund = await stripe.refunds.create({
-				amount: refundFee,
+				amount: payment.refundFee * 100,
 				payment_intent: payment.stripePaymentIntentId
 			});
 		} catch (err) {
@@ -1918,8 +1917,7 @@ const refund = async (req, res, next) => {
 			);
 			return next(error);
 		}
-
-		payment.stripeRefundId = refund.id;
+		payment.set('stripeRefundId', refund.id, { strict: false });
 	}
 	payment.paymentStatus = 'Refunded';
 
