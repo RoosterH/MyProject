@@ -37,7 +37,9 @@ const entrySchema = new Schema({
 		ref: 'Car'
 	},
 	carNumber: { type: String, required: true },
-	raceClass: { type: String, required: true },
+	// raceClass is optional
+	// if raceClass is not defined for the event, set 'NA' as default to pass validation
+	raceClass: { type: String, required: true, default: 'NA' },
 	// event entry answer
 	answer: { type: Array, required: true },
 	disclaimer: { type: Boolean, require: true },

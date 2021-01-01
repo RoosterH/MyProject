@@ -67,7 +67,6 @@ const EntryReport = props => {
 	const [entryListArray, setEntryListArray] = useState([]);
 	const [waitlistArray, setWaitlistArray] = useState([]);
 	const [raceClassLookup, setRaceClassLookup] = useState();
-
 	const [runGroupLookup, setRunGroupLookup] = useState();
 
 	const [
@@ -77,6 +76,10 @@ const EntryReport = props => {
 
 	// return index of matched value
 	const getMapKey = (val, myMap) => {
+		// in case workerAssignment not defined
+		if (myMap === undefined) {
+			myMap = [];
+		}
 		let answer;
 		for (var i = 0; i < myMap.length; ++i) {
 			if (myMap[i] === val) {
@@ -89,6 +92,10 @@ const EntryReport = props => {
 
 	// returns a map
 	const convert2Lookup = options => {
+		// in case raceClass not defined
+		if (options === undefined) {
+			options = [];
+		}
 		//lookup format- lookup: { 34: 'İstanbul', 63: 'Şanlıurfa' },
 		let lookupMap = {};
 		for (var i = 0; i < options.length; ++i) {
@@ -124,14 +131,23 @@ const EntryReport = props => {
 					lastName: entries[j].userLastName,
 					firstName: entries[j].userFirstName,
 					// for lookup field, we need to provide key in lookup array, we use index as key
-					raceClass: getMapKey(entries[j].raceClass, raceClasses),
+					raceClass:
+						raceClasses !== undefined
+							? getMapKey(entries[j].raceClass, raceClasses)
+							: '',
 					carNumber: entries[j].carNumber,
 					car: entries[j].car,
-					runGroup: getMapKey(entries[j].runGroup[i], runGroups[i]),
-					workerAssignment: getMapKey(
-						entries[j].workerAssignment[i],
-						workerAssignments[i]
-					)
+					runGroup:
+						runGroups !== undefined
+							? getMapKey(entries[j].runGroup[i], runGroups[i])
+							: '',
+					workerAssignment:
+						workerAssignments[i] !== undefined
+							? getMapKey(
+									entries[j].workerAssignment[i],
+									workerAssignments[i]
+							  )
+							: ''
 				};
 				entryData.push(entry);
 			}
@@ -150,13 +166,22 @@ const EntryReport = props => {
 					lastName: waitlist[j].userLastName,
 					firstName: waitlist[j].userFirstName,
 					carNumber: waitlist[j].carNumber,
-					raceClass: getMapKey(waitlist[j].raceClass, raceClasses),
+					raceClass:
+						raceClasses !== undefined
+							? getMapKey(waitlist[j].raceClass, raceClasses)
+							: '',
 					car: waitlist[j].car,
-					runGroup: getMapKey(waitlist[j].runGroup[i], runGroups[i]),
-					workerAssignment: getMapKey(
-						waitlist[j].workerAssignment[i],
-						workerAssignments[i]
-					)
+					runGroup:
+						runGroups[i] !== undefined
+							? getMapKey(waitlist[j].runGroup[i], runGroups[i])
+							: '',
+					workerAssignment:
+						workerAssignments[i] !== undefined
+							? getMapKey(
+									waitlist[j].workerAssignment[i],
+									workerAssignments[i]
+							  )
+							: ''
 				};
 				waitlistData.push(entry);
 			}

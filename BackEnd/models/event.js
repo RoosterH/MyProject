@@ -52,11 +52,14 @@ const eventSchema = new Schema({
 	numGroups: { type: Number, required: true },
 	// if true, we will create an array runGroupNumEntries with numGroup elements. Each element value cannot exceed totalCap / numGroups.
 	capDistribution: { type: Boolean, required: true },
+	//! raceClass is optional
 	// Race class options defined by club in the event entry form
 	raceClassOptions: [{ type: String, requird: true }],
+	//! runGroup is required
 	// Run group options defined by club in the event entry form such as morning session 1, morning session 2 ... etc.
 	// this is initialized in club.createEventForm
 	runGroupOptions: [[{ type: String, requird: true }]],
+	//! workerAssignment is optional
 	// Worker group options defined by club in the event entry form. No need to define workGroupEntries.
 	workerAssignments: [[{ type: String, required: true }]],
 	// Lunction

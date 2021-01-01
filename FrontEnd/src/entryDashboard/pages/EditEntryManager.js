@@ -290,7 +290,6 @@ const EditEntryManager = props => {
 								entryId={entryId}
 								userId={userId}
 								carNumber={carNumber}
-								// raceClass={raceClass}
 								getNewEntry={getNewEntry}
 							/>
 						)}

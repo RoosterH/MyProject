@@ -80,7 +80,6 @@ const createEntry = async (req, res, next) => {
 	const {
 		carId,
 		carNumber,
-		// raceClass,
 		answer,
 		disclaimer,
 		paymentMethod,
@@ -257,7 +256,11 @@ const createEntry = async (req, res, next) => {
 		answer,
 		'WorkerAssignment'
 	);
-	if (workerAssignmentAnsChoices.length === 0) {
+	// if no worker assignments defined for current event, we will not return error
+	if (
+		event.workerAssignments.length !== 0 &&
+		workerAssignmentAnsChoices.length === 0
+	) {
 		const error = new HttpError(
 			'Event registration answer invalid @worker assignment.',
 			400
@@ -646,9 +649,8 @@ const updateClassNumber = async (req, res, next) => {
 		return next(error);
 	}
 
-	const { carNumber, raceClass } = req.body;
+	const { carNumber } = req.body;
 	entry.carNumber = carNumber;
-	entry.raceClass = raceClass;
 
 	try {
 		await entry.save();
@@ -744,6 +746,14 @@ const updateFormAnswer = async (req, res, next) => {
 		}
 	}
 
+	// update race class
+	let [raceClass, raceClassAnsTexts] = parseSingleDayAnswer(
+		event.raceClassOptions,
+		answer,
+		'RaceClass'
+	);
+	entry.raceClass = raceClassAnsTexts;
+
 	// runGroupAnsChoices is the answer index for each day, i.e., index 1 is extracted from => 0: "raceRadioOption_1"
 	// runGroups
 	let [runGroupAnsChoices, runGroupAnsTexts] = parseAnswer(
@@ -751,6 +761,15 @@ const updateFormAnswer = async (req, res, next) => {
 		answer,
 		'RunGroup'
 	);
+
+	if (runGroupAnsTexts.length === 0) {
+		const error = new HttpError(
+			'Your submission was not accepted. Please choose a run group',
+			406
+		);
+
+		return next(error);
+	}
 
 	let notAttending = true;
 	for (let i = 0; i < days; ++i) {
@@ -776,7 +795,7 @@ const updateFormAnswer = async (req, res, next) => {
 
 	if (runGroupAnsChoices.length === 0) {
 		const error = new HttpError(
-			'Event registration answer invalid @run group. ',
+			'Event registration answer invalid. Please select a run group. ',
 			400
 		);
 		return next(error);
@@ -814,7 +833,11 @@ const updateFormAnswer = async (req, res, next) => {
 		answer,
 		'WorkerAssignment'
 	);
-	if (workerAssignmentAnsChoices.length === 0) {
+	// events may not have worker assignments defined in the entry form
+	if (
+		event.workerAssignments.length !== 0 &&
+		workerAssignmentAnsChoices.length === 0
+	) {
 		const error = new HttpError(
 			'Event registration answer invalid @worker assignment.',
 			400
@@ -828,8 +851,8 @@ const updateFormAnswer = async (req, res, next) => {
 		runGroupAnsTexts,
 		workerAssignmentAnsTexts
 	);
-
-	if (!workerSignup) {
+	// events may not have worker assignments defined in the entry form
+	if (event.workerAssignments.length !== 0 && !workerSignup) {
 		const error = new HttpError(
 			'Your must sign up worker for the registered date.  Your entry was not accepted',
 			406
@@ -1489,30 +1512,31 @@ const getEntryFee = async (req, res, next) => {
 			entryReport.runGroupNumEntries.length ||
 		entryReport.entries.length !== entryReport.totalEntries.length
 	) {
-		console.log(
-			'entryReport.entries.length  = ',
-			entryReport.entries.length
-		);
-		console.log(
-			'entryReport.waitlist.length  = ',
-			entryReport.waitlist.length
-		);
-		console.log(
-			'entryReport.full.length  = ',
-			entryReport.full.length
-		);
-		console.log(
-			'event.runGroupOptions.length  = ',
-			event.runGroupOptions.length
-		);
-		console.log(
-			'entryReport.runGroupNumEntries.length  = ',
-			entryReport.runGroupNumEntries.length
-		);
-		console.log(
-			'entryReport.totalEntries.length  = ',
-			entryReport.totalEntries.length
-		);
+		// debug messages
+		// console.log(
+		// 	'entryReport.entries.length  = ',
+		// 	entryReport.entries.length
+		// );
+		// console.log(
+		// 	'entryReport.waitlist.length  = ',
+		// 	entryReport.waitlist.length
+		// );
+		// console.log(
+		// 	'entryReport.full.length  = ',
+		// 	entryReport.full.length
+		// );
+		// console.log(
+		// 	'event.runGroupOptions.length  = ',
+		// 	event.runGroupOptions.length
+		// );
+		// console.log(
+		// 	'entryReport.runGroupNumEntries.length  = ',
+		// 	entryReport.runGroupNumEntries.length
+		// );
+		// console.log(
+		// 	'entryReport.totalEntries.length  = ',
+		// 	entryReport.totalEntries.length
+		// );
 		const error = new HttpError(
 			'getEntryFee process internal failure array length not the same.',
 			500

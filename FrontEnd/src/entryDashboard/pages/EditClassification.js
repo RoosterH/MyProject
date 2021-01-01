@@ -71,16 +71,6 @@ const EditClassification = props => {
 			return error;
 		}
 	);
-
-	// const [validateRaceClass, setValidateRaceClass] = useState(
-	// 	() => value => {
-	// 		let error;
-	// 		if (!value) {
-	// 			error = 'Race class is required.';
-	// 		}
-	// 		return error;
-	// 	}
-	// );
 	/***** End of Form Validation *****/
 
 	if (
@@ -108,7 +98,6 @@ const EditClassification = props => {
 				'PATCH',
 				JSON.stringify({
 					carNumber: values.carNumber
-					// raceClass: values.raceClass
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -173,21 +162,6 @@ const EditClassification = props => {
 							{/* <i className="fad fa-cars"></i> */}
 							&nbsp; Race Class
 						</label>
-						{/* <Field
-							id="raceClass"
-							name="raceClass"
-							type="text"
-							className="event-form__field_quarter"
-							validate={validateRaceClass}
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-							}}></Field>
-						{touched.raceClass && errors.raceClass && (
-							<div className="event-form__field-error_quarter">
-								{errors.raceClass}
-							</div>
-						)} */}
 						<Button
 							type="submit"
 							size="small-block"

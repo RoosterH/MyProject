@@ -1629,7 +1629,7 @@ const createUpdateEntryForm = async (req, res, next) => {
 				let runGroupOptionsLength = event.runGroupOptions.length;
 				let workerAssignmentsLength = event.workerAssignments.length;
 				data.options.map((option, index) => {
-					// loop through opt.options
+					// loop through data.options
 					let [fieldName, choices] = formAnalysis(option);
 					if (fieldName.startsWith('RunGroup')) {
 						if (runGroupOptionsLength > 0) {
@@ -1678,6 +1678,16 @@ const createUpdateEntryForm = async (req, res, next) => {
 				}
 			}
 		});
+
+		// entryReport is created according to runGroupOptions.
+		// if entry form does not have run group defined, errors out
+		if (entryReport.totalEntries.length === 0) {
+			const error = new HttpError(
+				'Create event form error. Run Group needs to be defined.',
+				500
+			);
+			return next(error);
+		}
 		// whenever entry form gets changed, always set published to false
 		event.published = false;
 

@@ -62,6 +62,10 @@ const EntryListForUsers = props => {
 
 	// return index of matched value
 	const getMapKey = (val, myMap) => {
+		// in case workerAssignment not defined
+		if (myMap === undefined) {
+			myMap = [];
+		}
 		let answer;
 		for (var i = 0; i < myMap.length; ++i) {
 			if (myMap[i] === val) {
@@ -74,6 +78,10 @@ const EntryListForUsers = props => {
 
 	// returns a map
 	const convert2Lookup = options => {
+		// in case raceGroup not defined
+		if (options === undefined) {
+			options = [];
+		}
 		//lookup format- lookup: { 34: 'İstanbul', 63: 'Şanlıurfa' },
 		let lookupMap = {};
 		for (var i = 0; i < options.length; ++i) {
@@ -118,7 +126,6 @@ const EntryListForUsers = props => {
 					obj = {};
 					obj = convert2Lookup(runGroups[i]);
 					setRunGroupLookup(obj);
-
 					obj = {};
 					obj = convert2Lookup(workerAssignments[i]);
 					setWorkerAssignmentLookup(obj);

@@ -25,4 +25,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-~$ndSeatTime.docx
+~*.docx
+
+# Frontend Build Files
+FrontEnd/build
+
+# react-script issue, should be fixed in 4.0.2
+FrontEnd/.eslintcache
