@@ -257,9 +257,13 @@ export default class ReactForm extends React.Component {
 				let checked_options = true;
 				group.props.data.options.forEach(option => {
 					let optionValid = false;
-					console.log('option = ', option);
+					if (DEBUG) {
+						console.log('option = ', option);
+					}
 					option.options.forEach(opt => {
-						console.log('opt.key = ', opt.key);
+						if (DEBUG) {
+							console.log('opt.key = ', opt.key);
+						}
 						// let key = 'child_ref_undefined_' + opt.key;
 						let key = 'child_ref_RadioButtons_' + opt.key;
 						if (DEBUG) {
