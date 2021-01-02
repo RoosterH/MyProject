@@ -338,11 +338,6 @@ const App = () => {
 				<Route path="/clubs/auth" exact>
 					<ClubAuth />
 				</Route>
-				<Route
-					path="/clubs/:clubId"
-					component={ClubProfileViewerForUsers}
-					exact
-				/>
 				<Route path="/users/auth" exact>
 					<UserAuth />
 				</Route>
@@ -455,7 +450,11 @@ const App = () => {
 					exact
 				/>
 				{/* End of page refresh section */}
-
+				<Route
+					path="/clubs/:clubId"
+					component={ClubProfileViewerForUsers}
+					exact
+				/>
 				<Route path="/error" exact>
 					<Error />
 				</Route>
