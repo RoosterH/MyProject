@@ -47,23 +47,69 @@ const getNewSetupIntent = async (req, res, next) => {
 	// ! todo- get club stripe ID to setup on_behalf_of
 	// use eventId to get club and its clubStripeId, so we can set on_behalf_of the hosting club
 	const eventId = req.params.eventId;
-	let stripeAccountId;
+	let event;
 	try {
-		let event = await Event.findById(eventId);
-		let clubId = event.clubId;
-		let club = await Club.findById(clubId);
-		let accountId = club.accountId;
-		let account = await ClubAccount.findById(accountId);
-		stripeAccountId = Decrypt(account.stripeAccountId);
+		event = await Event.findById(eventId);
 	} catch (err) {
-		console.log('stripeController 59 err = ', err);
+		console.log('stripeController 55 err = ', err);
 		const error = new HttpError(
-			'getNewSetupIntent process failed during stripeAccountId retrieval. Please try again later.',
+			'getNewSetupIntent process failed during event retrieval. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!event) {
+		console.log('stripeController 63 err = ', err);
+		const error = new HttpError(
+			'getNewSetupIntent process failed event not found. Please try again later.',
 			500
 		);
 		return next(error);
 	}
 
+	let clubId = event.clubId;
+	let club;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		console.log('stripeController 76 err = ', err);
+		const error = new HttpError(
+			'getNewSetupIntent process failed during club retrieval. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!club) {
+		console.log('stripeController 84 err = ', err);
+		const error = new HttpError(
+			'getNewSetupIntent process failed club not found. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	let accountId = club.accountId;
+	let account;
+	try {
+		account = await ClubAccount.findById(accountId);
+	} catch (err) {
+		console.log('stripeController 98 err = ', err);
+		const error = new HttpError(
+			'getNewSetupIntent process failed during club account retrieval. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!account) {
+		console.log('stripeController 106 err = ', err);
+		const error = new HttpError(
+			'getNewSetupIntent process failed club account not found. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	let stripeAccountId = Decrypt(account.stripeAccountId);
 	let user;
 	// req.userData is inserted in check-auth.js
 	let userId = req.userData;
@@ -77,7 +123,6 @@ const getNewSetupIntent = async (req, res, next) => {
 		);
 		return next(error);
 	}
-
 	if (!user) {
 		const error = new HttpError(
 			'getNewSetupIntent faied with unauthorized request. Forgot to login?',
@@ -94,13 +139,22 @@ const getNewSetupIntent = async (req, res, next) => {
 			on_behalf_of: stripeAccountId
 		});
 	} catch (err) {
-		console.log('Stripe createSetupIntent error = ', err);
+		console.log('Stripe createSetupIntent 145 error = ', err);
 		const error = new HttpError(
 			'Stripe createSession failed, please try again.',
 			500
 		);
 		return next(error);
 	}
+	if (!setupIntent) {
+		console.log('stripeController 153 err = ', err);
+		const error = new HttpError(
+			'getNewSetupIntent process failed setupIntent not found. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
 	res.status(200).json({
 		setupIntent: setupIntent,
 		email: user.email
