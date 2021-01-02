@@ -15,6 +15,11 @@ router.get('/', clubsController.getAllClubs);
 
 router.get('/:cid', clubsController.getClubById);
 
+router.get(
+	'/clubProfile/:cid',
+	clubsController.getClubProfileForUsers
+);
+
 router.post(
 	'/signup',
 	// single file, 'image' is the key name in the request body

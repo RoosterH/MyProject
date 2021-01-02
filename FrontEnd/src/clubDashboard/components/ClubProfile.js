@@ -12,7 +12,7 @@ import PromptModal from '../../shared/components/UIElements/PromptModal';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { FormContext } from '../../shared/context/form-context';
 import '../../shared/css/EventForm.css';
-import '../../event/components/EventItem.css';
+import '../../shared/css/EventItem.css';
 
 const ClubProfile = () => {
 	const [loadedClubProfile, setLoadedClubProfile] = useState();

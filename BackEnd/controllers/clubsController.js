@@ -62,6 +62,69 @@ const getClubById = async (req, res, next) => {
 	res.status(200).json({ club: club });
 };
 
+// GET /api/clubs/clubProfile/:cid
+const getClubProfileForUsers = async (req, res, next) => {
+	const clubId = req.params.cid;
+	let clubProfile;
+	try {
+		// we don't want to return password field
+		clubProfile = await ClubProfile.findOne({ clubId: clubId });
+	} catch (err) {
+		const error = new HttpError(
+			'Get club profile process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!clubProfile) {
+		const error = new HttpError('No club profile in the DB.', 404);
+		return next(error);
+	}
+
+	if (clubProfile.webPage === 'undefined') {
+		clubProfile.webPage = '';
+	}
+	if (clubProfile.faceBook === 'undefined') {
+		clubProfile.faceBook = '';
+	}
+	if (clubProfile.youTube === 'undefined') {
+		clubProfile.youTube = '';
+	}
+	// beacuse we chage email to all lower case
+	if (clubProfile.contactEmail === 'undefined') {
+		clubProfile.contactEmail = '';
+	}
+	if (clubProfile.description === 'undefined') {
+		clubProfile.description = '';
+	}
+	if (clubProfile.schedule === 'undefined') {
+		clubProfile.schedule = '';
+	}
+	if (clubProfile.profileImage === 'undefined') {
+		clubProfile.profileImage = '';
+	}
+	// club logo
+	let image;
+	try {
+		const club = await Club.findById(clubId);
+		image = process.env.CLOUDFRONT_URL + club.image;
+	} catch (err) {
+		const error = new HttpError(
+			'Get club profile process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	clubProfile.set(
+		'profileImage',
+		process.env.CLOUDFRONT_URL + clubProfile.profileImage,
+		{ strict: true }
+	);
+	res.status(200).json({ clubProfile: clubProfile, image: image });
+};
+
 // POST '/api/clubs/signup'
 const createClub = async (req, res, next) => {
 	const errors = validationResult(req);
@@ -595,6 +658,7 @@ const getClubProfile = async (req, res, next) => {
 		clubProfile.profileImage = '';
 	}
 
+	// club logo
 	let image;
 	try {
 		const club = await Club.findById(clubId);
@@ -1210,6 +1274,7 @@ const formAnalysis = data => {
 
 exports.getAllClubs = getAllClubs;
 exports.getClubById = getClubById;
+exports.getClubProfileForUsers = getClubProfileForUsers;
 exports.createClub = createClub;
 exports.loginClub = loginClub;
 exports.updateClubCredential = updateClubCredential;

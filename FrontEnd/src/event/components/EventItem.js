@@ -7,13 +7,13 @@ import moment from 'moment';
 import countdown from 'moment-countdown';
 
 import Button from '../../shared/components/FormElements/Button';
-
 import Image from '../../shared/components/UIElements/Image';
 import Map from '../../shared/components/UIElements/Map';
 import Modal from '../../shared/components/UIElements/Modal';
+import ClubEvents from '../../clubs/pages/ClubEvents';
 
 import { UserAuthContext } from '../../shared/context/auth-context';
-import './EventItem.css';
+import '../../shared/css/EventItem.css';
 
 import googleMapImg from '../../shared/utils/png/GMapSmall.png';
 
@@ -340,12 +340,15 @@ const EventItem = props => {
 						</div>
 						<div className="clubname-container">
 							From{' '}
-							<a
-								href="/"
-								target="_blank"
-								className="provider-clubname">
-								{props.event.clubName}
-							</a>
+							<Link
+								to={{
+									pathname: `/clubs/${props.event.clubId}`,
+									state: {
+										clubName: props.event.clubName
+									}
+								}}>
+								{props.event.clubName}{' '}
+							</Link>
 						</div>
 						<div className="clearfix">
 							<div>

@@ -7,7 +7,7 @@ import ClubProfileViewer from './ClubProfileViewer';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 
 import '../../shared/css/EventForm.css';
-import '../../event/components/EventItem.css';
+import '../../shared/css/EventItem.css';
 import './ClubManager.css';
 
 const ClubProfileManager = () => {

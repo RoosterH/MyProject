@@ -1,16 +1,15 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
-import { ClubAuthContext } from '../../shared/context/auth-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';
-import './clubProfileViewer.css';
+import '../../shared/css/EventItem.css';
 
-const ClubProfileViewer = props => {
-	const clubAuthContext = useContext(ClubAuthContext);
-	const clubId = clubAuthContext.clubId;
-	const clubName = clubAuthContext.clubName;
+const ClubProfileViewerForUsers = props => {
+	const clubId = useParams().clubId;
+	const clubName = props.location.state.clubName;
 	const {
 		isLoading,
 		error,
@@ -33,29 +32,17 @@ const ClubProfileViewer = props => {
 					responseMessage
 				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL +
-						`/clubs/profile/${clubId}`,
-					'GET',
-					null,
-					{
-						// adding JWT to header for authentication, JWT contains clubId
-						Authorization: 'Bearer ' + clubAuthContext.clubToken
-					}
+						`/clubs/clubProfile/${clubId}`,
+					'GET'
 				);
 				setLoadedProfileImage(responseData.clubProfile.profileImage);
 				setLoadedDescription(responseData.clubProfile.description);
 				setLoadedSchedule(responseData.clubProfile.schedule);
-				// club logo
 				setLoadedImage(responseData.image);
 			} catch (err) {}
 		};
 		fetchClubProfile();
-	}, [
-		clubId,
-		setLoadedProfileImage,
-		setLoadedDescription,
-		setLoadedSchedule,
-		setLoadedImage
-	]);
+	}, []);
 
 	const [showDescription, setShowDescription] = useState(
 		'btn collapsible minus-sign toggle-btn'
@@ -95,13 +82,19 @@ const ClubProfileViewer = props => {
 							<h3 className="header-title">{clubName}</h3>
 						</div>
 						<div className="clubname-container">
-							From{' '}
-							<a
-								href="/"
-								target="_blank"
-								className="provider-clubname">
-								{clubName}
-							</a>
+							<Link
+								to={{
+									pathname: `/users/clubEvents/${clubId}`,
+									state: {
+										clubId: clubId,
+										clubName: clubName,
+										clubImage: loadedImage,
+										readOnly: true,
+										displayPublished: false
+									}
+								}}>
+								{clubName} events
+							</Link>
 						</div>
 					</div>
 				</section>
@@ -112,11 +105,13 @@ const ClubProfileViewer = props => {
 					{/* event image on the left */}
 					<div className="page-basic-container">
 						<div className="eventimage-container">
-							<img
-								src={loadedProfileImage}
-								alt={clubName}
-								className="eventimage-container-img"
-							/>
+							{loadedProfileImage && (
+								<img
+									src={loadedProfileImage}
+									alt={clubName}
+									className="eventimage-container-img"
+								/>
+							)}
 						</div>
 					</div>
 					{/* Blog posts on the right */}
@@ -275,4 +270,4 @@ const ClubProfileViewer = props => {
 	);
 };
 
-export default ClubProfileViewer;
+export default ClubProfileViewerForUsers;

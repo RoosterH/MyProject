@@ -118,7 +118,12 @@ const ClubStripe = React.lazy(() =>
 const ClubStripeConnect = React.lazy(() =>
 	import('./clubDashboard/components/ClubStripeConnect')
 );
-
+const ClubProfileViewerForUsers = React.lazy(() =>
+	import('./users/components/ClubProfileViewerForUsers')
+);
+const ClubEventsForUsers = React.lazy(() =>
+	import('./users/components/ClubEventsForUsers')
+);
 // user section
 // const Users = React.lazy(() => import('./users/pages/Users'));
 const UserAuth = React.lazy(() => import('./users/pages/UserAuth'));
@@ -161,9 +166,9 @@ const App = () => {
 	if (clubToken) {
 		routes = (
 			<Switch>
+				{/* club root page should be <ClubManager/> */}
 				<Route path="/" exact>
 					<ClubManager />
-					{/* <Clubs /> */}
 				</Route>
 				<Route path="/events/club/:clubId" exact>
 					<ClubEvents />
@@ -254,6 +259,11 @@ const App = () => {
 				<Route path="/" exact>
 					<Events />
 				</Route>
+				<Route
+					path="/clubs/:clubId"
+					component={ClubProfileViewerForUsers}
+					exact
+				/>
 				<Route path="/users/events/:userId" exact>
 					<UserEvents />
 				</Route>
@@ -269,7 +279,11 @@ const App = () => {
 				<Route path="/users/cars/:carId" exact>
 					<Car />
 				</Route>
-				<Route path="/events/:id" component={Event} exact />
+				<Route
+					path="/users/clubEvents/:clubId"
+					component={ClubEventsForUsers}
+					exact
+				/>
 				<Route
 					path="/events/newEntryManager/:id"
 					component={NewEntryManager}
@@ -293,6 +307,7 @@ const App = () => {
 				<Route path="/events/entry/:carId" exact>
 					<Car />
 				</Route>
+				<Route path="/events/:id" component={Event} exact />
 				<Route path="/error" exact>
 					<Error />
 				</Route>
@@ -317,19 +332,20 @@ const App = () => {
 					<Events />
 				</Route>
 				<Route path="/events/:id" component={Event} exact />
-				<Route path="/events/club/:clubId" exact>
-					<ClubEvents />
-				</Route>
 				<Route path="/events/update/:id" exact>
 					<UpdateEvent />
 				</Route>
 				<Route path="/clubs/auth" exact>
 					<ClubAuth />
 				</Route>
+				<Route
+					path="/clubs/:clubId"
+					component={ClubProfileViewerForUsers}
+					exact
+				/>
 				<Route path="/users/auth" exact>
 					<UserAuth />
 				</Route>
-
 				{/* The following section is for page refresh. Without it, refresh will not happen */}
 				{/*** To aviod unauthorized requests, all the pages below need to add loginValidation ***/}
 				<Route path="/clubs/clubManager" exact>
@@ -392,6 +408,11 @@ const App = () => {
 				<Route path="/clubs/photos/:clubId" exact>
 					<ClubPhotos />
 				</Route>
+				<Route
+					path="/users/clubEvents/:clubId"
+					component={ClubEventsForUsers}
+					exact
+				/>
 				<Route
 					path="/events/editEntryManager/:id"
 					component={EditEntryManager}

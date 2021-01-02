@@ -6,7 +6,7 @@ import ClubStripe from './ClubStripe';
 import ClubAccount from './ClubAccount';
 import RedirectExternalURL from '../../shared/hooks/redirectExternalURL';
 import '../../shared/css/EventForm.css';
-import '../../event/components/EventItem.css';
+import '../../shared/css/EventItem.css';
 import './ClubManager.css';
 import ClubAuthConetxt, {
 	ClubAuthContext

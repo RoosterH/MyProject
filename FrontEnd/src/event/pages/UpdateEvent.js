@@ -15,7 +15,7 @@ import Modal from '../../shared/components/UIElements/Modal';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import '../../shared/css/EventForm.css';
-import '../../event/components/EventItem.css';
+import '../../shared/css/EventItem.css';
 import { eventTypes } from '../../event/components/EventTypes';
 
 const UpdateEvent = props => {
