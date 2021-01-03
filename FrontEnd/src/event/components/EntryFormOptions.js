@@ -501,6 +501,42 @@ export const EntryFormOptions = () => [
 		]
 	},
 	{
+		key: 'RadioButtons',
+		canHaveAnswer: true,
+		name: 'Lunch Options Single Day',
+		icon: 'far fa-dot-circle',
+		label: '<strong>Lunch Selection</strong>',
+		field_name: 'Lunch-',
+		required: true,
+		options: [
+			{
+				value: '10',
+				text: 'Turkey Sandwich $10',
+				key: `lunchRadioOption_0`
+			},
+			{
+				value: '10',
+				text: 'Beef Sandwich $10',
+				key: `lunchRadioOption_1`
+			},
+			{
+				value: '10',
+				text: 'Tuna Sandwich $10',
+				key: `lunchRadioOption_2`
+			},
+			{
+				value: '10',
+				text: 'Veggie Sandwich $10',
+				key: `lunchRadioOption_3`
+			},
+			{
+				value: '0',
+				text: 'No Lunch',
+				key: `lunchRadioOption_4`
+			}
+		]
+	},
+	{
 		key: 'Header',
 		name: 'Header Text',
 		icon: 'fa fa-header',
@@ -530,162 +566,95 @@ export const EntryFormOptions = () => [
 		field_name: 'checkboxes_',
 		options: []
 	},
+	// {
+	// 	key: 'MultipleRadioButtonGroup',
+	// 	canHaveAnswer: true,
+	// 	name: 'Lunch Selection',
+	// 	icon: 'far fa-dot-circle',
+	// 	label: '<strong>Lunch Selection</strong>',
+	// 	static: true,
+	// 	required: true,
+	// 	nested: true,
+	// 	options: [
+	// 		{
+	// 			key: 'RadioButtons',
+	// 			canHaveAnswer: true,
+	// 			name: 'Day 1',
+	// 			label: '<strong>Day 1</strong>',
+	// 			field_name: 'LunchSelectionDay1-',
+	// 			static: true,
+	// 			options: [
+	// 				{
+	// 					value: '10',
+	// 					text: 'Hamburger $10',
+	// 					key: `LunchSelectionDay1_0`
+	// 				},
+	// 				{
+	// 					value: '8',
+	// 					text: 'Sandwich $8',
+	// 					key: `LunchSelectionDay1_1`
+	// 				},
+	// 				{
+	// 					value: '8',
+	// 					text: 'Veggie Sandwich $8',
+	// 					key: `LunchSelectionDay1_2`
+	// 				},
+	// 				{
+	// 					value: '0',
+	// 					text: 'No lunch',
+	// 					key: `LunchSelectionDay1_3`
+	// 				}
+	// 			]
+	// 		},
+	// 		{
+	// 			key: 'RadioButtons',
+	// 			canHaveAnswer: true,
+	// 			name: 'Day 2',
+	// 			label: '<strong>Day 2</strong>',
+	// 			field_name: 'LunchSelectionDay2-',
+	// 			static: true,
+	// 			options: [
+	// 				{
+	// 					value: '1',
+	// 					text: 'Hamburger $1',
+	// 					key: `LunchSelectionDay2_0`
+	// 				},
+	// 				{
+	// 					value: '2',
+	// 					text: 'Sandwich $2',
+	// 					key: `LunchSelectionDay2_1`
+	// 				},
+	// 				{
+	// 					value: '3',
+	// 					text: 'Veggie Sandwich $3',
+	// 					key: `LunchSelectionDay2_2`
+	// 				},
+	// 				{
+	// 					value: '4',
+	// 					text: 'No lunch',
+	// 					key: `LunchSelectionDay2_3`
+	// 				}
+	// 			]
+	// 		}
+	// 	]
+	// },
 	{
-		key: 'MultipleRadioButtonGroup',
+		key: 'ParagraphCheckbox',
 		canHaveAnswer: true,
-		name: 'Lunch Selection',
-		icon: 'far fa-dot-circle',
-		label: '<strong>Lunch Selection</strong>',
+		name: 'Event Waiver',
 		static: true,
+		icon: 'far fa-check-square',
+		label: '<strong>Event Waiver</strong>',
+		content: 'Waiver...',
+		field_name: 'Waiver-',
 		required: true,
-		nested: true,
 		options: [
 			{
-				key: 'RadioButtons',
-				canHaveAnswer: true,
-				name: 'Day 1',
-				label: '<strong>Day 1</strong>',
-				field_name: 'LunchSelectionDay1-',
-				static: true,
-				options: [
-					{
-						value: '10',
-						text: 'Hamburger $10',
-						key: `LunchSelectionDay1_0`
-					},
-					{
-						value: '8',
-						text: 'Sandwitch $8',
-						key: `LunchSelectionDay1_1`
-					},
-					{
-						value: '8',
-						text: 'Veggie Sandwitch $8',
-						key: `LunchSelectionDay1_2`
-					},
-					{
-						value: '0',
-						text: 'No lunch',
-						key: `LunchSelectionDay1_3`
-					}
-				]
-			},
-			{
-				key: 'RadioButtons',
-				canHaveAnswer: true,
-				name: 'Day 2',
-				label: '<strong>Day 2</strong>',
-				field_name: 'LunchSelectionDay2-',
-				static: true,
-				options: [
-					{
-						value: '1',
-						text: 'Hamburger $1',
-						key: `LunchSelectionDay2_0`
-					},
-					{
-						value: '2',
-						text: 'Sandwitch $2',
-						key: `LunchSelectionDay2_1`
-					},
-					{
-						value: '3',
-						text: 'Veggie Sandwitch $3',
-						key: `LunchSelectionDay2_2`
-					},
-					{
-						value: '4',
-						text: 'No lunch',
-						key: `LunchSelectionDay2_3`
-					}
-				]
-			},
-			{
-				key: 'ParagraphCheckbox',
-				canHaveAnswer: true,
-				name: 'Event Waiver',
-				static: true,
-				icon: 'far fa-check-square',
-				label: '<strong>Event Waiver</strong>',
-				content: 'Waiver...',
-				field_name: 'Waiver-',
-				required: true,
-				options: [
-					{
-						value: '1',
-						text:
-							'I have read, understand and agree to limit my rights as defined in this waiver',
-						key: `waiverCheckboxOption_0`
-					}
-				]
+				value: '1',
+				text:
+					'I have read, understand and agree to limit my rights as defined in this waiver',
+				key: `waiverCheckboxOption_0`
 			}
-			// {
-			// 	key: 'RadioButtons',
-			// 	canHaveAnswer: true,
-			// 	name: 'Lunch Options',
-			// 	icon: 'far fa-dot-circle',
-			// 	label: '<strong>Lunch Selection</strong>',
-			// 	field_name: 'Lunch-',
-			// 	required: true,
-			// 	options: [
-			// 		{
-			// 			value: '10',
-			// 			text: 'Hamburger $10',
-			// 			key: `lunchRadioOption_0`
-			// 		},
-			// 		{
-			// 			value: '8',
-			// 			text: 'Sandwitch $8',
-			// 			key: `lunchRadioOption_1`
-			// 		},
-			// 		{
-			// 			value: '8',
-			// 			text: 'Veggie Sandwitch $8',
-			// 			key: `lunchRadioOption_2`
-			// 		},
-			// 		{
-			// 			value: '0',
-			// 			text: 'No lunch',
-			// 			key: `lunchRadioOption_3`
-			// 		}
-			// 	]
-			// },
-			// {
-			// 	key: 'Checkboxes',
-			// 	canHaveAnswer: true,
-			// 	name: 'Run Group Multiple Selections',
-			// 	icon: 'far fa-check-square',
-			// 	label: '<strong>Run Group</strong>',
-			// 	field_name: 'RunGroupMultiple-',
-			// 	required: true,
-			// 	options: [
-			// 		{
-			// 			value: '0',
-			// 			text: 'Morning Session 1',
-			// 			key: `RunGroupMultipleOption_0`
-			// 		},
-			// 		{
-			// 			value: '1',
-			// 			text: 'Morning Session 2',
-			// 			key: `RunGroupMultipleOption_1`
-			// 		},
-			// 		{
-			// 			value: '2',
-			// 			text: 'Afternoon Session 1',
-			// 			key: `RunGroupMultipleOption_2`
-			// 		},
-			// 		{
-			// 			value: '3',
-			// 			text: 'Afternoon Session 2',
-			// 			key: `RunGroupMultipleOption_3`
-			// 		},
-			// 		{
-			// 			value: '4',
-			// 			text: 'Afternoon Session 3',
-			// 			key: `RunGroupMultipleOption_4`
-			// 		}
-			// 	]
-			// }
 		]
 	}
 	// {
@@ -709,12 +678,12 @@ export const EntryFormOptions = () => [
 	// 				},
 	// 				{
 	// 					value: '8',
-	// 					text: 'Sandwitch $8',
+	// 					text: 'Sandwich $8',
 	// 					key: `lunchRadioOption_1`
 	// 				},
 	// 				{
 	// 					value: '8',
-	// 					text: 'Veggie Sandwitch $8',
+	// 					text: 'Veggie Sandwich $8',
 	// 					key: `lunchRadioOption_2`
 	// 				},
 	// 				{

@@ -504,7 +504,7 @@ const SubmitEntry = props => {
 		<div className="event-form">
 			<div className="event-form-header">
 				{!editingMode && <h4>Event Submission</h4>}
-				{editingMode && <h4>Payment Method</h4>}
+				{editingMode && <h4>Change Payment Method</h4>}
 				<hr className="event-form__hr" />
 			</div>
 			<Formik
@@ -618,8 +618,8 @@ const SubmitEntry = props => {
 												handleChange(event);
 												setHideCCField(false);
 											}}
-										/>{' '}
-										Stripe &nbsp;
+										/>
+										&nbsp;&nbsp; Stripe &nbsp;
 										<img
 											src={STRIPE}
 											alt="Stripe"

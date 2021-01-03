@@ -69,7 +69,6 @@ const EditEntryManager = props => {
 					}
 				);
 			} catch (err) {}
-			console.log('responseData = ', responseData);
 			setEntry(responseData.entry);
 			setEntryCarId(responseData.entry.carId);
 			setEntryId(responseData.entry.id);

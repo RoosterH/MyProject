@@ -62,8 +62,9 @@ const eventSchema = new Schema({
 	//! workerAssignment is optional
 	// Worker group options defined by club in the event entry form. No need to define workGroupEntries.
 	workerAssignments: [[{ type: String, required: true }]],
-	// Lunction
-	lunchOptions: { type: [String] },
+	//! lunchOptions is optional
+	// Lunch options, becasue most of cases events don't provide lunches so we will make it optional
+	lunchOptions: [{ type: String }],
 	privateEvent: { type: Boolean, require: true, default: false }
 });
 

@@ -33,6 +33,13 @@ const PaymentCenter = props => {
 			? props.paymentCenterData.eventName
 			: ''
 	);
+
+	const [lunchOptions, setLunchOptions] = useState(
+		props.paymentCenterData.lunchOptions
+			? props.paymentCenterData.lunchOptions
+			: undefined
+	);
+
 	const [showLoading, setShowLoading] = useState(true);
 
 	const {
@@ -60,9 +67,45 @@ const PaymentCenter = props => {
 	const [daySelection, setDaySelection] = useState(1);
 	// entryListArray elements are the data passing to Material-Table
 	const [entryListArray, setEntryListArray] = useState([]);
+	const [lunchOptionLookup, setLunchOptionLookup] = useState();
+
+	// return index of matched value
+	const getMapKey = (val, myMap) => {
+		// in case workerAssignment not defined
+		if (myMap === undefined) {
+			myMap = [];
+		}
+		let answer;
+		for (var i = 0; i < myMap.length; ++i) {
+			if (myMap[i] === val) {
+				answer = i;
+				break;
+			}
+		}
+		return answer;
+	};
+
+	// returns a map
+	const convert2Lookup = options => {
+		// in case raceClass not defined
+		if (options === undefined) {
+			options = [];
+		}
+		//lookup format- lookup: { 34: 'İstanbul', 63: 'Şanlıurfa' },
+		let lookupMap = {};
+		for (var i = 0; i < options.length; ++i) {
+			lookupMap[i] = options[i];
+		}
+		return lookupMap;
+	};
 
 	//*************** compose entry list from all the entries ************/
 	useEffect(() => {
+		//***********  construct lookups ************//
+		let obj = {};
+		obj = convert2Lookup(lunchOptions);
+		setLunchOptionLookup(obj);
+
 		let entryDataArray = [];
 		for (let i = 0; i < days; ++i) {
 			let entryData = [];
@@ -79,7 +122,11 @@ const PaymentCenter = props => {
 					carNumber: entries[j].carNumber,
 					paymentMethod: entries[j].paymentMethod,
 					entryFee: entries[j].entryFee,
-					paymentStatus: entries[j].paymentStatus
+					paymentStatus: entries[j].paymentStatus,
+					lunchOption:
+						lunchOptions !== undefined
+							? getMapKey(entries[j].lunchOption, lunchOptions)
+							: ''
 				};
 				entryData.push(entry);
 			}
@@ -298,6 +345,7 @@ const PaymentCenter = props => {
 					showLoading={showLoading}
 					getEmail={getEmail}
 					getPaymentStatus={getPaymentStatus}
+					lunchOptionLookup={lunchOptionLookup}
 				/>
 			)}
 		</React.Fragment>

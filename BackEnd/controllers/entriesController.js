@@ -23,6 +23,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const NOT_ATTENDING = 'Not Attending';
 const REGISTRATION = 'Registration';
+const LUNCH = 'Lunch';
 const ONSITE = 'onSite';
 const STRIPE = 'stripe';
 const UNPAID = 'Unpaid';
@@ -401,6 +402,50 @@ const createEntry = async (req, res, next) => {
 			}
 		}
 		let totalPriceNum = attendingDays * parseFloat(dayPrice);
+
+		// add lunch option if existing
+		let [lunchOption, lunchOptionAnsTexts] = parseSingleDayAnswer(
+			event.lunchOptions,
+			answer,
+			'Lunch'
+		);
+		if (lunchOptionAnsTexts !== undefined) {
+			entry.set('lunchOption', lunchOptionAnsTexts, {
+				strict: false
+			});
+		}
+		// add lunch price
+		// find answer of Lunch option - Single Day
+		let answerLunch = '';
+		for (let i = 0; i < answer.length; ++i) {
+			// Check name starts with "Lunch", full name is "Lunch-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+			if (answer[i].name.startsWith(LUNCH)) {
+				// value is always at index 0
+				// value: Array
+				//      0: "regRadioOption_0"
+				answerLunch = answer[i].value[0];
+				break;
+			}
+		}
+
+		let lunchPrice = '0';
+		// find entryFormData with field_name starts with "Lunch", full field_name is "Lunch-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+		for (let i = 0; i < entryFormData.length; ++i) {
+			if (entryFormData[i].field_name.startsWith(LUNCH)) {
+				let options = entryFormData[i].options;
+
+				for (let j = 0; j < options.length; ++j) {
+					if (options[j].key === answerLunch) {
+						lunchPrice = options[j].value;
+						break;
+					}
+				}
+				break;
+			}
+		}
+		totalPriceNum = totalPriceNum + parseFloat(lunchPrice);
+
+		// re-format to string
 		totalPrice = totalPriceNum.toString();
 		// If none of days has run group, return status code 406.
 		// Frontend will be able to recognize 406 and print out error message.
@@ -1028,6 +1073,47 @@ const updateFormAnswer = async (req, res, next) => {
 		}
 	}
 	let totalPriceNum = attendingDays * parseFloat(dayPrice);
+
+	// add lunch option if existing
+	let [lunchOption, lunchOptionAnsTexts] = parseSingleDayAnswer(
+		event.lunchOptions,
+		answer,
+		'Lunch'
+	);
+	if (lunchOptionAnsTexts !== undefined) {
+		entry.lunchOption = lunchOptionAnsTexts;
+	}
+	// add lunch price
+	// find answer of Lunch option - Single Day
+	let answerLunch = '';
+	for (let i = 0; i < answer.length; ++i) {
+		// Check name starts with "Lunch", full name is "Lunch-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+		if (answer[i].name.startsWith(LUNCH)) {
+			// value is always at index 0
+			// value: Array
+			//      0: "regRadioOption_0"
+			answerLunch = answer[i].value[0];
+			break;
+		}
+	}
+
+	let lunchPrice = '0';
+	// find entryFormData with field_name starts with "Lunch", full field_name is "Lunch-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+	for (let i = 0; i < entryFormData.length; ++i) {
+		if (entryFormData[i].field_name.startsWith(LUNCH)) {
+			let options = entryFormData[i].options;
+
+			for (let j = 0; j < options.length; ++j) {
+				if (options[j].key === answerLunch) {
+					lunchPrice = options[j].value;
+					break;
+				}
+			}
+			break;
+		}
+	}
+	totalPriceNum = totalPriceNum + parseFloat(lunchPrice);
+
 	totalPrice = totalPriceNum.toString();
 
 	// override answers
@@ -1680,8 +1766,40 @@ const getEntryFee = async (req, res, next) => {
 			}
 		}
 
-		let totalFees = attendingDays * parseFloat(feePerDay);
-		entryFee = totalFees.toString();
+		let totalPriceNum = attendingDays * parseFloat(feePerDay);
+
+		// add lunch price
+		// find answer of Lunch option - Single Day
+		let answerLunch = '';
+		for (let i = 0; i < answer.length; ++i) {
+			// Check name starts with "Lunch", full name is "Lunch-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+			if (answer[i].name.startsWith(LUNCH)) {
+				// value is always at index 0
+				// value: Array
+				//      0: "regRadioOption_0"
+				answerLunch = answer[i].value[0];
+				break;
+			}
+		}
+
+		let lunchPrice = '0';
+		// find entryFormData with field_name starts with "Lunch", full field_name is "Lunch-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+		for (let i = 0; i < entryFormData.length; ++i) {
+			if (entryFormData[i].field_name.startsWith(LUNCH)) {
+				let options = entryFormData[i].options;
+
+				for (let j = 0; j < options.length; ++j) {
+					if (options[j].key === answerLunch) {
+						lunchPrice = options[j].value;
+						break;
+					}
+				}
+				break;
+			}
+		}
+		totalPriceNum = totalPriceNum + parseFloat(lunchPrice);
+
+		entryFee = totalPriceNum.toString();
 		// If none of days has run group, return status code 406.
 		// Frontend will be able to recognize 406 and print out error message.
 		if (notAttending) {

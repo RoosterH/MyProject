@@ -48,6 +48,8 @@ const EntryListForUsers = props => {
 	const [daySelection, setDaySelection] = useState(1);
 	const [entryListArray, setEntryListArray] = useState([]);
 	const [waitlistArray, setWaitlistArray] = useState([]);
+
+	// ***  lookups are the choices for that option, we need to use it for filtering *** //
 	const [raceClassLookup, setRaceClassLookup] = useState();
 	let raceClasses = [];
 
@@ -59,6 +61,9 @@ const EntryListForUsers = props => {
 		setWorkerAssignmentLookup
 	] = useState();
 	let workerAssignments = [];
+
+	const [lunchOptionLookup, setLunchOptionLookup] = useState();
+	let lunchOptions = [];
 
 	// return index of matched value
 	const getMapKey = (val, myMap) => {
@@ -117,6 +122,11 @@ const EntryListForUsers = props => {
 				obj = convert2Lookup(raceClasses);
 				setRaceClassLookup(obj);
 
+				lunchOptions = responseData.lunchOptions;
+				obj = {};
+				obj = convert2Lookup(lunchOptions);
+				setLunchOptionLookup(obj);
+
 				//*************** compose entry list from all the entries ************/
 				runGroups = responseData.runGroupOptions;
 				workerAssignments = responseData.workerAssignments;
@@ -140,6 +150,7 @@ const EntryListForUsers = props => {
 						let entry;
 						if (displayName) {
 							entry = {
+								no: j + 1,
 								lastName: entries[j].userLastName,
 								firstName: entries[j].userFirstName[0] + '.',
 								carNumber: entries[j].carNumber,
@@ -147,6 +158,10 @@ const EntryListForUsers = props => {
 								raceClass: getMapKey(
 									entries[j].raceClass,
 									raceClasses
+								),
+								lunchOption: getMapKey(
+									entries[j].lunchOption,
+									lunchOptions
 								),
 								car: entries[j].car,
 								runGroup: getMapKey(
@@ -160,11 +175,16 @@ const EntryListForUsers = props => {
 							};
 						} else {
 							entry = {
+								no: j + 1,
 								userName: entries[j].userName,
 								carNumber: entries[j].carNumber,
 								raceClass: getMapKey(
 									entries[j].raceClass,
 									raceClasses
+								),
+								lunchOption: getMapKey(
+									entries[j].lunchOption,
+									lunchOptions
 								),
 								car: entries[j].car,
 								runGroup: getMapKey(
@@ -194,6 +214,7 @@ const EntryListForUsers = props => {
 						let entry;
 						if (displayName) {
 							entry = {
+								no: j + 1,
 								lastName: waitlist[j].userLastName,
 								firstName: waitlist[j].userFirstName[0] + '.',
 								carNumber: waitlist[j].carNumber,
@@ -213,6 +234,7 @@ const EntryListForUsers = props => {
 							};
 						} else {
 							entry = {
+								no: j + 1,
 								userName: waitlist[j].userName,
 								carNumber: waitlist[j].carNumber,
 								raceClass: getMapKey(
@@ -306,6 +328,7 @@ const EntryListForUsers = props => {
 						raceClassLookup={raceClassLookup}
 						runGroupLookup={runGroupLookup}
 						workerAssignmentLookup={workerAssignmentLookup}
+						lunchOptionLookup={lunchOptionLookup}
 					/>
 				)}
 		</React.Fragment>

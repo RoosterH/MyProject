@@ -552,7 +552,8 @@ const getEntryReport = async (req, res, next) => {
 		),
 		raceClassOptions: event.raceClassOptions,
 		runGroupOptions: event.runGroupOptions,
-		workerAssignments: event.workerAssignments
+		workerAssignments: event.workerAssignments,
+		lunchOptions: event.lunchOptions
 	});
 };
 
@@ -703,7 +704,8 @@ const getPaymentReport = async (req, res, next) => {
 					}
 				})
 			)
-		)
+		),
+		lunchOptions: event.lunchOptions
 	});
 };
 
@@ -1675,6 +1677,14 @@ const createUpdateEntryForm = async (req, res, next) => {
 					event.raceClassOptions = choices;
 				} else if (fieldName === 'WorkerAssignment') {
 					event.workerAssignments = choices;
+				} else if (fieldName === 'Lunch') {
+					// because most of cases events don't have lunch options,
+					// so lunch is optional,
+					if (event.lunchOptions) {
+						event.lunchOptions = choices;
+					} else {
+						entry.set('lunchOptions', choices, { strict: false });
+					}
 				}
 			}
 		});
@@ -1979,7 +1989,8 @@ const getEntryReportForUsers = async (req, res, next) => {
 			),
 			raceClassOptions: event.raceClassOptions,
 			runGroupOptions: event.runGroupOptions,
-			workerAssignments: event.workerAssignments
+			workerAssignments: event.workerAssignments,
+			lunchOptions: event.lunchOptions
 		});
 	} else {
 		//!displayName
@@ -2032,7 +2043,8 @@ const getEntryReportForUsers = async (req, res, next) => {
 			),
 			raceClassOptions: event.raceClassOptions,
 			runGroupOptions: event.runGroupOptions,
-			workerAssignments: event.workerAssignments
+			workerAssignments: event.workerAssignments,
+			lunchOptions: event.lunchOptions
 		});
 	}
 };

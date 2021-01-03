@@ -45,7 +45,11 @@ const EntryReport = props => {
 			? props.entryReportData.workerAssignments
 			: undefined
 	);
-
+	const [lunchOptions, setLunchOptions] = useState(
+		props.entryReportData.lunchOptions
+			? props.entryReportData.lunchOptions
+			: undefined
+	);
 	const [showLoading, setShowLoading] = useState(true);
 
 	// create an array from day 1 to loop through when we are rendering day buttons
@@ -66,13 +70,15 @@ const EntryReport = props => {
 	// entryListArray and waitListArray elements are the data passing to Material-Table
 	const [entryListArray, setEntryListArray] = useState([]);
 	const [waitlistArray, setWaitlistArray] = useState([]);
+
+	// ***  lookups are the choices for that option, we need to use it for filtering *** //
 	const [raceClassLookup, setRaceClassLookup] = useState();
 	const [runGroupLookup, setRunGroupLookup] = useState();
-
 	const [
 		workerAssignmentLookup,
 		setWorkerAssignmentLookup
 	] = useState();
+	const [lunchOptionLookup, setLunchOptionLookup] = useState();
 
 	// return index of matched value
 	const getMapKey = (val, myMap) => {
@@ -109,6 +115,9 @@ const EntryReport = props => {
 		let obj = {};
 		obj = convert2Lookup(raceClasses);
 		setRaceClassLookup(obj);
+		obj = {};
+		obj = convert2Lookup(lunchOptions);
+		setLunchOptionLookup(obj);
 
 		//*************** compose entry list from all the entries ************/
 		let entryDataArray = [];
@@ -128,12 +137,17 @@ const EntryReport = props => {
 					continue;
 				}
 				let entry = {
+					no: j + 1,
 					lastName: entries[j].userLastName,
 					firstName: entries[j].userFirstName,
 					// for lookup field, we need to provide key in lookup array, we use index as key
 					raceClass:
 						raceClasses !== undefined
 							? getMapKey(entries[j].raceClass, raceClasses)
+							: '',
+					lunchOption:
+						lunchOptions !== undefined
+							? getMapKey(entries[j].lunchOption, lunchOptions)
 							: '',
 					carNumber: entries[j].carNumber,
 					car: entries[j].car,
@@ -181,6 +195,10 @@ const EntryReport = props => {
 									waitlist[j].workerAssignment[i],
 									workerAssignments[i]
 							  )
+							: '',
+					lunchOption:
+						lunchOptions !== undefined
+							? getMapKey(waitlist[j].lunchOption, lunchOptions)
 							: ''
 				};
 				waitlistData.push(entry);
@@ -252,6 +270,7 @@ const EntryReport = props => {
 						raceClassLookup={raceClassLookup}
 						runGroupLookup={runGroupLookup}
 						workerAssignmentLookup={workerAssignmentLookup}
+						lunchOptionLookup={lunchOptionLookup}
 					/>
 				)}
 		</React.Fragment>
