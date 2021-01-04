@@ -121,6 +121,9 @@ const MaterialTablePaymentCenter = props => {
 						options={{
 							filtering: true,
 							exportButton: true,
+							columnsButton: true,
+							pageSize: 20,
+							pageSizeOptions: [5, 10, 20, 50, 100],
 							rowStyle: rowData => ({
 								backgroundColor:
 									selectedRow === rowData.tableData.id
@@ -220,6 +223,9 @@ const MaterialTablePaymentCenter = props => {
 						options={{
 							filtering: true,
 							exportButton: true,
+							columnsButton: true,
+							pageSize: 20,
+							pageSizeOptions: [5, 10, 20, 50, 100],
 							rowStyle: rowData => ({
 								backgroundColor:
 									selectedRow === rowData.tableData.id

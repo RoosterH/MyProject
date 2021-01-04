@@ -85,8 +85,9 @@ const MaterialTableEntryReport = props => {
 							options={{
 								filtering: true,
 								exportButton: true,
+								columnsButton: true,
 								pageSize: 20,
-								pageSizeOptions: [20, 50, 100]
+								pageSizeOptions: [5, 10, 20, 50, 100]
 							}}
 						/>
 					)}
@@ -160,8 +161,9 @@ const MaterialTableEntryReport = props => {
 							options={{
 								filtering: true,
 								exportButton: true,
+								columnsButton: true,
 								pageSize: 20,
-								pageSizeOptions: [20, 50, 100]
+								pageSizeOptions: [5, 10, 20, 50, 100]
 							}}
 						/>
 					)}
@@ -225,7 +227,8 @@ const MaterialTableEntryReport = props => {
 						options={{
 							filtering: false,
 							sorting: false,
-							exportButton: true
+							exportButton: true,
+							columnsButton: true
 						}}
 					/>
 				)}
@@ -275,8 +278,9 @@ const MaterialTableEntryReport = props => {
 							options={{
 								filtering: true,
 								exportButton: true,
+								columnsButton: true,
 								pageSize: 20,
-								pageSizeOptions: [20, 50, 100]
+								pageSizeOptions: [5, 10, 20, 50, 100]
 							}}
 						/>
 					)}
@@ -331,8 +335,9 @@ const MaterialTableEntryReport = props => {
 							options={{
 								filtering: true,
 								exportButton: true,
+								columnsButton: true,
 								pageSize: 20,
-								pageSizeOptions: [20, 50, 100]
+								pageSizeOptions: [5, 10, 20, 50, 100]
 							}}
 						/>
 					)}
@@ -380,7 +385,8 @@ const MaterialTableEntryReport = props => {
 						options={{
 							filtering: false,
 							sorting: false,
-							exportButton: true
+							exportButton: true,
+							columnsButton: true
 						}}
 					/>
 				)}

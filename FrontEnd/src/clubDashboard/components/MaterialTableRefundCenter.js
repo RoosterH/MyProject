@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Button from '../../shared/components/FormElements/Button';
-import MaterialTable from 'material-table';
+import MaterialTable, { MTableAction } from 'material-table';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
 import './ClubManager.css';
@@ -10,6 +10,7 @@ const MaterialTableRefundCenter = props => {
 	// callbacks from parent
 	const getEmailRefundFee = props.getEmailRefundFee;
 	const getPaymentStatus = props.getPaymentStatus;
+	const updateRefundFee = props.updateRefundFee;
 
 	let entryList = props.entryList;
 	let eventName = props.eventName;
@@ -50,7 +51,7 @@ const MaterialTableRefundCenter = props => {
 		}
 	};
 	const [selectedRow, setSelectedRow] = useState(null);
-
+	const addActionRef = React.useRef();
 	return (
 		<React.Fragment>
 			<div className="entrylist-table">
@@ -119,6 +120,9 @@ const MaterialTableRefundCenter = props => {
 						options={{
 							filtering: true,
 							exportButton: true,
+							columnsButton: true,
+							pageSize: 20,
+							pageSizeOptions: [5, 10, 20, 50, 100],
 							rowStyle: rowData => ({
 								backgroundColor:
 									selectedRow === rowData.tableData.id
@@ -126,22 +130,45 @@ const MaterialTableRefundCenter = props => {
 										: '#FFF'
 							})
 						}}
+						actions={[
+							{
+								icon: 'refund',
+								tooltip: 'Refund',
+								onClick: (event, rowData) => {
+									setTimeout(() => {
+										// need to set timeout to have the table load the new value
+										// console.log('rowData = ', rowData);
+									}, 2000);
+								}
+							}
+						]}
 						components={{
-							Action: props => (
-								<Button
-									onClick={event => {
-										// return email back to parent to send request to backend
-										getEmailRefundFee(
-											props.data.email,
-											props.data.refundFee
-										);
-										props.action.onClick(event, props.data);
-									}}
-									size={getButtonClassName(props.data.paymentStatus)}
-									disabled={props.data.paymentStatus !== 'Paid'}>
-									{getButtonText(props.data.paymentStatus)}
-								</Button>
-							),
+							Action: props => {
+								if (
+									typeof props.action === typeof Function ||
+									props.action.tooltip !== 'Refund'
+								) {
+									return <MTableAction {...props} />;
+								} else {
+									return (
+										<Button
+											onClick={event => {
+												// return email back to parent to send request to backend
+												getEmailRefundFee(
+													props.data.email,
+													props.data.refundFee
+												);
+												props.action.onClick(event, props.data);
+											}}
+											size={getButtonClassName(
+												props.data.paymentStatus
+											)}
+											disabled={props.data.paymentStatus !== 'Paid'}>
+											{getButtonText(props.data.paymentStatus)}
+										</Button>
+									);
+								}
+							},
 							OverlayLoading: props => (
 								<div className="center">
 									<LoadingSpinner />
@@ -151,49 +178,6 @@ const MaterialTableRefundCenter = props => {
 						onRowClick={(evt, selectedRow) => {
 							setSelectedRow(selectedRow.tableData.id);
 						}}
-						// editable={{
-						// 	onRowAdd: newData =>
-						// 		new Promise((resolve, reject) => {
-						// 			setTimeout(() => {
-						// 				setData([...data, newData]);
-
-						// 				resolve();
-						// 			}, 1000);
-						// 		}),
-						// 	onRowUpdate: (newData, oldData) =>
-						// 		new Promise((resolve, reject) => {
-						// 			setTimeout(() => {
-						// 				const dataUpdate = [...data];
-						// 				const index = oldData.tableData.id;
-						// 				dataUpdate[index] = newData;
-						// 				setData([...dataUpdate]);
-						// 				resolve();
-						// 			}, 1000);
-						// 		})
-						// 	// onRowDelete: oldData =>
-						// 	// 	new Promise((resolve, reject) => {
-						// 	// 		setTimeout(() => {
-						// 	// 			const dataDelete = [...data];
-						// 	// 			const index = oldData.tableData.id;
-						// 	// 			dataDelete.splice(index, 1);
-						// 	// 			setData([...dataDelete]);
-
-						// 	// 			resolve();
-						// 	// 		}, 1000);
-						// 	// 	})
-						// }}
-						actions={[
-							{
-								icon: 'Charge',
-								tooltip: 'Charge User',
-								onClick: (event, rowData) => {
-									setTimeout(() => {
-										// need to set timeout to have the table load the new value
-										// console.log('rowData = ', rowData);
-									}, 2000);
-								}
-							}
-						]}
 						cellEditable={{
 							onCellEditApproved: (
 								newValue,
@@ -202,19 +186,38 @@ const MaterialTableRefundCenter = props => {
 								columnDef
 							) => {
 								return new Promise((resolve, reject) => {
-									// rawData is the old data
-									setTimeout(() => {
-										console.log('rowData = ', rowData);
-										rowData.refundFee = newValue;
-										const dataUpdate = [...data];
-
-										const index = rowData.tableData.id;
-										console.log('index = ', index);
-										dataUpdate[index] = rowData;
-										console.log('dataUpdate new = ', dataUpdate);
-										setData([...dataUpdate]);
+									if (rowData.paymentStatus !== 'Paid') {
+										// for non-Paid status, don't allow to change refundFee
+										alert(
+											'Refund fee cannot be changed in current payment status'
+										);
 										resolve();
-									}, 1000);
+									} else {
+										// rowData is the old data with old refundFee
+										setTimeout(() => {
+											// if new value is not a number (NaN)
+											if (isNaN(newValue)) {
+												alert('Refund fee cannot be letters');
+												return resolve();
+											}
+											// cannot convert to float before checking isNaN;
+											// otherwise value such as "1s" will be slipped through
+											let newValueFloat = parseFloat(newValue);
+											if (newValueFloat > rowData.entryFee) {
+												alert(
+													'Refund fee cannot be more than entry fee'
+												);
+												return resolve();
+											}
+											rowData.refundFee = newValue;
+											updateRefundFee(rowData);
+											const dataUpdate = [...data];
+											const index = rowData.tableData.id;
+											dataUpdate[index] = rowData;
+											setData([...dataUpdate]);
+											resolve();
+										}, 1000);
+									}
 								});
 							}
 						}}
@@ -259,6 +262,7 @@ const MaterialTableRefundCenter = props => {
 							{
 								title: 'Lunch',
 								field: 'lunchOption',
+								editable: 'never',
 								lookup: lunchOptionLookup
 							},
 							{
@@ -290,6 +294,9 @@ const MaterialTableRefundCenter = props => {
 						options={{
 							filtering: true,
 							exportButton: true,
+							columnsButton: true,
+							pageSize: 20,
+							pageSizeOptions: [5, 10, 20, 50, 100],
 							rowStyle: rowData => ({
 								backgroundColor:
 									selectedRow === rowData.tableData.id
@@ -297,22 +304,45 @@ const MaterialTableRefundCenter = props => {
 										: '#FFF'
 							})
 						}}
+						actions={[
+							{
+								icon: 'refund',
+								tooltip: 'Refund',
+								onClick: (event, rowData) => {
+									setTimeout(() => {
+										// need to set timeout to have the table load the new value
+										// console.log('rowData = ', rowData);
+									}, 2000);
+								}
+							}
+						]}
 						components={{
-							Action: props => (
-								<Button
-									onClick={event => {
-										// return email back to parent to send request to backend
-										getEmailRefundFee(
-											props.data.email,
-											props.data.refundFee
-										);
-										props.action.onClick(event, props.data);
-									}}
-									size={getButtonClassName(props.data.paymentStatus)}
-									disabled={props.data.paymentStatus !== 'Paid'}>
-									{getButtonText(props.data.paymentStatus)}
-								</Button>
-							),
+							Action: props => {
+								if (
+									typeof props.action === typeof Function ||
+									props.action.tooltip !== 'Refund'
+								) {
+									return <MTableAction {...props} />;
+								} else {
+									return (
+										<Button
+											onClick={event => {
+												// return email back to parent to send request to backend
+												getEmailRefundFee(
+													props.data.email,
+													props.data.refundFee
+												);
+												props.action.onClick(event, props.data);
+											}}
+											size={getButtonClassName(
+												props.data.paymentStatus
+											)}
+											disabled={props.data.paymentStatus !== 'Paid'}>
+											{getButtonText(props.data.paymentStatus)}
+										</Button>
+									);
+								}
+							},
 							OverlayLoading: props => (
 								<div className="center">
 									<LoadingSpinner />
@@ -322,49 +352,6 @@ const MaterialTableRefundCenter = props => {
 						onRowClick={(evt, selectedRow) => {
 							setSelectedRow(selectedRow.tableData.id);
 						}}
-						// editable={{
-						// 	onRowAdd: newData =>
-						// 		new Promise((resolve, reject) => {
-						// 			setTimeout(() => {
-						// 				setData([...data, newData]);
-
-						// 				resolve();
-						// 			}, 1000);
-						// 		}),
-						// 	onRowUpdate: (newData, oldData) =>
-						// 		new Promise((resolve, reject) => {
-						// 			setTimeout(() => {
-						// 				const dataUpdate = [...data];
-						// 				const index = oldData.tableData.id;
-						// 				dataUpdate[index] = newData;
-						// 				setData([...dataUpdate]);
-						// 				resolve();
-						// 			}, 1000);
-						// 		})
-						// 	// onRowDelete: oldData =>
-						// 	// 	new Promise((resolve, reject) => {
-						// 	// 		setTimeout(() => {
-						// 	// 			const dataDelete = [...data];
-						// 	// 			const index = oldData.tableData.id;
-						// 	// 			dataDelete.splice(index, 1);
-						// 	// 			setData([...dataDelete]);
-
-						// 	// 			resolve();
-						// 	// 		}, 1000);
-						// 	// 	})
-						// }}
-						actions={[
-							{
-								icon: 'Charge',
-								tooltip: 'Charge User',
-								onClick: (event, rowData) => {
-									setTimeout(() => {
-										// need to set timeout to have the table load the new value
-										// console.log('rowData = ', rowData);
-									}, 2000);
-								}
-							}
-						]}
 						cellEditable={{
 							onCellEditApproved: (
 								newValue,
@@ -373,19 +360,38 @@ const MaterialTableRefundCenter = props => {
 								columnDef
 							) => {
 								return new Promise((resolve, reject) => {
-									// rawData is the old data
-									setTimeout(() => {
-										console.log('rowData = ', rowData);
-										rowData.refundFee = newValue;
-										const dataUpdate = [...data];
-
-										const index = rowData.tableData.id;
-										console.log('index = ', index);
-										dataUpdate[index] = rowData;
-										console.log('dataUpdate new = ', dataUpdate);
-										setData([...dataUpdate]);
+									if (rowData.paymentStatus !== 'Paid') {
+										// for non-Paid status, don't allow to change refundFee
+										alert(
+											'Refund fee cannot be changed in current payment status'
+										);
 										resolve();
-									}, 1000);
+									} else {
+										// rowData is the old data with old refundFee
+										setTimeout(() => {
+											// if new value is not a number (NaN)
+											if (isNaN(newValue)) {
+												alert('Refund fee cannot be letters');
+												return resolve();
+											}
+											// cannot convert to float before checking isNaN;
+											// otherwise value such as "1s" will be slipped through
+											let newValueFloat = parseFloat(newValue);
+											if (newValueFloat > rowData.entryFee) {
+												alert(
+													'Refund fee cannot be more than entry fee'
+												);
+												return resolve();
+											}
+											rowData.refundFee = newValue;
+											updateRefundFee(rowData);
+											const dataUpdate = [...data];
+											const index = rowData.tableData.id;
+											dataUpdate[index] = rowData;
+											setData([...dataUpdate]);
+											resolve();
+										}, 1000);
+									}
 								});
 							}
 						}}

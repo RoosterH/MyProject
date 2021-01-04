@@ -243,6 +243,30 @@ const RefundCenter = props => {
 		setEntryListArray
 	]);
 
+	const updateRefundFee = async rowData => {
+		// rowData has id(entryId) and refundFee, we only need these 2 info to update to backend
+		try {
+			let entryId = rowData.id;
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL +
+					`/entries/updateRefundFee/${entryId}`,
+				'POST',
+				JSON.stringify({
+					refundFee: rowData.refundFee
+				}),
+				{
+					'Content-Type': 'application/json',
+					// adding JWT to header for authentication
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
+				}
+			);
+		} catch (err) {}
+	};
+
 	return (
 		<React.Fragment>
 			<ErrorModal
@@ -287,6 +311,7 @@ const RefundCenter = props => {
 							? eventName + ' Day ' + daySelection
 							: eventName
 					}
+					updateRefundFee={updateRefundFee}
 					showLoading={showLoading}
 					getEmailRefundFee={getEmailRefundFee}
 					lunchOptionLookup={lunchOptionLookup}
