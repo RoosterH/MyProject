@@ -1993,6 +1993,66 @@ const chargeEntry = async (req, res, next) => {
 	});
 };
 
+// update refund fee requested by club refund center
+const updateRefundFee = async (req, res, next) => {
+	let entryId = req.params.entryId;
+	let entry;
+	try {
+		entry = await Entry.findById(entryId);
+	} catch (err) {
+		console.log('2003 err = ', err);
+		const error = new HttpError(
+			'updateRefundFee process failed @ getting entry. Please try again later',
+			500
+		);
+		return next(error);
+	}
+	if (!entry) {
+		const error = new HttpError(
+			'updateRefundFee Could not find entry.',
+			404
+		);
+		return next(error);
+	}
+
+	let paymentId = entry.paymentId;
+	let payment;
+	try {
+		payment = await Payment.findById(paymentId);
+	} catch (err) {
+		console.log('2023 err  =', err);
+		const error = new HttpError(
+			'updateRefundFee failed to retrieve payment DB failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!payment) {
+		const error = new HttpError(
+			'updateRefundFee failed finding payment.',
+			500
+		);
+		return next(error);
+	}
+
+	const { refundFee } = req.body;
+	payment.refundFee = refundFee;
+
+	try {
+		await payment.save();
+	} catch (err) {
+		console.log('2044 err  =', err);
+		const error = new HttpError(
+			'updateRefundFee failed @ saving payment. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	return res.status(200).json({
+		refundUpdateStatus: true
+	});
+};
+
 // return required information for refund request
 const refund = async (req, res, next) => {
 	let entryId = req.params.entryId;
@@ -2209,6 +2269,7 @@ exports.updatePayment = updatePayment;
 exports.deleteEntry = deleteEntry;
 exports.getEntryFee = getEntryFee;
 exports.chargeEntry = chargeEntry;
+exports.updateRefundFee = updateRefundFee;
 exports.refund = refund;
 exports.authentication = authentication;
 exports.updatePaymentStatus = updatePaymentStatus;

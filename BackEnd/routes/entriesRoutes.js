@@ -100,6 +100,11 @@ router.use(checkClubAuth);
 
 router.post('/charge/:entryId', entriesController.chargeEntry);
 
+router.post(
+	'/updateRefundFee/:entryId',
+	entriesController.updateRefundFee
+);
+
 router.post('/refund/:entryId', entriesController.refund);
 
 module.exports = router;
