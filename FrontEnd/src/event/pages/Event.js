@@ -12,6 +12,7 @@ import { ClubAuthContext } from '../../shared/context/auth-context';
 import EntryReportEventItem from '../components/EntryReportEventItem';
 import PaymentCenterEventItem from '../components/PaymentCenterEventItem';
 import RefundCenterEventItem from '../components/RefundCenterEventItem';
+import DataCenterEventItem from '../components/DataCenterEventItem';
 
 // Events is called in App.js where the route been defined
 // 2 routes to call Event component
@@ -28,7 +29,8 @@ const Event = props => {
 		readOnly,
 		entryReportManager,
 		paymentCenter,
-		refundCenter;
+		refundCenter,
+		dataCenter;
 	// if called by pasting event link to the browser, props.location.state === undefined
 	if (props.location.state !== undefined) {
 		eId = props.location.state.props.id;
@@ -41,6 +43,7 @@ const Event = props => {
 			props.location.state.props.entryReportManager;
 		paymentCenter = props.location.state.props.paymentCenter;
 		refundCenter = props.location.state.props.refundCenter;
+		dataCenter = props.location.state.props.dataCenter;
 	}
 
 	const [clubOwnerRequest, setClubOwnerRequest] = useState(false);
@@ -68,7 +71,8 @@ const Event = props => {
 					clubId === clubAuthContext.clubId &&
 					!entryReportManager &&
 					!paymentCenter &&
-					!refundCenter
+					!refundCenter &&
+					!dataCenter
 				) {
 					// this route is for owner club to query an owned event
 					[
@@ -112,7 +116,7 @@ const Event = props => {
 					clubId === clubAuthContext.clubId &&
 					paymentCenter
 				) {
-					// This route is for owner club to query entry report
+					// This route is for owner club to query payment report
 					[
 						responseData,
 						responseStatus,
@@ -133,7 +137,25 @@ const Event = props => {
 					clubId === clubAuthContext.clubId &&
 					refundCenter
 				) {
-					// This route is for owner club to query entry report
+					// This route is for owner club to query payment report
+					[
+						responseData,
+						responseStatus,
+						responseMessage
+					] = await sendRequest(
+						process.env.REACT_APP_BACKEND_URL +
+							`/events/paymentReport/${eId}`,
+						'GET',
+						null,
+						{
+							// adding JWT to header for authentication, JWT contains clubId
+							Authorization: 'Bearer ' + clubAuthContext.clubToken
+						}
+					);
+					setClubOwnerRequest(true);
+					setLoadedEntryData(responseData);
+				} else if (clubId === clubAuthContext.clubId && dataCenter) {
+					// This route is for owner club to query payment report
 					[
 						responseData,
 						responseStatus,
@@ -203,13 +225,21 @@ const Event = props => {
 						paymentCenterData={loadedEntryData}
 					/>
 				)}
-			{/* For Payment Center Report readOnly = true && paymentCenter = true */}
+			{/* For Refund Center Report readOnly = true && refundCenter = true */}
 			{!isLoading &&
 				loadedEntryData &&
 				clubOwnerRequest &&
 				readOnly &&
 				refundCenter && (
 					<RefundCenterEventItem refundCenterData={loadedEntryData} />
+				)}
+			{/* For Data Center Report readOnly = true && dataCenter = true */}
+			{!isLoading &&
+				loadedEntryData &&
+				clubOwnerRequest &&
+				readOnly &&
+				dataCenter && (
+					<DataCenterEventItem dataCenterData={loadedEntryData} />
 				)}
 			{/* For users, clubs don't own the event, and OwnerClub wants to view event, we will go to
 			EventItem */}

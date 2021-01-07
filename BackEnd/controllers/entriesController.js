@@ -17,7 +17,6 @@ const Stripe = require('./stripeController');
 
 const { compare } = require('bcryptjs');
 const { Encrypt, Decrypt } = require('../util/crypto');
-const clubAccount = require('../models/clubAccount');
 const { CodeStarNotifications } = require('aws-sdk');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -472,7 +471,8 @@ const createEntry = async (req, res, next) => {
 			let payment = new Payment({
 				entryId,
 				entryFee: totalPrice,
-				refundFee: totalPrice - (totalPrice * 0.029 + 0.3), // stripe fee 2.9% + 30 cents service fee is not refundable
+				refundFee: totalPrice - (totalPrice * 0.029 + 0.3).toFixed(2), // stripe fee 2.9% + 30 cents service fee is not refundable
+				stripeFee: (totalPrice * 0.029 + 0.3).toFixed(2),
 				paymentMethod,
 				stripeSetupIntentId,
 				stripePaymentMethodId
@@ -1159,7 +1159,9 @@ const updateFormAnswer = async (req, res, next) => {
 	}
 	payment.entryFee = totalPrice;
 	// stripe fee 2.9% + 30 cents service fee is not refundable
-	payment.refundFee = totalPrice - (totalPrice * 0.029 + 0.3);
+	payment.refundFee =
+		totalPrice - (totalPrice * 0.029 + 0.3).toFixed(2);
+	payment.stripeFee = (totalPrice * 0.029 + 0.3).toFixed(2);
 	try {
 		const session = await mongoose.startSession();
 		session.startTransaction();
@@ -1493,7 +1495,7 @@ const deleteEntry = async (req, res, next) => {
 		await session.commitTransaction();
 	} catch (err) {
 		const error = new HttpError(
-			'Failed to delete the event.  Please try it later.',
+			'Failed to delete the entry.  Please try it later.',
 			500
 		);
 		return next(error);
@@ -1922,12 +1924,23 @@ const chargeEntry = async (req, res, next) => {
 	if (paymentMethod === ONSITE) {
 		paymentStatus = PAID;
 	} else if (paymentMethod === STRIPE) {
+		if (payment.paymentStatus !== 'Unpaid') {
+			const error = new HttpError(
+				'paymentStatus needs to be in Unpaid to be charged.',
+				400
+			);
+			return next(error);
+		}
 		// create paymentIntent, calling stripe.paymentIntents.create
 		const [paymentIntent, err] = await Stripe.createPaymentIntent(
 			user.stripeCustomerId,
 			user.email,
 			payment.stripePaymentMethodId,
 			payment.entryFee,
+			Decrypt(clubAccount.stripeAccountId)
+		);
+		console.log(
+			'stripe account ID = ',
 			Decrypt(clubAccount.stripeAccountId)
 		);
 
@@ -2138,6 +2151,68 @@ const refund = async (req, res, next) => {
 	});
 };
 
+// update entry fee requested by club payment center
+const updateEntryFee = async (req, res, next) => {
+	let entryId = req.params.entryId;
+	let entry;
+	try {
+		entry = await Entry.findById(entryId);
+	} catch (err) {
+		console.log('2150 err = ', err);
+		const error = new HttpError(
+			'updateEntryFee process failed @ getting entry. Please try again later',
+			500
+		);
+		return next(error);
+	}
+	if (!entry) {
+		const error = new HttpError(
+			'updateEntryFee Could not find entry.',
+			404
+		);
+		return next(error);
+	}
+
+	let paymentId = entry.paymentId;
+	let payment;
+	try {
+		payment = await Payment.findById(paymentId);
+	} catch (err) {
+		console.log('2070 err  =', err);
+		const error = new HttpError(
+			'updateEntryFee failed to retrieve payment DB failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!payment) {
+		const error = new HttpError(
+			'updateEntryFee failed finding payment.',
+			500
+		);
+		return next(error);
+	}
+
+	const { entryFee } = req.body;
+	payment.entryFee = entryFee;
+	payment.stripeFee = (entryFee * 0.029 + 0.3).toFixed(2);
+	payment.refundFee = entryFee - (entryFee * 0.029 + 0.3).toFixed(2);
+
+	try {
+		await payment.save();
+	} catch (err) {
+		console.log('2191 err  =', err);
+		const error = new HttpError(
+			'updateEntryFee failed @ saving payment. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	return res.status(200).json({
+		refundUpdateStatus: true
+	});
+};
+
 // GET /authentication/:entryId returns clientSecret and paymentMethodId for frontend
 // to process
 const authentication = async (req, res, next) => {
@@ -2261,6 +2336,196 @@ const updatePaymentStatus = async (req, res, next) => {
 		paymentStatus: paymentStatus
 	});
 };
+
+const deleteEntryByClub = async (req, res, next) => {
+	let clubId = req.userData;
+	// Validate event exists, if not send back an error.
+	const entryId = req.params.entryId;
+	let entry;
+	try {
+		entry = await Entry.findById(entryId).populate('eventId');
+	} catch (err) {
+		const error = new HttpError(
+			'Internal error in deleteEntryByClub when retrieving entry.',
+			500
+		);
+		return next(error);
+	}
+	// validat deletion is from same clubId
+	if (clubId !== entry.clubId.toString()) {
+		const error = new HttpError(
+			'Not authorized to delete entry.',
+			403
+		);
+		return next(error);
+	}
+
+	if (!entry) {
+		// we should not find any entry here
+		const error = new HttpError(
+			'deleteEntryByClub User entry cannot be found.',
+			400
+		);
+		return next(error);
+	}
+
+	// Validate userId exists. If not, sends back an error
+	let user;
+	// req.userData is inserted in check-auth.js
+	let userId = entry.userId;
+	try {
+		user = await User.findById(userId);
+	} catch (err) {
+		const error = new HttpError(
+			'deleteEntryByClub process failed during user validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!user) {
+		const error = new HttpError(
+			'deleteEntryByClub faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		const error = new HttpError(
+			`deleteEntryByClub process failed. Please check your data: ${result.array()}`,
+			422
+		);
+		return next(error);
+	}
+
+	let event;
+	try {
+		event = await Event.findById(entry.eventId.id);
+	} catch (err) {
+		const error = new HttpError(
+			'Internal error in deleteEntryByClub when retrieving event.',
+			500
+		);
+		return next(error);
+	}
+	if (!event) {
+		const error = new HttpError(
+			'Internal error in deleteEntryByClub event not found.',
+			500
+		);
+		return next(error);
+	}
+
+	let entryReport;
+	try {
+		entryReport = await EntryReport.findById(event.entryReportId);
+	} catch (err) {
+		const error = new HttpError(
+			'`deleteEntryByClub process internal failure entryReport not found',
+			404
+		);
+		return next(error);
+	}
+	if (!entryReport) {
+		const error = new HttpError(
+			'`deleteEntryByClub process internal failure entryReport not in DB',
+			404
+		);
+		return next(error);
+	}
+
+	let multiDayEvent = entry.eventId.multiDayEvent;
+	// find how many days
+	let days = entryReport.entries.length;
+
+	// todo: auto bump waitlist once entry drops out from entry list
+	// Since we do not auto bump autolist so we will not touch event full flag
+	// we only modify entryReport.entries and entryReport.waitlist to remove entry from lists
+	for (let i = 0; i < days; ++i) {
+		if (entry.waitlist[i]) {
+			// remove from waitlist
+			let waitlist = entryReport.waitlist[i];
+			let index = waitlist.indexOf(entryId);
+			waitlist.splice(index, 1);
+			entryReport.waitlist.set(i, waitlist);
+		} else {
+			// remove from entries
+			let entryList = entryReport.entries[i];
+			let index = entryList.indexOf(entryId);
+			entryList.splice(index, 1);
+			entryReport.entries.set(i, entryList);
+
+			// -1 for runGroup
+			// match event runGroupOptions
+			const [runGroupIndex] = getRunGroupIndex(
+				event.runGroupOptions[i],
+				entry.runGroup[i]
+			);
+			if (event.runGroupOptions[i][runGroupIndex] === NOT_ATTENDING) {
+				continue;
+			}
+			let num = entryReport.runGroupNumEntries[i][runGroupIndex];
+			// workaround method to change an element value in a nested array array[i][j]
+			// first retrieve array[i] => let array1 = [], array1 = array[i]
+			// and modify it outside => array1[j]--
+			// then use array.set(i, array1) to set array1 to array
+			let runGroupNumEntries = [];
+			runGroupNumEntries = entryReport.runGroupNumEntries[i];
+			runGroupNumEntries[runGroupIndex]--;
+			entryReport.runGroupNumEntries.set(i, runGroupNumEntries);
+		}
+		// -1 for totalEntries
+		let numEntries = entryReport.totalEntries[i];
+		entryReport.totalEntries.set(i, numEntries - 1);
+	}
+
+	// delete payment record
+	let payment;
+	try {
+		payment = await Payment.findById(entry.paymentId);
+	} catch (err) {
+		const error = new HttpError(
+			'deleteEntryByClub Failed to delete the event @retrieving payment.  Please try it later.',
+			500
+		);
+		return next(error);
+	}
+
+	// remove entry from user entries
+	user.entries.pull(entryId);
+	try {
+		// we need to use populate('clubId') above to be able to modify data in
+		// event.clubId.events
+		const session = await mongoose.startSession();
+		session.startTransaction();
+		await user.save({ session: session });
+		// remove payment
+		if (payment) {
+			await payment.remove({ session: session });
+		}
+		await await entry.remove({ session: session });
+		// remove entryReport
+		await entryReport.save({ session: session });
+		// only both tasks succeed, we commit the transaction
+		await session.commitTransaction();
+	} catch (err) {
+		const error = new HttpError(
+			'deleteEntryByClub Failed to delete the entry.  Please try it later.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		message: `Entry was successfully deleted.`
+	});
+};
 exports.createEntry = createEntry;
 exports.updateCar = updateCar;
 exports.updateClassNumber = updateClassNumber;
@@ -2271,5 +2536,7 @@ exports.getEntryFee = getEntryFee;
 exports.chargeEntry = chargeEntry;
 exports.updateRefundFee = updateRefundFee;
 exports.refund = refund;
+exports.updateEntryFee = updateEntryFee;
 exports.authentication = authentication;
 exports.updatePaymentStatus = updatePaymentStatus;
+exports.deleteEntryByClub = deleteEntryByClub;

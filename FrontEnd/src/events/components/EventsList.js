@@ -61,6 +61,7 @@ const EventList = props => {
 					entryReportManager={props.entryReportManager}
 					paymentCenter={props.paymentCenter}
 					refundCenter={props.refundCenter}
+					dataCenter={props.dataCenter}
 				/>
 			))}
 		</ul>

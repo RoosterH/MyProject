@@ -9,6 +9,8 @@ const paymentSchema = new Schema({
 	},
 	entryFee: { type: String, required: true, default: '0' },
 	refundFee: { type: String, required: true, default: '0' },
+	// record stripe processing fee so we can display it in refund center
+	stripeFee: { type: String, required: true, default: '0' },
 	paymentMethod: { type: String, required: true, default: 'stripe' },
 	// paymentStatus: "Unpaid", "Paid", "Authentication", "Declined", "Refunded"
 	paymentStatus: {

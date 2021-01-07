@@ -10,6 +10,7 @@ import { useHttpClient } from '../../shared/hooks/http-hook';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
+import PromptModal from '../../shared/components/UIElements/PromptModal';
 
 const NOT_ATTENDING = 'Not Attending';
 const PAID = 'Paid';
@@ -19,13 +20,16 @@ const DECLINED = 'Declined';
 
 const PaymentCenter = props => {
 	const clubAuthContext = useContext(ClubAuthContext);
+	const eventId = props.paymentCenterData.eventId;
 	// days = how many days for this event
 	const [days, setDays] = useState(
 		props.paymentCenterData.entryData
 			? props.paymentCenterData.entryData.length
 			: 0
 	);
-	let eventEntryList = props.paymentCenterData.entryData;
+	const [eventEntryList, setEventEntryList] = useState(
+		props.paymentCenterData.entryData
+	);
 
 	// entries are the user entries
 	const [eventName, setEventName] = useState(
@@ -39,6 +43,13 @@ const PaymentCenter = props => {
 			? props.paymentCenterData.lunchOptions
 			: undefined
 	);
+
+	// flag of whether Chare All been clicked
+	const [chargeAllStatus, setChargeAllStatus] = useState(false);
+
+	// for delete entry
+	const [delEntry, setDelEntry] = useState();
+	const [delSuccess, setDelSuccess] = useState(false);
 
 	const [showLoading, setShowLoading] = useState(true);
 
@@ -122,6 +133,7 @@ const PaymentCenter = props => {
 					carNumber: entries[j].carNumber,
 					paymentMethod: entries[j].paymentMethod,
 					entryFee: entries[j].entryFee,
+					stripeFee: entries[j].stripeFee,
 					paymentStatus: entries[j].paymentStatus,
 					lunchOption:
 						lunchOptions !== undefined
@@ -138,11 +150,11 @@ const PaymentCenter = props => {
 			// will run on every unmount.
 			// console.log('component is unmounting');
 		};
-	}, []);
+	}, [lunchOptions, days, eventEntryList]);
 
 	// return values from child MaterialTablePaymentCenter component
 	const [email, setEmail] = useState('');
-	const getEmail = email => {
+	const chargeByEmail = email => {
 		setEmail(email);
 	};
 	const [paymentStatus, setPaymentStatus] = useState('');
@@ -169,7 +181,7 @@ const PaymentCenter = props => {
 		}
 	}, []);
 
-	// renders when there is a button click on MaterialTable
+	// renders when CHARGE button been clicked on MaterialTable
 	useEffect(() => {
 		const updateEntryListArray = async () => {
 			setShowLoading(true);
@@ -285,6 +297,39 @@ const PaymentCenter = props => {
 		setEntryListArray
 	]);
 
+	const entryToDelete = entry => {
+		setDelEntry(entry);
+	};
+
+	useEffect(() => {
+		const deleteEntry = async () => {
+			let responseData, responseStatus, responseMessage;
+			console.log('delEntry = ', delEntry);
+			try {
+				[
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
+					process.env.REACT_APP_BACKEND_URL +
+						`/entries/deleteEntryByClub/${delEntry.id}`,
+					'DELETE',
+					null,
+					{
+						'Content-Type': 'application/json',
+						// adding JWT to header for authentication
+						Authorization: 'Bearer ' + clubAuthContext.clubToken
+					}
+				);
+			} catch (err) {}
+			setDelSuccess(true);
+		};
+
+		if (!!delEntry) {
+			deleteEntry();
+		}
+	}, [delEntry, sendRequest]);
+
 	const getError = () => {
 		if (error) {
 			return error;
@@ -297,13 +342,107 @@ const PaymentCenter = props => {
 	const errorClearHandler = () => {
 		clearError();
 		setPaymentStatusError();
+		setShowLoading(false);
 	};
+
+	const updateEntryFee = async rowData => {
+		// rowData has id(entryId) and refundFee, we only need these 2 info to update to backend
+		try {
+			let entryId = rowData.id;
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL +
+					`/entries/updateEntryFee/${entryId}`,
+				'POST',
+				JSON.stringify({
+					entryFee: rowData.entryFee
+				}),
+				{
+					'Content-Type': 'application/json',
+					// adding JWT to header for authentication
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
+				}
+			);
+		} catch (err) {}
+	};
+
+	const [confirmMsg, setConfirmMsg] = useState();
+	const confirmChargeAll = val => {
+		if (val) {
+			if (days == 1) {
+				setConfirmMsg(
+					'Please confirm you want to perform CHARGE ALL. This may take a few minutes to complete all the transactions.'
+				);
+			} else if (days > 1) {
+				setConfirmMsg(
+					'Please confirm you want to perform CHARGE ALL for all entried in ' +
+						days +
+						' days. This may take a few minutes to complete all the transactions.'
+				);
+			}
+		}
+	};
+
+	const onCancelHandler = () => {
+		setConfirmMsg('');
+	};
+	const onConfirmHandler = async () => {
+		setConfirmMsg('');
+		setShowLoading(true);
+		if (
+			entryListArray.length === 0 ||
+			entryListArray[0].length === 0
+		) {
+			setPaymentStatusError('Nothing to charge.');
+			setShowLoading(false);
+			return;
+		}
+
+		let responseData, responseStatus, responseMessage;
+		// send request to backend to charge all the entries
+		try {
+			[
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL +
+					`/events/chargeAll/${eventId}`,
+				'POST',
+				null,
+				{
+					'Content-Type': 'application/json',
+					// adding JWT to header for authentication
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
+				}
+			);
+		} catch (err) {}
+		if (responseData.errorStatus) {
+			setPaymentStatusError(
+				'Some error occurs during Charge All. Please use table to check payment status.'
+			);
+		}
+		setShowLoading(false);
+		setEventEntryList(responseData.entryData);
+		setChargeAllStatus(true);
+	};
+
 	return (
 		<React.Fragment>
 			<ErrorModal
 				error={error || paymentStatusError}
 				onClear={errorClearHandler}
 			/>
+			<PromptModal
+				onCancel={onCancelHandler}
+				onConfirm={onConfirmHandler}
+				contentClass="event-item__modal-content"
+				footerClass="event-item__modal-actions"
+				error={confirmMsg}></PromptModal>
+
 			{(isLoading || showLoading) && (
 				<div className="center">
 					<LoadingSpinner />
@@ -343,9 +482,14 @@ const PaymentCenter = props => {
 							: eventName
 					}
 					showLoading={showLoading}
-					getEmail={getEmail}
+					chargeByEmail={chargeByEmail}
 					getPaymentStatus={getPaymentStatus}
 					lunchOptionLookup={lunchOptionLookup}
+					updateEntryFee={updateEntryFee}
+					chargeAllStatus={chargeAllStatus}
+					confirmChargeAll={confirmChargeAll}
+					entryToDelete={entryToDelete}
+					delSuccess={delSuccess}
 				/>
 			)}
 		</React.Fragment>

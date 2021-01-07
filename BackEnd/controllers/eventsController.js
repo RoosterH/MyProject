@@ -12,11 +12,22 @@ const EntryReport = require('../models/entryReport');
 const Event = require('../models/event');
 const Club = require('../models/club');
 const User = require('../models/user');
+const ClubAccount = require('../models/clubAccount');
 const Payment = require('../models/payment');
+const Stripe = require('./stripeController');
+const { Encrypt, Decrypt } = require('../util/crypto');
 
 const { min } = require('moment');
 const entry = require('../models/entry');
 const { EventBridge } = require('aws-sdk');
+
+const LUNCH = 'Lunch';
+const ONSITE = 'onSite';
+const STRIPE = 'stripe';
+const UNPAID = 'Unpaid';
+const PAID = 'Paid';
+const AUTHENTICATION = 'Require Authentication';
+const DECLINED = 'Declined';
 
 const errMsg = errors => {
 	var msg;
@@ -557,6 +568,7 @@ const getEntryReport = async (req, res, next) => {
 	});
 };
 
+// this is called from paymentCenter and refundCenter
 // GET /api/events/entryreport/:eid - this is for Club
 const getPaymentReport = async (req, res, next) => {
 	// req.params is getting the eid from url, such as /api/events/:id
@@ -666,6 +678,7 @@ const getPaymentReport = async (req, res, next) => {
 			}
 			// adding entryFee and paymentMethod to entry to return to Frontend
 			entry.set('entryFee', payment.entryFee, { strict: false });
+			entry.set('stripeFee', payment.stripeFee, { strict: false });
 			entry.set('paymentMethod', payment.paymentMethod, {
 				strict: false
 			});
@@ -680,6 +693,7 @@ const getPaymentReport = async (req, res, next) => {
 
 	res.status(200).json({
 		eventName: event.name,
+		eventId: event.id,
 		entryData: mutipleDayEntryData.map(entryData =>
 			entryData.map(data =>
 				data.toObject({
@@ -1828,6 +1842,299 @@ const getEntryForm = async (req, res, next) => {
 	res.status(200).json(entryFormData);
 };
 
+const chargeAll = async (req, res, next) => {
+	let eventId = req.params.eid;
+	let event;
+	try {
+		event = await Event.findById(eventId).populate('entryReportId');
+	} catch (err) {
+		console.log('err = ', err);
+		// this error is displayed if the request to the DB had some issues
+		const error = new HttpError(
+			'chargeAll Cannot find the event for the entry list. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'chargeAll Could not find the event. Please try later.',
+			404
+		);
+		return next(error);
+	}
+	let entryReport = event.entryReportId;
+	if (!entryReport) {
+		const error = new HttpError(
+			'chargeAll Could not find the event druing retrieving entryReport. Please try later.',
+			404
+		);
+		return next(error);
+	}
+
+	let club;
+	let clubId = req.userData;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		console.log('1880 err = ', err);
+		const error = new HttpError(
+			'chargeAll process failed during club validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!club) {
+		console.log('1889 err = ', err);
+		const error = new HttpError(
+			'chargeAll process faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+	let clubAccount;
+	try {
+		clubAccount = await ClubAccount.findById(club.accountId);
+	} catch (err) {
+		console.log('1900 err = ', err);
+		const error = new HttpError(
+			'chargeAll internal failure @ getting club account. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!clubAccount) {
+		console.log('1909 err = ', err);
+		const error = new HttpError(
+			'chargeAll failed. No club account in the DB.',
+			404
+		);
+		return next(error);
+	}
+	// get entires
+	let entries = entryReport.entries;
+	// if there is no entry, should not have a waitlist, either.
+	if (entries.length === 0) {
+		res.status(404).json({
+			entryData: []
+		});
+	}
+
+	let days = entries.length;
+	// combine all the unique entries in different days all together
+	let combinedEntries = [];
+	for (let i = 0; i < days; ++i) {
+		let eList = entries[i];
+		for (let j = 0; j < eList.length; ++j) {
+			if (combinedEntries.indexOf(eList[j]) === -1) {
+				combinedEntries.push(eList[j]);
+			}
+		}
+	}
+
+	let processError = false;
+	// start charging one by one
+	for (let i = 0; i < combinedEntries.length; ++i) {
+		let user;
+		let entryId = combinedEntries[i];
+		let entry;
+		try {
+			entry = await Entry.findById(entryId);
+		} catch (err) {
+			console.log('1901 = ', err);
+			processError = true;
+			continue;
+		}
+		if (!entry) {
+			console.log('1906 = ');
+			processError = true;
+			continue;
+		}
+		try {
+			user = await User.findById(entry.userId);
+		} catch (err) {
+			console.log('1894 = ', err);
+			processError = true;
+			continue;
+		}
+		let paymentId = entry.paymentId;
+		let payment;
+		try {
+			payment = await Payment.findById(paymentId);
+		} catch (err) {
+			processError = true;
+			console.log('1904 = ', err);
+			continue;
+		}
+		if (!payment) {
+			console.log('1908 = ');
+			processError = true;
+			continue;
+		}
+
+		let paymentMethod = payment.paymentMethod;
+		let paymentStatus = 'Unpaid',
+			errorCode = '';
+		if (paymentMethod === ONSITE) {
+			paymentStatus = PAID;
+		} else if (paymentMethod === STRIPE) {
+			if (payment.paymentStatus !== 'Unpaid') {
+				continue;
+			}
+			// create paymentIntent, calling stripe.paymentIntents.create
+			const [paymentIntent, err] = await Stripe.createPaymentIntent(
+				user.stripeCustomerId,
+				user.email,
+				payment.stripePaymentMethodId,
+				payment.entryFee,
+				Decrypt(clubAccount.stripeAccountId)
+			);
+
+			if (err) {
+				console.log('1996 err  =', err);
+				if (err.code === 'authentication_required') {
+					paymentStatus = AUTHENTICATION;
+					// Bring the customer back on-session to authenticate the purchase
+					// You can do this by sending an email or app notification to let them know
+					// the off-session purchase failed
+					// Use the PM ID and client_secret to authenticate the purchase
+					// without asking your customers to re-enter their details
+					errorCode =
+						'Charge failed. Customer authentication required. Please contact customer to login and authorize the charge.';
+				} else if (err.code) {
+					paymentStatus = DECLINED;
+					// The card was declined for other reasons (e.g. insufficient funds)
+					// Bring the customer back on-session to ask them for a new payment method
+					errorCode =
+						'Charge failed. Card was declined. Please contact customer to login and provide a different credit card.';
+				} else {
+					console.log('2013 Unknown error occurred', err);
+					const error = new HttpError(
+						'Charge failed. Unknown error occurred. Please try again later.',
+						500
+					);
+					return next(error);
+				}
+			} else {
+				paymentStatus = PAID;
+			}
+			// save paymentIntentId, if err.code is AUTHENTICATION, we need paymentIntentId to handle the post-procecssing tasks
+			payment.stripePaymentIntentId = paymentIntent.id;
+		} else {
+			console.log('2026 = paymentMethod error');
+			processError = true;
+			continue;
+		}
+
+		try {
+			payment.paymentStatus = paymentStatus;
+			await payment.save();
+		} catch (err) {
+			console.log('1975 = ', err);
+			processError = true;
+		}
+	}
+
+	// once it's done, prepare to reutrn paymentReport back to frontend
+	let mutipleDayEntryData = [];
+	for (let i = 0; i < days; ++i) {
+		let entryData = [];
+		let eList = entries[i];
+		for (let j = 0; j < eList.length; ++j) {
+			let entry;
+			try {
+				entry = await Entry.findById(eList[j]).populate('carId');
+			} catch (err) {
+				console.log('2050 = ', err);
+				processError = true;
+				continue;
+			}
+			if (!entry) {
+				console.log('2055 = ');
+				processError = true;
+				continue;
+			}
+
+			let user;
+			try {
+				user = await User.findById(entry.userId);
+			} catch (err) {
+				console.log('2064 = ', err);
+				processError = true;
+				continue;
+			}
+			if (!user) {
+				console.log('2069 = ');
+				processError = true;
+				continue;
+			}
+			// use {strict:false} to add undefined attribute in schema to existing json obj
+			entry.set('email', user.email, { strict: false });
+
+			// get payment data
+			let payment;
+			try {
+				payment = await Payment.findById(entry.paymentId);
+			} catch (err) {
+				console.log('2081 = ', err);
+				processError = true;
+				continue;
+			}
+			if (!payment) {
+				console.log('2086 = ');
+				processError = true;
+				continue;
+			}
+			// adding entryFee and paymentMethod to entry to return to Frontend
+			entry.set('entryFee', payment.entryFee, { strict: false });
+			entry.set('stripeFee', payment.stripeFee, { strict: false });
+			entry.set('paymentMethod', payment.paymentMethod, {
+				strict: false
+			});
+			entry.set('paymentStatus', payment.paymentStatus, {
+				strict: false
+			});
+			entry.set('refundFee', payment.refundFee, { strict: false });
+			entryData.push(entry);
+		}
+		mutipleDayEntryData.push(entryData);
+	}
+
+	res.status(200).json({
+		eventName: event.name,
+		eventId: event.id,
+		entryData: mutipleDayEntryData.map(entryData =>
+			entryData.map(data =>
+				data.toObject({
+					getters: true,
+					transform: (doc, ret, opt) => {
+						delete ret['userId'];
+						delete ret['userName'];
+						delete ret['answer'];
+						delete ret['groupWaitlist'];
+						delete ret['raceClass'];
+						delete ret['waitlist'];
+						delete ret['workerAssignment'];
+						delete ret['clubId'];
+						delete ret['clubName'];
+						delete ret['eventId'];
+						delete ret['eventName'];
+						delete ret['carId'];
+						delete ret['disclaimer'];
+						delete ret['time'];
+						delete ret['published'];
+						return ret;
+					}
+				})
+			)
+		),
+		lunchOptions: event.lunchOptions,
+		errorStatus: processError
+	});
+};
+
 // POST /api/events/entryreportforusers/:eid
 const getEntryReportForUsers = async (req, res, next) => {
 	// req.params is getting the eid from url, such as /api/events/:id
@@ -2067,4 +2374,5 @@ exports.getEntryReport = getEntryReport;
 exports.getPaymentReport = getPaymentReport;
 exports.getEntryForm = getEntryForm;
 exports.createUpdateEntryForm = createUpdateEntryForm;
+exports.chargeAll = chargeAll;
 exports.getEntryReportForUsers = getEntryReportForUsers;

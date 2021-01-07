@@ -163,6 +163,9 @@ router.get('/form/:eid', eventsController.getEntryForm);
 // create event entry form
 router.post('/form/:eid', eventsController.createUpdateEntryForm);
 
+// charge all entries for the event
+router.post('/chargeAll/:eid', eventsController.chargeAll);
+
 router.use(checkUserAuth);
 
 // get event entry report

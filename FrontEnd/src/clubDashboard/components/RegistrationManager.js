@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import './ClubManager.css';
 
-const EventManager = () => {
+const RegistrationManager = () => {
 	const clubAuthContext = useContext(ClubAuthContext);
 	let cid = clubAuthContext.clubId;
 	return (
@@ -28,7 +28,7 @@ const EventManager = () => {
 						to={`/clubs/eventReportSelector/${cid}`}
 						exact="exact">
 						<p className="list-content-desc">
-							Read all sort of entry reports here.
+							Read your club event entry reports here.
 						</p>
 					</Link>
 					<Link
@@ -63,6 +63,19 @@ const EventManager = () => {
 							Refund your customers here.
 						</p>
 					</Link>
+					<Link to={`/clubs/dataCenterSelector/${cid}`} exact="exact">
+						<i
+							className="fa fa-sort-desc pull-right"
+							aria-hidden="true"
+						/>
+						Data Center
+					</Link>
+					<Link to={`/clubs/dataCenterSelector/${cid}`} exact="exact">
+						<p className="list-content-desc">
+							Check your event data.
+						</p>
+					</Link>
+
 					{/* <Link to={`/clubs/ownerClubEvents/${cid}`} exact="exact">
 						<i
 							className="fa fa-sort-desc pull-right"
@@ -70,16 +83,11 @@ const EventManager = () => {
 						/>
 						Pending waitlist invitation
 					</Link>
-					<Link to={`/clubs/viewEventSelector/${cid}`} exact="exact">
-						<p className="list-content-desc">
-							view events in published layout. Pick the one you want
-							to view.
-						</p>
-					</Link> */}
+					*/}
 				</div>
 			</div>
 		</React.Fragment>
 	);
 };
 
-export default EventManager;
+export default RegistrationManager;

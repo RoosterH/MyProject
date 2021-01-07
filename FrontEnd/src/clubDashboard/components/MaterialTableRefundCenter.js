@@ -35,7 +35,9 @@ const MaterialTableRefundCenter = props => {
 		}
 	};
 
+	// for editingCell to update new value
 	const [data, setData] = useState(entryList);
+	console.log('entryList = ', entryList);
 
 	const getButtonText = paymentStatus => {
 		if (paymentStatus === 'Unpaid') {
@@ -51,13 +53,12 @@ const MaterialTableRefundCenter = props => {
 		}
 	};
 	const [selectedRow, setSelectedRow] = useState(null);
-	const addActionRef = React.useRef();
+
 	return (
 		<React.Fragment>
 			<div className="entrylist-table">
 				{Object.values(lunchOptionLookup).length === 0 && (
 					<MaterialTable
-						// data={entryList}
 						data={data}
 						title={`${eventName} Entry List`}
 						isLoading={showLoading}
@@ -100,6 +101,12 @@ const MaterialTableRefundCenter = props => {
 							{
 								title: 'Entry Fee',
 								field: 'entryFee',
+								filtering: false,
+								editable: 'never'
+							},
+							{
+								title: 'Stripe Fee',
+								field: 'stripeFee',
 								filtering: false,
 								editable: 'never'
 							},
@@ -225,7 +232,6 @@ const MaterialTableRefundCenter = props => {
 				)}
 				{Object.values(lunchOptionLookup).length !== 0 && (
 					<MaterialTable
-						// data={entryList}
 						data={data}
 						title={`${eventName} Entry List`}
 						isLoading={showLoading}
@@ -274,6 +280,12 @@ const MaterialTableRefundCenter = props => {
 							{
 								title: 'Entry Fee',
 								field: 'entryFee',
+								filtering: false,
+								editable: 'never'
+							},
+							{
+								title: 'Stripe Fee',
+								field: 'stripeFee',
 								filtering: false,
 								editable: 'never'
 							},

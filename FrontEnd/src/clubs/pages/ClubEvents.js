@@ -24,6 +24,9 @@ const ClubEvents = props => {
 	// refundCenter is true is for payment center
 	let refundCenter = props.refundCenter ? props.refundCenter : false;
 
+	// dataCenter true is for data center
+	let dataCenter = props.dataCenter ? props.dataCenter : false;
+
 	const [loadedEvents, setLoadedEvents] = useState();
 	const {
 		isLoading,
@@ -54,7 +57,12 @@ const ClubEvents = props => {
 				// non-owner gets only published events
 				if (ownerClubEvent) {
 					// for registration reports, we will only query published events
-					if (entryReportManager || paymentCenter || refundCenter) {
+					if (
+						entryReportManager ||
+						paymentCenter ||
+						refundCenter ||
+						dataCenter
+					) {
 						[
 							responseData,
 							responseStatus,
@@ -124,6 +132,7 @@ const ClubEvents = props => {
 					entryReportManager={entryReportManager}
 					paymentCenter={paymentCenter}
 					refundCenter={refundCenter}
+					dataCenter={dataCenter}
 				/>
 			)}
 		</React.Fragment>

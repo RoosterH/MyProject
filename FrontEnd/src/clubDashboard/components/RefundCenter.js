@@ -5,7 +5,6 @@ import React, {
 	useState
 } from 'react';
 import MaterialTableRefundCenter from './MaterialTableRefundCenter';
-import { loadStripe } from '@stripe/stripe-js';
 
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { ClubAuthContext } from '../../shared/context/auth-context';
@@ -15,10 +14,6 @@ import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import '../../shared/components/FormElements/Button.css';
 
 const NOT_ATTENDING = 'Not Attending';
-const PAID = 'Paid';
-const UNPAID = 'Unpaid';
-const AUTHENTICATION = 'Require Authentication';
-const DECLINED = 'Declined';
 const REFUNDED = 'Refunded';
 
 const RefundCenter = props => {
@@ -126,6 +121,7 @@ const RefundCenter = props => {
 					carNumber: entries[j].carNumber,
 					paymentMethod: entries[j].paymentMethod,
 					entryFee: entries[j].entryFee,
+					stripeFee: entries[j].stripeFee,
 					refundFee: entries[j].refundFee,
 					paymentStatus: entries[j].paymentStatus,
 					lunchOption:

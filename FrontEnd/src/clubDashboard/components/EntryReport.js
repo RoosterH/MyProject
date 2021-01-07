@@ -1,4 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {
+	useCallback,
+	useEffect,
+	useState,
+	useContext
+} from 'react';
 import MaterialTableEntryReport from './MaterialTableEntryReport';
 
 import '../../shared/components/FormElements/Button.css';
@@ -137,7 +142,6 @@ const EntryReport = props => {
 					continue;
 				}
 				let entry = {
-					no: j + 1,
 					lastName: entries[j].userLastName,
 					firstName: entries[j].userFirstName,
 					// for lookup field, we need to provide key in lookup array, we use index as key

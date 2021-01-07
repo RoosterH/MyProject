@@ -1,19 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '../../shared/components/FormElements/Button';
-import MaterialTable from 'material-table';
+import MaterialTable, {
+	MTableAction,
+	MTableToolbar
+} from 'material-table';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
+import PromptModal from '../../shared/components/UIElements/PromptModal';
 
 import './ClubManager.css';
 
 const MaterialTablePaymentCenter = props => {
 	// callbacks from parent
-	const getEmail = props.getEmail;
+	const chargeByEmail = props.chargeByEmail;
 	const getPaymentStatus = props.getPaymentStatus;
+	const updateEntryFee = props.updateEntryFee;
+	const chargeAllStatus = props.chargeAllStatus;
+	const confirmChargeAll = props.confirmChargeAll;
 
 	let entryList = props.entryList;
 	let eventName = props.eventName;
 	let lunchOptionLookup = props.lunchOptionLookup;
+	let entryToDelete = props.entryToDelete;
 	let showLoading = props.showLoading;
+
+	// for editingCell to update new value
+	const [data, setData] = useState();
+	useEffect(() => {
+		if (!!entryList && entryList.length > 0) {
+			setData(entryList);
+		}
+	}, [entryList, setData]);
 
 	// cannot use useState to set button text and className because it will
 	// apply to all buttons
@@ -53,8 +69,12 @@ const MaterialTablePaymentCenter = props => {
 			<div className="entrylist-table">
 				{Object.values(lunchOptionLookup).length === 0 && (
 					<MaterialTable
-						data={entryList}
-						title={`${eventName} Entry List`}
+						data={data}
+						title={
+							!!data &&
+							data.length > 0 &&
+							`${eventName} Entry List - total entries ${data.length}`
+						}
 						isLoading={showLoading}
 						style={{
 							border: '2px solid gray',
@@ -63,58 +83,104 @@ const MaterialTablePaymentCenter = props => {
 							marginLeft: '20px'
 						}}
 						columns={[
-							{ title: 'Last Name', field: 'lastName' },
+							{
+								title: 'Last Name',
+								field: 'lastName',
+								editable: 'never'
+							},
 							{
 								title: 'First Name',
 								field: 'firstName',
-								filtering: false
+								filtering: false,
+								editable: 'never'
 							},
 							{
 								title: 'Email',
 								field: 'email',
-								filtering: false
+								filtering: false,
+								editable: 'never'
 							},
 							{
 								title: 'Car Number',
 								field: 'carNumber',
-								filtering: false
+								filtering: false,
+								editable: 'never'
 							},
 							{
 								title: 'Payment Method',
 								field: 'paymentMethod',
-								filtering: false
+								filtering: false,
+								editable: 'never'
 							},
 							{
 								title: 'Entry Fee',
 								field: 'entryFee',
-								filtering: false
+								filtering: false,
+								editable: 'onUpdate'
+							},
+							{
+								title: 'Stripe Fee',
+								field: 'stripeFee',
+								filtering: false,
+								editable: 'never'
 							},
 							{
 								title: 'Status',
 								field: 'paymentStatus',
-								filtering: false
+								filtering: false,
+								editable: 'never'
 							}
 						]}
 						components={{
-							Action: props => (
-								<Button
-									onClick={event => {
-										// return email back to parent to send request to backend
-										getEmail(props.data.email);
-										getPaymentStatus(props.data.paymentStatus);
-										props.action.onClick(event, props.data);
-									}}
-									size={getButtonClassName(props.data.paymentStatus)}
-									disabled={
-										props.data.paymentStatus === 'Paid' ||
-										props.data.paymentStatus === 'Refunded'
-									}>
-									{getButtonText(props.data.paymentStatus)}
-								</Button>
-							),
+							Action: props => {
+								if (
+									typeof props.action === typeof Function ||
+									props.action.tooltip !== 'Charge'
+								) {
+									return <MTableAction {...props} />;
+								} else {
+									return (
+										<Button
+											onClick={event => {
+												// return email back to parent to send request to backend
+												chargeByEmail(props.data.email);
+												getPaymentStatus(props.data.paymentStatus);
+												props.action.onClick(event, props.data);
+											}}
+											size={getButtonClassName(
+												props.data.paymentStatus
+											)}
+											disabled={
+												props.data.paymentStatus === 'Paid' ||
+												props.data.paymentStatus === 'Refunded'
+											}>
+											{getButtonText(props.data.paymentStatus)}
+										</Button>
+									);
+								}
+							},
 							OverlayLoading: props => (
 								<div className="center">
 									<LoadingSpinner />
+								</div>
+							),
+							Toolbar: props => (
+								<div>
+									<MTableToolbar {...props} />
+									<div style={{ padding: '0px 10px' }}>
+										<Button
+											onClick={event => {
+												confirmChargeAll(true);
+											}}
+											size={'small-red'}
+											disabled={
+												entryList === undefined ||
+												entryList.length === 0 ||
+												chargeAllStatus
+											}>
+											CHARGE ALL
+										</Button>
+									</div>
 								</div>
 							)
 						}}
@@ -132,9 +198,31 @@ const MaterialTablePaymentCenter = props => {
 							})
 						}}
 						actions={[
+							rowData => ({
+								icon: 'delete',
+								tooltip: 'Delete User',
+								onClick: (event, rowData) => {
+									console.log('rowData = ', rowData);
+									// need to set timeout to have the table load the new value
+									setTimeout(() => {
+										console.log('delete User');
+										const dataUpdate = [...data];
+										const index = rowData.tableData.id;
+										// return to EntryReport
+										entryToDelete(rowData);
+										// remove current rowData from the list
+										console.log('dataUpdate 1 =', dataUpdate);
+										dataUpdate.splice(index, 1);
+										console.log('dataUpdate 2 =', dataUpdate);
+										console.log('index = ', index);
+										setData([...dataUpdate]);
+									}, 1000);
+								},
+								disabled: rowData.paymentStatus !== 'Unpaid'
+							}),
 							{
 								icon: 'Charge',
-								tooltip: 'Charge User',
+								tooltip: 'Charge',
 								onClick: (event, rowData) => {
 									setTimeout(() => {
 										// need to set timeout to have the table load the new value
@@ -145,13 +233,57 @@ const MaterialTablePaymentCenter = props => {
 						]}
 						onRowClick={(evt, selectedRow) => {
 							setSelectedRow(selectedRow.tableData.id);
+						}}
+						cellEditable={{
+							onCellEditApproved: (
+								newValue,
+								oldValue,
+								rowData,
+								columnDef
+							) => {
+								return new Promise((resolve, reject) => {
+									if (rowData.paymentStatus !== 'Unpaid') {
+										// for non-Paid status, don't allow to change refundFee
+										alert(
+											'Entry fee cannot be changed in current payment status'
+										);
+										resolve();
+									} else {
+										// rowData is the old data with old refundFee
+										setTimeout(() => {
+											// if new value is not a number (NaN)
+											if (isNaN(newValue)) {
+												alert('Entry fee cannot be letters');
+												return resolve();
+											}
+											// cannot convert to float before checking isNaN;
+											// otherwise value such as "1s" will be slipped through
+											let newValueFloat = parseFloat(newValue);
+											rowData.entryFee = newValue;
+											rowData.stripeFee = parseFloat(
+												newValueFloat * 0.029 + 0.3
+											).toFixed(2);
+											updateEntryFee(rowData);
+											const dataUpdate = [...data];
+											const index = rowData.tableData.id;
+											dataUpdate[index] = rowData;
+											setData([...dataUpdate]);
+											resolve();
+										}, 1000);
+									}
+								});
+							}
 						}}
 					/>
 				)}
 				{Object.values(lunchOptionLookup).length !== 0 && (
 					<MaterialTable
-						data={entryList}
-						title={`${eventName} Entry List`}
+						data={data}
+						title={
+							!!data &&
+							data.length > 0 &&
+							`${eventName} Entry List - total entries ${data.length}`
+						}
 						isLoading={showLoading}
 						style={{
 							border: '2px solid gray',
@@ -160,63 +292,110 @@ const MaterialTablePaymentCenter = props => {
 							marginLeft: '20px'
 						}}
 						columns={[
-							{ title: 'Last Name', field: 'lastName' },
+							{
+								title: 'Last Name',
+								field: 'lastName',
+								editable: 'never'
+							},
 							{
 								title: 'First Name',
 								field: 'firstName',
-								filtering: false
+								filtering: false,
+								editable: 'never'
 							},
 							{
 								title: 'Email',
 								field: 'email',
-								filtering: false
+								filtering: false,
+								editable: 'never'
 							},
 							{
 								title: 'Car Number',
 								field: 'carNumber',
-								filtering: false
+								filtering: false,
+								editable: 'never'
 							},
 							{
 								title: 'Lunch',
 								field: 'lunchOption',
-								lookup: lunchOptionLookup
+								lookup: lunchOptionLookup,
+								editable: 'never'
 							},
 							{
 								title: 'Payment Method',
 								field: 'paymentMethod',
-								filtering: false
+								filtering: false,
+								editable: 'never'
 							},
 							{
 								title: 'Entry Fee',
 								field: 'entryFee',
-								filtering: false
+								filtering: false,
+								editable: 'onUpdate'
+							},
+							{
+								title: 'Stripe Fee',
+								field: 'stripeFee',
+								filtering: false,
+								editable: 'never'
 							},
 							{
 								title: 'Status',
 								field: 'paymentStatus',
-								filtering: false
+								filtering: false,
+								editable: 'never'
 							}
 						]}
 						components={{
-							Action: props => (
-								<Button
-									onClick={event => {
-										// return email back to parent to send request to backend
-										getEmail(props.data.email);
-										getPaymentStatus(props.data.paymentStatus);
-										props.action.onClick(event, props.data);
-									}}
-									size={getButtonClassName(props.data.paymentStatus)}
-									disabled={
-										props.data.paymentStatus === 'Paid' ||
-										props.data.paymentStatus === 'Refunded'
-									}>
-									{getButtonText(props.data.paymentStatus)}
-								</Button>
-							),
+							Action: props => {
+								if (
+									typeof props.action === typeof Function ||
+									props.action.tooltip !== 'Charge'
+								) {
+									return <MTableAction {...props} />;
+								} else {
+									return (
+										<Button
+											onClick={event => {
+												// return email back to parent to send request to backend
+												chargeByEmail(props.data.email);
+												getPaymentStatus(props.data.paymentStatus);
+												props.action.onClick(event, props.data);
+											}}
+											size={getButtonClassName(
+												props.data.paymentStatus
+											)}
+											disabled={
+												props.data.paymentStatus === 'Paid' ||
+												props.data.paymentStatus === 'Refunded'
+											}>
+											{getButtonText(props.data.paymentStatus)}
+										</Button>
+									);
+								}
+							},
 							OverlayLoading: props => (
 								<div className="center">
 									<LoadingSpinner />
+								</div>
+							),
+							Toolbar: props => (
+								<div>
+									<MTableToolbar {...props} />
+									<div style={{ padding: '0px 10px' }}>
+										<Button
+											onClick={event => {
+												confirmChargeAll(true);
+											}}
+											size={'small-red'}
+											disabled={
+												entryList === undefined ||
+												entryList.length === 0 ||
+												chargeAllStatus
+											}>
+											CHARGE ALL
+										</Button>
+									</div>
 								</div>
 							)
 						}}
@@ -234,9 +413,31 @@ const MaterialTablePaymentCenter = props => {
 							})
 						}}
 						actions={[
+							rowData => ({
+								icon: 'delete',
+								tooltip: 'Delete User',
+								onClick: (event, rowData) => {
+									console.log('rowData = ', rowData);
+									// need to set timeout to have the table load the new value
+									setTimeout(() => {
+										console.log('delete User');
+										const dataUpdate = [...data];
+										const index = rowData.tableData.id;
+										// return to EntryReport
+										entryToDelete(rowData);
+										// remove current rowData from the list
+										console.log('dataUpdate 1 =', dataUpdate);
+										dataUpdate.splice(index, 1);
+										console.log('dataUpdate 2 =', dataUpdate);
+										console.log('index = ', index);
+										setData([...dataUpdate]);
+									}, 1000);
+								},
+								disabled: rowData.paymentStatus !== 'Unpaid'
+							}),
 							{
 								icon: 'Charge',
-								tooltip: 'Charge User',
+								tooltip: 'Charge',
 								onClick: (event, rowData) => {
 									setTimeout(() => {
 										// need to set timeout to have the table load the new value
@@ -247,6 +448,46 @@ const MaterialTablePaymentCenter = props => {
 						]}
 						onRowClick={(evt, selectedRow) => {
 							setSelectedRow(selectedRow.tableData.id);
+						}}
+						cellEditable={{
+							onCellEditApproved: (
+								newValue,
+								oldValue,
+								rowData,
+								columnDef
+							) => {
+								return new Promise((resolve, reject) => {
+									if (rowData.paymentStatus !== 'Unpaid') {
+										// for non-Paid status, don't allow to change refundFee
+										alert(
+											'Entry fee cannot be changed in current payment status'
+										);
+										resolve();
+									} else {
+										// rowData is the old data with old refundFee
+										setTimeout(() => {
+											// if new value is not a number (NaN)
+											if (isNaN(newValue)) {
+												alert('Entry fee cannot be letters');
+												return resolve();
+											}
+											// cannot convert to float before checking isNaN;
+											// otherwise value such as "1s" will be slipped through
+											let newValueFloat = parseFloat(newValue);
+											rowData.entryFee = newValue;
+											rowData.stripeFee = parseFloat(
+												newValueFloat * 0.029 + 0.3
+											).toFixed(2);
+											updateEntryFee(rowData);
+											const dataUpdate = [...data];
+											const index = rowData.tableData.id;
+											dataUpdate[index] = rowData;
+											setData([...dataUpdate]);
+											resolve();
+										}, 1000);
+									}
+								});
+							}
 						}}
 					/>
 				)}

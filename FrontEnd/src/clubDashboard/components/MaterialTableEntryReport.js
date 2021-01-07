@@ -1,10 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MaterialTable from 'material-table';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
-import PromptModal from '../../shared/components/UIElements/PromptModal';
 
 import './ClubManager.css';
-import { TramOutlined } from '@material-ui/icons';
 
 const MaterialTableEntryReport = props => {
 	let entryList = props.entryList;
@@ -17,13 +15,25 @@ const MaterialTableEntryReport = props => {
 	let workerAssignmentLookup = props.workerAssignmentLookup;
 	let lunchOptionLookup = props.lunchOptionLookup;
 
+	const [data, setData] = useState();
+	useEffect(() => {
+		if (!!entryList && entryList.length > 0) {
+			setData(entryList);
+		}
+	}, [entryList, setData]);
+	const [selectedRow, setSelectedRow] = useState(null);
 	return (
 		<React.Fragment>
 			<div className="entrylist-table">
 				{displayName &&
 					Object.values(lunchOptionLookup).length === 0 && (
 						<MaterialTable
-							title={`${eventName} Entry List`}
+							title={
+								!!data &&
+								data.length > 0 &&
+								`${eventName} Entry List - total entries ${data.length}`
+							}
+							data={data}
 							isLoading={showLoading}
 							components={{
 								OverlayLoading: props => (
@@ -39,20 +49,6 @@ const MaterialTableEntryReport = props => {
 								marginLeft: '20px'
 							}}
 							columns={[
-								{
-									title: 'No.',
-									field: 'no',
-									filtering: false,
-									// cellStyle: {
-									// 	backgroundColor: '#bfbfbf',
-									// 	color: '#000000'
-									// },
-									// headerStyle: {
-									// 	backgroundColor: '#bfbfbf',
-									// 	color: '#000000'
-									// },
-									width: 50
-								},
 								{ title: 'Last Name', field: 'lastName' },
 								{
 									title: 'First Name',
@@ -81,7 +77,6 @@ const MaterialTableEntryReport = props => {
 									lookup: workerAssignmentLookup
 								}
 							]}
-							data={entryList}
 							options={{
 								filtering: true,
 								exportButton: true,
@@ -94,7 +89,12 @@ const MaterialTableEntryReport = props => {
 				{displayName &&
 					Object.values(lunchOptionLookup).length !== 0 && (
 						<MaterialTable
-							title={`${eventName} Entry List`}
+							title={
+								!!data &&
+								data.length > 0 &&
+								`${eventName} Entry List - total entries ${data.length}`
+							}
+							data={data}
 							isLoading={showLoading}
 							components={{
 								OverlayLoading: props => (
@@ -110,20 +110,6 @@ const MaterialTableEntryReport = props => {
 								marginLeft: '20px'
 							}}
 							columns={[
-								{
-									title: 'No.',
-									field: 'no',
-									filtering: false,
-									// cellStyle: {
-									// 	backgroundColor: '#bfbfbf',
-									// 	color: '#000000'
-									// },
-									// headerStyle: {
-									// 	backgroundColor: '#bfbfbf',
-									// 	color: '#000000'
-									// },
-									width: 50
-								},
 								{ title: 'Last Name', field: 'lastName' },
 								{
 									title: 'First Name',
@@ -157,19 +143,29 @@ const MaterialTableEntryReport = props => {
 									lookup: lunchOptionLookup
 								}
 							]}
-							data={entryList}
 							options={{
 								filtering: true,
 								exportButton: true,
 								columnsButton: true,
 								pageSize: 20,
-								pageSizeOptions: [5, 10, 20, 50, 100]
+								pageSizeOptions: [5, 10, 20, 50, 100],
+								rowStyle: rowData => ({
+									backgroundColor:
+										selectedRow === rowData.tableData.id
+											? '#EEE'
+											: '#FFF'
+								})
+							}}
+							onRowClick={(evt, selectedRow) => {
+								setSelectedRow(selectedRow.tableData.id);
 							}}
 						/>
 					)}
 				{displayName && waitlist.length !== 0 && (
 					<MaterialTable
-						title={`${eventName} Waitlist`}
+						title={`${eventName} Waitlist -  on the list`}
+						// title={`${eventName} Waitlist - ${waitlist.length} on the list`}
+						data={waitlist}
 						style={{
 							border: '2px solid gray',
 							maxWidth: '1450px',
@@ -178,20 +174,6 @@ const MaterialTableEntryReport = props => {
 							marginLeft: '20px'
 						}}
 						columns={[
-							{
-								title: 'No.',
-								field: 'no',
-								filtering: false,
-								// cellStyle: {
-								// 	backgroundColor: '#bfbfbf',
-								// 	color: '#000000'
-								// },
-								// headerStyle: {
-								// 	backgroundColor: '#bfbfbf',
-								// 	color: '#000000'
-								// },
-								width: 50
-							},
 							{ title: 'Last Name', field: 'lastName' },
 							{
 								title: 'First Name',
@@ -223,7 +205,6 @@ const MaterialTableEntryReport = props => {
 								filtering: false
 							}
 						]}
-						data={waitlist}
 						options={{
 							filtering: false,
 							sorting: false,
@@ -235,22 +216,13 @@ const MaterialTableEntryReport = props => {
 				{!displayName &&
 					Object.values(lunchOptionLookup).length === 0 && (
 						<MaterialTable
-							title={`${eventName} Entry List`}
+							title={
+								!!data &&
+								data.length > 0 &&
+								`${eventName} Entry List - total entries ${data.length}`
+							}
+							data={data}
 							columns={[
-								{
-									title: 'No.',
-									field: 'no',
-									filtering: false,
-									// cellStyle: {
-									// 	backgroundColor: '#bfbfbf',
-									// 	color: '#000000'
-									// },
-									// headerStyle: {
-									// 	backgroundColor: '#bfbfbf',
-									// 	color: '#000000'
-									// },
-									width: 50
-								},
 								{ title: 'User Name', field: 'userName' },
 								{
 									title: 'Car Number',
@@ -274,7 +246,6 @@ const MaterialTableEntryReport = props => {
 									lookup: workerAssignmentLookup
 								}
 							]}
-							data={entryList}
 							options={{
 								filtering: true,
 								exportButton: true,
@@ -287,22 +258,13 @@ const MaterialTableEntryReport = props => {
 				{!displayName &&
 					Object.values(lunchOptionLookup).length !== 0 && (
 						<MaterialTable
-							title={`${eventName} Entry List`}
+							title={
+								!!data &&
+								data.length > 0 &&
+								`${eventName} Entry List - total entries ${data.length}`
+							}
+							data={data}
 							columns={[
-								{
-									title: 'No.',
-									field: 'no',
-									filtering: false,
-									// cellStyle: {
-									// 	backgroundColor: '#bfbfbf',
-									// 	color: '#000000'
-									// },
-									// headerStyle: {
-									// 	backgroundColor: '#bfbfbf',
-									// 	color: '#000000'
-									// },
-									width: 50
-								},
 								{ title: 'User Name', field: 'userName' },
 								{
 									title: 'Car Number',
@@ -331,7 +293,6 @@ const MaterialTableEntryReport = props => {
 									lookup: lunchOptionLookup
 								}
 							]}
-							data={entryList}
 							options={{
 								filtering: true,
 								exportButton: true,
@@ -343,22 +304,9 @@ const MaterialTableEntryReport = props => {
 					)}
 				{!displayName && waitlist.length !== 0 && (
 					<MaterialTable
-						title={`${eventName} Waitlist`}
+						title={`${eventName} Waitlist - ${waitlist.length} on the list`}
+						data={waitlist}
 						columns={[
-							{
-								title: 'No.',
-								field: 'no',
-								filtering: false,
-								// cellStyle: {
-								// 	backgroundColor: '#bfbfbf',
-								// 	color: '#000000'
-								// },
-								// headerStyle: {
-								// 	backgroundColor: '#bfbfbf',
-								// 	color: '#000000'
-								// },
-								width: 50
-							},
 							{ title: 'User Name', field: 'userName' },
 							{
 								title: 'Car Number',
@@ -381,7 +329,6 @@ const MaterialTableEntryReport = props => {
 								lookup: workerAssignmentLookup
 							}
 						]}
-						data={waitlist}
 						options={{
 							filtering: false,
 							sorting: false,

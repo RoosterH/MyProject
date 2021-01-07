@@ -150,7 +150,6 @@ const EntryListForUsers = props => {
 						let entry;
 						if (displayName) {
 							entry = {
-								no: j + 1,
 								lastName: entries[j].userLastName,
 								firstName: entries[j].userFirstName[0] + '.',
 								carNumber: entries[j].carNumber,
@@ -175,7 +174,6 @@ const EntryListForUsers = props => {
 							};
 						} else {
 							entry = {
-								no: j + 1,
 								userName: entries[j].userName,
 								carNumber: entries[j].carNumber,
 								raceClass: getMapKey(
@@ -214,7 +212,6 @@ const EntryListForUsers = props => {
 						let entry;
 						if (displayName) {
 							entry = {
-								no: j + 1,
 								lastName: waitlist[j].userLastName,
 								firstName: waitlist[j].userFirstName[0] + '.',
 								carNumber: waitlist[j].carNumber,
@@ -234,7 +231,6 @@ const EntryListForUsers = props => {
 							};
 						} else {
 							entry = {
-								no: j + 1,
 								userName: waitlist[j].userName,
 								carNumber: waitlist[j].carNumber,
 								raceClass: getMapKey(

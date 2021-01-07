@@ -107,4 +107,14 @@ router.post(
 
 router.post('/refund/:entryId', entriesController.refund);
 
+router.post(
+	'/updateEntryFee/:entryId',
+	entriesController.updateEntryFee
+);
+
+router.delete(
+	'/deleteEntryByClub/:entryId',
+	entriesController.deleteEntryByClub
+);
+
 module.exports = router;

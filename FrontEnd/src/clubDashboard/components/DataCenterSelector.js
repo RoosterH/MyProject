@@ -7,7 +7,7 @@ import { ClubAuthContext } from '../../shared/context/auth-context';
 import '../components/ClubManager.css';
 
 // Calling ClubEvents
-const RefundCenterSelector = () => {
+const DataCenterSelector = () => {
 	let clubId = useParams().clubId;
 	const clubAuthContext = useContext(ClubAuthContext);
 	if (
@@ -18,7 +18,7 @@ const RefundCenterSelector = () => {
 		return (
 			<div className="list-header clearfix">
 				<div className="selector-title">
-					Not authorized to manage refunds
+					Not authorized to view event data
 				</div>
 			</div>
 		);
@@ -28,17 +28,13 @@ const RefundCenterSelector = () => {
 		<React.Fragment>
 			<div className="list-header clearfix">
 				<div className="selector-title">
-					Please select an event to refund payments
+					Please select an event to view event data
 				</div>
 			</div>
-			<ClubEvents
-				clubId={clubId}
-				refundCenter={true}
-				readOnly={true}
-			/>
+			<ClubEvents clubId={clubId} dataCenter={true} readOnly={true} />
 			;
 		</React.Fragment>
 	);
 };
 
-export default RefundCenterSelector;
+export default DataCenterSelector;
