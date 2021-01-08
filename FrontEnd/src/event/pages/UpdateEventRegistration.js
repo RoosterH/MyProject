@@ -622,19 +622,20 @@ const UpdateEventRegistration = props => {
 			)}
 			{showCloseRegModal && (
 				<Modal
-					className="modal-delete"
 					show={showCloseRegModal}
-					contentClass="event-item__modal-delete"
+					contentClass="event-item__modal-content"
+					footerClass="event-item__modal-actions"
 					onCancel={closeCloseRegHandler}
 					header="Warning!"
-					footerClass="event-item__modal-actions"
 					footer={
 						<React.Fragment>
-							<Button inverse onClick={closeCloseRegHandler}>
-								CANCEL
-							</Button>
-							<Button danger onClick={closeRegHandler}>
+							<Button size="small-red" onClick={closeRegHandler}>
 								CLOSE REGISTRATION
+							</Button>
+							<Button
+								size="small-white"
+								onClick={closeCloseRegHandler}>
+								CANCEL
 							</Button>
 						</React.Fragment>
 					}>
@@ -646,19 +647,20 @@ const UpdateEventRegistration = props => {
 			)}
 			{showOpenRegModal && (
 				<Modal
-					className="modal-delete"
 					show={showOpenRegModal}
-					contentClass="event-item__modal-delete"
+					contentClass="event-item__modal-content"
+					footerClass="event-item__modal-actions"
 					onCancel={closeOpenRegHandler}
 					header="Warning!"
-					footerClass="event-item__modal-actions"
 					footer={
 						<React.Fragment>
-							<Button inverse onClick={closeOpenRegHandler}>
-								CANCEL
-							</Button>
-							<Button danger onClick={openRegHandler}>
+							<Button size="small-red" onClick={openRegHandler}>
 								OPEN REGISTRATION
+							</Button>
+							<Button
+								size="small-white"
+								onClick={closeOpenRegHandler}>
+								CANCEL
 							</Button>
 						</React.Fragment>
 					}>

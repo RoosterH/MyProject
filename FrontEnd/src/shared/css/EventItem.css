@@ -104,14 +104,17 @@
 }
 
 .event-item__modal-content {
+	z-index: 100;
 	padding: 0;
 }
 
 .event-item__modal-actions {
+	z-index: 100;
 	text-align: right;
 }
 
 .event-item__modal-delete {
+	z-index: 100;
 	padding: 0;
 }
 

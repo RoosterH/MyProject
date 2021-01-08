@@ -16,6 +16,7 @@ import { EntryFormOptions } from './EntryFormOptions';
 
 import './FormBuilder.css';
 import '../../formbuilder/scss/application.scss';
+import '../../shared/css/EventItem.css';
 
 const FormBuilder = props => {
 	let eventId = props.event.id;

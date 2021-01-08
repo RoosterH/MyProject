@@ -21,6 +21,11 @@ const MaterialTableEntryReport = props => {
 			setData(entryList);
 		}
 	}, [entryList, setData]);
+
+	let title =
+		!!data && data.length > 0
+			? `${eventName} Entry List - total entries ${data.length}`
+			: `${eventName} Entry List`;
 	const [selectedRow, setSelectedRow] = useState(null);
 	return (
 		<React.Fragment>
@@ -28,11 +33,7 @@ const MaterialTableEntryReport = props => {
 				{displayName &&
 					Object.values(lunchOptionLookup).length === 0 && (
 						<MaterialTable
-							title={
-								!!data &&
-								data.length > 0 &&
-								`${eventName} Entry List - total entries ${data.length}`
-							}
+							title={title}
 							data={data}
 							isLoading={showLoading}
 							components={{
@@ -89,11 +90,7 @@ const MaterialTableEntryReport = props => {
 				{displayName &&
 					Object.values(lunchOptionLookup).length !== 0 && (
 						<MaterialTable
-							title={
-								!!data &&
-								data.length > 0 &&
-								`${eventName} Entry List - total entries ${data.length}`
-							}
+							title={title}
 							data={data}
 							isLoading={showLoading}
 							components={{
@@ -216,11 +213,7 @@ const MaterialTableEntryReport = props => {
 				{!displayName &&
 					Object.values(lunchOptionLookup).length === 0 && (
 						<MaterialTable
-							title={
-								!!data &&
-								data.length > 0 &&
-								`${eventName} Entry List - total entries ${data.length}`
-							}
+							title={title}
 							data={data}
 							columns={[
 								{ title: 'User Name', field: 'userName' },
@@ -258,11 +251,7 @@ const MaterialTableEntryReport = props => {
 				{!displayName &&
 					Object.values(lunchOptionLookup).length !== 0 && (
 						<MaterialTable
-							title={
-								!!data &&
-								data.length > 0 &&
-								`${eventName} Entry List - total entries ${data.length}`
-							}
+							title={title}
 							data={data}
 							columns={[
 								{ title: 'User Name', field: 'userName' },

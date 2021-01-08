@@ -10,15 +10,17 @@ import PromptModal from '../../shared/components/UIElements/PromptModal';
 import './ClubManager.css';
 
 const MaterialTablePaymentCenter = props => {
+	let entryList = props.entryList;
+	let eventName = props.eventName;
+
 	// callbacks from parent
 	const chargeByEmail = props.chargeByEmail;
 	const getPaymentStatus = props.getPaymentStatus;
 	const updateEntryFee = props.updateEntryFee;
 	const chargeAllStatus = props.chargeAllStatus;
 	const confirmChargeAll = props.confirmChargeAll;
+	const confirmDeleteUser = props.confirmDeleteUser;
 
-	let entryList = props.entryList;
-	let eventName = props.eventName;
 	let lunchOptionLookup = props.lunchOptionLookup;
 	let entryToDelete = props.entryToDelete;
 	let showLoading = props.showLoading;
@@ -26,10 +28,18 @@ const MaterialTablePaymentCenter = props => {
 	// for editingCell to update new value
 	const [data, setData] = useState();
 	useEffect(() => {
-		if (!!entryList && entryList.length > 0) {
-			setData(entryList);
-		}
-	}, [entryList, setData]);
+		setData(entryList);
+	}, [entryList]);
+
+	const [disableChargeAll, setDisableChargeAll] = useState();
+	useEffect(() => {
+		setDisableChargeAll(chargeAllStatus);
+	}, [chargeAllStatus]);
+
+	let title =
+		!!data && data.length > 0
+			? `${eventName} Entry List - total entries ${data.length}`
+			: `${eventName} Entry List`;
 
 	// cannot use useState to set button text and className because it will
 	// apply to all buttons
@@ -70,11 +80,7 @@ const MaterialTablePaymentCenter = props => {
 				{Object.values(lunchOptionLookup).length === 0 && (
 					<MaterialTable
 						data={data}
-						title={
-							!!data &&
-							data.length > 0 &&
-							`${eventName} Entry List - total entries ${data.length}`
-						}
+						title={title}
 						isLoading={showLoading}
 						style={{
 							border: '2px solid gray',
@@ -176,7 +182,7 @@ const MaterialTablePaymentCenter = props => {
 											disabled={
 												entryList === undefined ||
 												entryList.length === 0 ||
-												chargeAllStatus
+												disableChargeAll
 											}>
 											CHARGE ALL
 										</Button>
@@ -200,22 +206,17 @@ const MaterialTablePaymentCenter = props => {
 						actions={[
 							rowData => ({
 								icon: 'delete',
-								tooltip: 'Delete User',
+								tooltip: 'Delete Entry',
 								onClick: (event, rowData) => {
-									console.log('rowData = ', rowData);
+									// flag to display modal to ask for confirmation
+									confirmDeleteUser(true);
+
 									// need to set timeout to have the table load the new value
 									setTimeout(() => {
-										console.log('delete User');
 										const dataUpdate = [...data];
 										const index = rowData.tableData.id;
-										// return to EntryReport
+										// return to payment center then send a request to backend
 										entryToDelete(rowData);
-										// remove current rowData from the list
-										console.log('dataUpdate 1 =', dataUpdate);
-										dataUpdate.splice(index, 1);
-										console.log('dataUpdate 2 =', dataUpdate);
-										console.log('index = ', index);
-										setData([...dataUpdate]);
 									}, 1000);
 								},
 								disabled: rowData.paymentStatus !== 'Unpaid'
@@ -279,11 +280,7 @@ const MaterialTablePaymentCenter = props => {
 				{Object.values(lunchOptionLookup).length !== 0 && (
 					<MaterialTable
 						data={data}
-						title={
-							!!data &&
-							data.length > 0 &&
-							`${eventName} Entry List - total entries ${data.length}`
-						}
+						title={title}
 						isLoading={showLoading}
 						style={{
 							border: '2px solid gray',
@@ -391,7 +388,7 @@ const MaterialTablePaymentCenter = props => {
 											disabled={
 												entryList === undefined ||
 												entryList.length === 0 ||
-												chargeAllStatus
+												disableChargeAll
 											}>
 											CHARGE ALL
 										</Button>
@@ -415,22 +412,16 @@ const MaterialTablePaymentCenter = props => {
 						actions={[
 							rowData => ({
 								icon: 'delete',
-								tooltip: 'Delete User',
+								tooltip: 'Delete Entry',
 								onClick: (event, rowData) => {
-									console.log('rowData = ', rowData);
+									confirmDeleteUser(true);
+
 									// need to set timeout to have the table load the new value
 									setTimeout(() => {
-										console.log('delete User');
 										const dataUpdate = [...data];
 										const index = rowData.tableData.id;
-										// return to EntryReport
+										// return to payment center then send a request to backend
 										entryToDelete(rowData);
-										// remove current rowData from the list
-										console.log('dataUpdate 1 =', dataUpdate);
-										dataUpdate.splice(index, 1);
-										console.log('dataUpdate 2 =', dataUpdate);
-										console.log('index = ', index);
-										setData([...dataUpdate]);
 									}, 1000);
 								},
 								disabled: rowData.paymentStatus !== 'Unpaid'
