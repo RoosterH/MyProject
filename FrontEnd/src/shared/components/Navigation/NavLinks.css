@@ -2,8 +2,10 @@
 	list-style: square;
 	margin: 0;
 	padding: 0;
-	width: 100%;
-	height: 100%;
+	/* width: 100%; */
+	width: 10rem;
+	/* height: 100%; */
+	height: 50%;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -56,6 +58,17 @@
 }
 
 @media (min-width: 780px) {
+	.nav-links {
+		list-style: square;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+	}
 	.nav-links {
 		flex-direction: row;
 	}

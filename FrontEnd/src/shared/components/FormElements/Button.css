@@ -383,6 +383,7 @@
 		padding: 0.2rem 0.5rem;
 		width: 6rem;
 		text-align: center;
+		z-index: 1000;
 	}
 
 	.button--small-orange--inverse {

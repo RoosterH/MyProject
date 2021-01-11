@@ -118,7 +118,8 @@
 	position: relative;
 	font-size: 14px;
 	padding: 0.5rem;
-	margin-left: 0.8rem;
+	/* margin-left: 0.8rem; */
+	margin-left: -4.5rem;
 }
 
 .carinfo-container h3 {
@@ -199,6 +200,7 @@
 .table p {
 	font-size: 12px;
 	margin-bottom: 0rem;
+	margin-top: 0.2rem;
 }
 
 .table-corner-td {
