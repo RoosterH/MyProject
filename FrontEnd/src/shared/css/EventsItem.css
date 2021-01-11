@@ -95,6 +95,6 @@
 		align-items: center;
 		margin: 1rem;
 		width: calc(50%);
-		/* min-width: 17.5rem; */
+		min-width: 17.5rem;
 	}
 }

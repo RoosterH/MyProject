@@ -36,7 +36,6 @@ const PaymentCenterSelector = () => {
 				paymentCenter={true}
 				readOnly={true}
 			/>
-			;
 		</React.Fragment>
 	);
 };

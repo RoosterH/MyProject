@@ -1,10 +1,11 @@
 .event-form {
 	margin: 1.5rem, 1rem, 10rem, 1.5rem;
+	margin: 0rem;
 }
 
 .event-form-container {
 	padding-block-end: 10rem;
-	width: 70%;
+	/* width: 70%; */
 	margin: 0 auto;
 }
 
@@ -17,10 +18,21 @@
 }
 
 .event-form-header h4 {
-	font-size: 25px;
+	/* font-size: 25px; */
+	font-size: 14px;
 	font-weight: 400;
-	margin-inline-start: 1.5rem;
+	/* margin-inline-start: 1.5rem; */
+	margin-inline-start: 0rem;
 	margin-block-end: 0.2rem;
+}
+
+.event-form-header h5 {
+	font-size: 12px;
+	font-weight: 400;
+	/* margin-inline-start: 1.5rem; */
+	margin-inline-start: 0rem;
+	margin-block-end: 0.2rem;
+	color: rgba(255, 0, 0, 0.562);
 }
 
 .event-form__hr {
@@ -53,7 +65,10 @@
 	display: inline-block;
 	font-size: 15px;
 	width: 43%;
-	margin: 0rem 0rem 0.5rem 1rem;
+	margin-top: 0rem;
+	margin-right: 3.5%;
+	margin-bottom: 0.5rem;
+	margin-left: 1.5rem;
 }
 
 .event-form__field {
@@ -105,7 +120,8 @@
 .event-form__label_inline_half {
 	display: inline-block;
 	font-size: 15px;
-	width: 43.5%;
+	/* width: 43.5%; */
+	width: 80%;
 	margin: 0rem 0.1rem 0.2rem 1.5rem;
 }
 
@@ -116,7 +132,8 @@
 	border-color: #c2c2c2;
 	font-size: 15px;
 	font-family: 'Montserrat', sans-serif;
-	width: 43.5%;
+	/* width: 43.5%; */
+	width: 80%;
 	height: 1.9rem;
 	margin: 0rem 0.1rem 0.5rem 1.5rem;
 }
@@ -124,7 +141,8 @@
 .event-form__label_inline_third {
 	display: inline-block;
 	font-size: 15px;
-	width: 28%;
+	/* width: 28%; */
+	width: 80%;
 	margin: 0rem 0.1rem 0.2rem 1.5rem;
 }
 
@@ -135,7 +153,7 @@
 	border-color: #c2c2c2;
 	font-size: 15px;
 	font-family: 'Montserrat', sans-serif;
-	width: 28%;
+	width: 80%;
 	height: 1.9rem;
 	margin: 0rem 0.1rem 0.5rem 1.5rem;
 }
@@ -143,7 +161,8 @@
 .event-form__label_inline_quarter {
 	display: inline-block;
 	font-size: 12px;
-	width: 20.2%;
+	/* width: 20.2%; */
+	width: 80.2%;
 	margin: 0rem 0.1rem 0.2rem 1.5rem;
 }
 
@@ -154,7 +173,7 @@
 	border-color: #c2c2c2;
 	font-size: 15px;
 	font-family: 'Montserrat', sans-serif;
-	width: 20.2%;
+	width: 80%;
 	height: 1.9rem;
 	margin: 0rem 0.1rem 0.5rem 1.5rem;
 }
@@ -208,7 +227,7 @@
 	border-color: #c2c2c2;
 	font-size: 15px;
 	font-family: 'Montserrat', sans-serif;
-	width: 42% !important;
+	width: 52% !important;
 	height: 2rem;
 	margin-top: 0rem;
 	margin-right: 3.5%;
@@ -220,9 +239,12 @@
 	display: inline-block;
 	font-size: 15px;
 	font-family: 'Montserrat', sans-serif;
-	width: 43% !important;
+	width: 52% !important;
 	height: 2rem;
-	margin: 0rem 0rem 0.5rem 1rem;
+	margin-top: 0rem;
+	margin-right: 3.5%;
+	margin-bottom: 0.5rem;
+	margin-left: 1.5rem;
 }
 
 .event-form__field-error {
@@ -295,7 +317,10 @@
 	color: #b10101;
 	width: 43%;
 	height: 1.9rem;
-	margin: 0rem 0rem 0.5rem 1rem;
+	margin-top: 0rem;
+	margin-right: 3.5%;
+	margin-bottom: 0.5rem;
+	margin-left: 1.5rem;
 }
 
 .event-form h2 {
@@ -343,11 +368,15 @@
 	font-size: 15px;
 	font-family: 'Montserrat', sans-serif;
 	width: 90%;
-	height: 1.9rem;
+	/* height: 1.9rem; */
+	height: 4rem;
 	margin: 0rem 0.1rem 0.5rem 1.5rem;
 }
 
 @media (min-width: 780px) {
+	.event-form {
+		margin: 1.5rem, 1rem, 10rem, 1.5rem;
+	}
 	.event-form-container {
 		min-width: 30rem;
 	}

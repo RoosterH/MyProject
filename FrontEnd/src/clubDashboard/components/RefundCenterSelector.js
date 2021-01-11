@@ -36,7 +36,6 @@ const RefundCenterSelector = () => {
 				refundCenter={true}
 				readOnly={true}
 			/>
-			;
 		</React.Fragment>
 	);
 };

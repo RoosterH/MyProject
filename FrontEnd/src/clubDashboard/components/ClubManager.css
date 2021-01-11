@@ -200,3 +200,33 @@
 	background-color: rgb(245, 177, 245);
 	color: black;
 }
+@media (max-width: 780px) {
+	/* New Event Manager */
+	.li-tab {
+		display: block;
+		/* margin: 0 15px 0 15px; */
+		margin: 0 1px 0 1px;
+		border-width: 1px 1px 0px 1px;
+		/* padding: 5px 0; */
+		padding: 2px 2px 2px 2px;
+		/* width: 130px; */
+		width: 24%;
+		font-size: 12px;
+		background: rgb(226, 228, 228);
+		text-align: center;
+	}
+
+	.li-tab_orange {
+		display: block;
+		/* margin: 0 15px 0 15px; */
+		margin: 0 1px 0 1px;
+		/* padding: 5px 0; */
+		padding: 2px 5px 2px 5px;
+		/* width: 130px; */
+		width: 23%;
+		/* height: 1.6rem; */
+		background: orange;
+		font-size: 12px;
+		text-align: center;
+	}
+}

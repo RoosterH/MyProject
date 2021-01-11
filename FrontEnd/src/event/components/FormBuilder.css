@@ -35,3 +35,10 @@
 .formbuilder-label {
 	font-weight: 400;
 }
+
+@media (max-width: 780px) {
+	.formbuilder-label {
+		font-weight: 400;
+		margin-bottom: 1rem;
+	}
+}

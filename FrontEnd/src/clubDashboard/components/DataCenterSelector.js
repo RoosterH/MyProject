@@ -32,7 +32,6 @@ const DataCenterSelector = () => {
 				</div>
 			</div>
 			<ClubEvents clubId={clubId} dataCenter={true} readOnly={true} />
-			;
 		</React.Fragment>
 	);
 };

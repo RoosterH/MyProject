@@ -36,7 +36,6 @@ const EventReportSelector = () => {
 				entryReportManager={true}
 				readOnly={true}
 			/>
-			;
 		</React.Fragment>
 	);
 };
