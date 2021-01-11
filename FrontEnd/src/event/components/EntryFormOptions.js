@@ -244,7 +244,7 @@ export const EntryFormOptions = () => [
 			},
 			{
 				value: '4',
-				text: 'Afternoon Session 2',
+				text: 'Afternoon Session 3',
 				key: `RunGroupSingle_4`
 			}
 		]

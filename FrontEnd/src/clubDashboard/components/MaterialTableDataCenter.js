@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import MaterialTable from 'material-table';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
@@ -72,7 +72,8 @@ const MaterialTableRefundCenter = props => {
 					options={{
 						exportButton: true,
 						columnsButton: true,
-						pageSize: 1
+						pageSize: 5,
+						pageSizeOptions: [5, 10, 20]
 					}}
 					components={{
 						OverlayLoading: props => (
@@ -97,7 +98,8 @@ const MaterialTableRefundCenter = props => {
 						options={{
 							exportButton: true,
 							columnsButton: true,
-							pageSize: 1
+							pageSize: 5,
+							pageSizeOptions: [5, 10, 20]
 						}}
 						components={{
 							OverlayLoading: props => (

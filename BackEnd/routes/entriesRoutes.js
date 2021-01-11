@@ -117,4 +117,10 @@ router.delete(
 	entriesController.deleteEntryByClub
 );
 
+router.post(
+	'/addEntryByClub/:entryId',
+	[check('daySelected').not().isEmpty()],
+	entriesController.addEntryByClub
+);
+
 module.exports = router;

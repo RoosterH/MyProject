@@ -5,8 +5,9 @@ import MainHeader from './MainHeader';
 import NavLinks from './NavLinks';
 import SideDrawer from './SideDrawer';
 import Backdrop from '../UIElements/Backdrop';
-import './MainNavigation.css';
 import { ClubAuthContext } from '../../context/auth-context';
+
+import './MainNavigation.css';
 
 const MainNavigation = props => {
 	const clubAuthContext = useContext(ClubAuthContext);
@@ -49,6 +50,7 @@ const MainNavigation = props => {
 			</SideDrawer>
 
 			<MainHeader>
+				{/* <div className="header-image"> */}
 				<button
 					className="main-navigation__menu-btn"
 					onClick={openDrawerHandler}>
@@ -58,16 +60,18 @@ const MainNavigation = props => {
 				</button>
 				<h1 className="main-navigation__menu_title">
 					{!isClubLoggedIn && (
+						// <img src={COURSEHEADER} alt="header" width="800" height="100" />
 						<Link to="/" style={{ textDecoration: 'none' }}>
 							MYSeatTime
 						</Link>
 					)}
-					{isClubLoggedIn && 'MySeatTime'}
+					{isClubLoggedIn && 'MYSeatTime'}
 				</h1>
 				{/* main-navigation__head is for desktop screen that only shows >= 768px */}
 				<nav className="main-navigation__header-nav">
 					<NavLinks />
 				</nav>
+				{/* </div> */}
 			</MainHeader>
 		</React.Fragment>
 	);

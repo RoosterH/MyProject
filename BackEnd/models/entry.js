@@ -46,9 +46,11 @@ const entrySchema = new Schema({
 	time: { type: Date, required: true },
 	// not used right now. this is intended for loading unfished-entry
 	published: { type: Boolean, required: true },
-	// ! array
+	// ! array flag to indicate entry is on the event waitlist
 	waitlist: [{ type: Boolean, required: true }],
-	// ! array
+	// ! array flag to indicate entry is on group waitlist,
+	// if it's on group waitlis, it must be also on waitlist
+	// however if event does not have cap set, entry can be on waitlist but not groupWaitlist
 	groupWaitlist: [{ type: Boolean, require: true }],
 
 	// the following section fields are parsed from answer

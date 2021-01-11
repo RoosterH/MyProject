@@ -1,27 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import MaterialTable from 'material-table';
+import MaterialTable, { MTableAction } from 'material-table';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
 import './ClubManager.css';
 
 const MaterialTableEntryReport = props => {
 	let entryList = props.entryList;
-	let waitlist = props.waitlist;
+	let waitlist = props.waitlist ? props.waitlist : [];
 	let displayName = props.displayName;
 	let eventName = props.eventName;
 	let showLoading = props.showLoading;
-	let raceClassLookup = props.raceClassLookup;
-	let runGroupLookup = props.runGroupLookup;
-	let workerAssignmentLookup = props.workerAssignmentLookup;
-	let lunchOptionLookup = props.lunchOptionLookup;
+	let raceClassLookup = props.raceClassLookup
+		? props.raceClassLookup
+		: [];
+	let runGroupLookup = props.runGroupLookup
+		? props.runGroupLookup
+		: [];
+	let workerAssignmentLookup = props.workerAssignmentLookup
+		? props.workerAssignmentLookup
+		: [];
+	let lunchOptionLookup = props.lunchOptionLookup
+		? props.lunchOptionLookup
+		: [];
+	let confirmAddUser = props.confirmAddUser;
 
-	const [data, setData] = useState();
+	const [data, setData] = useState([]);
 	useEffect(() => {
 		if (!!entryList && entryList.length > 0) {
 			setData(entryList);
 		}
 	}, [entryList, setData]);
 
+	const [waitlistData, setWaitlistData] = useState([]);
+	useEffect(() => {
+		console.log('in useEffect = ', waitlistData);
+		// if (!!waitlist && waitlist.length > 0) {
+		setWaitlistData(waitlist);
+		// }
+	}, [waitlist, setWaitlistData]);
+	console.log('outside = ', waitlistData);
 	let title =
 		!!data && data.length > 0
 			? `${eventName} Entry List - total entries ${data.length}`
@@ -158,11 +175,10 @@ const MaterialTableEntryReport = props => {
 							}}
 						/>
 					)}
-				{displayName && waitlist.length !== 0 && (
+				{displayName && waitlistData.length !== 0 && (
 					<MaterialTable
-						title={`${eventName} Waitlist -  on the list`}
-						// title={`${eventName} Waitlist - ${waitlist.length} on the list`}
-						data={waitlist}
+						title={`${eventName} Waitlist - ${waitlistData.length} on the waitlist`}
+						data={waitlistData}
 						style={{
 							border: '2px solid gray',
 							maxWidth: '1450px',
@@ -201,6 +217,31 @@ const MaterialTableEntryReport = props => {
 								lookup: workerAssignmentLookup,
 								filtering: false
 							}
+						]}
+						components={{
+							OverlayLoading: props => (
+								<div className="center">
+									<LoadingSpinner />
+								</div>
+							)
+						}}
+						actions={[
+							rowData => ({
+								icon: 'add',
+								tooltip: 'Add to Entry',
+								onClick: (event, rowData) => {
+									// flag to display modal to ask for confirmation
+									confirmAddUser(true, rowData.id);
+
+									// need to set timeout to have the table load the new value
+									setTimeout(() => {
+										// const dataUpdate = [...data];
+										// const index = rowData.tableData.id;
+										// return to payment center then send a request to backend
+										// entryToDelete(rowData);
+									}, 1000);
+								}
+							})
 						]}
 						options={{
 							filtering: false,
@@ -291,10 +332,10 @@ const MaterialTableEntryReport = props => {
 							}}
 						/>
 					)}
-				{!displayName && waitlist.length !== 0 && (
+				{!displayName && waitlistData.length !== 0 && (
 					<MaterialTable
-						title={`${eventName} Waitlist - ${waitlist.length} on the list`}
-						data={waitlist}
+						title={`${eventName} Waitlist - ${waitlistData.length} on the list`}
+						data={waitlistData}
 						columns={[
 							{ title: 'User Name', field: 'userName' },
 							{

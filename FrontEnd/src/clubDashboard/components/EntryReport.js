@@ -4,13 +4,32 @@ import React, {
 	useState,
 	useContext
 } from 'react';
+import { useHttpClient } from '../../shared/hooks/http-hook';
+import { ClubAuthContext } from '../../shared/context/auth-context';
 import MaterialTableEntryReport from './MaterialTableEntryReport';
+import ErrorModal from '../../shared/components/UIElements/ErrorModal';
+import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
+import PromptModal from '../../shared/components/UIElements/PromptModal';
 
 import '../../shared/components/FormElements/Button.css';
 
 const NOT_ATTENDING = 'Not Attending';
 
 const EntryReport = props => {
+	const clubAuthContext = useContext(ClubAuthContext);
+	const {
+		isLoading,
+		error,
+		sendRequest,
+		clearError
+	} = useHttpClient();
+	const [addEntryError, setAddEntryError] = useState(false);
+	const errorClearHandler = () => {
+		clearError();
+		setAddEntryError();
+		setShowLoading(false);
+	};
+
 	// days = how many days for this event
 	const [days, setDays] = useState(
 		props.entryReportData.entryData
@@ -83,7 +102,7 @@ const EntryReport = props => {
 		workerAssignmentLookup,
 		setWorkerAssignmentLookup
 	] = useState();
-	const [lunchOptionLookup, setLunchOptionLookup] = useState();
+	const [lunchOptionLookup, setLunchOptionLookup] = useState([]);
 
 	// return index of matched value
 	const getMapKey = (val, myMap) => {
@@ -115,7 +134,7 @@ const EntryReport = props => {
 		return lookupMap;
 	};
 
-	useEffect(() => {
+	const composeEntryDataArray = eventEntryList => {
 		//***********  construct lookups ************//
 		let obj = {};
 		obj = convert2Lookup(raceClasses);
@@ -172,7 +191,9 @@ const EntryReport = props => {
 			entryDataArray.push(entryData);
 		}
 		setEntryListArray(entryDataArray);
+	};
 
+	const composeWaitlistArray = eventWaitlist => {
 		//************ compose waitlist ***************//
 		let waitlistDataArray = [];
 		for (let i = 0; i < days; ++i) {
@@ -181,6 +202,7 @@ const EntryReport = props => {
 			for (let j = 0; j < waitlist.length; ++j) {
 				let entry;
 				entry = {
+					id: waitlist[j].id,
 					lastName: waitlist[j].userLastName,
 					firstName: waitlist[j].userFirstName,
 					carNumber: waitlist[j].carNumber,
@@ -210,9 +232,72 @@ const EntryReport = props => {
 			waitlistDataArray.push(waitlistData);
 		}
 		setWaitlistArray(waitlistDataArray);
+	};
+
+	useEffect(() => {
+		//*************** compose entry list from all the entries ************/
+		composeEntryDataArray(eventEntryList);
+
+		//compose waitlist
+		composeWaitlistArray(eventWaitlist);
 
 		setShowLoading(false);
 	}, []);
+
+	// PromoptModal will show up once confirmMsg been set, used to confirm ChargeAll and DeleteEntry
+	const [confirmMsg, setConfirmMsg] = useState('');
+	const [addEntry, setAddEntry] = useState(false);
+	const [entryToBeAdded, setEntryToBeAdded] = useState();
+
+	// getting confirmation from MTable about showing up modal
+	const confirmAddUser = (val, entryId) => {
+		if (val) {
+			setAddEntry(true);
+			setEntryToBeAdded(entryId);
+			setConfirmMsg('Please confirm to ADD the entry to entry list.');
+		}
+	};
+
+	const onCancelHandler = () => {
+		setConfirmMsg('');
+		if (addEntry) {
+			setAddEntry(false);
+			setEntryToBeAdded();
+		}
+	};
+
+	const onConfirmHandler = async () => {
+		setConfirmMsg('');
+		if (addEntry) {
+			setAddEntry(false);
+			if (!entryToBeAdded) {
+				setAddEntryError('Please select an entry to add.');
+				return;
+			}
+			// send request to backend to add an entry
+			let responseData, responseStatus, responseMessage;
+			// send request to backend to charge all the entries
+			try {
+				[
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
+					process.env.REACT_APP_BACKEND_URL +
+						`/entries/addEntryByClub/${entryToBeAdded}`,
+					'POST',
+					JSON.stringify({ daySelected: daySelection - 1 }),
+					{
+						'Content-Type': 'application/json',
+						// adding JWT to header for authentication
+						Authorization: 'Bearer ' + clubAuthContext.clubToken
+					}
+				);
+			} catch (err) {}
+			composeEntryDataArray(responseData.entryData);
+			composeWaitlistArray(responseData.waitlistData);
+		}
+	};
 
 	// callback for Day Buttons
 	const daySelectionCallback = index => {
@@ -233,6 +318,22 @@ const EntryReport = props => {
 
 	return (
 		<React.Fragment>
+			<ErrorModal
+				error={error || addEntryError}
+				onClear={errorClearHandler}
+			/>
+			<PromptModal
+				onCancel={onCancelHandler}
+				onConfirm={onConfirmHandler}
+				contentClass="event-item__modal-content"
+				footerClass="event-item__modal-actions"
+				error={confirmMsg}
+			/>
+			{(isLoading || showLoading) && (
+				<div className="center">
+					<LoadingSpinner />
+				</div>
+			)}
 			{days > 1 &&
 				dayArray.map(day => {
 					if (day === 1) {
@@ -275,6 +376,7 @@ const EntryReport = props => {
 						runGroupLookup={runGroupLookup}
 						workerAssignmentLookup={workerAssignmentLookup}
 						lunchOptionLookup={lunchOptionLookup}
+						confirmAddUser={confirmAddUser}
 					/>
 				)}
 		</React.Fragment>

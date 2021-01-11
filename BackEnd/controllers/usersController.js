@@ -545,7 +545,6 @@ const getEvents = async (req, res, next) => {
 const getEntry = async (req, res, next) => {
 	const eId = req.params.eid;
 	let uId = req.userData;
-
 	let entry;
 	try {
 		// populate allows us to access a document in another collection

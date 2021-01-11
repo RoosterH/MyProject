@@ -62,7 +62,7 @@ const EntryListForUsers = props => {
 	] = useState();
 	let workerAssignments = [];
 
-	const [lunchOptionLookup, setLunchOptionLookup] = useState();
+	const [lunchOptionLookup, setLunchOptionLookup] = useState([]);
 	let lunchOptions = [];
 
 	// return index of matched value
@@ -313,7 +313,8 @@ const EntryListForUsers = props => {
 				waitlistArray.length > 0 && (
 					<MaterialTableEntryReport
 						entryList={entryListArray[daySelection - 1]}
-						waitlist={waitlistArray[daySelection - 1]}
+						// waitlist={waitlistArray[daySelection - 1]}
+						waitlist={[]}
 						displayName={displayName}
 						eventName={
 							entryListArray.length > 1

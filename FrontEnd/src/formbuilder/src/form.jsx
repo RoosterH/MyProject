@@ -14,7 +14,7 @@ import '../scss/form-builder-form.scss';
 import { UserAuthContext } from '../../shared/context/auth-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 const DEBUG = process.env.DEBUG_MODE;
-// const DEBUG = true;
+
 /**
  * <Form /> component. We will call it FormBuilderGenerator
  */

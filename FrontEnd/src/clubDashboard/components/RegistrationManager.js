@@ -28,7 +28,8 @@ const RegistrationManager = () => {
 						to={`/clubs/eventReportSelector/${cid}`}
 						exact="exact">
 						<p className="list-content-desc">
-							Read your club event entry reports here.
+							Read your club event entry reports. Bump waitlist
+							entries to enty list.
 						</p>
 					</Link>
 					<Link
@@ -44,7 +45,7 @@ const RegistrationManager = () => {
 						to={`/clubs/paymentCenterSelector/${cid}`}
 						exact="exact">
 						<p className="list-content-desc">
-							Charge your customers here.
+							Charge your customers and delete entry from entry list.
 						</p>
 					</Link>
 					<Link

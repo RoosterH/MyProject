@@ -657,7 +657,6 @@ const getPaymentReport = async (req, res, next) => {
 			}
 			// use {strict:false} to add undefined attribute in schema to existing json obj
 			entry.set('email', user.email, { strict: false });
-
 			// get payment data
 			let payment;
 			try {
@@ -1306,7 +1305,7 @@ const closeEventRegistration = async (req, res, next) => {
 
 	let event;
 	try {
-		event = await await Event.findById(eventId);
+		event = await Event.findById(eventId);
 	} catch (err) {
 		const error = new HttpError(
 			'Update event registration process failed, please try again later.',

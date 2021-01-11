@@ -310,6 +310,7 @@ const PaymentCenter = props => {
 		callDeleteEntryHandler,
 		setCallDeleteEntryHandler
 	] = useState(false);
+
 	useEffect(() => {
 		const deleteEntryHandler = async () => {
 			setShowLoading(true);
@@ -323,7 +324,7 @@ const PaymentCenter = props => {
 					process.env.REACT_APP_BACKEND_URL +
 						`/entries/deleteEntryByClub/${entryToBeDeleted.id}`,
 					'DELETE',
-					null,
+					JSON.stringify({ daySelected: daySelection - 1 }),
 					{
 						'Content-Type': 'application/json',
 						// adding JWT to header for authentication
@@ -333,17 +334,42 @@ const PaymentCenter = props => {
 			} catch (err) {}
 
 			setEntryToBeDeleted();
-			let tmpArray = entryListArray;
-			// update entryListentry
+
+			// format array for MTable
+			let newEventEntryList = responseData.entryData;
+			let entryDataArray = [];
 			for (let i = 0; i < days; ++i) {
-				let index = tmpArray[i].indexOf(entryToBeDeleted);
-				tmpArray[i].splice(index, 1);
+				let entryData = [];
+				let entries = newEventEntryList[i];
+				for (let j = 0; j < entries.length; ++j) {
+					if (entries[j].runGroup[i] === NOT_ATTENDING) {
+						continue;
+					}
+					let entry = {
+						id: entries[j].id, // we are not showing id on table
+						lastName: entries[j].userLastName,
+						firstName: entries[j].userFirstName,
+						email: entries[j].email,
+						carNumber: entries[j].carNumber,
+						paymentMethod: entries[j].paymentMethod,
+						entryFee: entries[j].entryFee,
+						stripeFee: entries[j].stripeFee,
+						paymentStatus: entries[j].paymentStatus,
+						lunchOption:
+							lunchOptions !== undefined
+								? getMapKey(entries[j].lunchOption, lunchOptions)
+								: ''
+					};
+					entryData.push(entry);
+				}
+				entryDataArray.push(entryData);
 			}
-			setEntryListArray(tmpArray);
+
+			setEntryListArray(entryDataArray);
 			setCallDeleteEntryHandler(false);
 			setShowLoading(false);
 		};
-		if (callDeleteEntryHandler) {
+		if (callDeleteEntryHandler && entryToBeDeleted) {
 			deleteEntryHandler();
 		}
 	}, [
@@ -353,7 +379,8 @@ const PaymentCenter = props => {
 		sendRequest,
 		setEntryToBeDeleted,
 		entryListArray,
-		setEntryListArray
+		setEntryListArray,
+		daySelection
 	]);
 
 	const confirmDeleteUser = val => {
@@ -492,6 +519,7 @@ const PaymentCenter = props => {
 			setChargeAll(false);
 		} else if (deleteEntry) {
 			setDeleteEntry(false);
+			setEntryToBeDeleted();
 		}
 	};
 	const onConfirmHandler = async () => {

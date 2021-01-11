@@ -18,6 +18,7 @@ const Stripe = require('./stripeController');
 const { compare } = require('bcryptjs');
 const { Encrypt, Decrypt } = require('../util/crypto');
 const { CodeStarNotifications } = require('aws-sdk');
+const payment = require('../models/payment');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const NOT_ATTENDING = 'Not Attending';
@@ -176,17 +177,14 @@ const createEntry = async (req, res, next) => {
 	// todo: auto bump waitlist once entry drops out from entry list
 	// check if event is already full
 	// 2 conditions here:
-	// 1. total entries >= event.topCap
+	// 1. total entries >= event.topCap if capDistribution is false
 	// 2. entryReport.full flag. In this case, total.entries could be < event.totalCap because someone canceled
 	//    the entry and removed from entry list.  We do not do auto bump yet so we will leave it as is.
 	//    we cannot use entryReport.waitlist.length > 0, reason for it is because we also put group wait list entries
 	//    to waitlist even though event is not full.
 	let eventFull = [];
 	for (let i = 0; i < days; ++i) {
-		if (
-			entryReport.totalEntries[i] >= event.totalCap ||
-			entryReport.full[i]
-		) {
+		if (entryReport.full[i]) {
 			eventFull.push(true);
 		} else {
 			eventFull.push(false);
@@ -200,8 +198,6 @@ const createEntry = async (req, res, next) => {
 	//      name: "RunGroupSingle-12EDB3DA-484C-4ECB-BB32-C3AE969A2D2F"
 	//      value: Array
 	//         0: "raceRadioOption_1"
-	// let groupFull = false;
-	let groupFull = [];
 	let [raceClass, raceClassAnsTexts] = parseSingleDayAnswer(
 		event.raceClassOptions,
 		answer,
@@ -225,7 +221,8 @@ const createEntry = async (req, res, next) => {
 		return next(error);
 	}
 
-	// check group cap to see if the run gorup is full
+	let groupFull = [];
+	// if event sets capDistribution, check group cap to see if the run gorup is full
 	if (event.capDistribution) {
 		let capPerGroup = Math.floor(event.totalCap / event.numGroups);
 		for (let i = 0; i < days; ++i) {
@@ -234,7 +231,7 @@ const createEntry = async (req, res, next) => {
 			} else if (
 				// entryReport.runGroupNumEntries[i][j] is a 2-D array, i for day, j for group
 				// runGroupAnsChoices[i] is the answer for i day
-				entryReport.runGroupNumEntries[i][runGroupAnsChoices[i]] ===
+				entryReport.runGroupNumEntries[i][runGroupAnsChoices[i]] >=
 				capPerGroup
 			) {
 				groupFull.push(true);
@@ -324,7 +321,6 @@ const createEntry = async (req, res, next) => {
 
 		// calculate price according to attendingDays * price/event
 		let attendingDays = 0;
-
 		// flag to keep track if user select "Not Attending" for everyday
 		let notAttending = true;
 		let workerNoSignup = false;
@@ -346,9 +342,6 @@ const createEntry = async (req, res, next) => {
 				// increase total entries by 1 no matter this entry is on entryList or waitlist
 				let numEntries = entryReport.totalEntries[i];
 				entryReport.totalEntries.set(i, ++numEntries);
-				if (entryReport.totalEntries[i] === event.totalCap) {
-					entryReport.full.set(i, true);
-				}
 
 				// update runGroupNumEntries by +1
 				if (!groupFull[i]) {
@@ -362,6 +355,31 @@ const createEntry = async (req, res, next) => {
 
 					// set day i group runGroup # runGroupAnsChoices[i]
 					entryReport.runGroupNumEntries.set(i, originalNumEntries);
+				}
+
+				// only set full in 2 conditions
+				// 1. capDistribution false, use total entries to compare with totalCap
+				// 2. capDistribution true, each group must be full then we consider event is full
+				if (
+					!event.capDistribution &&
+					entryReport.totalEntries[i] >= event.totalCap
+				) {
+					entryReport.full.set(i, true);
+				} else if (event.capDistribution) {
+					// groupCap, num of entries allowed in each group
+					let groupCap = event.totalCap / event.numGroups;
+					let groupCapFull = true;
+					for (let j = 0; j < event.numGroups; ++j) {
+						// loop through each group
+						if (entryReport.runGroupNumEntries[i][j] < groupCap) {
+							// as long as one of the groups does not meet groupCap
+							groupCapFull = false;
+							break;
+						}
+					}
+					if (groupCapFull) {
+						entryReport.full.set(i, true);
+					}
 				}
 
 				if (workerAssignmentAnsTexts[i] === NOT_ATTENDING) {
@@ -430,7 +448,10 @@ const createEntry = async (req, res, next) => {
 		let lunchPrice = '0';
 		// find entryFormData with field_name starts with "Lunch", full field_name is "Lunch-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
 		for (let i = 0; i < entryFormData.length; ++i) {
-			if (entryFormData[i].field_name.startsWith(LUNCH)) {
+			if (
+				entryFormData[i].field_name &&
+				entryFormData[i].field_name.startsWith(LUNCH)
+			) {
 				let options = entryFormData[i].options;
 
 				for (let j = 0; j < options.length; ++j) {
@@ -471,8 +492,15 @@ const createEntry = async (req, res, next) => {
 			let payment = new Payment({
 				entryId,
 				entryFee: totalPrice,
-				refundFee: totalPrice - (totalPrice * 0.029 + 0.3).toFixed(2), // stripe fee 2.9% + 30 cents service fee is not refundable
-				stripeFee: (totalPrice * 0.029 + 0.3).toFixed(2),
+				// stripe fee 2.9% + 30 cents service fee is not refundable
+				refundFee:
+					totalPrice === '0'
+						? '0'
+						: totalPrice - (totalPrice * 0.029 + 0.3).toFixed(2),
+				stripeFee:
+					totalPrice === '0'
+						? '0'
+						: (totalPrice * 0.029 + 0.3).toFixed(2),
 				paymentMethod,
 				stripeSetupIntentId,
 				stripePaymentMethodId
@@ -736,7 +764,7 @@ const updateFormAnswer = async (req, res, next) => {
 	}
 
 	let event;
-	event = await await Event.findById(entry.eventId);
+	event = await Event.findById(entry.eventId);
 	if (!event) {
 		const error = new HttpError(
 			'Entry submission process internal failure',
@@ -781,10 +809,7 @@ const updateFormAnswer = async (req, res, next) => {
 	let days = entryReport.entries.length;
 	let eventFull = [];
 	for (let i = 0; i < days; ++i) {
-		if (
-			entryReport.totalEntries[i] >= event.totalCap ||
-			entryReport.full[i]
-		) {
+		if (entryReport.full[i]) {
 			eventFull.push(true);
 		} else {
 			eventFull.push(false);
@@ -856,7 +881,7 @@ const updateFormAnswer = async (req, res, next) => {
 			} else if (
 				// entryReport.runGroupNumEntries[i][j] is a 2-D array, i for day, j for group
 				// runGroupAnsChoices[i] is the answer for i day
-				entryReport.runGroupNumEntries[i][runGroupAnsChoices[i]] ==
+				entryReport.runGroupNumEntries[i][runGroupAnsChoices[i]] >=
 				capPerGroup
 			) {
 				groupFull.push(true);
@@ -1020,8 +1045,9 @@ const updateFormAnswer = async (req, res, next) => {
 					event.runGroupOptions[i][runGroupAnsChoices[i]]
 				} run group is full. You are on the waitlist`;
 			} else {
-				// if previous entry was good but now the new group is full.
-				// We don't want to re-enter the event, instead giving an error message.
+				// if previous entry was not NOT_ATTENDING but now the new group is full.
+				// There are 2 status for previous entry, either on the waitlist or not.
+				// Either one, we don't want to re-enter the event, instead giving an error message.
 				// Because drop an entry to waitlist is very bad.
 				if (days > 1) {
 					groupFullMsg += ` Day ${i + 1} ${
@@ -1037,7 +1063,11 @@ const updateFormAnswer = async (req, res, next) => {
 					} run group.`;
 				}
 				runGroupChanged.push(false);
-				++attendingDays;
+				// need to check whether the previous entry was on waitlist or not to get correct attenday days
+				// if previous entry was not on wailitlist, we need to add attendingDays + 1
+				if (!entry.waitlist[i]) {
+					++attendingDays;
+				}
 			}
 		}
 	}
@@ -1100,7 +1130,10 @@ const updateFormAnswer = async (req, res, next) => {
 	let lunchPrice = '0';
 	// find entryFormData with field_name starts with "Lunch", full field_name is "Lunch-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
 	for (let i = 0; i < entryFormData.length; ++i) {
-		if (entryFormData[i].field_name.startsWith(LUNCH)) {
+		if (
+			entryFormData[i].field_name &&
+			entryFormData[i].field_name.startsWith(LUNCH)
+		) {
 			let options = entryFormData[i].options;
 
 			for (let j = 0; j < options.length; ++j) {
@@ -1135,7 +1168,6 @@ const updateFormAnswer = async (req, res, next) => {
 			if (data.name) entry.answer.push(data);
 		}
 	});
-	// entry.answer = answer;
 
 	// update entry status
 	for (let i = 0; i < days; ++i) {
@@ -1160,8 +1192,11 @@ const updateFormAnswer = async (req, res, next) => {
 	payment.entryFee = totalPrice;
 	// stripe fee 2.9% + 30 cents service fee is not refundable
 	payment.refundFee =
-		totalPrice - (totalPrice * 0.029 + 0.3).toFixed(2);
-	payment.stripeFee = (totalPrice * 0.029 + 0.3).toFixed(2);
+		totalPrice === '0'
+			? '0'
+			: totalPrice - (totalPrice * 0.029 + 0.3).toFixed(2);
+	payment.stripeFee =
+		totalPrice === '0' ? '0' : (totalPrice * 0.029 + 0.3).toFixed(2);
 	try {
 		const session = await mongoose.startSession();
 		session.startTransaction();
@@ -1488,7 +1523,7 @@ const deleteEntry = async (req, res, next) => {
 		if (payment) {
 			await payment.remove({ session: session });
 		}
-		await await entry.remove({ session: session });
+		await entry.remove({ session: session });
 		// remove entryReport
 		await entryReport.save({ session: session });
 		// only both tasks succeed, we commit the transaction
@@ -1787,7 +1822,10 @@ const getEntryFee = async (req, res, next) => {
 		let lunchPrice = '0';
 		// find entryFormData with field_name starts with "Lunch", full field_name is "Lunch-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
 		for (let i = 0; i < entryFormData.length; ++i) {
-			if (entryFormData[i].field_name.startsWith(LUNCH)) {
+			if (
+				entryFormData[i].field_name &&
+				entryFormData[i].field_name.startsWith(LUNCH)
+			) {
 				let options = entryFormData[i].options;
 
 				for (let j = 0; j < options.length; ++j) {
@@ -2195,8 +2233,12 @@ const updateEntryFee = async (req, res, next) => {
 
 	const { entryFee } = req.body;
 	payment.entryFee = entryFee;
-	payment.stripeFee = (entryFee * 0.029 + 0.3).toFixed(2);
-	payment.refundFee = entryFee - (entryFee * 0.029 + 0.3).toFixed(2);
+	payment.stripeFee =
+		entryFee === 0 ? 0 : (entryFee * 0.029 + 0.3).toFixed(2);
+	payment.refundFee =
+		entryFee === 0
+			? 0
+			: entryFee - (entryFee * 0.029 + 0.3).toFixed(2);
 
 	try {
 		await payment.save();
@@ -2337,6 +2379,346 @@ const updatePaymentStatus = async (req, res, next) => {
 	});
 };
 
+const addEntryByClub = async (req, res, next) => {
+	let clubId = req.userData;
+	// Validate event exists, if not send back an error.
+	const entryId = req.params.entryId;
+
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		const error = new HttpError(
+			`addEntryByClub process failed. Please check your data: ${result.array()}`,
+			422
+		);
+		return next(error);
+	}
+	const { daySelected } = req.body;
+	let entry;
+	try {
+		entry = await Entry.findById(entryId).populate('eventId');
+	} catch (err) {
+		const error = new HttpError(
+			'Internal error in addEntryByClub when retrieving entry.',
+			500
+		);
+		return next(error);
+	}
+	// validat deletion is from same clubId
+	if (clubId !== entry.clubId.toString()) {
+		const error = new HttpError('Not authorized to add entry.', 403);
+		return next(error);
+	}
+
+	if (!entry) {
+		// we should not find any entry here
+		const error = new HttpError(
+			'addEntryByClub User entry cannot be found.',
+			400
+		);
+		return next(error);
+	}
+
+	// Validate userId exists. If not, sends back an error
+	let user;
+	// req.userData is inserted in check-auth.js
+	let userId = entry.userId;
+	try {
+		user = await User.findById(userId);
+	} catch (err) {
+		const error = new HttpError(
+			'addEntryByClub process failed during user validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!user) {
+		const error = new HttpError(
+			'addEntryByClub faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
+	let event;
+	try {
+		event = await Event.findById(entry.eventId.id);
+	} catch (err) {
+		const cerror = new HttpError(
+			'Internal error in addEntryByClub when retrieving event.',
+			500
+		);
+		return next(error);
+	}
+	if (!event) {
+		const error = new HttpError(
+			'Internal error in addEntryByClub event not found.',
+			500
+		);
+		return next(error);
+	}
+
+	let entryReport;
+	try {
+		entryReport = await EntryReport.findById(event.entryReportId);
+	} catch (err) {
+		const error = new HttpError(
+			'`addEntryByClub process internal failure entryReport not found',
+			404
+		);
+		return next(error);
+	}
+	if (!entryReport) {
+		const error = new HttpError(
+			'`addEntryByClub process internal failure entryReport not in DB',
+			404
+		);
+		return next(error);
+	}
+
+	// find how many days
+	let days = entryReport.entries.length;
+	let payment;
+	// Since we do not auto bump autolist so we will not touch event full and flag
+	// we only modify entryReport.entries and entryReport.waitlist to remove entry from lists
+	for (let i = 0; i < days; ++i) {
+		if (i !== daySelected) {
+			continue;
+		}
+		if (entry.waitlist[i]) {
+			// Deal with entryReport
+			// remove from entryreport waitlist
+			let waitlist = entryReport.waitlist[i];
+			let index = waitlist.indexOf(entryId);
+			waitlist.splice(index, 1);
+			entryReport.waitlist.set(i, waitlist);
+			// add to entryReport entries
+			// Since this is added by club, ignore event total participants and group cap
+			// add entryId to the end of entrylist,
+			// *** push does not work, need to make a copy of the original entry list to add to it, then use set to
+			// *** re-assign the new entry list
+			let newEntryList = entryReport.entries[i];
+			newEntryList.push(entryId);
+			entryReport.entries.set(i, newEntryList);
+			// increase rungroup num
+			let runGroupIndex = event.runGroupOptions[i].indexOf(
+				entry.runGroup[i]
+			);
+			let runGroupNumEntries = entryReport.runGroupNumEntries[i];
+			runGroupNumEntries[runGroupIndex]++;
+			entryReport.runGroupNumEntries.set(i, runGroupNumEntries);
+
+			// Deal with entry
+			// remove from waitlist
+			entry.waitlist.set(i, false);
+			entry.groupWaitlist.set(i, false);
+
+			// add entry fee
+			// find answer of Registration option
+			let answer = entry.answer;
+			let answerRegistration = '';
+			for (let i = 0; i < answer.length; ++i) {
+				// Check name starts with "Registration", full name is "Registration-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+				if (answer[i].name.startsWith(REGISTRATION)) {
+					// value is always at index 0
+					// value: Array
+					//      0: "regRadioOption_0"
+					answerRegistration = answer[i].value[0];
+					break;
+				}
+			}
+			// calculate price
+			let entryFormData = event.entryFormData;
+			let dayPrice = '0';
+			// find entryFormData with field_name starts with "Registration", full field_name is "Registration-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+			for (let i = 0; i < entryFormData.length; ++i) {
+				if (entryFormData[i].field_name.startsWith(REGISTRATION)) {
+					let options = entryFormData[i].options;
+					for (let j = 0; j < options.length; ++j) {
+						if (options[j].key === answerRegistration) {
+							dayPrice = options[j].value;
+							break;
+						}
+					}
+					break;
+				}
+			}
+
+			try {
+				payment = await Payment.findById(entry.paymentId);
+			} catch (err) {
+				const error = new HttpError(
+					'addEntryByClub process failed during retrieving payment. Please try again later.',
+					500
+				);
+				return next(error);
+			}
+			if (!payment) {
+				const error = new HttpError(
+					'addEntryByClub process failed payment not found.',
+					404
+				);
+				return next(error);
+			}
+			let totalPrice =
+				parseFloat(payment.entryFee) + parseFloat(dayPrice);
+			payment.entryFee = totalPrice.toString();
+			payment.refundFee = totalPrice.toString();
+			payment.stripeFee = (totalPrice * 0.029 + 0.3)
+				.toFixed(2)
+				.toString();
+		}
+	}
+
+	try {
+		const session = await mongoose.startSession();
+		session.startTransaction();
+		await payment.save({ session: session });
+		await entry.save({ session: session });
+		// remove entryReport
+		await entryReport.save({ session: session });
+		// only both tasks succeed, we commit the transaction
+		await session.commitTransaction();
+	} catch (err) {
+		console.log('2595 err = ', err);
+		const error = new HttpError(
+			'addEntryByClub Failed to add the entry to entry list.  Please try it later.',
+			500
+		);
+		return next(error);
+	}
+
+	// once it's done, prepare to reutrn entrylist back to frontend
+	// get entires
+	let entries = entryReport.entries;
+	// if there is no entry, should not have a waitlist, either.
+	if (entries.length === 0) {
+		res.status(404).json({
+			entryData: [],
+			waitlist: []
+		});
+	}
+
+	let mutipleDayEntryData = [];
+	for (let i = 0; i < days; ++i) {
+		let entryData = [];
+		let eList = entries[i];
+		for (let j = 0; j < eList.length; ++j) {
+			let entry;
+			try {
+				entry = await Entry.findById(eList[j]).populate('carId');
+			} catch (err) {
+				const error = new HttpError(
+					'addEntryByClub Cannot find the entry in getEntryReport entry. Please try again later.',
+					500
+				);
+				return next(error);
+			}
+			if (!entry) {
+				const error = new HttpError(
+					'addEntryByClub Internal error entry not found in getEntryReport.',
+					500
+				);
+				return next(error);
+			}
+
+			// add car to entry
+			let car =
+				entry.carId.year +
+				' ' +
+				entry.carId.make +
+				' ' +
+				entry.carId.model;
+			if (entry.carId.trimLevel != undefined) {
+				car += ' ' + entry.carId.trimLevel;
+			}
+			// use {strict:false} to add undefined attribute in schema to existing json obj
+			entry.set('car', car, { strict: false });
+			entryData.push(entry);
+		}
+		mutipleDayEntryData.push(entryData);
+	}
+	// get waitlist
+	let waitlist = entryReport.waitlist;
+	let mutipleDayWaitlistData = [];
+	for (let i = 0; i < days; ++i) {
+		let waitlistData = [];
+		let wList = waitlist[i];
+		for (let j = 0; j < wList.length; ++j) {
+			let entry;
+			try {
+				entry = await Entry.findById(wList[j]).populate('carId');
+			} catch (err) {
+				const error = new HttpError(
+					'Cannot find the entry in getEntryReport waitlist. Please try again later.',
+					500
+				);
+				return next(error);
+			}
+			// add car to entry
+			let car =
+				entry.carId.year +
+				' ' +
+				entry.carId.make +
+				' ' +
+				entry.carId.model;
+			if (entry.carId.trimLevel != undefined) {
+				car += ' ' + entry.carId.trimLevel;
+			}
+			// use {strict:false} to add undefined attribute in schema to existing json obj
+			entry.set('car', car, { strict: false });
+			waitlistData.push(entry);
+		}
+		mutipleDayWaitlistData.push(waitlistData);
+	}
+
+	res.status(200).json({
+		entryData: mutipleDayEntryData.map(entryData =>
+			entryData.map(data =>
+				data.toObject({
+					getters: true,
+					transform: (doc, ret, opt) => {
+						delete ret['userId'];
+						delete ret['clubId'];
+						delete ret['clubName'];
+						delete ret['eventId'];
+						delete ret['eventName'];
+						delete ret['carId'];
+						delete ret['disclaimer'];
+						delete ret['time'];
+						delete ret['published'];
+						return ret;
+					}
+				})
+			)
+		),
+		waitlistData: mutipleDayWaitlistData.map(waitlistData =>
+			waitlistData.map(data =>
+				data.toObject({
+					getters: true,
+					transform: (doc, ret, opt) => {
+						delete ret['userId'];
+						// delete ret['userName'];
+						delete ret['clubId'];
+						delete ret['clubName'];
+						delete ret['eventId'];
+						delete ret['eventName'];
+						delete ret['carId'];
+						delete ret['disclaimer'];
+						delete ret['time'];
+						delete ret['published'];
+						return ret;
+					}
+				})
+			)
+		)
+	});
+};
+
 const deleteEntryByClub = async (req, res, next) => {
 	let clubId = req.userData;
 	// Validate event exists, if not send back an error.
@@ -2440,14 +2822,27 @@ const deleteEntryByClub = async (req, res, next) => {
 		return next(error);
 	}
 
-	let multiDayEvent = entry.eventId.multiDayEvent;
+	const { daySelected } = req.body;
+
 	// find how many days
 	let days = entryReport.entries.length;
 
 	// todo: auto bump waitlist once entry drops out from entry list
 	// Since we do not auto bump autolist so we will not touch event full flag
 	// we only modify entryReport.entries and entryReport.waitlist to remove entry from lists
+
+	// go over each day to find out if entry still registers on another day,
+	// entry can only be removed if it's not registered on another day
+	let removeEntry = true;
+	let payment;
 	for (let i = 0; i < days; ++i) {
+		// only delete entry for the specified day
+		if (i !== daySelected) {
+			if (entry.runGroup[i] !== NOT_ATTENDING) {
+				removeEntry = false;
+			}
+			continue;
+		}
 		if (entry.waitlist[i]) {
 			// remove from waitlist
 			let waitlist = entryReport.waitlist[i];
@@ -2460,7 +2855,6 @@ const deleteEntryByClub = async (req, res, next) => {
 			let index = entryList.indexOf(entryId);
 			entryList.splice(index, 1);
 			entryReport.entries.set(i, entryList);
-
 			// -1 for runGroup
 			// match event runGroupOptions
 			const [runGroupIndex] = getRunGroupIndex(
@@ -2480,39 +2874,90 @@ const deleteEntryByClub = async (req, res, next) => {
 			runGroupNumEntries[runGroupIndex]--;
 			entryReport.runGroupNumEntries.set(i, runGroupNumEntries);
 		}
+		// change run group to NOT_ATTENDING
+		entry.runGroup.set(i, NOT_ATTENDING);
 		// -1 for totalEntries
 		let numEntries = entryReport.totalEntries[i];
 		entryReport.totalEntries.set(i, numEntries - 1);
-	}
 
-	// delete payment record
-	let payment;
-	try {
-		payment = await Payment.findById(entry.paymentId);
-	} catch (err) {
-		const error = new HttpError(
-			'deleteEntryByClub Failed to delete the event @retrieving payment.  Please try it later.',
-			500
-		);
-		return next(error);
+		// deduct entry fee
+		// find answer of Registration option
+		let answer = entry.answer;
+		let answerRegistration = '';
+		for (let i = 0; i < answer.length; ++i) {
+			// Check name starts with "Registration", full name is "Registration-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+			if (answer[i].name.startsWith(REGISTRATION)) {
+				// value is always at index 0
+				// value: Array
+				//      0: "regRadioOption_0"
+				answerRegistration = answer[i].value[0];
+				break;
+			}
+		}
+		// calculate price
+		let entryFormData = event.entryFormData;
+		let dayPrice = '0';
+		// find entryFormData with field_name starts with "Registration", full field_name is "Registration-9E00A485-3458-4DA4-A8D1-FB6292ECA3F0"
+		for (let i = 0; i < entryFormData.length; ++i) {
+			if (entryFormData[i].field_name.startsWith(REGISTRATION)) {
+				let options = entryFormData[i].options;
+				for (let j = 0; j < options.length; ++j) {
+					if (options[j].key === answerRegistration) {
+						dayPrice = options[j].value;
+						break;
+					}
+				}
+				break;
+			}
+		}
+
+		try {
+			payment = await Payment.findById(entry.paymentId);
+		} catch (err) {
+			const error = new HttpError(
+				'deleteEntryByClub process failed during retrieving payment. Please try again later.',
+				500
+			);
+			return next(error);
+		}
+		if (!payment) {
+			const error = new HttpError(
+				'deleteEntryByClub Failed to delete the event @retrieving payment.  Please try it later.',
+				404
+			);
+			return next(error);
+		}
+		let totalPrice =
+			parseFloat(payment.entryFee) - parseFloat(dayPrice);
+		payment.entryFee = totalPrice.toString();
+		payment.refundFee = totalPrice.toString();
+		payment.stripeFee = (totalPrice * 0.029 + 0.3)
+			.toFixed(2)
+			.toString();
 	}
 
 	// remove entry from user entries
 	user.entries.pull(entryId);
 	try {
-		// we need to use populate('clubId') above to be able to modify data in
-		// event.clubId.events
 		const session = await mongoose.startSession();
 		session.startTransaction();
 		await user.save({ session: session });
-		// remove payment
-		if (payment) {
+
+		if (payment && removeEntry) {
+			// remove payment for stripe payment if entry is not on any of event days
 			await payment.remove({ session: session });
+		} else if (payment && !removeEntry) {
+			// save payment for stripe payment if entry is on any of event days
+			await payment.save({ session: session });
 		}
-		await await entry.remove({ session: session });
+		if (removeEntry) {
+			await entry.remove({ session: session });
+		} else {
+			await entry.save({ session: session });
+		}
 		// remove entryReport
 		await entryReport.save({ session: session });
-		// only both tasks succeed, we commit the transaction
+		// only all tasks succeed, we commit the transaction
 		await session.commitTransaction();
 	} catch (err) {
 		const error = new HttpError(
@@ -2522,10 +2967,124 @@ const deleteEntryByClub = async (req, res, next) => {
 		return next(error);
 	}
 
+	// prepare payment report
+	// get entires
+	let entries = entryReport.entries;
+	// if there is no entry, should not have a waitlist, either.
+	if (entries.length === 0) {
+		res.status(404).json({
+			entryData: [],
+			waitlist: []
+		});
+	}
+	let mutipleDayEntryData = [];
+	for (let i = 0; i < days; ++i) {
+		let entryData = [];
+		let eList = entries[i];
+		for (let j = 0; j < eList.length; ++j) {
+			let entry;
+			try {
+				entry = await Entry.findById(eList[j]).populate('carId');
+			} catch (err) {
+				const error = new HttpError(
+					'Cannot find the entry in getPaymentReport. Please try again later.',
+					500
+				);
+				return next(error);
+			}
+			if (!entry) {
+				const error = new HttpError(
+					'Internal error entry not found in getPaymentReport.',
+					500
+				);
+				return next(error);
+			}
+
+			let user;
+			try {
+				user = await User.findById(entry.userId);
+			} catch (err) {
+				const error = new HttpError(
+					'Cannot find the user in getPaymentReport. Please try again later.',
+					500
+				);
+				return next(error);
+			}
+			if (!user) {
+				continue;
+				// const error = new HttpError(
+				// 	'Internal error user not found in getPaymentReport.',
+				// 	500
+				// );
+				// return next(error);
+			}
+			// use {strict:false} to add undefined attribute in schema to existing json obj
+			entry.set('email', user.email, { strict: false });
+			// get payment data
+			let payment;
+			try {
+				payment = await Payment.findById(entry.paymentId);
+			} catch (err) {
+				const error = new HttpError(
+					'DB error at finding the payment in getPaymentReport. Please try again later.',
+					500
+				);
+				return next(error);
+			}
+			if (!payment) {
+				const error = new HttpError(
+					'Cannot find the payment in getPaymentReport.',
+					500
+				);
+				return next(error);
+			}
+			// adding entryFee and paymentMethod to entry to return to Frontend
+			entry.set('entryFee', payment.entryFee, { strict: false });
+			entry.set('stripeFee', payment.stripeFee, { strict: false });
+			entry.set('paymentMethod', payment.paymentMethod, {
+				strict: false
+			});
+			entry.set('paymentStatus', payment.paymentStatus, {
+				strict: false
+			});
+			entry.set('refundFee', payment.refundFee, { strict: false });
+			entryData.push(entry);
+		}
+		mutipleDayEntryData.push(entryData);
+	}
+
 	res.status(200).json({
-		message: `Entry was successfully deleted.`
+		eventName: event.name,
+		eventId: event.id,
+		entryData: mutipleDayEntryData.map(entryData =>
+			entryData.map(data =>
+				data.toObject({
+					getters: true,
+					transform: (doc, ret, opt) => {
+						delete ret['userId'];
+						delete ret['userName'];
+						delete ret['answer'];
+						delete ret['groupWaitlist'];
+						delete ret['raceClass'];
+						delete ret['waitlist'];
+						delete ret['workerAssignment'];
+						delete ret['clubId'];
+						delete ret['clubName'];
+						delete ret['eventId'];
+						delete ret['eventName'];
+						delete ret['carId'];
+						delete ret['disclaimer'];
+						delete ret['time'];
+						delete ret['published'];
+						return ret;
+					}
+				})
+			)
+		),
+		lunchOptions: event.lunchOptions
 	});
 };
+
 exports.createEntry = createEntry;
 exports.updateCar = updateCar;
 exports.updateClassNumber = updateClassNumber;
@@ -2539,4 +3098,5 @@ exports.refund = refund;
 exports.updateEntryFee = updateEntryFee;
 exports.authentication = authentication;
 exports.updatePaymentStatus = updatePaymentStatus;
+exports.addEntryByClub = addEntryByClub;
 exports.deleteEntryByClub = deleteEntryByClub;

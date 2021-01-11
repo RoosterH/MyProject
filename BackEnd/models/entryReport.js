@@ -43,6 +43,9 @@ const entryReportSchema = new Schema({
 	// runGroupNumEntries: [[{ type: Number, required: true }]],
 	runGroupNumEntries: [[{ type: Number, require: true }]],
 
+	// definition of full
+	// 1. event.capDistribution true, each group must already meet group cap to consider event is full
+	// 2. event.capDistribution false, total entries >= event.totalCap
 	full: [{ type: Boolean, require: true }],
 	// Number of entries
 	totalEntries: [{ type: Number, required: true }]
