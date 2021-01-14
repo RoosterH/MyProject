@@ -519,7 +519,7 @@ const createEntry = async (req, res, next) => {
 			// only all tasks succeed, we commit the transaction
 			await session.commitTransaction();
 		} catch (err) {
-			console.log('426 err = ', err);
+			console.log('522 err = ', err);
 			const error = new HttpError(
 				'Event registration process failed due to technical issue. Please try again later.',
 				500

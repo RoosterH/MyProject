@@ -57,6 +57,60 @@
 	color: white;
 }
 
+.nav-links p {
+	list-style-type: none;
+	margin: 1rem;
+	color: #292929;
+}
+
+.nav-links p:hover {
+	color: orange;
+}
+
+.navlink-nav-menu ul li.dashboard-nav-menu {
+	display: inline-block;
+	width: 20%;
+}
+
+.dropdown,
+.dropup {
+	/* position: relative; */
+	position: static;
+}
+
+.dropdown-greybutton {
+	width: 100%;
+	border-width: 0px;
+	line-height: 1rem;
+}
+.dropdown-content {
+	display: none;
+	position: absolute;
+	background-color: #71b9ec;
+	border-color: rgb(10, 10, 10);
+	border-width: 10px;
+	border-radius: 0;
+	color: #ffffff;
+	/* margin: 0 1px 0 1px; */
+	padding: 2px 2px;
+	width: 7rem;
+	z-index: 1;
+	left: 10px;
+	padding: 0px;
+}
+
+.dropdown-content a {
+	color: black;
+	/* padding: 12px 16px; */
+	text-decoration: none;
+	display: block;
+}
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+	color: rgb(55, 0, 255);
+	background-color: #71b9ec;
+}
+
 @media (min-width: 780px) {
 	.nav-links {
 		list-style: square;
@@ -106,5 +160,69 @@
 		margin: 5px;
 		/* outline-style: ridge; */
 		outline-color: rgb(3, 190, 60);
+	}
+
+	.nav-links p {
+		list-style-type: none;
+		margin: 1rem;
+		color: white;
+	}
+
+	.nav-links p:hover {
+		color: orange;
+	}
+
+	.navlink-nav-menu ul li.dashboard-nav-menu {
+		display: inline-block;
+		width: 20%;
+	}
+
+	.dropdown,
+	.dropup {
+		position: relative;
+		float: left;
+	}
+
+	.dropdown-greybutton {
+		width: 100%;
+		border-width: 0px;
+		line-height: 1rem;
+	}
+
+	.dropdown-content {
+		display: none;
+		position: absolute;
+		background-color: #71b9ec;
+		border-color: rgb(10, 10, 10);
+		border-width: 10px;
+		border-radius: 0;
+		color: #ffffff;
+		/* margin: 0 1px 0 1px; */
+		padding: 2px 2px;
+		width: 7rem;
+		z-index: 1;
+		left: 10px;
+		padding: 0px;
+	}
+
+	.dropdown-content a {
+		color: #ffffff;
+		/* padding: 12px 16px; */
+		text-decoration: none;
+		display: block;
+	}
+	/* Change color of dropdown links on hover */
+	.dropdown-content a:hover {
+		/* background-color: rgb(238, 234, 234); */
+		color: rgb(55, 0, 255);
+		background-color: #71b9ec;
+	}
+
+	/* Show the dropdown menu on hover */
+	.dropdown:hover .dropdown-content {
+		display: block;
+		/* margin-left: 1.5rem; */
+		color: orange;
+		background-color: #71b9ec;
 	}
 }

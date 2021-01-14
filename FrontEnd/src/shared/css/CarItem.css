@@ -118,8 +118,8 @@
 	position: relative;
 	font-size: 14px;
 	padding: 0.5rem;
-	/* margin-left: 0.8rem; */
-	margin-left: -4.5rem;
+	margin-left: 0.8rem;
+	/* margin-left: -4.5rem; */
 }
 
 .carinfo-container h3 {

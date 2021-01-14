@@ -111,11 +111,11 @@ const ClubProfileViewer = props => {
 				<div className="section-container">
 					{/* event image on the left */}
 					<div className="page-basic-container">
-						<div className="eventimage-container">
+						<div className="clubimage-container">
 							<img
 								src={loadedProfileImage}
 								alt={clubName}
-								className="eventimage-container-img"
+								className="clubimage-container-img"
 							/>
 						</div>
 					</div>

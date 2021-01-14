@@ -229,6 +229,27 @@
 	max-height: 16rem; */
 	background-color: white;
 }
+.clubimage-container {
+	background-color: white;
+	background-position: center top;
+	background-size: cover;
+	display: block;
+	position: relative;
+	min-width: 8rem;
+	/* min-height: 16rem; */
+	min-height: 1rem;
+}
+
+.clubimage-container-img {
+	position: relative;
+	/* width: 100%;
+	height: 100%; */
+	max-width: 15rem;
+	min-width: 10rem;
+	/* min-height: 16rem;
+	max-height: 16rem; */
+	background-color: white;
+}
 
 .registration-container {
 	display: inline-block;
@@ -395,6 +416,25 @@ toggle-section .sub-heading .toggle-btn {
 		margin-top: 0px;
 	}
 	.eventimage-container-img {
+		position: relative;
+		/* width: 100%;
+		height: 100%; */
+		max-width: 38rem;
+		min-width: 8rem;
+		min-height: 16rem;
+		max-height: 16rem;
+		background-color: white;
+	}
+	.clubimage-container {
+		background-color: white;
+		background-position: center top;
+		background-size: cover;
+		display: block;
+		position: relative;
+		min-width: 8rem;
+		min-height: 16rem;
+	}
+	.clubimage-container-img {
 		position: relative;
 		/* width: 100%;
 		height: 100%; */

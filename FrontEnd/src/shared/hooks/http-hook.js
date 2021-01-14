@@ -27,7 +27,10 @@ export const useHttpClient = () => {
 				// fetch sends a http request to backend
 				// the request needs to match backend clubsRoutes /signup route
 				let response;
-
+				console.log('url = ', url);
+				console.log('method = ', method);
+				console.log('body = ', body);
+				console.log('headers = ', headers);
 				try {
 					response = await fetch(url, {
 						method,
@@ -38,6 +41,7 @@ export const useHttpClient = () => {
 						signal: httpAbortCtrl.signal
 					});
 				} catch (err) {
+					console.log('err = ', err);
 					// to avoid Warning: Can't perform a React state update on an unmounted component
 					// after aborting request, the following codes will be executed and changing state
 					// at setIsLoading(false) will trigger the above warning.  Also once request been
