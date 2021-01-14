@@ -73,49 +73,34 @@ const NavLinks = props => {
 				)}
 				{userLoggedIn && (
 					<li className="dropdown">
-						{/* <NavLink
-							// to={`/users/garagewrapper/${uId}`}
-							to={``}
-							exact
-							className="dropdown-greybutton">
-							My Garage
-						</NavLink> */}
-						<p className="dropdown-greybutton">
-							My Garage<i class="fa fa-caret-down"></i>
+						<p className="dropdown-button">
+							My Garage<i className="fa fa-caret-down"></i>
 						</p>
 						<div className="dropdown-content">
 							<Link to={`/users/garagewrapper/${uId}`} exact="exact">
 								My cars
 							</Link>
 							<NavLink to={'/users/cars/new'} exact>
-								Add car
+								Add cars
 							</NavLink>
 						</div>
 					</li>
 				)}
-				{/* {userLoggedIn && (
-					<li className="navlink-nav-menu dropdown">
-						<p className="dropdown-greybutton">Account</p>
+				{userLoggedIn && (
+					<li className="dropdown">
+						<p className="dropdown-button">
+							My Account<i className="fa fa-caret-down"></i>
+						</p>
 						<div className="dropdown-content">
-							<Link
-								to={`/users/profile/${uId}`}
-								exact="exact"
-								className="dropdown-blackbutton">
-								My Profile
+							<Link to={`/users/credential/${uId}`} exact="exact">
+								Credential
 							</Link>
-							<NavLink to={'/users/cars/new'} exact>
-								Add Car
-							</NavLink>
+							<Link to={`/users/profile/${uId}`} exact="exact">
+								Profile
+							</Link>
 						</div>
 					</li>
-				)} */}
-				{/* {userLoggedIn && (
-					<li>
-						<NavLink to={'/users/cars/new'} exact>
-							Add Car
-						</NavLink>
-					</li>
-				)} */}
+				)}
 				{userLoggedIn && (
 					<li>
 						<button onClick={logoutHandler}>LOGOUT</button>

@@ -3,18 +3,18 @@ import { useLocation } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import NavigationPrompt from 'react-router-navigation-prompt';
 
-import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
+import { useUserLoginValidation } from '../../shared/hooks/userLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 
 import { useHttpClient } from '../../shared/hooks/http-hook';
-import { ClubAuthContext } from '../../shared/context/auth-context';
+import { UserAuthContext } from '../../shared/context/auth-context';
 
 import '../../shared/css/EventForm.css';
 
-const ClubCredential = () => {
+const UserCredential = () => {
 	const {
 		isLoading,
 		error,
@@ -22,11 +22,11 @@ const ClubCredential = () => {
 		clearError
 	} = useHttpClient();
 
-	const clubAuthContext = useContext(ClubAuthContext);
-	const clubId = clubAuthContext.clubId;
+	const userAuthContext = useContext(UserAuthContext);
+	const userId = userAuthContext.userId;
 
-	// authentication check check whether club has logged in
-	useClubLoginValidation(`/clubs/accountManager/${clubId}`);
+	// authentication check check whether user has logged in
+	useUserLoginValidation(`/users/credential/${userId}`);
 
 	const [showEmail, setShowEmail] = useState(false);
 	const toggleShowEmailButton = () => {
@@ -47,15 +47,15 @@ const ClubCredential = () => {
 		}
 	}, [showEmail, setShowEmailButton]);
 
-	// If we are re-directing to this page, we want to clear up clubRedirectURL
+	// If we are re-directing to this page, we want to clear up userRedirectURL
 	let location = useLocation();
 	let path;
 	useEffect(() => {
 		path = location.pathname;
-		let clubRedirectURL = clubAuthContext.clubRedirectURL;
-		if (path === clubRedirectURL) {
+		let userRedirectURL = userAuthContext.userRedirectURL;
+		if (path === userRedirectURL) {
 			// re-init redirectURL after re-direction route
-			clubAuthContext.setClubRedirectURL(null);
+			userAuthContext.setUserRedirectURL(null);
 		}
 	}, [location]);
 
@@ -93,9 +93,9 @@ const ClubCredential = () => {
 		}
 	);
 
-	const [loadedClubCredential, setLoadedClubCredential] = useState();
+	const [loadedUserCredential, setLoadedUserCredential] = useState();
 	useEffect(() => {
-		const fetchClubCredential = async () => {
+		const fetchUserCredential = async () => {
 			try {
 				const [
 					responseData,
@@ -103,21 +103,21 @@ const ClubCredential = () => {
 					responseMessage
 				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL +
-						`/clubs/credential/${clubId}`,
+						`/users/credential/${userId}`,
 					'GET',
 					null,
 					{
-						// adding JWT to header for authentication, JWT contains clubId
-						Authorization: 'Bearer ' + clubAuthContext.clubToken
+						// adding JWT to header for authentication, JWT contains userId
+						Authorization: 'Bearer ' + userAuthContext.userToken
 					}
 				);
-				// Need to set the loadedClubProfile so we will set initialValues again.
+				// Need to set the loadeUserProfile so we will set initialValues again.
 				// Without it, form will keep the old initial values.
-				setLoadedClubCredential(responseData.clubCredential);
+				setLoadedUserCredential(responseData.userCredential);
 			} catch (err) {}
 		};
-		fetchClubCredential();
-	}, [clubId, setLoadedClubCredential]);
+		fetchUserCredential();
+	}, [userId, setLoadedUserCredential]);
 
 	const [verification, setVerification] = useState(false);
 	const [saveButtonEnabled, setSaveButtonEnabled] = useState(false);
@@ -128,7 +128,8 @@ const ClubCredential = () => {
 				responseStatus,
 				responseMessage
 			] = await sendRequest(
-				process.env.REACT_APP_BACKEND_URL + '/clubs/credential',
+				process.env.REACT_APP_BACKEND_URL +
+					`/users/credential/${userId}`,
 				'PATCH',
 				JSON.stringify({
 					oldPassword: values.oldPassword,
@@ -137,11 +138,11 @@ const ClubCredential = () => {
 				}),
 				{
 					'Content-Type': 'application/json',
-					// adding JWT to header for authentication, JWT contains clubId
-					Authorization: 'Bearer ' + clubAuthContext.clubToken
+					// adding JWT to header for authentication, JWT contains userId
+					Authorization: 'Bearer ' + userAuthContext.userToken
 				}
 			);
-			// Need to set the loadedClubProfile so we will set initialValues again.
+			// Need to set the loadedUserProfile so we will set initialValues again.
 			// Without it, form will keep the old initial values.
 			setVerification(responseData.verification);
 			setSaveButtonEnabled(false);
@@ -156,9 +157,9 @@ const ClubCredential = () => {
 		);
 	}
 
-	if (loadedClubCredential) {
+	if (loadedUserCredential) {
 		initialValues = {
-			email: loadedClubCredential.email,
+			email: loadedUserCredential.email,
 			password: '******',
 			oldPassword: '',
 			newPassword: '',
@@ -169,7 +170,7 @@ const ClubCredential = () => {
 	const credentialForm = () => (
 		<div className="event-form">
 			<div className="event-form-header">
-				<h4>Club Credentials</h4>
+				<h4>Driver Credentials</h4>
 				<hr className="event-form__hr" />
 			</div>
 			<Formik
@@ -319,12 +320,12 @@ const ClubCredential = () => {
 							}}
 							// Confirm navigation if going to a path that does not start with current path:
 							when={(crntLocation, nextLocation) => {
-								// remove ClubRedirectURL from memory
-								clubAuthContext.setClubRedirectURL(null);
+								// remove UserRedirectURL from memory
+								userAuthContext.setUserRedirectURL(null);
 								// OKLeavePage meaning form was not touched yet
 								if (
 									OKLeavePage ||
-									nextLocation.pathname === '/clubs/auth'
+									nextLocation.pathname === '/users/auth'
 								) {
 									return false;
 								} else {
@@ -368,4 +369,4 @@ const ClubCredential = () => {
 	);
 };
 
-export default ClubCredential;
+export default UserCredential;

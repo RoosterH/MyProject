@@ -25,6 +25,7 @@ import './shared/css/Auth.css';
 // instead of import everything at once, we will split them so codes will built into
 // different chunks. When users open up the app, it will only load whatever it's needed.
 // club section
+const Main = React.lazy(() => import('./main/pages/Main'));
 const Clubs = React.lazy(() => import('./clubs/pages/Clubs'));
 const ClubAuth = React.lazy(() => import('./clubs/pages/ClubAuth'));
 const ClubEvents = React.lazy(() =>
@@ -139,6 +140,9 @@ const UserGarageWrapper = React.lazy(() =>
 const NewCar = React.lazy(() => import('./cars/pages/NewCar'));
 const Car = React.lazy(() => import('./cars/pages/Car'));
 const UpdateCar = React.lazy(() => import('./cars/pages/UpdateCar'));
+const UserCredential = React.lazy(() =>
+	import('./users/pages/UserCredential')
+);
 
 const App = () => {
 	const {
@@ -291,6 +295,19 @@ const App = () => {
 					exact
 				/>
 				<Route
+					path="/users/credential/:userId"
+					component={UserCredential}
+					exact
+				/>
+				{/* <Route
+					path="/users/profile/:userId"
+					component={UserProfile}
+					exact
+				/> */}
+				<Route path="/events/" exact>
+					<Events />
+				</Route>
+				<Route
 					path="/events/newEntryManager/:id"
 					component={NewEntryManager}
 					exact
@@ -328,7 +345,8 @@ const App = () => {
 				{/* <Redirect strict from="/events/update/:id" to="/clubs/auth" /> */}
 
 				<Route path="/" exact>
-					<Events />
+					{/* <Events /> */}
+					<Main />
 				</Route>
 				<Route path="/events/update/error" exact>
 					{/* this is for re-direction when sending a request to the url that needs authentication */}
@@ -453,6 +471,11 @@ const App = () => {
 				<Route path="/users/cars/:carId" exact>
 					<Car />
 				</Route>
+				<Route
+					path="/users/credential/:userId"
+					component={UserCredential}
+					exact
+				/>
 				<Route
 					path="/events/entrylistMaterialTable/:eid"
 					component={MaterialTableEntryReport}

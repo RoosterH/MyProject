@@ -701,11 +701,177 @@ const getEventEntryFormWithAnswer = async (req, res, next) => {
 	});
 };
 
+// GET /api/users/credential/:cid
+const getUserCredential = async (req, res, next) => {
+	let userIdParam = req.params.uid;
+	const userId = req.userData;
+	if (userIdParam !== userId) {
+		const error = new HttpError(
+			'You are not allowed to get this user credential.',
+			403
+		);
+		return next(error);
+	}
+
+	let user;
+	try {
+		// we don't want to return password field
+		user = await User.findById(userId);
+	} catch (err) {
+		const error = new HttpError(
+			'Get user credential process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		userCredential: user.toObject({
+			getters: true,
+			transform: (doc, ret, opt) => {
+				delete ret['name'];
+				delete ret['password'];
+				delete ret['originalImage'];
+				delete ret['image'];
+				delete ret['events'];
+				delete ret['entryFormTemplate'];
+				return ret;
+			}
+		})
+	});
+};
+
+// PATCH '/api/users/credential'
+const updateUserCredential = async (req, res, next) => {
+	let userIdParam = req.params.uid;
+	// use userId from token instead of getting it from url to avoid hacking
+	const userId = req.userData;
+	if (userIdParam !== userId) {
+		const error = new HttpError(
+			'You are not allowed to get this user credential.',
+			403
+		);
+		return next(error);
+	}
+
+	// validate request
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		const error = new HttpError(
+			`Update user credential process failed, please check your data: ${result.array()}`,
+			422
+		);
+
+		return next(error);
+	}
+
+	const { oldPassword, newPassword, passwordValidation } = req.body;
+	let user;
+	try {
+		user = await User.findById(userId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update user credential process failed, please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!user) {
+		const error = new HttpError(
+			'Update user credential failed finding the user.',
+			404
+		);
+		return next(error);
+	}
+
+	let isValidPassword = false;
+	try {
+		isValidPassword = await bcrypt.compare(
+			oldPassword,
+			user.password
+		);
+	} catch (err) {
+		const error = new HttpError(
+			'Change user password internal failure. Please try again later',
+			500
+		);
+		return next(error);
+	}
+	if (!isValidPassword) {
+		const error = new HttpError(
+			'Please provide correct old password',
+			403
+		);
+		return next(error, false);
+	}
+
+	if (newPassword === oldPassword) {
+		const error = new HttpError(
+			'New password needs to be different from old password.',
+			403
+		);
+		return next(error);
+	}
+
+	if (newPassword !== passwordValidation) {
+		const error = new HttpError('New passwords do not match!', 403);
+		return next(error);
+	}
+
+	let hashedPassword;
+	try {
+		// set password to hashed password. genSalt = 12
+		hashedPassword = await bcrypt.hash(newPassword, 12);
+	} catch (err) {
+		const error = new HttpError(
+			'Faied to create a new user password. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// update user credential
+	user.password = hashedPassword;
+
+	try {
+		await user.save();
+	} catch (err) {
+		const error = new HttpError(
+			'Update user internal failure. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		user: user.toObject({
+			getters: true,
+			// use transform to filter out password
+			transform: (doc, ret, opt) => {
+				delete ret['name'];
+				delete ret['password'];
+				delete ret['originalImage'];
+				delete ret['image'];
+				delete ret['events'];
+				delete ret['entryFormTemplagte'];
+				return ret;
+			}
+		})
+	});
+};
+
 exports.getAllUsers = getAllUsers;
 exports.getUserById = getUserById;
 exports.createUser = createUser;
 exports.loginUser = loginUser;
 exports.updateUser = updateUser;
+exports.getUserCredential = getUserCredential;
+exports.updateUserCredential = updateUserCredential;
 exports.deleteUser = deleteUser;
 exports.logoutUser = logoutUser;
 exports.getEvents = getEvents;

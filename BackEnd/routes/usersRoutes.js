@@ -37,6 +37,9 @@ router.post('/login', usersController.loginUser);
 // need to be authenticated
 router.use(checkUserAuth);
 
+// get user credentials
+router.get('/credential/:uid', usersController.getUserCredential);
+
 // get event entry form
 router.get('/form/:eid', usersController.getEventEntryForm);
 
@@ -56,14 +59,50 @@ router.get('/entry/:eid', usersController.getEntry);
 
 router.post('/logout', usersController.logoutUser);
 
+// router.patch(
+// 	'/:uid',
+// 	[
+// 		check('userName').not().isEmpty(),
+// 		check('email').normalizeEmail().isEmail(),
+// 		check('password').isLength({ min: 6 })
+// 	],
+// 	usersController.updateUser
+// );
+
+// router.patch(
+// 	'/profile',
+// 	fileUpload.fields([
+// 		{ name: 'userImage', maxCount: 1 },
+// 		{ name: 'clubProfileImage', maxCount: 1 }
+// 	]),
+// 	[
+// 		check('webPage').not().isEmpty(),
+// 		check('faceBook').not().isEmpty(),
+// 		check('contactEmail').normalizeEmail().isEmail(),
+// 		check('description').not().isEmpty()
+// 	],
+// 	clubsController.updateClubProfile
+// );
+
+// router.patch(
+// 	'/account',
+// 	[
+// 		check('onSitePayment').not().isEmpty(),
+// 		check('stripePayment').not().isEmpty()
+// 	],
+// 	clubsController.updateClubAccount
+// );
+
+// update club info
 router.patch(
-	'/:uid',
+	'/credential/:uid',
 	[
-		check('userName').not().isEmpty(),
-		check('email').normalizeEmail().isEmail(),
-		check('password').isLength({ min: 6 })
+		//check('email').normalizeEmail().isEmail(),
+		check('oldPassword').isLength({ min: 6 }),
+		check('newPassword').isLength({ min: 6 }),
+		check('passwordValidation').isLength({ min: 6 })
 	],
-	usersController.updateUser
+	usersController.updateUserCredential
 );
 
 router.delete('/:uid', usersController.deleteUser);
