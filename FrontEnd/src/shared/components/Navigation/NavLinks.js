@@ -72,11 +72,11 @@ const NavLinks = props => {
 					</li>
 				)}
 				{userLoggedIn && (
-					<li className="dropdown">
-						<p className="dropdown-button">
+					<li className="navlink-dropdown">
+						<p className="navlink-dropdown-button">
 							My Garage<i className="fa fa-caret-down"></i>
 						</p>
-						<div className="dropdown-content">
+						<div className="navlink-dropdown-content">
 							<Link to={`/users/garagewrapper/${uId}`} exact="exact">
 								My cars
 							</Link>
@@ -87,11 +87,11 @@ const NavLinks = props => {
 					</li>
 				)}
 				{userLoggedIn && (
-					<li className="dropdown">
-						<p className="dropdown-button">
+					<li className="navlink-dropdown">
+						<p className="navlink-dropdown-button">
 							My Account<i className="fa fa-caret-down"></i>
 						</p>
-						<div className="dropdown-content">
+						<div className="navlink-dropdown-content">
 							<Link to={`/users/credential/${uId}`} exact="exact">
 								Credential
 							</Link>
