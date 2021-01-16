@@ -123,6 +123,10 @@ export default class Preview extends React.Component {
 		// loop through all the components matching ID with element.id
 		// if matches, update the component with new element
 		for (let i = 0, len = data.length; i < len; i++) {
+			if (DEBUG) {
+				console.log('elemet  =', element);
+				console.log('data[i] = ', data[i]);
+			}
 			if (element.id === data[i].id) {
 				data[i] = element;
 				if (DEBUG) {
@@ -130,28 +134,30 @@ export default class Preview extends React.Component {
 				}
 				found = true;
 				break;
+			} else if (element.parentId === data[i].id) {
+				if (DEBUG) {
+					console.log('Found parent');
+					console.log('i = ', i);
+				}
+				// for nested component, to add a new RadioButtons option
+				// element is the RadioButtons
+				data[i].options.push(element);
+				if (DEBUG) {
+					console.log('data = ', data);
+				}
+				found = true;
+				break;
+			} else if (data[i].nested) {
+				// for nested component, we need to match its option items with
+				// elment because element could be option component.
+				for (let j = 0; j < data[i].options.length; ++j) {
+					if (data[i].options[j].id === element.id) {
+						data[i].options[j] = element;
+						found = true;
+						break;
+					}
+				}
 			}
-
-			// else if (element.parentId === data[i].id) {
-			// 	console.log('Found parent');
-			// 	console.log('i = ', i);
-			// 	// for nested component, to add a new RadioButtons option
-			// 	// element is the RadioButtons
-			// 	data[i].options.push(element);
-			// 	console.log('data = ', data);
-			// 	found = true;
-			// 	break;
-			// } else if (data[i].nested) {
-			// 	// for nested component, we need to match its option items with
-			// 	// elment because element could be option component.
-			// 	for (let j = 0; j < data[i].options.length; ++j) {
-			// 		if (data[i].options[j].id === element.id) {
-			// 			data[i].options[j] = element;
-			// 			found = true;
-			// 			break;
-			// 		}
-			// 	}
-			// }
 		}
 
 		if (found) {
@@ -170,7 +176,8 @@ export default class Preview extends React.Component {
 		}
 		const answer_data = {};
 
-		if (!data || data.entryFormData === '[]') {
+		// if (!data || data.entryFormData === '[]') {
+		if (!data) {
 			return;
 		}
 
