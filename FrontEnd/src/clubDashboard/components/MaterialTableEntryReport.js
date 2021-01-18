@@ -6,7 +6,6 @@ import './ClubManager.css';
 
 const MaterialTableEntryReport = props => {
 	let entryList = props.entryList;
-	console.log('entryList in MT = ', entryList);
 	let waitlist = props.waitlist ? props.waitlist : [];
 	let displayName = props.displayName;
 	let eventName = props.eventName;

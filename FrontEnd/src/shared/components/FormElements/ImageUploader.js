@@ -4,7 +4,6 @@ import { IMAGE_TYPES } from '../../config/types';
 import Image from '../UIElements/Image';
 
 const ImageUploader = props => {
-	console.log('props = ', props);
 	const [previewUrl, setPreviewUrl] = useState();
 	const [currentUrl, setCurrentUrl] = useState();
 
