@@ -87,13 +87,14 @@ const DataCenter = props => {
 	const [eventDataArray, setEventDataArray] = useState([]);
 	// construct lunch choices array
 	let lunchOrderNumArray = [];
-	//*************** compose entry list from all the entries ************/
+	//*************** compose event data from all the entries ************/
 	useEffect(() => {
 		//***********  construct lookups ************//
 		let obj = {};
 		obj = convert2Lookup(lunchOptions);
 		setLunchOptionLookup(obj);
 
+		// For event provides lunches, create the array
 		if (!!lunchOptions) {
 			for (let i = 0; i < lunchOptions.length; ++i) {
 				lunchOrderNumArray.push(0);
@@ -103,32 +104,29 @@ const DataCenter = props => {
 			totalAmount = 0,
 			stripeFee = 0,
 			refundFee = 0,
-			unpaid = 0,
-			net = 0;
+			unpaid = 0;
 
+		// array that stores entries that have been calculated fees
+		// For all the fees, it's based per person, put the entry in calculatedEntries after
+		// the calculation.
+		let calculatedEntries = [];
 		for (let i = 0; i < days; ++i) {
 			let entries = eventEntryList[i];
 			for (let j = 0; j < entries.length; ++j) {
+				// runGroup[i] represents run group for day i
 				if (entries[j].runGroup[i] === NOT_ATTENDING) {
 					continue;
 				}
-				// let entry = {
-				// 	id: entries[j].id, // we are not showing id on table
-				// 	lastName: entries[j].userLastName,
-				// 	firstName: entries[j].userFirstName,
-				// 	email: entries[j].email,
-				// 	carNumber: entries[j].carNumber,
-				// 	paymentMethod: entries[j].paymentMethod,
-				// 	entryFee: entries[j].entryFee,
-				// 	stripeFee: entries[j].stripeFee,
-				// 	refundFee: entries[j].refundFee,
-				// 	paymentStatus: entries[j].paymentStatus,
-				// 	lunchOption:
-				// 		lunchOptions !== undefined
-				// 			? getMapKey(entries[j].lunchOption, lunchOptions)
-				// 			: ''
-				// };
+				// totalEntries counts entries for each day, for same person that enters multiple
+				// days we want to count as multiple entries
 				++totalEntries;
+
+				// check if this entry fees and other fees have been calcuated, we don't want to
+				// re-calculate same entry for fees
+				let index = calculatedEntries.indexOf(entries[j].id);
+				if (index !== -1) {
+					continue;
+				}
 				totalAmount += parseFloat(entries[j].entryFee);
 				if (entries[j].paymentMethod === STRIPE) {
 					stripeFee += parseFloat(entries[j].stripeFee);
@@ -144,6 +142,7 @@ const DataCenter = props => {
 						lunchOptions.indexOf(entries[j].lunchOption)
 					]++;
 				}
+				calculatedEntries.push(entries[j].id);
 			}
 		}
 		// construct eventData to be shown in the table
@@ -164,6 +163,7 @@ const DataCenter = props => {
 		eventData.push(data);
 		setEventDataArray(eventData);
 
+		// number of orders for each lunch choice
 		let lunchOrderArray = [];
 		let orders = {};
 		if (!!lunchOptions) {

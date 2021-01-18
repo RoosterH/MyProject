@@ -17,7 +17,7 @@ const DataCenterManager = props => {
 				</div>
 			</div>
 
-			{/* Edit Event Manager Tabs*/}
+			{/* Data Center Manager Tabs*/}
 			<div className="eventmanager">
 				<div className="dashboard-tabs activity-sections">
 					<div className="tab-content">
