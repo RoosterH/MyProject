@@ -73,7 +73,7 @@ const RegistrationManager = () => {
 					</Link>
 					<Link to={`/clubs/dataCenterSelector/${cid}`} exact="exact">
 						<p className="list-content-desc">
-							Check your event data.
+							Check your event data and statistics.
 						</p>
 					</Link>
 
