@@ -13,7 +13,8 @@ import '../scss/form-builder-form.scss';
 
 import { UserAuthContext } from '../../shared/context/auth-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';
-const DEBUG = process.env.DEBUG_MODE;
+
+const DEBUG = false;
 
 /**
  * <Form /> component. We will call it FormBuilderGenerator
@@ -209,6 +210,9 @@ export default class ReactForm extends React.Component {
 	}
 
 	_isInvalid(item) {
+		if (DEBUG) {
+			console.log('I am in _isInvalid item = ', item);
+		}
 		let invalid = false;
 		if (item.required === true) {
 			if (
@@ -216,6 +220,9 @@ export default class ReactForm extends React.Component {
 				item.element === 'RadioButtons' ||
 				item.element === 'ParagraphCheckbox'
 			) {
+				if (DEBUG) {
+					console.log('I am in _isInvalid checkboxes route = ');
+				}
 				const ref = this.inputs[item.field_name];
 				let checked_options = 0;
 				item.options.forEach(option => {
@@ -266,6 +273,10 @@ export default class ReactForm extends React.Component {
 						}
 						// let key = 'child_ref_undefined_' + opt.key;
 						let key = 'child_ref_RadioButtons_' + opt.key;
+						// keep it in case we need it later
+						// if (group.options[key] === undefined) {
+						// 	key = 'child_ref_undefined_' + opt.key;
+						// }
 						if (DEBUG) {
 							console.log('key = ', key);
 							console.log('checked = ', group.options[key].checked);

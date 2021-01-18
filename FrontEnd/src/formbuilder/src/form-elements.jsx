@@ -12,7 +12,9 @@ import HeaderBar from './header-bar';
 
 import './form-elements.css';
 
-const DEBUG = process.env.DEBUG_MODE;
+// const DEBUG = process.env.DEBUG_MODE;
+const DEBUG = false;
+
 const FormElements = {};
 const myxss = new xss.FilterXSS({
 	whiteList: {
@@ -1215,6 +1217,7 @@ class MultipleRadioButtonGroup extends React.Component {
 		super(props);
 		this.options = {};
 		if (DEBUG) {
+			console.log('this = ', this);
 			console.log('props.defaultValue = ', props.defaultValue);
 		}
 
@@ -1412,9 +1415,22 @@ class MultipleRadioButtonGroup extends React.Component {
 															if (DEBUG) {
 																console.log('c = ', c);
 															}
+															// Problem happens when we open editing window, whether the multipleRadioButtons
+															// been modified or not, option.key becomes undefined.
+															// for multipleRadioButtons, if option.key is undefined, we want to assign it to
+															// RadioButtons; otherwise codes will break when users submit form answers.
+															// For example, we need to change child_ref_undefined_RunGroupForMultipleDaysEventDay1_0 to
+															// child_ref_RadioButtons_RunGroupForMultipleDaysEventDay1_0 so we know it's a radion button
+															// that has a checked event handler.
 															let optionKey = option.key
 																? option.key
-																: option.field_name;
+																: 'RadioButtons';
+															if (DEBUG) {
+																console.log(
+																	'optionKey = ',
+																	optionKey
+																);
+															}
 															if (c && self.props.mutable) {
 																if (DEBUG) {
 																	console.log(
@@ -1423,11 +1439,11 @@ class MultipleRadioButtonGroup extends React.Component {
 																	);
 																	console.log(
 																		'1390 key = ',
-																		`child_ref_${option.key}_${opt.key}`
+																		`child_ref_${optionKey}_${opt.key}`
 																	);
 																}
 																self.options[
-																	`child_ref_${option.key}_${opt.key}`
+																	`child_ref_${optionKey}_${opt.key}`
 																] = c;
 															}
 														}}
