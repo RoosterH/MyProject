@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import MaterialTable, { MTableAction } from 'material-table';
+import MaterialTable from 'material-table';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
 import './ClubManager.css';
