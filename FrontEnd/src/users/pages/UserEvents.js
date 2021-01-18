@@ -9,7 +9,7 @@ import { useHttpClient } from '../../shared/hooks/http-hook';
 import { useParams } from 'react-router-dom';
 import { useUserLoginValidation } from '../../shared/hooks/userLoginValidation-hook';
 
-import '../../events/pages/Events.css';
+import '../../shared/css/Events.css';
 
 // Events is called in App.js where the route been defined
 const UserEvents = () => {

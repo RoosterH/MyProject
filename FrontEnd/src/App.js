@@ -25,7 +25,7 @@ import './shared/css/Auth.css';
 // instead of import everything at once, we will split them so codes will built into
 // different chunks. When users open up the app, it will only load whatever it's needed.
 // club section
-const Main = React.lazy(() => import('./main/pages/Main'));
+const MainPage = React.lazy(() => import('./main/pages/MainPage'));
 const Clubs = React.lazy(() => import('./clubs/pages/Clubs'));
 const ClubAuth = React.lazy(() => import('./clubs/pages/ClubAuth'));
 const ClubEvents = React.lazy(() =>
@@ -142,6 +142,9 @@ const Car = React.lazy(() => import('./cars/pages/Car'));
 const UpdateCar = React.lazy(() => import('./cars/pages/UpdateCar'));
 const UserCredential = React.lazy(() =>
 	import('./users/pages/UserCredential')
+);
+const VideoChannel = React.lazy(() =>
+	import('./videoChannel/pages/VideoChannel')
 );
 
 const App = () => {
@@ -267,7 +270,7 @@ const App = () => {
 		routes = (
 			<Switch>
 				<Route path="/" exact>
-					<Events />
+					<MainPage />
 				</Route>
 				<Route
 					path="/clubs/:clubId"
@@ -331,6 +334,7 @@ const App = () => {
 					<Car />
 				</Route>
 				<Route path="/events/:id" component={Event} exact />
+				<Route path="/videoChannel/" component={VideoChannel} exact />
 				<Route path="/error" exact>
 					<Error />
 				</Route>
@@ -345,8 +349,7 @@ const App = () => {
 				{/* <Redirect strict from="/events/update/:id" to="/clubs/auth" /> */}
 
 				<Route path="/" exact>
-					{/* <Events /> */}
-					<Main />
+					<MainPage />
 				</Route>
 				<Route path="/events/update/error" exact>
 					{/* this is for re-direction when sending a request to the url that needs authentication */}
@@ -365,6 +368,7 @@ const App = () => {
 				<Route path="/users/auth" exact>
 					<UserAuth />
 				</Route>
+				<Route path="/videoChannel/" component={VideoChannel} exact />
 				{/* The following section is for page refresh. Without it, refresh will not happen */}
 				{/*** To aviod unauthorized requests, all the pages below need to add loginValidation ***/}
 				<Route path="/clubs/clubManager" exact>

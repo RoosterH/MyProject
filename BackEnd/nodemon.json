@@ -6,7 +6,7 @@
 		"CLOUDFRONT_URL_PROD": "https://d1139u9qxzy8k3.cloudfront.net",
 		"CRYPTO_SECRET_KEY": "MySeatTime_38_718GT4RS_PDK-ahzer",
 		"DUMMY_CLUB_ID": "5ef702c7ba7511499165e653",
-		"GOOGLE_MAP_API_KEY": "AIzaSyACZSZtNh33iMJUXVaN4X-wOeNnlNjJajk",
+		"GOOGLE_API_KEY": "AIzaSyACZSZtNh33iMJUXVaN4X-wOeNnlNjJajk",
 		"JWT_PRIVATE_KEY": "MySeatTime_38_718GT4_PDK",
 		"MONGO_DB_USER": "hung",
 		"MONGO_DB_PASSWORD": "hung",

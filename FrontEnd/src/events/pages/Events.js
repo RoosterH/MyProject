@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
 	ErrorMessage,
 	Field,
@@ -197,12 +198,26 @@ const Events = () => {
 	return (
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
-			{mainSearch()}
 			{isLoading && (
 				<div className="center">
 					<LoadingSpinner />
 				</div>
 			)}
+			<div className="mainpage-btn-group">
+				<Link
+					to="/events/"
+					exact="exact"
+					className="mainpage-button-active">
+					Events
+				</Link>
+				<Link
+					to="/videoChannel/"
+					exact="exact"
+					className="mainpage-button">
+					Videos
+				</Link>
+			</div>
+			{mainSearch()}
 			{!isLoading && !loadedEvents && (
 				<div>
 					<p>

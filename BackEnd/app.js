@@ -16,6 +16,7 @@ const entriesRoutes = require('./routes/entriesRoutes');
 const carsRoutes = require('./routes/carRoutes');
 const stripeRoutes = require('./routes/stripeRoutes');
 const stripeWebhookRoutes = require('./routes/stripeWebhookRoutes');
+const videosRoutes = require('./routes/videosRoutes');
 const HttpError = require('./models/httpError');
 
 const app = express();
@@ -59,6 +60,7 @@ app.use('/api/clubs/', clubsRoutes);
 app.use('/api/entries/', entriesRoutes);
 app.use('/api/events/', eventsRoutes);
 app.use('/api/users/', usersRoutes);
+app.use('/api/videos/', videosRoutes);
 app.use('/api/stripe/', stripeRoutes);
 app.use('/webhook/', stripeWebhookRoutes);
 
