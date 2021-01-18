@@ -11,7 +11,7 @@ import { couldStartTrivia } from 'typescript';
 import { connect } from 'formik';
 
 const { PlaceHolder } = SortableFormElements;
-const DEBUG = process.env.DEBUG_MODE;
+const DEBUG = false;
 
 export default class Preview extends React.Component {
 	_isMounted = false;
@@ -133,6 +133,36 @@ export default class Preview extends React.Component {
 					console.log('found updateElement');
 				}
 				found = true;
+
+				// ! To be compatible with backend that uses key to retrieve answer
+				// ! if data[i] is RadioButtons, check its optoins' keys
+				// ! options format: 0: {value: "0", text: "Morning Session 1", key: "RunGroupSingle_0"}
+				// ! maka sure key number _0 is same as array index, if not modify it to match index number.
+				// ! Reason why key number is not the same as index is beccause users delete/add optoins from middle.
+				if (data[i].element === 'RadioButtons') {
+					let options = data[i].options;
+					if (DEBUG) {
+						console.log('in RadioButtons');
+						console.log('options = ', options);
+					}
+					for (let j = 0; j < options.length; ++j) {
+						let key = options[j].key;
+						let strs = key.split('_');
+						if (DEBUG) {
+							console.log('key = ', key);
+							console.log('strs = ', strs);
+						}
+						if (parseInt(strs[strs.length - 1]) !== j) {
+							// assemble new key
+							let newKey = '';
+							for (let k = 0; k < strs.length - 1; ++k) {
+								newKey += strs[k] + '_';
+							}
+							newKey += j;
+							data[i].options[j].key = newKey;
+						}
+					}
+				}
 				break;
 			} else if (element.parentId === data[i].id) {
 				if (DEBUG) {
@@ -154,12 +184,48 @@ export default class Preview extends React.Component {
 					if (data[i].options[j].id === element.id) {
 						data[i].options[j] = element;
 						found = true;
+						if (DEBUG) {
+							console.log('found in MultipleRadioButtonGroup');
+						}
+						// ! To be compatible with backend that uses key to retrieve answer
+						// ! Verify data[i].options[j].options key number is same as array index
+						// ! options format: 0: {value: "0", text: "Morning Session 1", key: "RunGroupSingle_0"}
+						// ! maka sure key number _0 is same as index, if not modify it to match index number.
+						// ! Reason why key number is not the same as index is beccause users delete/add option from middle.
+						let options = data[i].options[j].options;
+						if (DEBUG) {
+							console.log('in RadioButtons');
+							console.log('options = ', options);
+						}
+						for (let k = 0; k < options.length; ++k) {
+							let key = options[k].key;
+							let strs = key.split('_');
+							if (DEBUG) {
+								console.log('key = ', key);
+								console.log('strs = ', strs);
+							}
+							if (parseInt(strs[strs.length - 1]) !== k) {
+								// assemble new key
+								let newKey = '';
+								for (let x = 0; x < strs.length - 1; ++x) {
+									newKey += strs[x] + '_';
+								}
+								newKey += k;
+								data[i].options[j].options[k].key = newKey;
+							}
+						}
+
 						break;
 					}
 				}
+				if (found) {
+					break;
+				}
 			}
 		}
-
+		if (DEBUG) {
+			console.log('preview updateElement data before found = ', data);
+		}
 		if (found) {
 			this.seq = this.seq > 100000 ? 0 : this.seq + 1;
 			// change the state tree
