@@ -64,7 +64,7 @@ router.get(
 // get event entry report
 router.get('/entryreport/:eid', eventsController.getEntryReport);
 
-// get event entry report
+// get event payment report
 router.get('/paymentReport/:eid', eventsController.getPaymentReport);
 
 // last valid day to allow for event addition, modification, or deletion
