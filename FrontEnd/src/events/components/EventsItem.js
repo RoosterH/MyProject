@@ -33,6 +33,9 @@ const EventsItem = props => {
 							publishDescription="PUBLISHED"
 							signup={props.signup}
 							signupDescription="ENROLLED"
+							waitlist={props.waitlist}
+							waitlistDescription="WAITLIST"
+							signupwaitlistDescription="ENROLLED + WAITLIST"
 						/>
 					</div>
 					<div className="events-item__info">

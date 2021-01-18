@@ -29,10 +29,22 @@ const EventList = props => {
 
 	let events = props.items;
 	let signup = new Map();
+	let waitlist = new Map();
 	for (let i = 0; i < events.length; ++i) {
 		for (let j = 0; j < entries.length; ++j) {
 			if (entries[j].eventId === events[i].id) {
-				signup[events[i].id] = true;
+				let days = entries[j].waitlist.length;
+				// For multiple day events, same entry could be on entry list for one day and waitlist
+				// for the other day. In this case, we display ENROLLED + WAITLIST
+				for (let k = 0; k < days; ++k) {
+					// if entry is on the waitlist on one of the days
+					if (entries[j].waitlist[k]) {
+						waitlist[events[i].id] = true;
+					} else {
+						// if not on waitlist
+						signup[events[i].id] = true;
+					}
+				}
 			}
 		}
 	}
@@ -58,6 +70,7 @@ const EventList = props => {
 					closed={event.closed}
 					readOnly={props.readOnly}
 					signup={signup[event.id]}
+					waitlist={waitlist[event.id]}
 					entryReportManager={props.entryReportManager}
 					paymentCenter={props.paymentCenter}
 					refundCenter={props.refundCenter}

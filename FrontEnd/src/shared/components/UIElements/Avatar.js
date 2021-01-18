@@ -26,9 +26,19 @@ const Avatar = props => {
 					</figcaption>
 				)}
 				{/* for enrolled event */}
-				{props.signup && (
+				{props.signup && !props.waitlist && (
 					<figcaption className="watermark-text">
 						{props.signupDescription}
+					</figcaption>
+				)}
+				{!props.signup && props.waitlist && (
+					<figcaption className="watermark-text">
+						{props.waitlistDescription}
+					</figcaption>
+				)}
+				{props.signup && props.waitlist && (
+					<figcaption className="watermark-text">
+						{props.signupwaitlistDescription}
 					</figcaption>
 				)}
 			</figure>
