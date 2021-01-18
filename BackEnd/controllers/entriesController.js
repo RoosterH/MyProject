@@ -1961,6 +1961,7 @@ const chargeEntry = async (req, res, next) => {
 		errorCode = '';
 	if (paymentMethod === ONSITE) {
 		paymentStatus = PAID;
+		payment.stripeFee = 0;
 	} else if (paymentMethod === STRIPE) {
 		if (payment.paymentStatus !== 'Unpaid') {
 			const error = new HttpError(

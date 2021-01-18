@@ -568,8 +568,8 @@ const getEntryReport = async (req, res, next) => {
 	});
 };
 
-// this is called from paymentCenter and refundCenter
-// GET /api/events/entryreport/:eid - this is for Club
+// this is called from paymentCenter, refundCenter, and DataCenter
+// GET /api/events/payment/:eid - this is for Club
 const getPaymentReport = async (req, res, next) => {
 	// req.params is getting the eid from url, such as /api/events/:id
 	const eventId = req.params.eid;
@@ -1978,6 +1978,7 @@ const chargeAll = async (req, res, next) => {
 			errorCode = '';
 		if (paymentMethod === ONSITE) {
 			paymentStatus = PAID;
+			payment.stripeFee = 0;
 		} else if (paymentMethod === STRIPE) {
 			if (payment.paymentStatus !== 'Unpaid') {
 				continue;
