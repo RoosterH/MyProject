@@ -3,12 +3,18 @@ import React, { useEffect, useState } from 'react';
 import './Avatar.css';
 
 const Avatar = props => {
-	const [className, setClassName] = useState('watermark');
+	const [className, setClassName] = useState('nowatermark');
 	useEffect(() => {
 		if (props.publishDescription === 'RETIRED') {
 			setClassName('watermark-retired');
 		}
 	}, [props.publishDescription, setClassName]);
+
+	useEffect(() => {
+		if (props.signup || props.waitlist || props.published) {
+			setClassName('watermark');
+		}
+	}, [props.signup, props.waitlist, props.published]);
 
 	return (
 		// props.className determines which css to use
