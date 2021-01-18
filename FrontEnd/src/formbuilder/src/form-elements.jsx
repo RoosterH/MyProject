@@ -12,7 +12,6 @@ import HeaderBar from './header-bar';
 
 import './form-elements.css';
 
-// const DEBUG = process.env.DEBUG_MODE;
 const DEBUG = false;
 
 const FormElements = {};
