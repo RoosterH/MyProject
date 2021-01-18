@@ -1979,6 +1979,7 @@ const chargeAll = async (req, res, next) => {
 		if (paymentMethod === ONSITE) {
 			paymentStatus = PAID;
 			payment.stripeFee = 0;
+			payment.refundFee = payment.entryFee;
 		} else if (paymentMethod === STRIPE) {
 			if (payment.paymentStatus !== 'Unpaid') {
 				continue;
