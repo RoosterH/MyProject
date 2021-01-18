@@ -6,6 +6,7 @@ import './ClubManager.css';
 
 const MaterialTableEntryReport = props => {
 	let entryList = props.entryList;
+	console.log('entryList in MT = ', entryList);
 	let waitlist = props.waitlist ? props.waitlist : [];
 	let displayName = props.displayName;
 	let eventName = props.eventName;
@@ -26,19 +27,17 @@ const MaterialTableEntryReport = props => {
 
 	const [data, setData] = useState([]);
 	useEffect(() => {
-		if (!!entryList && entryList.length > 0) {
+		if (!!entryList && entryList.length >= 0) {
 			setData(entryList);
 		}
 	}, [entryList, setData]);
 
 	const [waitlistData, setWaitlistData] = useState([]);
 	useEffect(() => {
-		console.log('in useEffect = ', waitlistData);
 		// if (!!waitlist && waitlist.length > 0) {
 		setWaitlistData(waitlist);
 		// }
 	}, [waitlist, setWaitlistData]);
-	console.log('outside = ', waitlistData);
 	let title =
 		!!data && data.length > 0
 			? `${eventName} Entry List - total entries ${data.length}`
