@@ -43,7 +43,7 @@ const Events = () => {
 	};
 
 	let today = moment().format('YYYY-MM-DD');
-	let halfMonth = moment().add(15, 'days').format('YYYY-MM-DD');
+	let halfMonth = moment().add(180, 'days').format('YYYY-MM-DD');
 	let eventType = 'Autocross',
 		startDate = today,
 		endDate = halfMonth,
@@ -154,7 +154,7 @@ const Events = () => {
 							name="startDate"
 							// placeholder={today}
 							min="2020-07-01"
-							max="2020-12-31"
+							max="2021-12-31"
 							className="inline__input date"
 						/>
 						<Field
