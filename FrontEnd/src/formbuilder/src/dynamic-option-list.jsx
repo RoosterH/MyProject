@@ -5,9 +5,9 @@
 import React from 'react';
 import ID from './UUID';
 
+const DEBUG = false;
 export default class DynamicOptionList extends React.Component {
 	constructor(props) {
-		const DEBUG = process.env.DEBUG_MODE;
 		super(props);
 		if (DEBUG) {
 			console.log('this.props = ', this.props);

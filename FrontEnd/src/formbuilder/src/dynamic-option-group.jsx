@@ -14,7 +14,7 @@ import draftToHtml from 'draftjs-to-html';
 import { Editor } from 'react-draft-wysiwyg';
 import DynamicOptionList from './dynamic-option-list';
 
-const DEBUG = process.env.DEBUG_MODE;
+const DEBUG = false;
 
 const toolbar = {
 	options: [
@@ -66,6 +66,9 @@ export default class DynamicOptionGroup extends React.Component {
 	}
 
 	editElementProp(elemProperty, targProperty, e) {
+		if (DEBUG) {
+			console.log('I am in editElementProp');
+		}
 		// elemProperty could be content or label
 		// targProperty could be value or checked
 		const this_element = this.state.element;
@@ -121,6 +124,9 @@ export default class DynamicOptionGroup extends React.Component {
 
 	// eslint-disable-next-line no-unused-vars
 	editOptionCorrect(option_index, e) {
+		if (DEBUG) {
+			console.log('I am in editOptionCorrect');
+		}
 		const this_element = this.state.element;
 		if (
 			this_element.options[option_index].hasOwnProperty('correct')

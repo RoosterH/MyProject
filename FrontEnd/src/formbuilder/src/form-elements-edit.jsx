@@ -37,7 +37,7 @@ const toolbar = {
 	}
 };
 
-const DEBUG = process.env.DEBUG_MODE;
+const DEBUG = false;
 
 export default class FormElementsEdit extends React.Component {
 	constructor(props) {
@@ -277,6 +277,12 @@ export default class FormElementsEdit extends React.Component {
 			// } else {
 			elementOptions.options = item.options;
 			// }
+			if (DEBUG) {
+				console.log(
+					'elementOptions.options = ',
+					elementOptions.options
+				);
+			}
 		}
 		return elementOptions;
 	}
@@ -392,6 +398,9 @@ export default class FormElementsEdit extends React.Component {
 		// deal with nested option such as MultipleRadioButtonGroup options,
 		// each option of nested option, we need to create an object
 		if (nested) {
+			if (DEBUG) {
+				console.log('this in edit nested before = ', this);
+			}
 			let optionComponents = [];
 			this.props.element.options.map(opt => {
 				// We only create the object if opt.text is unavailable.
@@ -399,7 +408,7 @@ export default class FormElementsEdit extends React.Component {
 				// created
 				if (!opt.text) {
 					if (DEBUG) {
-						console.log('371 opt = ', opt);
+						console.log('408 opt = ', opt);
 					}
 					// Create option as an component because here option is also a component,
 					// so it has all the componenet info.
@@ -409,10 +418,16 @@ export default class FormElementsEdit extends React.Component {
 					}
 					optionComponents.push(elementOption);
 				} else {
+					if (DEBUG) {
+						console.log('419 opt = ', opt);
+					}
 					optionComponents.push(opt);
 				}
 			});
 			this.props.element.options = optionComponents;
+			if (DEBUG) {
+				console.log('optionComponents = ', optionComponents);
+			}
 		}
 
 		return (
