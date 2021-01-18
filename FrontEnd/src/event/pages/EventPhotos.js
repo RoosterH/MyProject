@@ -187,6 +187,7 @@ const EventPhotos = props => {
 							id="image"
 							name="image"
 							title="Event Image"
+							required={true}
 							component={ImageUploader}
 							validate={validateImageSize}
 							setFieldValue={setFieldValue}

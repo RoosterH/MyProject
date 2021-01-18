@@ -1431,6 +1431,7 @@ const NewCar = setFieldValue => {
 							id="image"
 							name="image"
 							title="image"
+							required={true}
 							component={ImageUploader}
 							validate={validateImageSize}
 							setFieldValue={setFieldValue}

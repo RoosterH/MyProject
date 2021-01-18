@@ -4,6 +4,7 @@ import { IMAGE_TYPES } from '../../config/types';
 import Image from '../UIElements/Image';
 
 const ImageUploader = props => {
+	console.log('props = ', props);
 	const [previewUrl, setPreviewUrl] = useState();
 	const [currentUrl, setCurrentUrl] = useState();
 
@@ -32,11 +33,18 @@ const ImageUploader = props => {
 	let id = props.id;
 	let errorMessage = props.errorMessage;
 	let title = props.title;
+	let required = props.required;
 	return (
 		<div>
 			<label htmlFor={id} className={props.labelStyle}>
 				<i className="fal fa-image" />
-				&nbsp; {title} (size &#60; 1.5 MB) - jpg/png/gif
+				&nbsp; {title} (size &#60; 1.5 MB) - jpg/png/gif {'  '}
+				{required && (
+					<i
+						className="far fa-gas-pump"
+						style={{ color: 'Tomato' }}
+					/>
+				)}
 			</label>
 			<input
 				id={id}
