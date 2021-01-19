@@ -2,6 +2,7 @@ import { useContext, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { ClubAuthContext } from '../context/auth-context';
 
+// this component is called in every club accessible page to validate club has been logged in
 export const useClubLoginValidation = url => {
 	const clubAuthContext = useContext(ClubAuthContext);
 	const history = useHistory();
@@ -23,7 +24,11 @@ export const useClubLoginValidation = url => {
 				storageData.clubId !== clubAuthContext.clubId)
 		) {
 			if (mounted) {
+				// set future rediect URL after club login
+				// inside of clubAuth will check if userAuthContext.userRedirectURL exisits for redirection
 				clubAuthContext.setClubRedirectURL(url);
+
+				// redirect to club auth page
 				history.push('/clubs/auth');
 			}
 		}

@@ -2,6 +2,7 @@ import { useContext, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { UserAuthContext } from '../context/auth-context';
 
+// this component is called in every user accessible page to validate user has been logged in
 export const useUserLoginValidation = url => {
 	const userAuthContext = useContext(UserAuthContext);
 	const history = useHistory();
@@ -18,8 +19,11 @@ export const useUserLoginValidation = url => {
 				storageData.userId !== userAuthContext.userId)
 		) {
 			if (mounted) {
-				userAuthContext.setUserRedirectURL(url);
+				// set future rediect URL after user login
 				// inside of userAuth will check if userAuthContext.userRedirectURL exisits for redirection
+				userAuthContext.setUserRedirectURL(url);
+
+				// redirect to user auth page
 				history.push('/users/auth');
 			}
 		}
