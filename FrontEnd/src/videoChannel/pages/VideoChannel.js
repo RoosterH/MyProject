@@ -131,24 +131,9 @@ const Videos = () => {
 					<p> &nbsp; &nbsp; &nbsp;No video found.</p>
 				</div>
 			)}
-
 			{!isLoading && loadedVideos && (
 				<VideoList items={loadedVideos} />
 			)}
-
-			{/* <div className="search-page-header">
-				<h4>
-					<span>Top Drivers Videos</span>
-				</h4>
-			</div> */}
-			{/* {!isLoading && !loadedVideos && (
-				<div>
-					<p> &nbsp; &nbsp; &nbsp;No video found.</p>
-				</div>
-			)} */}
-			{/* {!isLoading && loadedVideos && (
-				<VideoList items={loadedVideos} />
-			)} */}
 		</React.Fragment>
 	);
 };
