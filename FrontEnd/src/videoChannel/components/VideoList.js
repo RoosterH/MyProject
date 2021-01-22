@@ -21,8 +21,8 @@ const VideoList = props => {
 				<VideoItem
 					// In React, each child in the array should have a unique "key" prop
 					// so when render it will only render one element not the whole array
-					key={video.resourceId.videoId}
-					videoId={video.resourceId.videoId}
+					key={video.videoId}
+					videoId={video.videoId}
 					title={video.title}
 					channelTitle={video.channelTitle}
 					publishedAt={video.publishedAt}

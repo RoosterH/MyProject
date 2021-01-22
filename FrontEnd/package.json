@@ -5,9 +5,10 @@
 	"dependencies": {
 		"@material-ui/core": "^4.11.2",
 		"@material-ui/icons": "^4.11.2",
+		"@material-ui/lab": "^4.0.0-alpha.57",
 		"@stripe/react-stripe-js": "^1.1.2",
 		"@stripe/stripe-js": "^1.11.0",
-		"axios": "^0.19.2",
+		"axios": "^0.21.1",
 		"beedle": "^0.8.1",
 		"classnames": "^2.2.6",
 		"countdown": "^2.6.0",
@@ -39,6 +40,7 @@
 		"react-textarea-autosize": "^8.3.0",
 		"react-transition-group": "^4.4.1",
 		"typescript": "^3.9.7",
+		"validator": "^13.5.2",
 		"xss": "^1.0.8",
 		"yup": "^0.29.3"
 	},
