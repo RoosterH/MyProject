@@ -40,7 +40,7 @@ const ClubAccount = () => {
 		}
 	}, [location, clubAuthContext]);
 
-	const [OKLeavePage, setOKLeavePage] = useState('true');
+	const [OKLeavePage, setOKLeavePage] = useState(true);
 	let initialValues = {
 		onSitePayment: 'false',
 		stripePayment: 'true',
@@ -96,7 +96,7 @@ const ClubAccount = () => {
 					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
-			// Need to set the loadedClubProfile so we will set initialValues again.
+			// Need to set the loadedClubAccount so we will set initialValues again.
 			// Without it, form will keep the old initial values.
 			setLoadedClubAccount(responseData.clubAccount);
 			setOKLeavePage(true);

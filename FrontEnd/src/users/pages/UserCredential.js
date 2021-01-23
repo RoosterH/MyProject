@@ -59,7 +59,7 @@ const UserCredential = () => {
 		}
 	}, [location]);
 
-	const [OKLeavePage, setOKLeavePage] = useState('true');
+	const [OKLeavePage, setOKLeavePage] = useState(true);
 	let initialValues = {
 		email: '',
 		password: '******',
@@ -177,6 +177,7 @@ const UserCredential = () => {
 				enableReinitialize={true}
 				initialValues={initialValues}
 				onSubmit={(values, actions) => {
+					setOKLeavePage(true);
 					submitHandler(values);
 					if (actions.isSubmitting) {
 						actions.setSubmitting(false);
@@ -206,7 +207,7 @@ const UserCredential = () => {
 				}) => (
 					<Form className="event-form-container">
 						<label
-							htmlFor="stripePublicKey"
+							htmlFor="email"
 							className="event-form__label_inline">
 							Email
 						</label>
