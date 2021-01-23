@@ -10,7 +10,7 @@ const router = express.Router();
 
 // get driver videos, params are page (the nth page currently on) and pageSize(number of videos per page)
 router.get(
-	'/drivers/:page&:pageSize',
+	'/drivers/:page/:pageSize',
 	videosController.getDriverVideos
 );
 

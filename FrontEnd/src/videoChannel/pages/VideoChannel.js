@@ -66,7 +66,7 @@ const Videos = () => {
 					responseMessage
 				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL +
-						`/videos/drivers/${page - 1}&${pageSize}`,
+						`/videos/drivers/${page - 1}/${pageSize}`,
 					'GET',
 					null,
 					{ 'Content-type': 'application/json' }
