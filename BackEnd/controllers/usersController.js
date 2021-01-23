@@ -3,12 +3,14 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
+const { Encrypt, Decrypt } = require('../util/crypto');
 const Entry = require('../models/entry');
 const Event = require('../models/event');
 const HttpError = require('../models/httpError');
 const Payment = require('../models/payment');
 const Stripe = require('./stripeController');
 const User = require('../models/user');
+const UserAccount = require('../models/userAccount');
 
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 
@@ -195,7 +197,30 @@ const createUser = async (req, res, next) => {
 	// save stripe customer id
 	newUser.stripeCustomerId = customer.id;
 
+	// create userAccount table
+
+	let userAccount = new UserAccount({
+		// initialize encrpted objects
+		address: undefined,
+		city: undefined,
+		state: '.',
+		zip: '.',
+		phone: undefined,
+		emergency: '.',
+		emergencyPhone: undefined
+	});
 	try {
+		await userAccount.save();
+	} catch (err) {
+		console.log(' userController creat userAccount failed = ', err);
+		const error = new HttpError(
+			'Faied to create a new user account. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	try {
+		newUser.accountId = userAccount.id;
 		await newUser.save();
 		// await is slow. need to send res outside not here; otherwise in case of
 		// an error res will be sent first then back to catch(err) here
@@ -318,8 +343,89 @@ const loginUser = async (req, res, next) => {
 	});
 };
 
-// PATCH '/api/users/:cid'
-const updateUser = async (req, res, next) => {
+// GET /api/users/account/:uid
+const getUserAccount = async (req, res, next) => {
+	let userIdParam = req.params.uid;
+	const userId = req.userData;
+	if (userIdParam !== userId) {
+		const error = new HttpError(
+			'You are not allowed to get this user account info.',
+			403
+		);
+		return next(error);
+	}
+
+	let user;
+	try {
+		// we don't want to return password field
+		user = await User.findById(userId);
+	} catch (err) {
+		const error = new HttpError(
+			'getUserAccount get user process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	let accountId = user.accountId;
+	let account;
+	try {
+		account = await UserAccount.findById(accountId);
+	} catch (err) {
+		const error = new HttpError(
+			'getUserAccount get user account process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	let address;
+	if (!account.address || Object.keys(account.address).length === 0) {
+		address = '';
+	} else {
+		address = Decrypt(account.address);
+	}
+
+	let city;
+	if (!account.city || Object.keys(account.city).length === 0) {
+		city = '';
+	} else {
+		city = Decrypt(account.city);
+	}
+	let phone;
+	if (!account.phone || Object.keys(account.phone).length === 0) {
+		phone = '';
+	} else {
+		phone = Decrypt(account.phone);
+	}
+	let emergencyPhone;
+	if (
+		!account.emergencyPhone ||
+		Object.keys(account.emergencyPhone).length === 0
+	) {
+		emergencyPhone = '';
+	} else {
+		emergencyPhone = Decrypt(account.emergencyPhone);
+	}
+
+	res.status(200).json({
+		userName: user.userName,
+		lastName: user.lastName,
+		firstName: user.firstName,
+		address: address,
+		city: city,
+		state: account.state,
+		zip: account.zip,
+		phone: phone,
+		emergency: account.emergency,
+		emergencyPhone: emergencyPhone,
+		validDriver: account.validDriver,
+		disclaimer: account.disclaimer
+	});
+};
+
+// PATCH '/api/users/account/:uid'
+const updateUserAccount = async (req, res, next) => {
 	// validate request
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
@@ -328,14 +434,25 @@ const updateUser = async (req, res, next) => {
 		};
 		const result = validationResult(req).formatWith(errorFormatter);
 		const error = new HttpError(
-			`Update user process failed, please check your data: ${result.array()}`,
+			`Update user account process failed, please check your data: ${result.array()}`,
 			422
 		);
 
 		return next(error);
 	}
 
-	const { userName, password, email } = req.body;
+	const {
+		address,
+		city,
+		state,
+		zip,
+		phone,
+		emergency,
+		emergencyPhone,
+		validDriver,
+		disclaimer
+	} = req.body;
+
 	const userId = req.userData; // use userId from token instead of getting it from url to avoid hacking
 
 	let user;
@@ -343,7 +460,7 @@ const updateUser = async (req, res, next) => {
 		user = await User.findById(userId);
 	} catch (err) {
 		const error = new HttpError(
-			'Update user process failed, please try again later.',
+			'Update user account process failed, please try again later.',
 			500
 		);
 		return next(error);
@@ -351,40 +468,66 @@ const updateUser = async (req, res, next) => {
 
 	if (!user) {
 		const error = new HttpError(
-			'Update user failed finding the user.',
+			'Update user account failed finding the user.',
+			404
+		);
+		return next(error);
+	}
+
+	let accountId = user.accountId;
+	let userAccount;
+	try {
+		userAccount = await UserAccount.findById(accountId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update user account process failed @ finding user accout, please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!userAccount) {
+		const error = new HttpError(
+			'Update user account failed finding the account.',
 			404
 		);
 		return next(error);
 	}
 
 	// update user info
-	user.userName = userName;
-	user.password = password;
-	user.email = email;
+	userAccount.address = Encrypt(address);
+	userAccount.city = Encrypt(city);
+	userAccount.state = state;
+	userAccount.zip = zip;
+	userAccount.phone = Encrypt(phone);
+	userAccount.emergency = emergency;
+	userAccount.emergencyPhone = Encrypt(emergencyPhone);
+	userAccount.validDriver = validDriver;
+	userAccount.disclaimer = disclaimer;
+	userAccount.complete = validDriver && disclaimer;
 
-	let hashedPassword;
 	try {
-		// set password to hashed password. genSalt = 12
-		user.password = await bcrypt.hash(password, 12);
-
-		await user.save();
+		await userAccount.save();
 	} catch (err) {
 		const error = new HttpError(
-			'Update user internal failure. Please try again later',
+			'Update user account internal failure. Please try again later',
 			500
 		);
 		return next(error);
 	}
 
 	res.status(200).json({
-		user: user.toObject({
-			getters: true,
-			// use transform to filter out password
-			transform: (doc, ret, opt) => {
-				delete ret['password'];
-				return ret;
-			}
-		})
+		userName: user.userName,
+		lastName: user.lastName,
+		firstName: user.firstName,
+		address: address,
+		city: city,
+		state: state,
+		zip: zip,
+		phone: phone,
+		emergency: emergency,
+		emergencyPhone: emergencyPhone,
+		validDriver: validDriver,
+		disclaimer: disclaimer
 	});
 };
 
@@ -519,18 +662,19 @@ const getEvents = async (req, res, next) => {
 	events.map(event => {
 		// set path for all images
 		event.set('image', process.env.CLOUDFRONT_URL + event.image, {
-			strict: true
+			strict: false
 		});
 		event.set(
 			'clubImage',
 			process.env.CLOUDFRONT_URL + event.clubImage,
-			{ strict: true }
+			{ strict: false }
 		);
 		event.set(
 			'courseMap',
 			process.env.CLOUDFRONT_URL + event.courseMap,
-			{ strict: true }
+			{ strict: false }
 		);
+		console.log('event = ', event);
 	});
 
 	res.status(200).json({
@@ -701,7 +845,7 @@ const getEventEntryFormWithAnswer = async (req, res, next) => {
 	});
 };
 
-// GET /api/users/credential/:cid
+// GET /api/users/credential/:uid
 const getUserCredential = async (req, res, next) => {
 	let userIdParam = req.params.uid;
 	const userId = req.userData;
@@ -869,7 +1013,8 @@ exports.getAllUsers = getAllUsers;
 exports.getUserById = getUserById;
 exports.createUser = createUser;
 exports.loginUser = loginUser;
-exports.updateUser = updateUser;
+exports.getUserAccount = getUserAccount;
+exports.updateUserAccount = updateUserAccount;
 exports.getUserCredential = getUserCredential;
 exports.updateUserCredential = updateUserCredential;
 exports.deleteUser = deleteUser;

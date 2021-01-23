@@ -40,6 +40,9 @@ router.use(checkUserAuth);
 // get user credentials
 router.get('/credential/:uid', usersController.getUserCredential);
 
+// get user account
+router.get('/account/:uid', usersController.getUserAccount);
+
 // get event entry form
 router.get('/form/:eid', usersController.getEventEntryForm);
 
@@ -59,39 +62,21 @@ router.get('/entry/:eid', usersController.getEntry);
 
 router.post('/logout', usersController.logoutUser);
 
-// router.patch(
-// 	'/:uid',
-// 	[
-// 		check('userName').not().isEmpty(),
-// 		check('email').normalizeEmail().isEmail(),
-// 		check('password').isLength({ min: 6 })
-// 	],
-// 	usersController.updateUser
-// );
-
-// router.patch(
-// 	'/profile',
-// 	fileUpload.fields([
-// 		{ name: 'userImage', maxCount: 1 },
-// 		{ name: 'clubProfileImage', maxCount: 1 }
-// 	]),
-// 	[
-// 		check('webPage').not().isEmpty(),
-// 		check('faceBook').not().isEmpty(),
-// 		check('contactEmail').normalizeEmail().isEmail(),
-// 		check('description').not().isEmpty()
-// 	],
-// 	clubsController.updateClubProfile
-// );
-
-// router.patch(
-// 	'/account',
-// 	[
-// 		check('onSitePayment').not().isEmpty(),
-// 		check('stripePayment').not().isEmpty()
-// 	],
-// 	clubsController.updateClubAccount
-// );
+router.patch(
+	'/account/:uid',
+	[
+		check('address').not().isEmpty(),
+		check('city').not().isEmpty(),
+		check('state').not().isEmpty(),
+		check('zip').not().isEmpty(),
+		check('phone').not().isEmpty(),
+		check('emergency').not().isEmpty(),
+		check('emergencyPhone').not().isEmpty(),
+		check('validDriver').not().isEmpty(),
+		check('disclaimer').not().isEmpty()
+	],
+	usersController.updateUserAccount
+);
 
 // update club info
 router.patch(

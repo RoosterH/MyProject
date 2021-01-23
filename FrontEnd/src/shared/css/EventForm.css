@@ -373,6 +373,22 @@
 	margin: 0rem 0.1rem 0.5rem 1.5rem;
 }
 
+.showPasswordButton {
+	background-color: white;
+	border: none;
+	text-decoration: none;
+	display: inline-block;
+	outline: none;
+}
+
+.event-form__useraccount_checkbox {
+	display: block;
+	/* without solid, color does not work properly */
+	font-size: 15px;
+	font-family: 'Montserrat', sans-serif;
+	margin: 0rem 0.1rem 0.5rem 1.5rem;
+}
+
 @media (min-width: 780px) {
 	.event-form {
 		margin: 1.5rem, 1rem, 10rem, 1.5rem;
@@ -755,6 +771,14 @@
 	}
 
 	.event-form__paymentmethod {
+		display: block;
+		/* without solid, color does not work properly */
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		margin: 0rem 0.1rem 0.5rem 1.5rem;
+	}
+
+	.event-form__useraccount_checkbox {
 		display: block;
 		/* without solid, color does not work properly */
 		font-size: 15px;

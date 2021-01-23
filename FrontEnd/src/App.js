@@ -140,6 +140,9 @@ const UserGarageWrapper = React.lazy(() =>
 const NewCar = React.lazy(() => import('./cars/pages/NewCar'));
 const Car = React.lazy(() => import('./cars/pages/Car'));
 const UpdateCar = React.lazy(() => import('./cars/pages/UpdateCar'));
+const UserAccount = React.lazy(() =>
+	import('./users/pages/UserAccount')
+);
 const UserCredential = React.lazy(() =>
 	import('./users/pages/UserCredential')
 );
@@ -300,6 +303,11 @@ const App = () => {
 				<Route
 					path="/users/credential/:userId"
 					component={UserCredential}
+					exact
+				/>
+				<Route
+					path="/users/account/:userId"
+					component={UserAccount}
 					exact
 				/>
 				{/* <Route
@@ -475,6 +483,11 @@ const App = () => {
 				<Route path="/users/cars/:carId" exact>
 					<Car />
 				</Route>
+				<Route
+					path="/users/account/:userId"
+					component={UserAccount}
+					exact
+				/>
 				<Route
 					path="/users/credential/:userId"
 					component={UserCredential}

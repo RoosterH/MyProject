@@ -28,7 +28,13 @@ const userSchema = new Schema({
 	],
 	garage: [
 		{ type: mongoose.Types.ObjectId, required: true, ref: 'Car' }
-	]
+	],
+	accountId: {
+		type: mongoose.Types.ObjectId,
+		required: true,
+		ref: 'UserAccount'
+	}
+	// activated: {type: Boolean, required: true}
 });
 
 // uniqueValidator is to make sure the email is unique in MongoDB

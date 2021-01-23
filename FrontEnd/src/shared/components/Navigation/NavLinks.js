@@ -95,8 +95,8 @@ const NavLinks = props => {
 							<Link to={`/users/credential/${uId}`} exact="exact">
 								Credential
 							</Link>
-							<Link to={`/users/profile/${uId}`} exact="exact">
-								Profile
+							<Link to={`/users/account/${uId}`} exact="exact">
+								Account
 							</Link>
 						</div>
 					</li>
