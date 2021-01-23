@@ -873,7 +873,7 @@ const getClubStripeAccount = async (req, res, next) => {
 		!clubAccount.stripeAccountId ||
 		Object.keys(clubAccount.stripeAccountId).length === 0
 	) {
-		stripeAccountId === '';
+		stripeAccountId = '';
 	} else {
 		stripeAccountId = Decrypt(clubAccount.stripeAccountId);
 	}
