@@ -24,7 +24,7 @@ const userAccountSchema = new Schema({
 	disclaimer: { type: Boolean, required: true, default: false },
 	// complete = validDriver && disclaimer, we use it to determine whether users
 	// are able to register events or not
-	complete: { type: Boolean, required: true, default: false }
+	completed: { type: Boolean, required: true, default: false }
 });
 
 module.exports = mongoose.model('UserAccount', userAccountSchema);

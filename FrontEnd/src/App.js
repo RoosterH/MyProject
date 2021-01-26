@@ -143,6 +143,15 @@ const UpdateCar = React.lazy(() => import('./cars/pages/UpdateCar'));
 const UserAccount = React.lazy(() =>
 	import('./users/pages/UserAccount')
 );
+const UserConfirmation = React.lazy(() =>
+	import('./users/pages/UserConfirmation')
+);
+const UserVerification = React.lazy(() =>
+	import('./users/pages/UserVerification')
+);
+const UserVerificationRequest = React.lazy(() =>
+	import('./users/pages/UserVerificationRequest')
+);
 const UserCredential = React.lazy(() =>
 	import('./users/pages/UserCredential')
 );
@@ -375,6 +384,18 @@ const App = () => {
 				</Route>
 				<Route path="/users/auth" exact>
 					<UserAuth />
+				</Route>
+				{/* because this is coming from email link so we use /userConfirmation/ instead of /users/confirmation */}
+				<Route path="/userConfirmation/:email/:token" exact>
+					<UserConfirmation />
+				</Route>
+				{/* when user login but not verified, re-direct to this page */}
+				<Route path="/users/verification/:email" exact>
+					<UserVerification />
+				</Route>
+				{/* user click on the resend link in the email */}
+				<Route path="/userVerificationRequest/:email" exact>
+					<UserVerificationRequest />
 				</Route>
 				<Route path="/videoChannel/" component={VideoChannel} exact />
 				{/* The following section is for page refresh. Without it, refresh will not happen */}

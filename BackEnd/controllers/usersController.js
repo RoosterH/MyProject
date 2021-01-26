@@ -2,8 +2,9 @@ const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-
+const crypto = require('crypto');
 const { Encrypt, Decrypt } = require('../util/crypto');
+const { sendVerificationEmail } = require('../util/nodeMailer');
 const Entry = require('../models/entry');
 const Event = require('../models/event');
 const HttpError = require('../models/httpError');
@@ -11,6 +12,7 @@ const Payment = require('../models/payment');
 const Stripe = require('./stripeController');
 const User = require('../models/user');
 const UserAccount = require('../models/userAccount');
+const Token = require('../models/token');
 
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 
@@ -95,7 +97,7 @@ const createUser = async (req, res, next) => {
 	// validation to make sure email does not exist in our DB
 	let existingUser;
 	try {
-		existingUser = await User.findOne({ email: email });
+		existingUser = await User.findOne({ email: email.toLowerCase() });
 	} catch (err) {
 		const error = new HttpError(
 			'Sign up email validation failed. Please try again later',
@@ -164,15 +166,20 @@ const createUser = async (req, res, next) => {
 		});
 	}
 
+	let normUserName = userName.toLowerCase();
+	let normLastName =
+		lastName.charAt(0).toUpperCase() +
+		lastName.slice(1).toLowerCase();
+	let normFirstName =
+		firstName.charAt(0).toUpperCase() +
+		firstName.slice(1).toLowerCase();
+	let normEmail = email.toLowerCase();
+
 	const newUser = new User({
-		userName: userName.toLowerCase(),
-		lastName:
-			lastName.charAt(0).toUpperCase() +
-			lastName.slice(1).toLowerCase(),
-		firstName:
-			firstName.charAt(0).toUpperCase() +
-			firstName.slice(1).toLowerCase(),
-		email: email.toLowerCase(),
+		userName: normUserName,
+		lastName: normLastName,
+		firstName: normFirstName,
+		email: normEmail,
 		originalImage: originalImageLocation,
 		smallImage: smallImageLocation,
 		image: cloudFrontImageLocation,
@@ -184,8 +191,8 @@ const createUser = async (req, res, next) => {
 	let customer;
 	try {
 		customer = await Stripe.createCustomer(
-			lastName + ', ' + firstName,
-			email
+			normLastName + ', ' + normFirstName,
+			normEmail
 		);
 	} catch (err) {
 		const error = new HttpError(
@@ -198,7 +205,6 @@ const createUser = async (req, res, next) => {
 	newUser.stripeCustomerId = customer.id;
 
 	// create userAccount table
-
 	let userAccount = new UserAccount({
 		// initialize encrpted objects
 		address: undefined,
@@ -232,13 +238,58 @@ const createUser = async (req, res, next) => {
 		);
 		return next(error);
 	}
+	// add userId to userAccount
+	try {
+		userAccount.userId = newUser.id;
+		await userAccount.save();
+	} catch (err) {
+		console.log(
+			' userController saving userId to userAccount failed = ',
+			err
+		);
+		const error = new HttpError(
+			'Internal error. Faied to save userId to account. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// prepare verification email
+	// generate token and save
+	let token = new Token({
+		userId: newUser.id,
+		token: crypto.randomBytes(128).toString('hex')
+	});
+
+	try {
+		await token.save();
+	} catch (err) {
+		console.log('createUser err = ', err);
+		const error = new HttpError(
+			'Faied to issue an email verification token. Please login and request system to send it again.',
+			500
+		);
+		return next(error);
+	}
+
+	try {
+		// send verification email
+		sendVerificationEmail(normFirstName, normEmail, token);
+	} catch (err) {
+		console.log('Create user send verification email failure ', err);
+		const error = new HttpError(
+			'Faied to send a verification email. Please login and request to re-send verification email.',
+			500
+		);
+		return next(error);
+	}
 
 	// jwt section
-	let token;
+	let jwttoken;
 	// use UserId and email as the payload
 	// private key
 	try {
-		token = jwt.sign(
+		jwttoken = jwt.sign(
 			{ userId: newUser.id, email: newUser.email },
 			JWT_PRIVATE_KEY,
 			{ expiresIn: '1h' }
@@ -257,10 +308,194 @@ const createUser = async (req, res, next) => {
 		lastName: newUser.lastName,
 		firstName: newUser.firstName,
 		email: newUser.email,
-		token: token,
+		token: jwttoken,
 		entries: [],
 		garage: []
 	});
+};
+
+// GET /users/confirmation/:email/:token
+const confirmUserEmail = async (req, res, next) => {
+	let email = req.params.email;
+	let userToken = req.params.token;
+
+	let user;
+	try {
+		user = await User.findOne({ id: userToken.userId, email: email });
+	} catch (err) {
+		console.log('confirmUserEmail err @ finding user = ', err);
+		const error = new HttpError(
+			'confirmUserEmail error @ finding user.',
+			500
+		);
+
+		return next(error);
+	}
+	if (!user) {
+		console.log('no user');
+		return res.status(400).json({
+			user: false,
+			token: false,
+			verified: false,
+			hideErrorPopup: true
+		});
+	}
+
+	if (user.verified) {
+		return res
+			.status(200)
+			.json({ user: true, token: true, verified: true });
+	}
+
+	let token;
+	try {
+		token = await Token.findOne({ token: userToken });
+	} catch (err) {
+		console.log('confirmUserEmail err @ finding token = ', err);
+		const error = new HttpError(
+			'confirmUserEmail error @ finding token',
+			500
+		);
+
+		return next(error);
+	}
+
+	// token is not found into database i.e. token may have expired
+	if (!token) {
+		return res.status(400).json({
+			user: true,
+			token: false,
+			verified: false,
+			hideErrorPopup: true
+		});
+	}
+
+	// verify user
+	// change verified to true
+	user.verified = true;
+	try {
+		await user.save();
+	} catch (err) {
+		console.log('confirmUserEmail err @ saving user = ', err);
+		const error = new HttpError(
+			'confirmUserEmail error @ saving user',
+			500
+		);
+
+		return next(error);
+	}
+
+	// find all tokens belonging to this user and purge them all
+	let tokens;
+	try {
+		tokens = await Token.find({ userId: user.id });
+	} catch (err) {
+		console.log(
+			'resendUserConfirmationEmail error @ finding old tokens.'
+		);
+	}
+
+	for (let i = 0; i < tokens.length; ++i) {
+		try {
+			await tokens[i].delete();
+		} catch (err) {
+			console.log(
+				'resendUserConfirmationEmail error @ deleting old tokens.'
+			);
+		}
+	}
+
+	return res
+		.status(200)
+		.json({ user: true, token: true, verified: true });
+};
+
+// GET /users/sendConfirmationEmail/:email
+const resendUserConfirmationEmail = async (req, res, next) => {
+	const email = req.params.email;
+	let user;
+	try {
+		user = await User.findOne({ email: email.toLowerCase() });
+	} catch (err) {
+		console.log(
+			'resendUserConfirmationEmail err @ finding user = ',
+			err
+		);
+		const error = new HttpError(
+			'resendUserConfirmationEmail error @ finding user.',
+			500
+		);
+
+		return next(error);
+	}
+	if (!user) {
+		console.log('no user');
+		return res.status(400).json({
+			user: false,
+			resendStatus: false,
+			hideErrorPopup: true
+		});
+	}
+
+	if (user.verified) {
+		return res
+			.status(200)
+			.json({ user: true, verified: true, resendStatus: false });
+	}
+
+	// find old tokens purge them
+	let oldTokens;
+	try {
+		oldTokens = await Token.find({ userId: user.id });
+	} catch (err) {
+		console.log(
+			'resendUserConfirmationEmail error @ finding old tokens.'
+		);
+	}
+
+	for (let i = 0; i < oldTokens.length; ++i) {
+		try {
+			await oldTokens[i].delete();
+		} catch (err) {
+			console.log(
+				'resendUserConfirmationEmail error @ deleting old tokens.'
+			);
+		}
+	}
+
+	// resend link,  prepare verification email
+	// generate token and save
+	let token = new Token({
+		userId: user.id,
+		token: crypto.randomBytes(128).toString('hex')
+	});
+
+	try {
+		await token.save();
+	} catch (err) {
+		console.log('createUser err = ', err);
+		const error = new HttpError(
+			'Faied to issue an email verification token. Please request the verification link again.',
+			500
+		);
+		return next(error);
+	}
+
+	try {
+		// send verification email
+		sendVerificationEmail(user.firstName, email.toLowerCase(), token);
+	} catch (err) {
+		console.log('Create user send verification email failure ', err);
+		const error = new HttpError(
+			'Faied to send a verification email. Please login and request to re-send verification email.',
+			500
+		);
+		return next(error);
+	}
+
+	res
+		.status(200)
+		.json({ user: true, verified: false, resendStatus: true });
 };
 
 // POST '/api/users/login'
@@ -287,6 +522,15 @@ const loginUser = async (req, res, next) => {
 			403
 		);
 		return next(error);
+	}
+
+	// check email has been verified or not
+	if (!existingUser.verified) {
+		console.log('not veirifed');
+		return res.status(400).json({
+			hideErrorPopup: true,
+			verified: false
+		});
 	}
 
 	let isValidPassword = false;
@@ -333,13 +577,52 @@ const loginUser = async (req, res, next) => {
 	let cloudFrontImage =
 		process.env.CLOUDFRONT_URL + existingUser.image;
 
+	try {
+		var userAccount = await UserAccount.findOne({
+			userId: existingUser.id
+		});
+	} catch (err) {
+		console.log('loginUser finding userAccout failed err = ', err);
+		const error = new HttpError(
+			'loginUser finding userAccout failed err, please try again. '
+		);
+		return next(error);
+	}
+
+	// we do not want to return all the entries to FrontEnd
+	// we only need to return ongoing events
+	let ongoingEntries = [];
+	let entries = existingUser.entries;
+	let today = moment();
+	for (let i = 0; i < entries.length; ++i) {
+		// check event end date if it's same or before today
+		try {
+			var event = await Event.findById(entries[i].eventId);
+		} catch (err) {
+			console.log(
+				'loginUser finding user entries failed err = ',
+				err
+			);
+			const error = new HttpError(
+				'loginUser finding user entries failed err, please try again. '
+			);
+			return next(error);
+		}
+		if (moment(event.endDate).isSameOrBefore(today)) {
+			continue;
+		}
+		ongoingEntries.push(entries[i]);
+	}
+
 	res.status(200).json({
 		userId: existingUser.id,
 		userName: existingUser.userName,
 		email: existingUser.email,
 		token: token,
-		entries: existingUser.entries,
-		image: cloudFrontImage
+		entries: ongoingEntries,
+		image: cloudFrontImage,
+		verified: true,
+		completed: userAccount.completed
 	});
 };
 
@@ -420,7 +703,8 @@ const getUserAccount = async (req, res, next) => {
 		emergency: account.emergency,
 		emergencyPhone: emergencyPhone,
 		validDriver: account.validDriver,
-		disclaimer: account.disclaimer
+		disclaimer: account.disclaimer,
+		completed: account.completed
 	});
 };
 
@@ -503,7 +787,7 @@ const updateUserAccount = async (req, res, next) => {
 	userAccount.emergencyPhone = Encrypt(emergencyPhone);
 	userAccount.validDriver = validDriver;
 	userAccount.disclaimer = disclaimer;
-	userAccount.complete = validDriver && disclaimer;
+	userAccount.completed = validDriver && disclaimer;
 
 	try {
 		await userAccount.save();
@@ -1012,6 +1296,8 @@ const updateUserCredential = async (req, res, next) => {
 exports.getAllUsers = getAllUsers;
 exports.getUserById = getUserById;
 exports.createUser = createUser;
+exports.confirmUserEmail = confirmUserEmail;
+exports.resendUserConfirmationEmail = resendUserConfirmationEmail;
 exports.loginUser = loginUser;
 exports.getUserAccount = getUserAccount;
 exports.updateUserAccount = updateUserAccount;

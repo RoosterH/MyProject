@@ -14,6 +14,7 @@ const User = require('../models/user');
 const ClubAccount = require('../models/clubAccount');
 const Payment = require('../models/payment');
 const Stripe = require('./stripeController');
+const UserAccount = require('../models/userAccount');
 
 const { compare } = require('bcryptjs');
 const { Encrypt, Decrypt } = require('../util/crypto');
@@ -73,6 +74,31 @@ const createEntry = async (req, res, next) => {
 		const error = new HttpError(
 			`Register event process failed. Please check your data: ${result.array()}`,
 			422
+		);
+		return next(error);
+	}
+
+	// verify wheather user account has been completed yet
+	try {
+		var userAccount = await UserAccount.findById(user.accountId);
+	} catch (err) {
+		const error = new HttpError(
+			'Entry form submission faied @ finding user account.',
+			500
+		);
+		return next(error);
+	}
+	if (!userAccount) {
+		const error = new HttpError(
+			'This user account cannot be located.',
+			400
+		);
+		return next(error);
+	}
+	if (!userAccount.completed) {
+		const error = new HttpError(
+			'Please complete your account before registrering events.',
+			401
 		);
 		return next(error);
 	}

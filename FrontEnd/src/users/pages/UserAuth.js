@@ -6,6 +6,7 @@ import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import { Field, Form, Formik } from 'formik';
 import ImageUploader from '../../shared/components/FormElements/ImageUploader';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
+import Modal from '../../shared/components/UIElements/Modal';
 
 import { UserAuthContext } from '../../shared/context/auth-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';
@@ -25,6 +26,11 @@ const UserAuth = () => {
 		setIsLoginMode(prevMode => !prevMode);
 	};
 
+	const [showSignupModal, setShowSignupModal] = useState(false);
+	const closeSignupModalHandler = () => {
+		setShowSignupModal(false);
+		setIsLoginMode(true);
+	};
 	const history = useHistory();
 	const userSubmitHandler = async values => {
 		// meaning we don't want to reload the page after form submission
@@ -49,8 +55,22 @@ const UserAuth = () => {
 						'Content-Type': 'application/json'
 					}
 				);
-
-				if (userAuthContext.userRedirectURL) {
+				// user has not verified email account yet
+				if (!responseData.verified) {
+					// forward to verify page
+					history.push(`/users/verification/${values.email}`);
+				} else if (!responseData.completed) {
+					// user has not completed account information
+					userAuthContext.userLogin(
+						responseData.userId,
+						responseData.userName,
+						responseData.token,
+						'', //expirationDate will be defined in userAuth-hook
+						responseData.entries,
+						responseData.image
+					);
+					history.push(`/users/account/${responseData.userId}`);
+				} else if (userAuthContext.userRedirectURL) {
 					// for re-direction, we need to set login information to be able to send request to backend
 					userAuthContext.userLogin(
 						responseData.userId,
@@ -117,8 +137,10 @@ const UserAuth = () => {
 					'POST',
 					formData
 				);
-				// set isLoginMode to true to render login page
-				setIsLoginMode(true);
+				// after signing up, display modal to give notification about
+				// verification email been sent out.
+				// After user clicking 'OK' on the modal, we re-direct to login page.
+				setShowSignupModal(true);
 			} catch (err) {
 				console.log('UserAuth error = ', err);
 			}
@@ -405,6 +427,26 @@ const UserAuth = () => {
 		<React.Fragment>
 			{/* error coming from const [error, setError] = useState(); */}
 			<ErrorModal error={error || passwordError} onClear={clearErr} />
+			{showSignupModal && (
+				<Modal
+					className="modal-delete"
+					show={showSignupModal}
+					contentClass="event-item__modal-delete"
+					onCancel={closeSignupModalHandler}
+					header="Please verify your account!"
+					footerClass="event-item__modal-actions"
+					footer={
+						<React.Fragment>
+							<Button inverse onClick={closeSignupModalHandler}>
+								OK
+							</Button>
+						</React.Fragment>
+					}>
+					<p className="modal__content">
+						We have sent you an account verification email.
+					</p>
+				</Modal>
+			)}
 			{isLoading && <LoadingSpinner asOverlay />}
 			{isLoginMode && userAuthForm()}
 			{!isLoginMode && userSignupForm()}

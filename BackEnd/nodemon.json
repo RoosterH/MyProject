@@ -18,6 +18,7 @@
 		"S3_URL": "https://myseattime-dev.s3.us-west-1.amazonaws.com",
 		"S3_URL_PROD": "https://myseattime-image.s3.us-west-1.amazonaws.com",
 		"STRIPE_PUBLISHABLE_KEY": "pk_test_51HpjVQG10ZElXQJ4LAk8pnnOuC23BzzmIBwNdIQgZf8ZjbLg5XjelbRjRP2pUWfDY556b3Y8JpJKG2hXXvBIxr830094NIq6Vu",
-		"STRIPE_SECRET_KEY": "sk_test_51HpjVQG10ZElXQJ4Ckiy0PacgFEKbc2poPbjnJW3Ps9cyvnlXOoryAUFDmJXUol7ZRKuIj62lqGVFfiZMdd71zKb00MmakrOiZ"
+		"STRIPE_SECRET_KEY": "sk_test_51HpjVQG10ZElXQJ4Ckiy0PacgFEKbc2poPbjnJW3Ps9cyvnlXOoryAUFDmJXUol7ZRKuIj62lqGVFfiZMdd71zKb00MmakrOiZ",
+		"MYSEATTIME": "http://localhost:3000"
 	}
 }

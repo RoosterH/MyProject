@@ -16,6 +16,24 @@ router.get('/', usersController.getAllUsers);
 
 router.get('/:uid', usersController.getUserById);
 
+// GET,  user requst to resend verification link by clicking the link on the email
+router.get(
+	'/confirmationRequest/:email/',
+	usersController.resendUserConfirmationEmail
+);
+
+// GET,  user email account confirmation, when user click on verification link
+router.get(
+	'/confirmation/:email/:token',
+	usersController.confirmUserEmail
+);
+
+// GET,  user requst to resend verification link by clicking the link on Frontend <UserVerification /> page
+router.get(
+	'/verificationRequest/:email/',
+	usersController.resendUserConfirmationEmail
+);
+
 router.post(
 	'/signup',
 	fileUpload.single('userImage'),

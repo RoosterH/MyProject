@@ -57,8 +57,14 @@ export const useHttpClient = () => {
 					reqCtrl => reqCtrl !== httpAbortCtrl
 				);
 
-				// response with 400/500 status code
-				if (!response.ok) {
+				// response with 400/500 status code.
+				// For confirmation/verification page, we do not want popup window.
+				// hideErrorPopup is the flag to control whether to display popup or not
+				if (
+					!response.ok &&
+					(responseData.hideErrorPopup === undefined ||
+						!responseData.hideErrorPopup)
+				) {
 					throw new Error(responseData.message);
 				}
 				setIsLoading(false);

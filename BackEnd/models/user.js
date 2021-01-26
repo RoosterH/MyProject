@@ -33,8 +33,9 @@ const userSchema = new Schema({
 		type: mongoose.Types.ObjectId,
 		required: true,
 		ref: 'UserAccount'
-	}
-	// activated: {type: Boolean, required: true}
+	},
+	// email account verification
+	verified: { type: Boolean, required: true, default: false }
 });
 
 // uniqueValidator is to make sure the email is unique in MongoDB

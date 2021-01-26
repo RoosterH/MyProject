@@ -14,6 +14,7 @@ import { FormContext } from '../../shared/context/form-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { UserAuthContext } from '../../shared/context/auth-context';
 
+import './UserAccount.css';
 import '../../shared/css/EventForm.css';
 
 const UserAccount = () => {
@@ -118,8 +119,10 @@ const UserAccount = () => {
 	const [loadedUserAccount, setLoadedUserAccount] = useState();
 	const [validDriver, setValidDriver] = useState(false);
 	const [disclaimer, setDisclaimer] = useState(false);
+	// check whether the accout info has been completed yet. Give warning message if not.
+	const [completed, setCompleted] = useState(false);
 	useEffect(() => {
-		const fetchUserCredential = async () => {
+		const fetchUserAccount = async () => {
 			try {
 				const [
 					responseData,
@@ -140,9 +143,10 @@ const UserAccount = () => {
 				setLoadedUserAccount(responseData);
 				setValidDriver(responseData.validDriver);
 				setDisclaimer(responseData.disclaimer);
+				setCompleted(responseData.completed);
 			} catch (err) {}
 		};
-		fetchUserCredential();
+		fetchUserAccount();
 	}, [userId, setLoadedUserAccount]);
 
 	const [verification, setVerification] = useState(false);
@@ -217,6 +221,12 @@ const UserAccount = () => {
 	const credentialForm = () => (
 		<div className="event-form">
 			<div className="event-form-header">
+				{!completed && (
+					<div className="useraccount-error">
+						Please complete your account information before
+						registering events.
+					</div>
+				)}
 				<h4>Driver Account</h4>
 				<hr className="event-form__hr" />
 			</div>
@@ -532,6 +542,7 @@ const UserAccount = () => {
 	return (
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
+
 			{!isLoading && credentialForm()}
 		</React.Fragment>
 	);
