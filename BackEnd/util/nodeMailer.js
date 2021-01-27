@@ -2,6 +2,7 @@ let nodemailer = require('nodemailer');
 let AWS = require('aws-sdk');
 
 const sendVerificationEmail = async (
+	isUser,
 	recipientName,
 	recipientEmail,
 	token
@@ -22,6 +23,8 @@ const sendVerificationEmail = async (
 		sendingRate: 14 // max 14 messages per second
 	});
 
+	let path = isUser ? 'user' : 'club';
+
 	// send email
 	let info;
 	try {
@@ -36,14 +39,18 @@ const sendVerificationEmail = async (
 				'Thanks for signing up MYSeatTime.com.\n' +
 				'Please verify your email account by clicking the link to finish registration: \n' +
 				process.env.MYSEATTIME +
-				'/userConfirmtation/' +
+				'/' +
+				path +
+				'Confirmtation/' +
 				recipientEmail +
 				'/' +
 				token.token +
 				'\n\nThis link expires in 24 hours.' +
 				'\n\nTo request a new link, please click here: \n' +
 				process.env.MYSEATTIME +
-				'/userVerificationRequest/' +
+				'/' +
+				path +
+				'VerificationRequest/' +
 				recipientEmail +
 				'\n\nIf you did not sign up, please discard this email.' +
 				'\nThank You!\n',
@@ -55,7 +62,9 @@ const sendVerificationEmail = async (
 				'<p>Please verify your email account by clicking the link to finish registration:</p>' +
 				'<p>' +
 				process.env.MYSEATTIME +
-				'/userConfirmation/' +
+				'/' +
+				path +
+				'Confirmation/' +
 				recipientEmail +
 				'/' +
 				token.token +
@@ -64,7 +73,9 @@ const sendVerificationEmail = async (
 				'<p>To request a new link, please click here:</p>' +
 				'<p>' +
 				process.env.MYSEATTIME +
-				'/userVerificationRequest/' +
+				'/' +
+				path +
+				'VerificationRequest/' +
 				recipientEmail +
 				'</p>' +
 				'<p>If you did not sign up, please discard this email.</p>' +

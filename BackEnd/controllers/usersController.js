@@ -276,7 +276,7 @@ const createUser = async (req, res, next) => {
 
 	try {
 		// send verification email
-		sendVerificationEmail(normFirstName, normEmail, token);
+		sendVerificationEmail(true, normFirstName, normEmail, token);
 	} catch (err) {
 		console.log('Create user send verification email failure ', err);
 		const error = new HttpError(
@@ -351,7 +351,10 @@ const confirmUserEmail = async (req, res, next) => {
 
 	let token;
 	try {
-		token = await Token.findOne({ token: userToken });
+		token = await Token.findOne({
+			userId: user.id,
+			token: userToken
+		});
 	} catch (err) {
 		console.log('confirmUserEmail err @ finding token = ', err);
 		const error = new HttpError(
@@ -485,7 +488,12 @@ const resendUserConfirmationEmail = async (req, res, next) => {
 
 	try {
 		// send verification email
-		sendVerificationEmail(user.firstName, email.toLowerCase(), token);
+		sendVerificationEmail(
+			true,
+			user.firstName,
+			email.toLowerCase(),
+			token
+		);
 	} catch (err) {
 		console.log('Create user send verification email failure ', err);
 		const error = new HttpError(
@@ -528,7 +536,6 @@ const loginUser = async (req, res, next) => {
 
 	// check email has been verified or not
 	if (!existingUser.verified) {
-		console.log('not veirifed');
 		return res.status(400).json({
 			hideErrorPopup: true,
 			verified: false

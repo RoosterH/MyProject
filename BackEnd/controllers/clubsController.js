@@ -7,9 +7,11 @@ const HttpError = require('../models/httpError');
 const Club = require('../models/club');
 const ClubProfile = require('../models/clubProfile');
 const ClubAccount = require('../models/clubAccount');
+const crypto = require('crypto');
 const Event = require('../models/event');
 const { Encrypt, Decrypt } = require('../util/crypto');
-const e = require('express');
+const { sendVerificationEmail } = require('../util/nodeMailer');
+const Token = require('../models/token');
 
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 const Stripe = require('./stripeController.js');
@@ -239,8 +241,8 @@ const createClub = async (req, res, next) => {
 		events: []
 	});
 
-	let token;
 	try {
+		var jwttoken;
 		// using transaction here to make sure all the operations are done
 		const session = await mongoose.startSession();
 		session.startTransaction();
@@ -248,7 +250,7 @@ const createClub = async (req, res, next) => {
 		// jwt section
 		// use ClubId and email as the payload
 		// private key
-		token = jwt.sign(
+		jwttoken = jwt.sign(
 			{ clubId: newClub.id, email: newClub.email },
 			JWT_PRIVATE_KEY,
 			{ expiresIn: '1h' }
@@ -270,12 +272,235 @@ const createClub = async (req, res, next) => {
 		return next(error);
 	}
 
+	// prepare verification email
+	// generate token and save
+	let token = new Token({
+		userId: newClub.id,
+		token: crypto.randomBytes(128).toString('hex')
+	});
+
+	try {
+		await token.save();
+	} catch (err) {
+		console.log('create club err @ saving token = ', err);
+		const error = new HttpError(
+			'Faied to issue an email verification token to club. Please login and request system to send it again.',
+			500
+		);
+		return next(error);
+	}
+
+	try {
+		// send verification email
+		sendVerificationEmail(false, name, email, token);
+	} catch (err) {
+		console.log('Create club send verification email failure ', err);
+		const error = new HttpError(
+			'Faied to send a verification email to club. Please login and request to re-send verification email.',
+			500
+		);
+		return next(error);
+	}
+
 	res.status(201).json({
 		clubId: newClub.id,
 		name: newClub.name,
 		email: newClub.email,
-		token: token
+		token: jwttoken
 	});
+};
+
+// GET /clubs/confirmation/:email/:token
+const confirmClubEmail = async (req, res, next) => {
+	let email = req.params.email;
+	let clubToken = req.params.token;
+
+	try {
+		var club = await Club.findOne({
+			id: clubToken.clubId,
+			email: email
+		});
+	} catch (err) {
+		console.log('confirmClubEmail err @ finding club = ', err);
+		const error = new HttpError(
+			'confirmClubEmail error @ finding club.',
+			500
+		);
+
+		return next(error);
+	}
+	if (!club) {
+		console.log('no club found');
+		return res.status(400).json({
+			club: false,
+			token: false,
+			verified: false,
+			hideErrorPopup: true
+		});
+	}
+
+	if (club.verified) {
+		return res
+			.status(200)
+			.json({ club: true, token: true, verified: true });
+	}
+
+	let token;
+	try {
+		token = await Token.findOne({
+			userId: club.id,
+			token: clubToken
+		});
+	} catch (err) {
+		console.log('confirmClubEmail err @ finding token = ', err);
+		const error = new HttpError(
+			'confirmClubEmail error @ finding token',
+			500
+		);
+
+		return next(error);
+	}
+
+	// token is not found into database i.e. token may have expired
+	if (!token) {
+		return res.status(400).json({
+			club: true,
+			token: false,
+			verified: false,
+			hideErrorPopup: true
+		});
+	}
+
+	// verify club
+	// change verified to true
+	club.verified = true;
+	try {
+		await club.save();
+	} catch (err) {
+		console.log('confirmClubEmail err @ saving club = ', err);
+		const error = new HttpError(
+			'confirmClubEmail error @ saving club',
+			500
+		);
+
+		return next(error);
+	}
+
+	// find all tokens belonging to this club and purge them all
+	let tokens;
+	try {
+		tokens = await Token.find({ userId: club.id });
+	} catch (err) {
+		console.log(
+			'resendClubConfirmationEmail error @ finding old tokens.'
+		);
+	}
+
+	for (let i = 0; i < tokens.length; ++i) {
+		try {
+			await tokens[i].delete();
+		} catch (err) {
+			console.log(
+				'resendClubConfirmationEmail error @ deleting old tokens.'
+			);
+		}
+	}
+
+	return res
+		.status(200)
+		.json({ club: true, token: true, verified: true });
+};
+
+// GET /clubs/sendConfirmationEmail/:email
+const resendClubConfirmationEmail = async (req, res, next) => {
+	const email = req.params.email;
+	try {
+		var club = await Club.findOne({ email: email.toLowerCase() });
+	} catch (err) {
+		console.log(
+			'resendClubConfirmationEmail err @ finding club = ',
+			err
+		);
+		const error = new HttpError(
+			'resendClubConfirmationEmail error @ finding club.',
+			500
+		);
+
+		return next(error);
+	}
+	if (!club) {
+		console.log('no club');
+		return res.status(400).json({
+			club: false,
+			resendStatus: false,
+			hideErrorPopup: true
+		});
+	}
+
+	if (club.verified) {
+		return res
+			.status(200)
+			.json({ club: true, verified: true, resendStatus: false });
+	}
+
+	// find old tokens purge them
+	let oldTokens;
+	try {
+		oldTokens = await Token.find({ userId: club.id });
+	} catch (err) {
+		console.log(
+			'resendClubConfirmationEmail error @ finding old tokens.'
+		);
+	}
+
+	for (let i = 0; i < oldTokens.length; ++i) {
+		try {
+			await oldTokens[i].delete();
+		} catch (err) {
+			console.log(
+				'resendClubConfirmationEmail error @ deleting old tokens.'
+			);
+		}
+	}
+
+	// resend link,  prepare verification email
+	// generate token and save
+	let token = new Token({
+		userId: club.id,
+		token: crypto.randomBytes(128).toString('hex')
+	});
+
+	try {
+		await token.save();
+	} catch (err) {
+		console.log('createClub err = ', err);
+		const error = new HttpError(
+			'Faied to issue an email verification token. Please request the verification link again.',
+			500
+		);
+		return next(error);
+	}
+
+	try {
+		// send verification email
+		sendVerificationEmail(
+			false,
+			club.name,
+			email.toLowerCase(),
+			token
+		);
+	} catch (err) {
+		console.log('Create club send verification email failure ', err);
+		const error = new HttpError(
+			'Faied to send a verification email. Please login and request to re-send verification email.',
+			500
+		);
+		return next(error);
+	}
+
+	res
+		.status(200)
+		.json({ club: true, verified: false, resendStatus: true });
 };
 
 // POST '/api/clubs/login'
@@ -300,6 +525,14 @@ const loginClub = async (req, res, next) => {
 			403
 		);
 		return next(error);
+	}
+
+	// check email has been verified or not
+	if (!existingClub.verified) {
+		return res.status(400).json({
+			hideErrorPopup: true,
+			verified: false
+		});
 	}
 
 	let isValidPassword = false;
@@ -347,7 +580,8 @@ const loginClub = async (req, res, next) => {
 		clubId: existingClub.id,
 		name: existingClub.name,
 		email: existingClub.email,
-		token: token
+		token: token,
+		verified: true
 	});
 };
 
@@ -1276,6 +1510,8 @@ exports.getAllClubs = getAllClubs;
 exports.getClubById = getClubById;
 exports.getClubProfileForUsers = getClubProfileForUsers;
 exports.createClub = createClub;
+exports.confirmClubEmail = confirmClubEmail;
+exports.resendClubConfirmationEmail = resendClubConfirmationEmail;
 exports.loginClub = loginClub;
 exports.updateClubCredential = updateClubCredential;
 exports.updateClubProfile = updateClubProfile;

@@ -6,6 +6,7 @@ import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import { Field, Form, Formik } from 'formik';
 import ImageUploader from '../../shared/components/FormElements/ImageUploader';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
+import Modal from '../../shared/components/UIElements/Modal';
 
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';
@@ -26,6 +27,11 @@ const ClubAuth = () => {
 		setIsLoginMode(prevMode => !prevMode);
 	};
 
+	const [showSignupModal, setShowSignupModal] = useState(false);
+	const closeSignupModalHandler = () => {
+		setShowSignupModal(false);
+		setIsLoginMode(true);
+	};
 	const history = useHistory();
 	const clubSubmitHandler = async values => {
 		// meaning we don't want to reload the page after form submission
@@ -50,8 +56,12 @@ const ClubAuth = () => {
 						'Content-Type': 'application/json'
 					}
 				);
-				if (clubAuthContext.clubRedirectURL) {
-					console.log('inside clubRedirect');
+
+				// user has not verified email account yet
+				if (!responseData.verified) {
+					// forward to verify page
+					history.push(`/clubs/verification/${values.email}`);
+				} else if (clubAuthContext.clubRedirectURL) {
 					clubAuthContext.clubLogin(
 						responseData.token,
 						responseData.clubId,
@@ -109,8 +119,10 @@ const ClubAuth = () => {
 					'POST',
 					formData
 				);
-				// set isLoginMode  to true to render login page
-				setIsLoginMode(true);
+				// after signing up, display modal to give notification about
+				// verification email been sent out.
+				// After user clicking 'OK' on the modal, we re-direct to login page.
+				setShowSignupModal(true);
 			} catch (err) {
 				console.log('ClubAuth error = ', err);
 			}
@@ -344,10 +356,31 @@ const ClubAuth = () => {
 			</Formik>
 		</div>
 	);
+	console.log('showsignupmodal = ', showSignupModal);
 	return (
 		<React.Fragment>
 			{/* error coming from const [error, setError] = useState(); */}
 			<ErrorModal error={error || passwordError} onClear={clearErr} />
+			{showSignupModal && (
+				<Modal
+					className="modal-delete"
+					show={showSignupModal}
+					contentClass="event-item__modal-delete"
+					onCancel={closeSignupModalHandler}
+					header="Please verify your account!"
+					footerClass="event-item__modal-actions"
+					footer={
+						<React.Fragment>
+							<Button inverse onClick={closeSignupModalHandler}>
+								OK
+							</Button>
+						</React.Fragment>
+					}>
+					<p className="modal__content">
+						We have sent you an account verification email.
+					</p>
+				</Modal>
+			)}
 			{isLoading && <LoadingSpinner asOverlay />}
 			{isLoginMode && clubAuthForm()}
 			{!isLoginMode && clubSignupForm()}

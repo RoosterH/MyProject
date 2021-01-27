@@ -128,6 +128,15 @@ const ClubProfileViewerForUsers = React.lazy(() =>
 const ClubEventsForUsers = React.lazy(() =>
 	import('./users/components/ClubEventsForUsers')
 );
+const ClubConfirmation = React.lazy(() =>
+	import('./clubs/pages/ClubConfirmation')
+);
+const ClubVerification = React.lazy(() =>
+	import('./clubs/pages/ClubVerification')
+);
+const ClubVerificationRequest = React.lazy(() =>
+	import('./clubs/pages/ClubVerificationRequest')
+);
 // user section
 // const Users = React.lazy(() => import('./users/pages/Users'));
 const UserAuth = React.lazy(() => import('./users/pages/UserAuth'));
@@ -385,6 +394,18 @@ const App = () => {
 				</Route>
 				<Route path="/users/auth" exact>
 					<UserAuth />
+				</Route>
+				{/* because this is coming from email link so we use /clubConfirmation/ instead of /clubs/confirmation */}
+				<Route path="/clubConfirmation/:email/:token" exact>
+					<ClubConfirmation />
+				</Route>
+				{/* when club login but not verified, re-direct to this page */}
+				<Route path="/clubs/verification/:email" exact>
+					<ClubVerification />
+				</Route>
+				{/* club click on the resend link in the email */}
+				<Route path="/clubVerificationRequest/:email" exact>
+					<ClubVerificationRequest />
 				</Route>
 				{/* because this is coming from email link so we use /userConfirmation/ instead of /users/confirmation */}
 				<Route path="/userConfirmation/:email/:token" exact>

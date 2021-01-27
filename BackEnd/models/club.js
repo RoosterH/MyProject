@@ -38,7 +38,8 @@ const clubSchema = new Schema({
 		required: true,
 		ref: 'ClubProfile',
 		default: '000000000000'
-	}
+	},
+	verified: { type: Boolean, required: true, default: false }
 });
 
 // uniqueValidator is to make sure the email is unique in MongoDB

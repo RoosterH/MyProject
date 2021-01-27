@@ -20,6 +20,24 @@ router.get(
 	clubsController.getClubProfileForUsers
 );
 
+// GET,  club requst to resend verification link by clicking the link on the email
+router.get(
+	'/confirmationRequest/:email/',
+	clubsController.resendClubConfirmationEmail
+);
+
+// GET,  club email account confirmation, when club click on verification link
+router.get(
+	'/confirmation/:email/:token',
+	clubsController.confirmClubEmail
+);
+
+// GET,  club requst to resend verification link by clicking the link on Frontend <ClubVerification /> page
+router.get(
+	'/verificationRequest/:email/',
+	clubsController.resendClubConfirmationEmail
+);
+
 router.post(
 	'/signup',
 	// single file, 'image' is the key name in the request body
