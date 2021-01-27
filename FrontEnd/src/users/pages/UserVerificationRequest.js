@@ -10,7 +10,7 @@ import { useHttpClient } from '../../shared/hooks/http-hook';
 
 import '../../shared/css/Events.css';
 
-const UserVerification = () => {
+const UserVerificationRequest = () => {
 	let email = useParams().email;
 	const {
 		isLoading,
@@ -97,4 +97,4 @@ const UserVerification = () => {
 	);
 };
 
-export default UserVerification;
+export default UserVerificationRequest;
