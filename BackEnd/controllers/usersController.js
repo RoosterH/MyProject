@@ -2,6 +2,8 @@ const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const moment = require('moment');
+
 const crypto = require('crypto');
 const { Encrypt, Decrypt } = require('../util/crypto');
 const { sendVerificationEmail } = require('../util/nodeMailer');
