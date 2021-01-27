@@ -179,7 +179,8 @@ const App = () => {
 		userEntries,
 		userImage,
 		userRedirectURL,
-		setUserRedirectURL
+		setUserRedirectURL,
+		userAccountStatus
 	} = useUserAuth();
 
 	const { isInsideForm, setIsInsideForm } = useFormHook();
@@ -553,6 +554,7 @@ const App = () => {
 					userEntries: userEntries,
 					userImage: userImage,
 					userRedirectURL: userRedirectURL,
+					userAccountStatus: userAccountStatus,
 					userLogin: userLogin,
 					userLogout: userLogout,
 					setUserRedirectURL: setUserRedirectURL

@@ -37,6 +37,7 @@ export const UserAuthContext = createContext({
 	userEntries: null,
 	userImage: null,
 	userRedirectURL: null,
+	userAccountStatus: false,
 	userLogin: () => {},
 	userLogout: () => {},
 	setUserRedirectURL: () => {}

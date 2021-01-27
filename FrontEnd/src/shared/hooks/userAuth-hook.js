@@ -11,17 +11,28 @@ export const useUserAuth = () => {
 	const [userEntries, setUserEntries] = useState(null);
 	const [userRedirectURL, setURL] = useState(null);
 	const [userImage, setUserImage] = useState(null);
+	// keep track of user account status complete
+	const [userAccountStatus, setUserAccountStatus] = useState(false);
 
 	// define callbacks of UserAuthContext, useCallBack will never be re-created
 	// so there won't be any infinite loop; otherwise when the page renders, the function
 	// will be re-created each render cause infinite loop.
 	const userLogin = useCallback(
-		(uid, uname, utoken, expirationDate, uentries, uimage) => {
+		(
+			uid,
+			uname,
+			utoken,
+			expirationDate,
+			uentries,
+			uimage,
+			completed
+		) => {
 			setUserToken(utoken);
 			setUserId(uid);
 			setUserName(uname);
 			setUserEntries(uentries);
 			setUserImage(uimage);
+			setUserAccountStatus(completed);
 
 			// jwt token expires in 7 day
 			const tokenExp =
@@ -39,7 +50,8 @@ export const useUserAuth = () => {
 					userToken: utoken,
 					expiration: tokenExp,
 					userEntries: uentries,
-					userImage: uimage
+					userImage: uimage,
+					userAccountStatus: completed
 				})
 			);
 		},
@@ -77,7 +89,8 @@ export const useUserAuth = () => {
 				storageData.userToken,
 				moment(storageData.expiration),
 				storageData.userEntries,
-				storageData.userImage
+				storageData.userImage,
+				storageData.userAccountStatus
 			);
 		}
 	}, [userLogin]);
@@ -107,6 +120,7 @@ export const useUserAuth = () => {
 		userEntries,
 		userImage,
 		userRedirectURL,
+		userAccountStatus,
 		setUserRedirectURL
 	};
 };

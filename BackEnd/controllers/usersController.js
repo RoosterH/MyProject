@@ -813,7 +813,8 @@ const updateUserAccount = async (req, res, next) => {
 		emergency: emergency,
 		emergencyPhone: emergencyPhone,
 		validDriver: validDriver,
-		disclaimer: disclaimer
+		disclaimer: disclaimer,
+		completed: userAccount.completed
 	});
 };
 

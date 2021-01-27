@@ -184,6 +184,7 @@ const UserAccount = () => {
 			setValidDriver(responseData.validDriver);
 			setDisclaimer(responseData.disclaimer);
 			setSaveButtonEnabled(false);
+			setCompleted(responseData.completed);
 		} catch (err) {}
 	};
 

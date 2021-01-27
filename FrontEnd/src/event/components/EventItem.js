@@ -219,7 +219,9 @@ const EventItem = props => {
 	const [userOnGroupWaitlist, setUserOnGroupWaitlist] = useState(
 		false
 	);
-
+	const [userAccountStatus, setUserAccountStatus] = useState(false);
+	const accountStatusMSG =
+		'Please complete account information to register events.';
 	// Instead of getting information from backend, trick here is to useLocalStorage.
 	// Once user entered the event, form.jsx returns entry back to EventForm.formSubmitted()
 	// We will save the entry to localStorage "UserData.userEntries" array.
@@ -230,8 +232,12 @@ const EventItem = props => {
 		if (userAuthContext.userId) {
 			let storageData = JSON.parse(localStorage.getItem('userData'));
 			if (storageData.userId === userAuthContext.userId) {
+				setUserAccountStatus(storageData.userAccountStatus);
 				let userEntries = storageData.userEntries;
-				if (userEntries) {
+				if (!storageData.userAccountStatus) {
+					// actually we are not displaying button, only gives accountStatusMSG
+					setButtonName('DISABLED');
+				} else if (userEntries) {
 					for (let i = 0; i < userEntries.length; ++i) {
 						if (userEntries[i].eventId === eventId) {
 							setUserRegisteredEvent(true);
@@ -437,6 +443,9 @@ const EventItem = props => {
 							)}
 							<div className="waitlist-msg">
 								{userOnWaitlist && waitlistMSG}
+							</div>
+							<div className="waitlist-msg">
+								{!userAccountStatus && accountStatusMSG}
 							</div>
 						</div>
 					</div>
