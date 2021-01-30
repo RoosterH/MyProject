@@ -24,6 +24,7 @@ const EntryReport = props => {
 		clearError
 	} = useHttpClient();
 	const [addEntryError, setAddEntryError] = useState(false);
+	const [showLoading, setShowLoading] = useState(true);
 	const errorClearHandler = () => {
 		clearError();
 		setAddEntryError();
@@ -74,7 +75,6 @@ const EntryReport = props => {
 			? props.entryReportData.lunchOptions
 			: undefined
 	);
-	const [showLoading, setShowLoading] = useState(true);
 
 	// create an array from day 1 to loop through when we are rendering day buttons
 	const [dayArray, setDayArray] = useState([]);
