@@ -122,18 +122,25 @@ const ClubDashboardToolbar = () => {
 
 					<li className="dashboard-nav-menu dropdown">
 						<Link
-							to="/clubs/manageClub/list"
+							to="/clubs/RegistrationManager"
 							exact="exact"
 							className="dropdown-blackbutton">
 							<i
 								className="fa fa-sort-desc pull-right"
 								aria-hidden="true"
 							/>
-							{' Coming Soon '}
+							Member Manager
 						</Link>
-						{/* <div className="dropdown-content">
-							<a href="#">Test</a>
-						</div> */}
+						<div className="dropdown-content">
+							<NavLink to={`/clubs/memberList/${cid}`} exact>
+								Member List
+							</NavLink>
+							<NavLink
+								to={`/clubs/paymentCenterSelector/${cid}`}
+								exact>
+								Car Numbers
+							</NavLink>
+						</div>
 					</li>
 				</ul>
 			</div>

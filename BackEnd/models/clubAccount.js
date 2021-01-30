@@ -8,7 +8,7 @@ const clubAccountSchema = new Schema({
 	},
 	onSitePayment: { type: Boolean, required: true },
 	stripePayment: { type: Boolean, required: true },
-	hostPrivateEvent: { type: Boolean, required: true, default: false },
+	// hostPrivateEvent: { type: Boolean, required: true, default: false },
 
 	// stripeAccountId is encrypted
 	stripeAccountId: {
@@ -16,6 +16,7 @@ const clubAccountSchema = new Schema({
 		required: true,
 		default: {}
 	}
+	// memberSystem: { type: Boolean, require: true, default: false }
 });
 
 module.exports = mongoose.model('ClubAccount', clubAccountSchema);

@@ -6,7 +6,10 @@ const moment = require('moment');
 
 const crypto = require('crypto');
 const { Encrypt, Decrypt } = require('../util/crypto');
-const { sendVerificationEmail } = require('../util/nodeMailer');
+const {
+	sendVerificationEmail,
+	sendAccountActivationEmail
+} = require('../util/nodeMailer');
 const Entry = require('../models/entry');
 const Event = require('../models/event');
 const HttpError = require('../models/httpError');
@@ -395,6 +398,7 @@ const confirmUserEmail = async (req, res, next) => {
 	try {
 		tokens = await Token.find({ userId: user.id });
 	} catch (err) {
+		// DO NOT return HttpError
 		console.log(
 			'resendUserConfirmationEmail error @ finding old tokens.'
 		);
@@ -404,10 +408,19 @@ const confirmUserEmail = async (req, res, next) => {
 		try {
 			await tokens[i].delete();
 		} catch (err) {
+			// DO NOT return HttpError
 			console.log(
 				'resendUserConfirmationEmail error @ deleting old tokens.'
 			);
 		}
+	}
+
+	// send successfully signup email
+	try {
+		sendAccountActivationEmail(true, user.firstName, user.email);
+	} catch (err) {
+		// DO NOT return HttpError
+		console.log('confirmUserEmail err = ', err);
 	}
 
 	return res

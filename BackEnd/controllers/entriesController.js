@@ -15,6 +15,11 @@ const ClubAccount = require('../models/clubAccount');
 const Payment = require('../models/payment');
 const Stripe = require('./stripeController');
 const UserAccount = require('../models/userAccount');
+const ClubMember = require('../models/clubMember');
+const NumberTable = require('../models/numberTable');
+const {
+	sendRegistrationConfirmationEmail
+} = require('../util/nodeMailer');
 
 const { compare } = require('bcryptjs');
 const { Encrypt, Decrypt } = require('../util/crypto');
@@ -153,6 +158,53 @@ const createEntry = async (req, res, next) => {
 			404
 		);
 		return next(error);
+	}
+
+	try {
+		var club = await Club.findById(event.clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Entry submission process internal failure finding club',
+			500
+		);
+		return next(error);
+	}
+	if (!club) {
+		const error = new HttpError(
+			'Entry submission process internal failure club not found',
+			404
+		);
+		return next(error);
+	}
+
+	// check club has this user as club member, if not we will add it to club member list
+	try {
+		var clubMember = await ClubMember.findOne({
+			clubId: event.clubId,
+			userId: userId
+		});
+	} catch (err) {
+		console.log('Unable to look up club member = ', err);
+		// unable to find
+		const error = new HttpError(
+			'Unable to look up club member. Please try later.',
+			500
+		);
+		return next(error);
+	}
+	let newClubMember = null;
+	if (!clubMember) {
+		// todo check whether the carNumber is available
+
+		// create a new member
+		newClubMember = new ClubMember({
+			userId: userId,
+			lastName: user.lastName,
+			firstName: user.firstName,
+			email: user.email,
+			clubId: event.clubId,
+			carNumber: carNumber
+		});
 	}
 
 	let multiDayEvent = event.multiDayEvent;
@@ -513,6 +565,9 @@ const createEntry = async (req, res, next) => {
 		try {
 			const session = await mongoose.startSession();
 			session.startTransaction();
+			if (newClubMember) {
+				await newClubMember.save({ session: session });
+			}
 			await entry.save({ session: session });
 			let entryId = entry.id;
 			let payment = new Payment({
@@ -589,6 +644,26 @@ const createEntry = async (req, res, next) => {
 				'You are on the waitlist. Event club will notify you if there is a spot available.'
 		});
 	} else {
+		// send registration confirmation email
+		try {
+			sendRegistrationConfirmationEmail(
+				user.firstName,
+				user.email,
+				club.name,
+				club.email,
+				event.name,
+				event.id,
+				'',
+				paymentMethod,
+				totalPrice
+			);
+		} catch (err) {
+			console.log(
+				'sendRegistrationConfirmationEmail 200 error = ',
+				err
+			);
+		}
+
 		res.status(200).json({
 			entry: entry.toObject({ getters: true }),
 			totalPrice: totalPrice,

@@ -219,7 +219,7 @@ const EventItem = props => {
 	const [userOnGroupWaitlist, setUserOnGroupWaitlist] = useState(
 		false
 	);
-	const [userAccountStatus, setUserAccountStatus] = useState(false);
+	const [userAccountStatus, setUserAccountStatus] = useState(true);
 	const accountStatusMSG =
 		'Please complete account information to register events.';
 	// Instead of getting information from backend, trick here is to useLocalStorage.

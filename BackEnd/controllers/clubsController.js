@@ -2,20 +2,32 @@ const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const csvtojson = require('csvtojson');
+const moment = require('moment');
 
 const HttpError = require('../models/httpError');
 const Club = require('../models/club');
 const ClubProfile = require('../models/clubProfile');
 const ClubAccount = require('../models/clubAccount');
+const ClubEventSettings = require('../models/clubEventSettings');
+const ClubMember = require('../models/clubMember');
+const User = require('../models/user');
+const UserAccount = require('../models/userAccount');
 const crypto = require('crypto');
 const Event = require('../models/event');
 const { Encrypt, Decrypt } = require('../util/crypto');
-const { sendVerificationEmail } = require('../util/nodeMailer');
+const {
+	sendVerificationEmail,
+	sendAccountActivationEmail
+} = require('../util/nodeMailer');
 const Token = require('../models/token');
 
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 const Stripe = require('./stripeController.js');
 const { request } = require('express');
+const { CostExplorer } = require('aws-sdk');
+const AWS = require('aws-sdk');
+const club = require('../models/club');
 
 // GET /api/clubs/
 const getAllClubs = async (req, res, next) => {
@@ -211,8 +223,13 @@ const createClub = async (req, res, next) => {
 	const newClubAccount = new ClubAccount({
 		onSitePayment: false,
 		stripePayment: true,
-		hostPrivateEvent: false,
 		stripeAccountId: undefined
+	});
+
+	// create club event settings
+	const newClubEventSettings = new ClubEventSettings({
+		hostPrivateEvent: false,
+		memberSystem: false
 	});
 
 	// ! DO NOT REMOVE
@@ -259,8 +276,13 @@ const createClub = async (req, res, next) => {
 		let profile = await newClubProfile.save({ session: session });
 		newClubAccount.clubId = newClub.id;
 		let account = await newClubAccount.save({ session: session });
+		newClubEventSettings.clubId = newClub.id;
+		let eventSettings = await newClubEventSettings.save({
+			session: session
+		});
 		newClub.profileId = profile.id;
 		newClub.accountId = account.id;
+		newClub.eventSettingsId = eventSettings.id;
 		await newClub.save({ session: session });
 		await session.commitTransaction();
 	} catch (err) {
@@ -404,6 +426,15 @@ const confirmClubEmail = async (req, res, next) => {
 				'resendClubConfirmationEmail error @ deleting old tokens.'
 			);
 		}
+	}
+
+	// send successful account activation email
+	try {
+		console.log('sending account activation email = ', club.email);
+		sendAccountActivationEmail(false, club.name, club.email);
+	} catch (err) {
+		// DO NOT return HttpError
+		console.log('confirmClubEmail err = ', err);
 	}
 
 	return res
@@ -699,7 +730,7 @@ const updateClubCredential = async (req, res, next) => {
 	});
 };
 
-// PATCH '/api/clubs/:cid'
+// PATCH '/api/clubs/profile'
 const updateClubProfile = async (req, res, next) => {
 	// validate request
 	const errors = validationResult(req);
@@ -930,7 +961,7 @@ const updateClubAccount = async (req, res, next) => {
 		return next(error);
 	}
 
-	const { onSitePayment, stripePayment, hostPrivateEvent } = req.body;
+	const { onSitePayment, stripePayment } = req.body;
 	// use clubId from token instead of getting it from url to avoid hacking
 	// req.userData is added in check-clubAuth middleware, information comes from front end
 	// req.header.authorization
@@ -977,8 +1008,6 @@ const updateClubAccount = async (req, res, next) => {
 
 	clubAccount.onSitePayment = onSitePayment;
 	clubAccount.stripePayment = stripePayment;
-	clubAccount.hostPrivateEvent = hostPrivateEvent;
-
 	try {
 		await clubAccount.save();
 	} catch (err) {
@@ -990,6 +1019,87 @@ const updateClubAccount = async (req, res, next) => {
 	}
 	res.status(200).json({
 		clubAccount: clubAccount.toObject({
+			getters: true
+		})
+	});
+};
+
+// PATCH '/api/clubs/:cid'
+const updateClubEventSettings = async (req, res, next) => {
+	// validate request
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		const error = new HttpError(
+			`Update club event settings process failed, please check your data: ${result.array()}`,
+			422
+		);
+
+		return next(error);
+	}
+
+	const { hostPrivateEvent, memberSystem } = req.body;
+	// use clubId from token instead of getting it from url to avoid hacking
+	// req.userData is added in check-clubAuth middleware, information comes from front end
+	// req.header.authorization
+	const clubId = req.userData;
+	let clubEventSettings;
+	try {
+		clubEventSettings = await ClubEventSettings.findOne({ clubId });
+	} catch (err) {
+		console.log('updateClubEventSettings find club err = ', err);
+		const error = new HttpError(
+			'Update club event settings process failed, please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!clubEventSettings) {
+		const error = new HttpError(
+			'Update club event settings failed finding account.',
+			404
+		);
+		console.log('cannot find event settings');
+		return next(error);
+	}
+
+	let club;
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update club account process internal failure @ finding club, please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'Update club account failed finding club.',
+			404
+		);
+		console.log('Update club account cannot find club');
+		return next(error);
+	}
+
+	clubEventSettings.hostPrivateEvent = hostPrivateEvent;
+	clubEventSettings.memberSystem = memberSystem;
+	try {
+		await clubEventSettings.save();
+	} catch (err) {
+		const error = new HttpError(
+			'Update club event settings process failed to save, please try again later.',
+			500
+		);
+		return next(error);
+	}
+	res.status(200).json({
+		clubEventSettings: clubEventSettings.toObject({
 			getters: true
 		})
 	});
@@ -1025,6 +1135,45 @@ const getClubAccount = async (req, res, next) => {
 
 	res.status(200).json({
 		clubAccount: clubAccount.toObject({
+			getters: true
+		})
+	});
+};
+
+// GET /api/clubs/eventSettings/:cid
+const getClubEventSettings = async (req, res, next) => {
+	let clubIdParam = req.params.cid;
+	const clubId = req.userData;
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'Get club event settings process failed.  You are not allowed to get club account.',
+			403
+		);
+		return next(error);
+	}
+
+	try {
+		var clubEventSettings = await ClubEventSettings.findOne({
+			clubId: clubId
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'Get club event settings process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!clubEventSettings) {
+		const error = new HttpError(
+			'No club event settings in the DB.',
+			404
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		clubEventSettings: clubEventSettings.toObject({
 			getters: true
 		})
 	});
@@ -1128,6 +1277,178 @@ const getClubStripeAccount = async (req, res, next) => {
 
 	res.status(200).json({
 		stripeAccount: stripeAccount
+	});
+};
+
+// GET /api/clubs/member/:cid
+const getClubMemberList = async (req, res, next) => {
+	let clubIdParam = req.params.cid;
+	const clubId = req.userData;
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'You are not authorized to get club member list.',
+			403
+		);
+		return next(error);
+	}
+
+	let club;
+	try {
+		// we don't want to return password field
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'getClubMemberList failed @ finding club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'getClubMemberList club process failed no club found.',
+			404
+		);
+		return next(error);
+	}
+
+	// find all the clubMemberList that are associated with this club
+	try {
+		var memberList = await ClubMember.find({ clubId: clubId });
+	} catch (err) {
+		const error = new HttpError(
+			'Get club member list process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	let clubEventSettings;
+	try {
+		// we don't want to return password field
+		clubEventSettings = await ClubEventSettings.findOne({
+			clubId: clubId
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'getClubMemberList failed finding club event settings. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!clubEventSettings) {
+		const error = new HttpError(
+			'getClubMemberList cannot find club event settings',
+			500
+		);
+		return next(error);
+	}
+
+	let memberSystem = clubEventSettings.memberSystem;
+
+	// compose responseData
+	// lastName, firstName, email, memberNumber, memberStatus, memberExp, address, city, state, zip,
+	// phone, emergency, emergencyPhone
+	let responseData = [];
+
+	for (let i = 0; i < memberList.length; ++i) {
+		let member = memberList[i];
+		let lastName = member.lastName;
+		let firstName = member.firstName;
+		var email = member.email;
+		let userId = undefined;
+
+		// check club has memberSystem
+		if (memberSystem) {
+			var memberNumber = member.memberNumber;
+			var memberExp = moment(member.memberExp).format('MM/DD/YYYY');
+		}
+		// retrieve user info from userAccount if exists
+		if (member.userId) {
+			try {
+				var user = await User.findById(member.userId);
+			} catch (err) {
+				console.log('getClubMemberList failed @ finding user');
+			}
+			if (user) {
+				// if user is signed up, use user's email
+				email = user.email;
+				userId = user.id;
+				// get userAccount
+				try {
+					var userAccount = await UserAccount.findById(
+						user.accountId
+					);
+				} catch (err) {
+					console.log(
+						'getClubMemberList failed @ finding userAccout'
+					);
+				}
+				if (userAccount) {
+					var address = Decrypt(userAccount.address);
+					var city = Decrypt(userAccount.city);
+					var state = userAccount.state;
+					var zip = userAccount.zip;
+					var phone = Decrypt(userAccount.phone);
+					var emergency = userAccount.emergency;
+					var emergencyPhone = Decrypt(userAccount.emergencyPhone);
+				}
+			}
+		}
+		if (memberSystem) {
+			if (member.userId) {
+				var newMember = {
+					userId: userId,
+					lastName: lastName,
+					firstName: firstName,
+					memberNumber: memberNumber,
+					memberExp: memberExp,
+					email: email,
+					address: address,
+					city: city,
+					state: state,
+					zip: zip,
+					phone: phone,
+					emergency: emergency,
+					emergencyPhone: emergencyPhone
+				};
+			} else {
+				var newMember = {
+					lastName: lastName,
+					firstName: firstName,
+					memberNumber: memberNumber,
+					memberExp: memberExp,
+					email: email
+				};
+			}
+		} else {
+			if (member.userId) {
+				var nweMember = {
+					userId: userId,
+					lastName: lastName,
+					firstName: firstName,
+					email: email,
+					address: address,
+					city: city,
+					state: state,
+					zip: zip,
+					phone: phone,
+					emergency: emergency,
+					emergencyPhone: emergencyPhone
+				};
+			} else {
+				var newMember = {
+					lastName: lastName,
+					firstName: firstName,
+					email: email
+				};
+			}
+		}
+		responseData.push(newMember);
+	}
+	res.status(200).json({
+		memberSystem: memberSystem,
+		memberList: responseData
 	});
 };
 
@@ -1506,6 +1827,498 @@ const formAnalysis = data => {
 	return [fieldPrefix, choices];
 };
 
+// POST '/api/clubs/uploadMemberList/:cid'
+const uploadMemberList = async (req, res, next) => {
+	console.log('2');
+	let clubIdParam = req.params.cid;
+	let clubId = req.userData;
+
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'You are not authorized to upload club member list.',
+			403
+		);
+		return next(error);
+	}
+
+	let club;
+	try {
+		// we don't want to return password field
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'uploadMemberList failed @ finding club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'uploadMemberList club process failed no club found.',
+			404
+		);
+		return next(error);
+	}
+
+	let clubEventSettings;
+	try {
+		clubEventSettings = await ClubEventSettings.findOne({
+			clubId: clubId
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'uploadMemberList failed finding club event settings. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!clubEventSettings) {
+		const error = new HttpError(
+			'uploadMemberList cannot find club event settings',
+			500
+		);
+		return next(error);
+	}
+	let memberSystem = clubEventSettings.memberSystem;
+
+	// check the uploaded file
+	// file: {
+	// 	fieldname: 'memberList',
+	// 	originalname: 'GGLC.csv',
+	// 	encoding: '7bit',
+	// 	mimetype: 'text/csv',
+	// 	size: 526,
+	// 	bucket: 'myseattime-dev',
+	// 	key: 'memberList/22d81090-6152-11eb-ae33-f76350259af4.csv',
+	// 	acl: 'public-read',
+	// 	contentType: 'application/octet-stream',
+	// 	metadata: { fieldName: 'memberList' },
+	// 	location: 'https://myseattime-dev.s3.us-west-1.amazonaws.com/memberList/22d81090-6152-11eb-ae33-f76350259af4.csv',
+	// 	etag: '"b44ea3289e85d612f5a835e1ae5741bf"'
+	//   },
+	if (req.file) {
+		let bucket = req.file.bucket;
+		let res = req.file.location.split('/');
+		// res[3]: memberList, res[4]: 22d81090-6152-11eb-ae33-f76350259af4.csv
+		let key = res[3] + '/' + res[4];
+		const params = {
+			Bucket: bucket,
+			Key: key
+		};
+
+		const S3 = new AWS.S3();
+		try {
+			// get csv file and create stream
+			const stream = S3.getObject(params).createReadStream();
+			// convert csv file (stream) to JSON format data
+			var jsonResult = await csvtojson().fromStream(stream);
+		} catch (err) {
+			console.log('uploadMemberList S3 object ');
+			const error = new HttpError(
+				'uploadMemberList cannot find club account',
+				500
+			);
+			return next(error);
+		}
+
+		try {
+			let versions;
+			let listObjectParams = {
+				Bucket: bucket,
+				Prefix: key
+			};
+			const previousVersion = await S3.listObjectVersions(
+				listObjectParams
+			)
+				.promise()
+				.then(result => {
+					versions = result.Versions;
+				});
+			let version = versions[0].VersionId;
+			const deleteParams = {
+				Bucket: bucket,
+				Delete: {
+					Objects: [
+						{
+							Key: key,
+							VersionId: version
+						}
+					],
+					Quiet: false
+				}
+			};
+
+			// delete file from S3 versioned bucket
+			S3.deleteObjects(deleteParams, (err, data) => {
+				if (err) {
+					console.log('');
+					const error = new HttpError(
+						'uploadMemberList cannot find club account',
+						500
+					);
+					return next(error);
+				}
+			});
+		} catch (err) {
+			console.log('uploadMemberList S3 delete object error = ', err);
+			const error = new HttpError(
+				'uploadMemberList cannot delete S3 object',
+				500
+			);
+			return next(error);
+		}
+	}
+
+	let memberList = [];
+	try {
+		const session = await mongoose.startSession();
+		session.startTransaction();
+
+		for (let i = 0; i < jsonResult.length; ++i) {
+			let newClubMember = new ClubMember({
+				clubId: clubId,
+				lastName: jsonResult[i].LastName,
+				firstName: jsonResult[i].FirstName,
+				memberNumber: jsonResult[i].MemberNumber,
+				memberExp: jsonResult[i].Expires,
+				email: jsonResult[i].Email
+			});
+			await newClubMember.save({ session: session });
+			let member = {
+				lastName: jsonResult[i].LastName,
+				firstName: jsonResult[i].FirstName,
+				memberNumber: jsonResult[i].MemberNumber,
+				memberExp: jsonResult[i].Expires,
+				email: jsonResult[i].Email
+			};
+			memberList.push(member);
+		}
+		await session.commitTransaction();
+	} catch (err) {
+		const error = new HttpError(
+			'Upload club member list failed to save, please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		memberSystem: memberSystem,
+		memberList: memberList
+	});
+};
+
+// POST /clubs/member/:cid
+const addMember = async (req, res, next) => {
+	// validate request
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		const error = new HttpError(
+			`addMember process failed, please check your data: ${result.array()}`,
+			422
+		);
+
+		return next(error);
+	}
+	console.log('3');
+	let clubIdParam = req.params.cid;
+	let clubId = req.userData;
+
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'You are not authorized to add club member.',
+			403
+		);
+		return next(error);
+	}
+
+	let club;
+	try {
+		// we don't want to return password field
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'addMember failed @ finding club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'addMember club process failed no club found.',
+			404
+		);
+		return next(error);
+	}
+
+	const {
+		lastName,
+		firstName,
+		email,
+		memberNumber,
+		memberExp
+	} = req.body;
+
+	let normLastName =
+		lastName.charAt(0).toUpperCase() +
+		lastName.slice(1).toLowerCase();
+
+	let normFirstName =
+		firstName.charAt(0).toUpperCase() +
+		firstName.slice(1).toLowerCase();
+
+	let newMember = new ClubMember({
+		clubId: clubId,
+		lastName: normLastName,
+		firstName: normFirstName,
+		email: email,
+		memberNumber: memberNumber,
+		memberExp: memberExp
+	});
+	console.log('newMember = ', newMember);
+	try {
+		await newMember.save();
+	} catch (err) {
+		console.log('add member failed @ saving newMember = ', err);
+		const error = new HttpError(
+			'addMember club process failed @ saving member.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		member: newMember
+	});
+};
+
+// PATCH /clubs/member/:cid
+const updateMember = async (req, res, next) => {
+	// validate request
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		const error = new HttpError(
+			`updateMember process failed, please check your data: ${result.array()}`,
+			422
+		);
+
+		return next(error);
+	}
+
+	let clubIdParam = req.params.cid;
+	let clubId = req.userData;
+
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'You are not authorized to update club member.',
+			403
+		);
+		return next(error);
+	}
+
+	let club;
+	try {
+		// we don't want to return password field
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'updateMember failed @ finding club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'updateMember club process failed no club found.',
+			404
+		);
+		return next(error);
+	}
+
+	const {
+		userId,
+		lastNameNew,
+		firstNameNew,
+		emailNew,
+		memberNumberNew,
+		memberExpNew,
+		lastNameOld,
+		firstNameOld,
+		emailOld,
+		memberNumberOld,
+		memberExpOld
+	} = req.body;
+
+	let normLastName =
+		lastNameNew.charAt(0).toUpperCase() +
+		lastNameNew.slice(1).toLowerCase();
+
+	let normFirstName =
+		firstNameNew.charAt(0).toUpperCase() +
+		firstNameNew.slice(1).toLowerCase();
+
+	var member = null;
+	try {
+		member = await ClubMember.findOne({
+			userId: userId,
+			clubId: clubId,
+			lastName: lastNameOld,
+			firstName: firstNameOld,
+			email: emailOld,
+			memberNumber: memberNumberOld,
+			memberExp: memberExpOld
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'updateMember failed @ finding member using userId. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// if still member not found
+	if (!member) {
+		const error = new HttpError(
+			'updateMember failed @ finding member. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (member) {
+		member.lastName = normLastName;
+		member.fisrtName = normFirstName;
+		member.email = emailNew;
+		member.memberNumber = memberNumberNew;
+		member.memberExp = memberExpNew;
+	}
+
+	try {
+		await member.save();
+	} catch (err) {
+		console.log('update member failed @ saving member = ', err);
+		const error = new HttpError(
+			'updateMember club process failed @ saving member.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		member: member
+	});
+};
+
+// DELETE /clubs/member/:cid
+const deleteMember = async (req, res, next) => {
+	// validate request
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		const error = new HttpError(
+			`deleteMember process failed, please check your data: ${result.array()}`,
+			422
+		);
+
+		return next(error);
+	}
+
+	let clubIdParam = req.params.cid;
+	let clubId = req.userData;
+
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'You are not authorized to delete club member.',
+			403
+		);
+		return next(error);
+	}
+
+	let club;
+	try {
+		// we don't want to return password field
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'deleteMember failed @ finding club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'deleteMember club process failed no club found.',
+			404
+		);
+		return next(error);
+	}
+
+	const {
+		userId,
+		lastName,
+		firstName,
+		email,
+		memberNumber,
+		memberExp
+	} = req.body;
+
+	var member = null;
+	try {
+		member = await ClubMember.findOne({
+			userId: userId,
+			clubId: clubId,
+			lastName: lastName,
+			firstName: firstName,
+			email: email,
+			memberNumber: memberNumber,
+			memberExp: memberExp
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'deleteMember failed @ finding member using userId. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// if still member not found
+	if (!member) {
+		const error = new HttpError(
+			'deleteMember failed @ finding member. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	try {
+		await member.delete();
+	} catch (err) {
+		console.log('delet club member failed @ deleting member = ', err);
+		const error = new HttpError(
+			'delete club member process failed @ deleting member.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({});
+};
+
 exports.getAllClubs = getAllClubs;
 exports.getClubById = getClubById;
 exports.getClubProfileForUsers = getClubProfileForUsers;
@@ -1517,11 +2330,18 @@ exports.updateClubCredential = updateClubCredential;
 exports.updateClubProfile = updateClubProfile;
 exports.getClubProfile = getClubProfile;
 exports.updateClubAccount = updateClubAccount;
+exports.updateClubEventSettings = updateClubEventSettings;
 exports.getClubAccount = getClubAccount;
+exports.getClubEventSettings = getClubEventSettings;
 exports.getClubCredential = getClubCredential;
 exports.getClubStripeAccount = getClubStripeAccount;
+exports.getClubMemberList = getClubMemberList;
 exports.deleteClub = deleteClub;
 exports.logoutClub = logoutClub;
 exports.getEventForm = getEventForm;
 exports.createEventForm = createEventForm;
 exports.publishEvent = publishEvent;
+exports.uploadMemberList = uploadMemberList;
+exports.addMember = addMember;
+exports.updateMember = updateMember;
+exports.deleteMember = deleteMember;

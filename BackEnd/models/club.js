@@ -33,11 +33,21 @@ const clubSchema = new Schema({
 		ref: 'ClubAccount',
 		default: '000000000000'
 	},
+	eventSettingsId: {
+		type: mongoose.Types.ObjectId,
+		required: true,
+		ref: 'ClubEventSettings',
+		default: '000000000000'
+	},
 	profileId: {
 		type: mongoose.Types.ObjectId,
 		required: true,
 		ref: 'ClubProfile',
 		default: '000000000000'
+	},
+	numberTableId: {
+		type: mongoose.Types.ObjectId,
+		ref: 'NumberTable'
 	},
 	verified: { type: Boolean, required: true, default: false }
 });

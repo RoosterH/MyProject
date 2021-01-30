@@ -87,11 +87,19 @@ router.patch(
 	clubsController.updateClubAccount
 );
 
+router.patch(
+	'/eventSettings',
+	[
+		check('memberSystem').not().isEmpty(),
+		check('hostPrivateEvent').not().isEmpty()
+	],
+	clubsController.updateClubEventSettings
+);
+
 // update club info
 router.patch(
 	'/credential',
 	[
-		//check('email').normalizeEmail().isEmail(),
 		check('oldPassword').isLength({ min: 6 }),
 		check('newPassword').isLength({ min: 6 }),
 		check('passwordValidation').isLength({ min: 6 })
@@ -117,8 +125,54 @@ router.get('/credential/:cid', clubsController.getClubCredential);
 router.get('/account/:cid', clubsController.getClubAccount);
 
 router.get(
+	'/eventSettings/:cid',
+	clubsController.getClubEventSettings
+);
+
+router.get(
 	'/stripeAccount/:cid',
 	clubsController.getClubStripeAccount
+);
+
+router.get('/memberList/:cid', clubsController.getClubMemberList);
+
+router.post(
+	'/uploadMemberList/:cid',
+	fileUpload.single('memberList'),
+	clubsController.uploadMemberList
+);
+
+router.post(
+	'/member/:cid',
+	[
+		check('lastName').not().isEmpty(),
+		check('firstName').not().isEmpty(),
+		check('email').normalizeEmail().isEmail()
+	],
+	clubsController.addMember
+);
+
+router.patch(
+	'/member/:cid',
+	[
+		check('lastNameNew').not().isEmpty(),
+		check('firstNameNew').not().isEmpty(),
+		check('emailNew').normalizeEmail().isEmail(),
+		check('lastNameOld').not().isEmpty(),
+		check('firstNameOld').not().isEmpty(),
+		check('emailOld').normalizeEmail().isEmail()
+	],
+	clubsController.updateMember
+);
+
+router.delete(
+	'/member/:cid',
+	[
+		check('lastName').not().isEmpty(),
+		check('firstName').not().isEmpty(),
+		check('email').normalizeEmail().isEmail()
+	],
+	clubsController.deleteMember
 );
 
 module.exports = router;

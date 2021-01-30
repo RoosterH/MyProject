@@ -371,7 +371,10 @@ const ClubAuth = () => {
 					footerClass="event-item__modal-actions"
 					footer={
 						<React.Fragment>
-							<Button inverse onClick={closeSignupModalHandler}>
+							<Button
+								size="small"
+								inverse
+								onClick={closeSignupModalHandler}>
 								OK
 							</Button>
 						</React.Fragment>

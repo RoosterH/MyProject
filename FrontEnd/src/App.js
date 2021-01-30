@@ -116,6 +116,9 @@ const ClubCredential = React.lazy(() =>
 const ClubAccount = React.lazy(() =>
 	import('./clubDashboard/components/ClubAccount')
 );
+const ClubEventSettings = React.lazy(() =>
+	import('./clubDashboard/components/ClubEventSettings')
+);
 const ClubStripe = React.lazy(() =>
 	import('./clubDashboard/components/ClubStripe')
 );
@@ -136,6 +139,9 @@ const ClubVerification = React.lazy(() =>
 );
 const ClubVerificationRequest = React.lazy(() =>
 	import('./clubs/pages/ClubVerificationRequest')
+);
+const ClubMemberList = React.lazy(() =>
+	import('./clubDashboard/components/ClubMemberList')
 );
 // user section
 // const Users = React.lazy(() => import('./users/pages/Users'));
@@ -228,11 +234,17 @@ const App = () => {
 				<Route path="/clubs/account/:clubId" exact>
 					<ClubAccount />
 				</Route>
+				<Route path="/clubs/eventSettings/:clubId" exact>
+					<ClubEventSettings />
+				</Route>
 				<Route path="/clubs/stripe/:clubId" exact>
 					<ClubStripe />
 				</Route>
 				<Route path="/clubs/stripeconnect/:clubId" exact>
 					<ClubStripeConnect />
+				</Route>
+				<Route path="/clubs/memberList/:clubId" exact>
+					<ClubMemberList />
 				</Route>
 				<Route path="/clubs/eventManager/" exact>
 					<EventManager />
@@ -473,6 +485,9 @@ const App = () => {
 				<Route path="/clubs/account/:clubId" exact>
 					<ClubAccount />
 				</Route>
+				<Route path="/clubs/eventSettings/:clubId" exact>
+					<ClubEventSettings />
+				</Route>
 				<Route path="/clubs/stripe/:clubId" exact>
 					<ClubStripe />
 				</Route>
@@ -484,6 +499,9 @@ const App = () => {
 				</Route>
 				<Route path="/clubs/photos/:clubId" exact>
 					<ClubPhotos />
+				</Route>
+				<Route path="/clubs/memberList/:clubId" exact>
+					<ClubMemberList />
 				</Route>
 				<Route
 					path="/users/clubEvents/:clubId"

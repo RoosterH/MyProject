@@ -106,7 +106,7 @@ const UpdateEventRegistration = props => {
 	const [privateEvent, setPrivateEvent] = useState(false);
 
 	useEffect(() => {
-		const getClubAccount = async () => {
+		const getClubEventSettings = async () => {
 			try {
 				const [
 					responseData,
@@ -114,7 +114,7 @@ const UpdateEventRegistration = props => {
 					responseMessage
 				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL +
-						`/clubs/account/${clubId}`,
+						`/clubs/eventSettings/${clubId}`,
 					'GET',
 					null,
 					{
@@ -123,13 +123,13 @@ const UpdateEventRegistration = props => {
 					}
 				);
 				setHostPrivateEvent(
-					responseData.clubAccount.hostPrivateEvent
+					responseData.clubEventSettings.hostPrivateEvent
 				);
 			} catch (err) {
 				console.log('err = ', err);
 			}
 		};
-		getClubAccount();
+		getClubEventSettings();
 	}, []);
 
 	// initialize local storage
@@ -606,10 +606,10 @@ const UpdateEventRegistration = props => {
 					footerClass="event-item__modal-actions"
 					footer={
 						<React.Fragment>
-							<Button inverse onClick={closeDELHandler}>
+							<Button size="small" inverse onClick={closeDELHandler}>
 								CANCEL
 							</Button>
-							<Button danger onClick={deleteHandler}>
+							<Button size="small" danger onClick={deleteHandler}>
 								DELETE
 							</Button>
 						</React.Fragment>

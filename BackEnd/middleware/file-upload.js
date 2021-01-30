@@ -7,7 +7,8 @@ const sharp = require('sharp');
 const MIME_TYPE_MAP = {
 	'image/png': 'png',
 	'image/jpg': 'jpg',
-	'image/jpeg': 'jpeg'
+	'image/jpeg': 'jpeg',
+	'text/csv': 'csv'
 };
 const s3 = new aws.S3();
 
@@ -85,6 +86,8 @@ const fileUpload = multer({
 				S3Folder = 'cars';
 			} else if (file.fieldname === 'clubProfileImage') {
 				S3Folder = 'clubProfiles';
+			} else if (file.fieldname === 'memberList') {
+				S3Folder = 'memberList';
 			}
 			cb(null, S3Folder + '/' + UUID + '.' + ext);
 		},
@@ -95,7 +98,8 @@ const fileUpload = multer({
 				/^image/i.test(file.mimetype) &&
 					file.fieldname !== 'courseMap' &&
 					file.fieldname !== 'clubImage' &&
-					file.fieldname !== 'clubProfileImage'
+					file.fieldname !== 'clubProfileImage' &&
+					file.fieldname !== 'memberList'
 			);
 		},
 		transforms: [

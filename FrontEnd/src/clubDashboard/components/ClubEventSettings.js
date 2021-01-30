@@ -15,7 +15,7 @@ import { ClubAuthContext } from '../../shared/context/auth-context';
 import '../../shared/css/EventForm.css';
 import './ClubManager.css';
 
-const ClubAccount = () => {
+const ClubEventSettings = () => {
 	const {
 		isLoading,
 		error,
@@ -42,13 +42,17 @@ const ClubAccount = () => {
 
 	const [OKLeavePage, setOKLeavePage] = useState(true);
 	let initialValues = {
-		onSitePayment: 'false',
-		stripePayment: 'true'
+		memberSystem: 'false',
+		hostPrivateEvent: 'false',
+		carNumber: 'true'
 	};
 
-	const [loadedClubAccount, setLoadedClubAccount] = useState();
+	const [
+		loadedClubEventSettings,
+		setLoadedClubEventSettings
+	] = useState();
 	useEffect(() => {
-		const fetchClubAccount = async () => {
+		const fetchClubEventSettings = async () => {
 			try {
 				const [
 					responseData,
@@ -56,7 +60,7 @@ const ClubAccount = () => {
 					responseMessage
 				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL +
-						`/clubs/account/${clubId}`,
+						`/clubs/eventSettings/${clubId}`,
 					'GET',
 					null,
 					{
@@ -64,13 +68,18 @@ const ClubAccount = () => {
 						Authorization: 'Bearer ' + clubAuthContext.clubToken
 					}
 				);
-				// Need to set the loadedClubAccount so we will set initialValues again.
+				// Need to set the loadedClubEventSettings so we will set initialValues again.
 				// Without it, form will keep the old initial values.
-				setLoadedClubAccount(responseData.clubAccount);
+				setLoadedClubEventSettings(responseData.clubEventSettings);
 			} catch (err) {}
 		};
-		fetchClubAccount();
-	}, [clubId, setLoadedClubAccount, sendRequest, clubAuthContext]);
+		fetchClubEventSettings();
+	}, [
+		clubId,
+		setLoadedClubEventSettings,
+		sendRequest,
+		clubAuthContext
+	]);
 
 	const [saveButtonEnabled, setSaveButtonEnabled] = useState(false);
 	const submitHandler = async values => {
@@ -80,13 +89,13 @@ const ClubAccount = () => {
 				responseStatus,
 				responseMessage
 			] = await sendRequest(
-				process.env.REACT_APP_BACKEND_URL + `/clubs/account`,
+				process.env.REACT_APP_BACKEND_URL + `/clubs/eventSettings`,
 				'PATCH',
 				JSON.stringify({
-					onSitePayment:
-						values.onSitePayment === 'true' ? true : false,
-					stripePayment:
-						values.stripePayment === 'true' ? true : false
+					memberSystem: values.memberSystem === 'true' ? true : false,
+					hostPrivateEvent:
+						values.hostPrivateEvent === 'true' ? true : false,
+					carNumber: values.carNumber === 'true' ? true : false
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -94,9 +103,9 @@ const ClubAccount = () => {
 					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
-			// Need to set the loadedClubAccount so we will set initialValues again.
+			// Need to set the loadedClubEventSettings so we will set initialValues again.
 			// Without it, form will keep the old initial values.
-			setLoadedClubAccount(responseData.clubAccount);
+			setLoadedClubEventSettings(responseData.clubEventSettings);
 			setOKLeavePage(true);
 			setSaveButtonEnabled(false);
 		} catch (err) {}
@@ -110,21 +119,22 @@ const ClubAccount = () => {
 		);
 	}
 
-	if (loadedClubAccount) {
+	if (loadedClubEventSettings) {
 		initialValues = {
-			onSitePayment: loadedClubAccount.onSitePayment
+			memberSystem: loadedClubEventSettings.memberSystem
 				? 'true'
 				: 'false',
-			stripePayment: loadedClubAccount.stripePayment
+			hostPrivateEvent: loadedClubEventSettings.hostPrivateEvent
 				? 'true'
-				: 'false'
+				: 'false',
+			carNumber: loadedClubEventSettings.carNumber ? 'true' : 'false'
 		};
 	}
 
 	const accountForm = () => (
 		<div className="event-form">
 			<div className="event-form-header">
-				<h4>Select Customer Payment Methods</h4>
+				<h4>Select Event Settings</h4>
 				<hr className="event-form__hr" />
 			</div>
 			<Formik
@@ -149,7 +159,7 @@ const ClubAccount = () => {
 				}) => (
 					<Form className="event-form-container">
 						<div id="my-radio-group" className="event-form__label">
-							On-Site Payment:{' '}
+							Club has memberships:{' '}
 						</div>
 						<div
 							role="group"
@@ -158,7 +168,7 @@ const ClubAccount = () => {
 							<label>
 								<Field
 									type="radio"
-									name="onSitePayment"
+									name="memberSystem"
 									value="true"
 									onBlur={event => {
 										handleBlur(event);
@@ -172,7 +182,7 @@ const ClubAccount = () => {
 							<label>
 								<Field
 									type="radio"
-									name="onSitePayment"
+									name="memberSystem"
 									value="false"
 									onBlur={event => {
 										handleBlur(event);
@@ -185,7 +195,7 @@ const ClubAccount = () => {
 						</div>
 						<br />
 						<div id="my-radio-group" className="event-form__label">
-							Stripe Payment: (Stripe Connect Account Required)
+							Enable Prive Event:{' '}
 						</div>
 						<div
 							role="group"
@@ -194,7 +204,7 @@ const ClubAccount = () => {
 							<label>
 								<Field
 									type="radio"
-									name="stripePayment"
+									name="hostPrivateEvent"
 									value="true"
 									onBlur={event => {
 										handleBlur(event);
@@ -208,7 +218,7 @@ const ClubAccount = () => {
 							<label>
 								<Field
 									type="radio"
-									name="stripePayment"
+									name="hostPrivateEvent"
 									value="false"
 									onBlur={event => {
 										handleBlur(event);
@@ -219,6 +229,59 @@ const ClubAccount = () => {
 								&nbsp;No
 							</label>
 						</div>
+						<br />
+						<div id="my-radio-group" className="event-form__label">
+							Car Number:
+						</div>
+						<div
+							role="group"
+							aria-labelledby="my-radio-group"
+							className="event-form__field_radio">
+							<label>
+								<Field
+									type="radio"
+									name="carNumber"
+									value="true"
+									onBlur={event => {
+										handleBlur(event);
+										setOKLeavePage(false);
+										setSaveButtonEnabled(true);
+									}}
+								/>
+								&nbsp;No Duplicated Numbers
+							</label>
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+							<label>
+								<Field
+									type="radio"
+									name="carNumber"
+									value="false"
+									onBlur={event => {
+										handleBlur(event);
+										setOKLeavePage(false);
+										setSaveButtonEnabled(true);
+									}}
+								/>
+								&nbsp;Sharing Numbers
+							</label>
+						</div>
+						<br />
+						{/* <div id="my-radio-group" className="event-form__label">
+							<label>
+								<Field
+									id="hostPrivateEvent"
+									name="hostPrivateEvent"
+									type="checkbox"
+									onBlur={event => {
+										handleBlur(event);
+										setOKLeavePage(false);
+										setSaveButtonEnabled(true);
+									}}
+								/>
+								&nbsp; Check the box if your club hosts private events
+								that will be only shared by event link.
+							</label>
+						</div> */}
 						<br />
 						<Button
 							type="submit"
@@ -287,4 +350,4 @@ const ClubAccount = () => {
 	);
 };
 
-export default ClubAccount;
+export default ClubEventSettings;

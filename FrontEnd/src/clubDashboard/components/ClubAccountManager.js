@@ -4,6 +4,7 @@ import Button from '../../shared/components/FormElements/Button';
 import ClubCredential from './ClubCredential';
 import ClubStripe from './ClubStripe';
 import ClubAccount from './ClubAccount';
+import ClubEventSettings from './ClubEventSettings';
 import RedirectExternalURL from '../../shared/hooks/redirectExternalURL';
 import '../../shared/css/EventForm.css';
 import '../../shared/css/EventItem.css';
@@ -30,6 +31,10 @@ const ClubAccountManager = () => {
 	const [accountClass, setAccountClass] = useState(
 		'editeventmanager-grey'
 	);
+	const [eventSettings, setEventSettings] = useState(false);
+	const [eventSettingsClass, setEventSettingsClass] = useState(
+		'editeventmanager-grey'
+	);
 
 	const [stripeConnectURL, setStripeConnectURL] = useState();
 
@@ -52,6 +57,8 @@ const ClubAccountManager = () => {
 		setStripeClass('editeventmanager-grey');
 		setAccount(false);
 		setAccountClass('editeventmanager-grey');
+		setEventSettings(false);
+		setEventSettingsClass('editeventmanager-grey');
 	};
 	const stripeClickHandler = () => {
 		setCredential(false);
@@ -60,6 +67,8 @@ const ClubAccountManager = () => {
 		setStripeClass('editeventmanager-orange');
 		setAccount(false);
 		setAccountClass('editeventmanager-grey');
+		setEventSettings(false);
+		setEventSettingsClass('editeventmanager-grey');
 	};
 
 	const accountClickHandler = () => {
@@ -69,10 +78,23 @@ const ClubAccountManager = () => {
 		setStripeClass('editeventmanager-grey');
 		setAccount(true);
 		setAccountClass('editeventmanager-orange');
+		setEventSettings(false);
+		setEventSettingsClass('editeventmanager-grey');
+	};
+
+	const eventSettingsClickHandler = () => {
+		setCredential(false);
+		setCredentialClass('editeventmanager-grey');
+		setStripe(false);
+		setStripeClass('editeventmanager-grey');
+		setAccount(false);
+		setAccountClass('editeventmanager-grey');
+		setEventSettings(true);
+		setEventSettingsClass('editeventmanager-orange');
 	};
 
 	// set defualt page, if none is false, we will use eventInfo as default
-	if (!credential && !stripe && !account) {
+	if (!credential && !stripe && !account && !eventSettings) {
 		credentialClickHandler();
 	}
 
@@ -105,6 +127,12 @@ const ClubAccountManager = () => {
 							onClick={accountClickHandler}>
 							Payment
 						</Button>
+						<Button
+							size={eventSettingsClass}
+							autoFocus
+							onClick={eventSettingsClickHandler}>
+							Event Settings
+						</Button>
 					</ul>
 					<div className="tab-content">
 						{credential && <ClubCredential />}
@@ -112,6 +140,7 @@ const ClubAccountManager = () => {
 							<ClubStripe getStripeConnectURL={getStripeConnectURL} />
 						)}
 						{account && <ClubAccount />}
+						{eventSettings && <ClubEventSettings />}
 					</div>
 				</div>
 			</div>
