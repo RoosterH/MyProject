@@ -981,7 +981,6 @@ const getEvents = async (req, res, next) => {
 			process.env.CLOUDFRONT_URL + event.courseMap,
 			{ strict: false }
 		);
-		console.log('event = ', event);
 	});
 
 	res.status(200).json({
