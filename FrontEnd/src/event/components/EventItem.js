@@ -429,211 +429,228 @@ const EventItem = props => {
 							</div>
 						</React.Fragment>
 					)}
-				{/* this section is for event image */}
-				{/* Regitration container */}
-				<div className="section-container">
-					{/* event image on the left */}
-					<div className="page-basic-container">
-						<div className="eventimage-container">
-							<img
-								src={
-									// process.env.REACT_APP_ASSET_URL +
-									// `/${props.event.image}`
-									props.event.image
-								}
-								alt={props.event.name}
-								className="eventimage-container-img"
-							/>
-						</div>
-					</div>
-					{/* registration container on the right */}
-					<div className="registration-container">
-						<div className="col-xs-12">
-							<div className="clearfix">
-								<RegistrationMSG />
-							</div>
-							<div className="section">
-								<strong>
-									{startDate} — {endDate}
-								</strong>
-								<br /> <br />
-							</div>
-							<div>
-								<h3>{props.event.venue}</h3>
-								<Image
-									title={props.event.venue}
-									alt={props.event.venue}
-									// src={require('../../shared/utils/png/GMapSmall.png')}
-									src={googleMapImg}
-									onClick={() => openMapHandler()}
-									onHoover
-								/>
-								<h4>{props.event.address}</h4>
-							</div>
-						</div>
-						<div className="col-xs-12">
-							{buttonName === 'REGISTER EVENT' && (
-								<Link
-									to={{
-										pathname: `/events/newEntryManager/${props.event.id}`,
-										state: {
-											eventName: props.event.name
-										}
-									}}>
-									<Button
-										disabled={!openRegistration || clubReadOnly}
-										size="small-orange">
-										{buttonName}
-									</Button>
-								</Link>
-							)}
-							{buttonName === 'MODIFY ENTRY' && (
-								<Link
-									to={{
-										pathname: `/events/editEntryManager/${props.event.id}`,
-										state: {
-											eventName: props.event.name
-											// regClosed: !openRegistration
-										}
-									}}>
-									<Button
-										disabled={!openRegistration}
-										size="small-orange">
-										{buttonName}
-									</Button>
-								</Link>
-							)}
-							<div className="waitlist-msg">
-								{userOnWaitlist && waitlistMSG}
-							</div>
-							<div className="waitlist-msg">
-								{!userAccountStatus && accountStatusMSG}
-							</div>
-						</div>
-					</div>
-					{userRegisteredEvent && (
-						// <div className="entryinfo-container">
-						<div className={containerClassName}>
-							<div className="col-xs-12">
-								{/* {userOnWaitlist && waitlistMSG} */}
-								<div>
-									<Link
-										to={{
-											pathname: `/events/entrylist/${eventId}`,
-											state: {
-												displayName: true,
-												eventName: props.event.name,
-												eventId: eventId
-											}
-										}}>
-										View Event Entry List
-									</Link>
-								</div>
-								<div>
-									<Link
-										to={{
-											pathname: `/events/entrylist/${eventId}`,
-											state: {
-												displayName: true,
-												eventName: props.event.name,
-												eventId: eventId
-											}
-										}}>
-										View Event Result
-									</Link>
-								</div>
-							</div>
-						</div>
-					)}
-				</div>
-				<div className="section-container">
-					<div className="page-basic-container">
-						<div className="about-description">
-							<div className="toggle-section description">
-								<div className="short-description">
-									<div className="sub-heading">
-										<a
-											href="#description"
-											data-toggle="collapse"
-											onClick={toggleDescriptionButton}>
-											Event Description {'   '}
-											<button
-												type="button"
-												className={showDescription}
-												onClick={toggleDescriptionButton}></button>
-										</a>
-									</div>
-									<div id="description" className="collapse show">
-										<div
-											dangerouslySetInnerHTML={{
-												__html: props.event.description
-											}}></div>
-										<br />
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					{props.event.courseMap && (
-						<div className="courseMap-container">
-							<div className="col-xs-12">
-								<div className="section">
-									<div className="coursemap-title">Course Map</div>
-								</div>
-								<div>
-									<Image
-										title={props.event.courseMap}
-										alt={props.event.courseMap}
+				<div class="main-container">
+					<div className="row">
+						{/* left side */}
+						<div className="eventitem-col">
+							{/* event image on the left */}
+							<div className="page-basic-container">
+								<div className="eventimage-container">
+									<img
 										src={
 											// process.env.REACT_APP_ASSET_URL +
-											// `/${props.event.courseMap}`
-											props.event.courseMap
+											// `/${props.event.image}`
+											props.event.image
 										}
-										onClick={() => openCourseHandler()}
-										onHoover
-										className="courseMap"
+										alt={props.event.name}
+										className="eventimage-container-img"
 									/>
 								</div>
 							</div>
-						</div>
-					)}
-				</div>
-
-				<div className="section-container">
-					<div className="page-basic-container">
-						<div className="about-description">
-							<div className="toggle-section description">
-								<div className="short-description">
-									<div className="sub-heading">
-										<a
-											href="#instruction"
-											data-toggle="collapse"
-											onClick={toggleInstructionButton}>
-											Instruction {'   '}
-											<button
-												type="button"
-												className={showInstruction}
-												onClick={toggleInstructionButton}></button>
-										</a>
+							<div className="page-basic-container">
+								<div className="about-description">
+									<div className="toggle-section description">
+										<div className="short-description">
+											<div className="sub-heading">
+												<a
+													href="#description"
+													data-toggle="collapse"
+													onClick={toggleDescriptionButton}>
+													Event Description {'   '}
+													<button
+														type="button"
+														className={showDescription}
+														onClick={
+															toggleDescriptionButton
+														}></button>
+												</a>
+											</div>
+											<div id="description" className="collapse show">
+												<div
+													dangerouslySetInnerHTML={{
+														__html: props.event.description
+													}}></div>
+												<br />
+											</div>
+										</div>
 									</div>
-									<div id="instruction" className="collapse show">
-										<div
-											dangerouslySetInnerHTML={{
-												__html: props.event.instruction
-											}}></div>
-										<br />
+								</div>
+							</div>
+							<div className="page-basic-container">
+								<div className="about-description">
+									<div className="toggle-section description">
+										<div className="short-description">
+											<div className="sub-heading">
+												<a
+													href="#instruction"
+													data-toggle="collapse"
+													onClick={toggleInstructionButton}>
+													Instruction {'   '}
+													<button
+														type="button"
+														className={showInstruction}
+														onClick={
+															toggleInstructionButton
+														}></button>
+												</a>
+											</div>
+											<div id="instruction" className="collapse show">
+												<div
+													dangerouslySetInnerHTML={{
+														__html: props.event.instruction
+													}}></div>
+												<br />
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
+						{/* right side */}
+						<div className="eventitem-col">
+							{/* registration container on the right */}
+							{/* <div className="row">
+								<div className="col"> */}
+							<div className="registration-container">
+								<div className="eventitem-col-container">
+									<div className="clearfix">
+										<RegistrationMSG />
+									</div>
+									<div className="section">
+										<strong>
+											{startDate} — {endDate}
+										</strong>
+										<br /> <br />
+									</div>
+									<div>
+										<h3>{props.event.venue}</h3>
+										<Image
+											title={props.event.venue}
+											alt={props.event.venue}
+											// src={require('../../shared/utils/png/GMapSmall.png')}
+											src={googleMapImg}
+											onClick={() => openMapHandler()}
+											onHoover
+										/>
+										<h4>{props.event.address}</h4>
+									</div>
+								</div>
+								<div className="eventitem-col-container">
+									{buttonName === 'REGISTER EVENT' && (
+										<Link
+											to={{
+												pathname: `/events/newEntryManager/${props.event.id}`,
+												state: {
+													eventName: props.event.name
+												}
+											}}>
+											<Button
+												disabled={!openRegistration || clubReadOnly}
+												size="small-orange">
+												{buttonName}
+											</Button>
+										</Link>
+									)}
+									{buttonName === 'MODIFY ENTRY' && (
+										<Link
+											to={{
+												pathname: `/events/editEntryManager/${props.event.id}`,
+												state: {
+													eventName: props.event.name
+													// regClosed: !openRegistration
+												}
+											}}>
+											<Button
+												disabled={!openRegistration}
+												size="small-orange">
+												{buttonName}
+											</Button>
+										</Link>
+									)}
+									<div className="waitlist-msg">
+										{userOnWaitlist && waitlistMSG}
+									</div>
+									<div className="waitlist-msg">
+										{!userAccountStatus && accountStatusMSG}
+									</div>
+								</div>
+								{/* </div>
+								</div> */}
+							</div>
+							{props.event.courseMap && (
+								// <div className="row">
+								// 	<div className="col">
+								<div className="courseMap-container">
+									<div className="eventitem-col-container">
+										<div className="section">
+											<div className="coursemap-title">
+												Course Map
+											</div>
+										</div>
+										<div>
+											<Image
+												title={props.event.courseMap}
+												alt={props.event.courseMap}
+												src={
+													// process.env.REACT_APP_ASSET_URL +
+													// `/${props.event.courseMap}`
+													props.event.courseMap
+												}
+												onClick={() => openCourseHandler()}
+												onHoover
+												className="courseMap"
+											/>
+										</div>
+									</div>
+								</div>
+								// 	</div>
+								// </div>
+							)}
+							{userRegisteredEvent && (
+								<div className={containerClassName}>
+									<div className="eventitem-col-container">
+										{/* {userOnWaitlist && waitlistMSG} */}
+										<div>
+											<Link
+												to={{
+													pathname: `/events/entrylist/${eventId}`,
+													state: {
+														displayName: true,
+														eventName: props.event.name,
+														eventId: eventId
+													}
+												}}>
+												View Event Entry List
+											</Link>
+										</div>
+										<div>
+											<Link
+												to={{
+													pathname: `/events/entrylist/${eventId}`,
+													state: {
+														displayName: true,
+														eventName: props.event.name,
+														eventId: eventId
+													}
+												}}>
+												View Event Result
+											</Link>
+										</div>
+									</div>
+								</div>
+							)}
+						</div>
 					</div>
 				</div>
-				<div className="section-container">
+
+				{/* this section is for event image */}
+				{/* Regitration container */}
+
+				{/* <div className="section-container">
 					<div className="page-basic-container">
 						<div className="page-footer"></div>
 					</div>
-				</div>
+				</div> */}
 			</div>
 		</React.Fragment>
 	);

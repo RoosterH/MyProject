@@ -21,6 +21,25 @@
 	max-width: 100%;
 }
 
+.main-container {
+	width: 100%;
+	padding-left: 0.5rem;
+}
+
+.registration-container {
+	/* display: inline-block; */
+	display: block;
+	border: 1px;
+	border-style: ridge;
+	/* width: 43%; */
+	width: 100%;
+	/* position: absolute; */
+	position: relative;
+	font-size: 12px;
+	/* padding: 2px; */
+	padding-right: 0.5rem;
+}
+
 .registration-container h3 {
 	font-size: 14px;
 	font-weight: 500;
@@ -204,9 +223,11 @@
 
 .page-basic-container {
 	display: inline-block;
-	padding-right: 18px;
+	padding-left: 0.5rem;
+	padding-right: 5px;
 	position: relative;
-	width: 57%;
+	/* width: 57%; */
+	width: 100%;
 }
 
 .eventimage-container {
@@ -216,7 +237,7 @@
 	display: block;
 	position: relative;
 	min-width: 8rem;
-	min-height: 16rem;
+	/* min-height: 16rem; */
 }
 
 .eventimage-container-img {
@@ -228,6 +249,7 @@
 	/* min-height: 16rem;
 	max-height: 16rem; */
 	background-color: white;
+	margin-left: 5px;
 }
 .clubimage-container {
 	background-color: white;
@@ -251,16 +273,6 @@
 	background-color: white;
 }
 
-.registration-container {
-	display: inline-block;
-	border: 1px;
-	border-style: ridge;
-	width: 43%;
-	position: absolute;
-	font-size: 14px;
-	padding: 0.5rem;
-}
-
 .entryinfo-container {
 	display: inline-block;
 	border: 1px;
@@ -276,11 +288,10 @@
 	display: inline-block;
 	border: 1px;
 	border-style: ridge;
-	width: 25%;
-	width: 40%;
-	position: absolute;
+	width: 90%;
+	position: relative;
 	/* top: 36rem; */
-	top: 40rem;
+	/* top: 40rem; */
 	/* font-size: 14px; */
 	font-size: 12px;
 	padding: 0.5rem;
@@ -312,22 +323,24 @@
 }
 
 .courseMap-container {
-	display: inline-block;
+	/* display: inline-block; */
+	display: block;
 	border: 0px;
 	border-style: ridge;
 	/* width: 43%; */
-	position: absolute;
+	/* position: absolute; */
+	position: relative;
 	/* top: 35rem; */
 	font-size: 14px;
 	/* padding: 0.5rem; */
-	margin-top: 4rem;
+	/* margin-top: 4rem; */
 }
 
 .coursemap-title {
 	font-size: 16px;
 	color: #007bff;
 	font-weight: 600;
-	margin-top: 2rem;
+	margin-top: 0rem;
 	margin-bottom: 0.5rem;
 }
 
@@ -337,11 +350,25 @@
 	margin-bottom: 5px;
 	text-transform: uppercase;
 }
-.col-xs-12 {
+/* .col-xs-12 {
 	width: 100%;
+} */
+
+.eventitem-col {
+	position: relative;
+	width: 50%;
+	padding-right: 5px;
+	padding-left: 0.5rem;
+}
+.eventitem-col-container {
+	position: relative;
+	width: 100%;
+	padding-right: 2px;
+	padding-left: 2px;
 }
 
 strong {
+	font-size: 12px;
 	font-weight: 500;
 }
 
@@ -404,9 +431,9 @@ toggle-section .sub-heading .toggle-btn {
 }
 
 .waitlist-msg {
-	font-size: 14px;
+	font-size: 12px;
 	font-weight: 500;
-	display: inline;
+	display: block;
 	margin-left: 0.5rem;
 	color: tomato;
 }
@@ -477,12 +504,14 @@ toggle-section .sub-heading .toggle-btn {
 	}
 
 	.courseMap-container {
-		display: inline-block;
+		/* display: inline-block; */
+		display: block;
 		border: 0px;
 		border-style: ridge;
 		width: 43%;
 		top: auto;
-		position: absolute;
+		/* position: absolute; */
+		position: relative;
 		font-size: 14px;
 		padding: 0.5rem;
 		margin-top: 0rem;
@@ -495,16 +524,16 @@ toggle-section .sub-heading .toggle-btn {
 		margin-top: 0rem;
 		margin-bottom: 0.5rem;
 	}
-	.col-xs-12 {
+	/* .col-xs-12 {
 		width: 100%;
-	}
+	} */
 	.entryinfo-container-coursemap-exists {
 		display: inline-block;
 		border: 1px;
 		border-style: ridge;
-		width: 25%;
-		position: absolute;
-		top: 36rem;
+		width: 50%;
+		position: relative;
+		/* top: 36rem; */
 		font-size: 14px;
 		padding: 0.5rem;
 	}
@@ -531,5 +560,45 @@ toggle-section .sub-heading .toggle-btn {
 		font-size: 12px;
 		font-weight: 400;
 		color: #82888a;
+	}
+
+	.eventitem-col {
+		position: relative;
+		width: 50%;
+		padding-right: 15px;
+		padding-left: 15px;
+	}
+
+	.waitlist-msg {
+		font-size: 14px;
+		font-weight: 500;
+		display: inline;
+		margin-left: 0.5rem;
+		color: tomato;
+	}
+
+	strong {
+		font-size: 14px;
+		font-weight: 500;
+	}
+
+	.registration-container {
+		/* display: inline-block; */
+		display: block;
+		border: 1px;
+		border-style: ridge;
+		/* width: 43%; */
+		width: 90%;
+		/* position: absolute; */
+		position: relative;
+		font-size: 14px;
+		padding: 0.5rem;
+	}
+	.page-basic-container {
+		display: inline-block;
+		padding-right: 18px;
+		position: relative;
+		/* width: 57%; */
+		width: 100%;
 	}
 }
