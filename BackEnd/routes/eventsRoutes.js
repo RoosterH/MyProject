@@ -20,6 +20,8 @@ router.get('/:eid', eventsController.getEventById);
 
 router.get('/club/:cid', eventsController.getEventsByClubId);
 
+router.get('/eventStatus/:eid', eventsController.getEventStatus);
+
 // request events between dates
 router.post(
 	'/date',

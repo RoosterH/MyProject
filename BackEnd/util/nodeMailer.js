@@ -1,6 +1,9 @@
-let nodemailer = require('nodemailer');
-let AWS = require('aws-sdk');
+const nodemailer = require('nodemailer');
+const AWS = require('aws-sdk');
+const moment = require('moment');
+
 const event = require('../models/event');
+const NOT_ATTENDING = 'Not Attending';
 
 const sendVerificationEmail = async (
 	isUser,
@@ -56,12 +59,12 @@ const sendVerificationEmail = async (
 				'\n\nIf you did not sign up, please discard this email.' +
 				'\nThank You!\n',
 			html:
-				'<p>Hi ' +
+				'<p style="color:black;">Hi ' +
 				recipientName +
 				' </p>' +
-				'<p>Thanks for signing up MYSeatTime.com.</p>' +
-				'<p>Please verify your email account by clicking the link to finish registration:</p>' +
-				'<p>' +
+				'<p style="color:black;">Thanks for signing up MYSeatTime.com.</p>' +
+				'<p style="color:black;">Please verify your email account by clicking the link to finish registration:</p>' +
+				'<p style="color:black;">' +
 				process.env.MYSEATTIME +
 				'/' +
 				path +
@@ -70,17 +73,17 @@ const sendVerificationEmail = async (
 				'/' +
 				token.token +
 				'</p>' +
-				'<p>This link expires in 24 hours.</p>' +
-				'<p>To request a new link, please click here:</p>' +
-				'<p>' +
+				'<p style="color:black;">This link expires in 24 hours.</p>' +
+				'<p style="color:black;">To request a new link, please click here:</p>' +
+				'<p style="color:black;">' +
 				process.env.MYSEATTIME +
 				'/' +
 				path +
 				'VerificationRequest/' +
 				recipientEmail +
 				'</p>' +
-				'<p>If you did not sign up, please discard this email.</p>' +
-				'<p>Thank you!</p>',
+				'<p style="color:black;">If you did not sign up, please discard this email.</p>' +
+				'<p style="color:black;">Thank you!</p>',
 			sender: 'admin@myseattime.com',
 			replyTo: 'no-reply@myseattime.com'
 		});
@@ -127,12 +130,12 @@ const sendAccountActivationEmail = async (
 				'Thanks for signing up with us.\n\n' +
 				'Enjoy Driving!',
 			html:
-				'<p>Hi ' +
+				'<p style="color:black;">Hi ' +
 				recipientName +
 				' </p>' +
-				'<p>Your MYSeatTime.com account is now successfully activated.</p>' +
-				'<p>Thanks for signing up with us.</p>' +
-				'<p>Enjoy Driving!</p>',
+				'<p style="color:black;">Your MYSeatTime.com account is now successfully activated.</p>' +
+				'<p style="color:black;">Thanks for signing up with us.</p>' +
+				'<p style="color:black;">Enjoy Driving!</p>',
 			sender: 'admin@myseattime.com',
 			replyTo: 'no-reply@myseattime.com'
 		});
@@ -148,6 +151,8 @@ const sendRegistrationConfirmationEmail = async (
 	clubEmail,
 	eventName,
 	eventId,
+	startDate,
+	runGroups,
 	fullMSG,
 	paymentMethod,
 	entryFee
@@ -169,11 +174,30 @@ const sendRegistrationConfirmationEmail = async (
 	});
 
 	let from = '"' + clubName + '" ' + '<' + clubEmail + '>';
+	let dateRunGroups = '';
+	for (let i = 0; i < runGroups.length; ++i) {
+		if (runGroups[i] !== NOT_ATTENDING) {
+			if (dateRunGroups === '') {
+				dateRunGroups +=
+					moment(startDate).add(i, 'd').format('L') +
+					': ' +
+					runGroups[i];
+			} else {
+				dateRunGroups +=
+					', ' +
+					moment(startDate).add(i, 'd').format('L') +
+					': ' +
+					runGroups[i];
+			}
+		}
+	}
 	let MSG =
 		fullMSG !== ''
-			? fullMSG
-			: 'Successfully registered for the event.';
+			? fullMSG +
+			  ' You are on the waitlist. Event club will notify you if there is a spot available.'
+			: 'You have successfully registered for the event.';
 	let eventLink = process.env.MYSEATTIME + '/events/' + eventId;
+	let method = paymentMethod === 'onSite' ? 'On Site' : 'Stripe';
 	// send email
 	let info;
 	try {
@@ -190,12 +214,15 @@ const sendRegistrationConfirmationEmail = async (
 				clubName +
 				' ' +
 				eventName +
-				' has successfully submitted.\n' +
+				' is successfully submitted.\n' +
+				`Date: ` +
+				dateRunGroups +
+				'\n' +
 				'Status: ' +
 				MSG +
 				'\n' +
 				'Payment Method: ' +
-				paymentMethod +
+				method +
 				'\n' +
 				'Entry Fee: $' +
 				entryFee +
@@ -203,31 +230,34 @@ const sendRegistrationConfirmationEmail = async (
 				'Event Link: ' +
 				eventLink +
 				'\n' +
-				'Thanks for registering the event.\n\n' +
+				'Thanks for registering the event.\n' +
 				'Enjoy Driving!',
 			html:
-				'<p>Hi ' +
+				'<p style="color:black;">Hi ' +
 				recipientName +
-				' </p>' +
-				'<p>You registration for ' +
+				', </p>' +
+				'<p style="color:black;">You registration for ' +
 				clubName +
 				' ' +
 				eventName +
-				' has successfully submitted.</p>' +
-				'<p>Status: ' +
+				' is successfully submitted.</p>' +
+				'<p style="color:black;">Date: ' +
+				dateRunGroups +
+				'</p>' +
+				'<p style="color:black;">Status: ' +
 				MSG +
 				'</p>' +
-				'<p>Payment Method: ' +
-				paymentMethod +
+				'<p style="color:black;">Payment Method: ' +
+				method +
 				'</p>' +
-				'<p>Entry Fee: $' +
+				'<p style="color:black;">Entry Fee: $' +
 				entryFee +
 				'</p>' +
-				'<p>Event Link: ' +
+				'<p style="color:black;">Event Link: ' +
 				eventLink +
 				'</p>' +
-				'<p>Thanks for registering the event.</p><br>' +
-				'<p>Enjoy Driving!</p>',
+				'<p style="color:black;">Thanks for registering the event.</p>' +
+				'<p style="color:black;">Enjoy Driving!</p>',
 			sender: clubEmail,
 			replyTo: clubEmail
 		});

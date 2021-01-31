@@ -609,19 +609,22 @@ const createEntry = async (req, res, next) => {
 		}
 	}
 
+	let startDate = event.startDate;
 	let fullMessage = '';
 	for (let i = 0; i < days; ++i) {
 		if (eventFull[i]) {
 			if (days > 1) {
-				fullMessage += 'Day ' + (i + 1) + ' event is Full. ';
+				// moment format('L') means format to local time "MM/DD/YYYY"
+				fullMessage +=
+					moment(startDate).add(i, 'd').format('L') +
+					' event is Full. ';
 			} else {
 				fullMessage = 'Event is full. You will not be charged.';
 			}
 		} else if (groupFull[i]) {
 			if (days > 1) {
 				fullMessage +=
-					'Day ' +
-					(i + 1) +
+					moment(startDate).add(i, 'd').format('L') +
 					' group ' +
 					runGroupAnsTexts[i] +
 					' is Full.  ';
@@ -635,6 +638,27 @@ const createEntry = async (req, res, next) => {
 		}
 	}
 
+	try {
+		sendRegistrationConfirmationEmail(
+			user.firstName,
+			user.email,
+			club.name,
+			club.email,
+			event.name,
+			event.id,
+			event.startDate,
+			runGroupAnsTexts,
+			fullMessage,
+			paymentMethod,
+			totalPrice
+		);
+	} catch (err) {
+		console.log(
+			'sendRegistrationConfirmationEmail 200 error = ',
+			err
+		);
+	}
+
 	if (fullMessage !== '') {
 		res.status(202).json({
 			entry: entry.toObject({ getters: true }),
@@ -644,26 +668,6 @@ const createEntry = async (req, res, next) => {
 				'You are on the waitlist. Event club will notify you if there is a spot available.'
 		});
 	} else {
-		// send registration confirmation email
-		try {
-			sendRegistrationConfirmationEmail(
-				user.firstName,
-				user.email,
-				club.name,
-				club.email,
-				event.name,
-				event.id,
-				'',
-				paymentMethod,
-				totalPrice
-			);
-		} catch (err) {
-			console.log(
-				'sendRegistrationConfirmationEmail 200 error = ',
-				err
-			);
-		}
-
 		res.status(200).json({
 			entry: entry.toObject({ getters: true }),
 			totalPrice: totalPrice,
@@ -842,6 +846,23 @@ const updateFormAnswer = async (req, res, next) => {
 	const entryId = req.params.entryId;
 	const userId = req.userData;
 
+	try {
+		var user = await User.findById(userId);
+	} catch (err) {
+		const error = new HttpError(
+			'updateFormAnswer process failed during user validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!user) {
+		const error = new HttpError(
+			'updateFormAnswer faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
 	let entry;
 	try {
 		entry = await Entry.findOne({
@@ -864,11 +885,35 @@ const updateFormAnswer = async (req, res, next) => {
 		return next(error);
 	}
 
-	let event;
-	event = await Event.findById(entry.eventId);
+	try {
+		var event = await Event.findById(entry.eventId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update form answer process failed. Could not get event. Please try again later',
+			500
+		);
+		return next(error);
+	}
 	if (!event) {
 		const error = new HttpError(
-			'Entry submission process internal failure',
+			'Entry submission process internal failure @ finding event.',
+			404
+		);
+		return next(error);
+	}
+
+	try {
+		var club = await Club.findById(event.clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'Update form answer process internal failure finding club',
+			500
+		);
+		return next(error);
+	}
+	if (!club) {
+		const error = new HttpError(
+			'Update form answer process internal failure club not found',
 			404
 		);
 		return next(error);
@@ -1035,6 +1080,7 @@ const updateFormAnswer = async (req, res, next) => {
 	let attendingDays = 0;
 	let groupFullMsg = '';
 	let runGroupChanged = [];
+	let startDate = event.startDate;
 	for (let i = 0; i < days; ++i) {
 		let oldIndex = runGroupsIndex[i];
 		let newIndex = runGroupAnsChoices[i];
@@ -1043,8 +1089,18 @@ const updateFormAnswer = async (req, res, next) => {
 			oldIndex == newIndex &&
 			runGroupAnsTexts[i] !== NOT_ATTENDING
 		) {
+			// check if previous entry is on the waitlist
+			// we only increase attendingDays if it's not on waitlist
+			if (entry.waitlist[i]) {
+				groupFullMsg =
+					moment(startDate).add(i, 'd').format('L') +
+					' ' +
+					runGroupAnsTexts[i] +
+					' is full.';
+			} else if (!entry.waitlist[i]) {
+				++attendingDays;
+			}
 			runGroupChanged.push(false);
-			++attendingDays;
 			continue;
 		}
 
@@ -1053,7 +1109,9 @@ const updateFormAnswer = async (req, res, next) => {
 		if (!event.capDistribution && eventFull[i]) {
 			// event full. in case users running into race condition that event just filled up after loading page
 			if (days > 1) {
-				groupFullMsg = `Day ${i} is full. No change was made.`;
+				groupFullMsg =
+					moment(startDate).add(i, 'd').format('L') +
+					' is full. No change was made.';
 			} else {
 				groupFullMsg = `Event is full. No change was made.`;
 			}
@@ -1142,26 +1200,35 @@ const updateFormAnswer = async (req, res, next) => {
 				// mark runGroup
 				runGroupChanged.push(true);
 
-				groupFullMsg += ` Day ${i + 1} ${
-					event.runGroupOptions[i][runGroupAnsChoices[i]]
-				} run group is full. You are on the waitlist`;
+				groupFullMsg +=
+					moment(startDate).add(i, 'd').format('L') +
+					' ' +
+					runGroupAnsTexts[i] +
+					' is full. You are on the waitlist.';
 			} else {
 				// if previous entry was not NOT_ATTENDING but now the new group is full.
 				// There are 2 status for previous entry, either on the waitlist or not.
 				// Either one, we don't want to re-enter the event, instead giving an error message.
 				// Because drop an entry to waitlist is very bad.
 				if (days > 1) {
-					groupFullMsg += ` Day ${i + 1} ${
-						event.runGroupOptions[i][runGroupAnsChoices[i]]
-					} run group is full. You are still registed in ${
-						entry.runGroup[i]
-					} run group.`;
+					groupFullMsg +=
+						moment(startDate).add(i, 'd').format('L') +
+						' ' +
+						runGroupAnsTexts[i] +
+						' is full. You are still registed in ' +
+						entry.runGroup[i] +
+						'.';
 				} else {
 					groupFullMsg = `${
 						event.runGroupOptions[i][runGroupAnsChoices[i]]
 					} run group is full. You are still registed in ${
 						entry.runGroup[i]
 					} run group.`;
+
+					groupFullMsg =
+						runGroupAnsTexts[i] +
+						' is full. You are still registed in ' +
+						entry.runGroup[i];
 				}
 				runGroupChanged.push(false);
 				// need to check whether the previous entry was on waitlist or not to get correct attenday days
@@ -1326,12 +1393,52 @@ const updateFormAnswer = async (req, res, next) => {
 					'.'
 			});
 		} else {
+			try {
+				sendRegistrationConfirmationEmail(
+					user.firstName,
+					user.email,
+					club.name,
+					club.email,
+					event.name,
+					event.id,
+					startDate,
+					runGroupAnsTexts,
+					groupFullMsg,
+					payment.paymentMethod,
+					totalPrice
+				);
+			} catch (err) {
+				console.log(
+					'sendRegistrationConfirmationEmail 200 error = ',
+					err
+				);
+			}
 			res.status(202).json({
 				entry: entry.toObject({ getters: true }),
-				message: groupFullMsg + 'Entry Fee is $' + totalPrice + '.'
+				message: groupFullMsg + ' Entry Fee is $' + totalPrice + '.'
 			});
 		}
 	} else {
+		try {
+			sendRegistrationConfirmationEmail(
+				user.firstName,
+				user.email,
+				club.name,
+				club.email,
+				event.name,
+				event.id,
+				startDate,
+				runGroupAnsTexts,
+				groupFullMsg,
+				payment.paymentMethod,
+				totalPrice
+			);
+		} catch (err) {
+			console.log(
+				'sendRegistrationConfirmationEmail 200 error = ',
+				err
+			);
+		}
 		res.status(200).json({
 			entry: entry.toObject({ getters: true }),
 			message: 'Entry Fee is $' + totalPrice + '.'

@@ -263,6 +263,107 @@ const getEventsByClubId = async (req, res, next) => {
 	});
 };
 
+// GET /api/eventStatus/:eid
+const getEventStatus = async (req, res, next) => {
+	// req.params is getting the eid from url, such as /api/events/:id
+	const eventId = req.params.eid;
+
+	let event;
+	try {
+		event = await Event.findById(eventId);
+	} catch (err) {
+		// this error is displayed if the request to the DB had some issues
+		console.log('err = ', err);
+		const error = new HttpError(
+			'getEventStatus Get event by ID process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'getEventStatus Could not find the event with the provided id',
+			404
+		);
+		return next(error);
+	}
+
+	// get event entry report
+	let entryReportId = event.entryReportId;
+	try {
+		var entryReport = await EntryReport.findById(entryReportId);
+	} catch (err) {
+		// this error is displayed if the request to the DB had some issues
+		console.log('getEventStatus entryReport err = ', err);
+		const error = new HttpError(
+			'getEventStatus Get entryReport process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// this error is for DB not be able to find the event with provided ID
+	if (!entryReport) {
+		const error = new HttpError(
+			'getEventStatus Could not find the entryReport.',
+			404
+		);
+		return next(error);
+	}
+
+	let startDate = event.startDate;
+	let totalCap = event.totalCap;
+	let runGroupOptions = event.runGroupOptions;
+	let capDistribution = event.capDistribution;
+	let full = entryReport.full;
+	let runGroupNumEntries = entryReport.runGroupNumEntries;
+
+	// each day has a status msg
+	let eventStatus = [];
+	// compose status message
+	for (let i = 0; i < runGroupOptions.length; ++i) {
+		let dayStatusMSG = '';
+		if (full[i]) {
+			dayStatusMSG =
+				moment(startDate).add(i, 'd').format('L') + ' is full.';
+			eventStatus.push(dayStatusMSG);
+			continue;
+		}
+		// check each group if there is a group cap
+		if (capDistribution) {
+			let groupNum = runGroupOptions[i].length;
+			let groupCap = totalCap / groupNum;
+			for (let j = 0; j < groupNum; ++j) {
+				let groupStatusMSG = '';
+				if (runGroupNumEntries[i][j] >= groupCap) {
+					groupStatusMSG = runGroupOptions[i][j] + ' is full.';
+				}
+				if (groupStatusMSG !== '') {
+					if (dayStatusMSG === '') {
+						dayStatusMSG +=
+							moment(startDate).add(i, 'd').format('L') +
+							': ' +
+							runGroupOptions[i][j] +
+							' is full.';
+					} else {
+						dayStatusMSG += ' ' + runGroupOptions[i][j] + ' is full.';
+					}
+				}
+			}
+			if (dayStatusMSG !== '') {
+				eventStatus.push(dayStatusMSG);
+			}
+		}
+	}
+
+	// convert Mongoose object to a normal js object and get rid of _ of _id using getters: true
+	res.status(200).json({
+		eventStatus: eventStatus
+	});
+};
+
 const getEventsByOwnerClubId = async (req, res, next) => {
 	const cId = req.params.cid;
 
@@ -2361,6 +2462,7 @@ const getEntryReportForUsers = async (req, res, next) => {
 exports.getAllEvents = getAllEvents;
 exports.getEventById = getEventById;
 exports.getEventsByClubId = getEventsByClubId;
+exports.getEventStatus = getEventStatus;
 exports.getEventsByDate = getEventsByDate;
 exports.createEvent = createEvent;
 exports.updateEvent = updateEvent;

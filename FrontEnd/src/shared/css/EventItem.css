@@ -410,6 +410,12 @@ toggle-section .sub-heading .toggle-btn {
 	margin-left: 0.5rem;
 	color: tomato;
 }
+
+.eventStatus-msg {
+	font-size: 12px;
+	font-weight: 500;
+}
+
 @media (min-width: 780px) {
 	.event-pages {
 		/* margin-top: -20px; */

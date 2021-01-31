@@ -11,6 +11,7 @@ import Image from '../../shared/components/UIElements/Image';
 import Map from '../../shared/components/UIElements/Map';
 import Modal from '../../shared/components/UIElements/Modal';
 import ClubEvents from '../../clubs/pages/ClubEvents';
+import { useHttpClient } from '../../shared/hooks/http-hook';
 
 import { UserAuthContext } from '../../shared/context/auth-context';
 import '../../shared/css/EventItem.css';
@@ -18,6 +19,8 @@ import '../../shared/css/EventItem.css';
 import googleMapImg from '../../shared/utils/png/GMapSmall.png';
 
 const EventItem = props => {
+	let eventId = useParams().id;
+
 	// coming from Club Event Manager => View Evetns, we want to disable Register Event Button
 	const clubReadOnly = props.clubReadOnly;
 	// useContext is listening to "ClubAuthContext"
@@ -26,6 +29,52 @@ const EventItem = props => {
 	const [registrationClosed, setRegistrationClosed] = useState(
 		props.event.closed
 	);
+
+	const {
+		isLoading,
+		error,
+		sendRequest,
+		clearError
+	} = useHttpClient();
+
+	// get current event registration status
+	const [eventStatus, setEventStatus] = useState([]);
+	useEffect(() => {
+		console.log('getEventStatus');
+		const getEventStatus = async () => {
+			try {
+				var [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
+					process.env.REACT_APP_BACKEND_URL +
+						`/events/eventStatus/${eventId}`,
+					'GET',
+					null,
+					{
+						'Content-Type': 'application/json'
+					}
+				);
+			} catch (err) {}
+			console.log('responseData = ', responseData);
+			setEventStatus(responseData.eventStatus);
+		};
+		getEventStatus();
+	}, []);
+
+	const EventStatusMSG = () => {
+		let MSG = '';
+		for (let i = 0; i < eventStatus.length; ++i) {
+			MSG += eventStatus[i];
+		}
+		// registration closed in less than 3 days
+		return (
+			<p className="alert alert-danger" role="alert">
+				{MSG}
+			</p>
+		);
+	};
 
 	// modal section
 	const [showModal, setShowModal] = useState(false);
@@ -227,7 +276,6 @@ const EventItem = props => {
 	// We will save the entry to localStorage "UserData.userEntries" array.
 	// Here we match the current event with the array to determine using 'REGISTER EVENT' or 'MODIFY ENTRY'
 	const [buttonName, setButtonName] = useState('REGISTER EVENT');
-	let eventId = useParams().id;
 	useEffect(() => {
 		if (userAuthContext.userId) {
 			let storageData = JSON.parse(localStorage.getItem('userData'));
@@ -367,6 +415,20 @@ const EventItem = props => {
 						</div>
 					</div>
 				</section>
+				{moment().isSameOrBefore(regEndDate) &&
+					eventStatus.length > 0 && (
+						<React.Fragment>
+							<div className="row">
+								<div className="col-sm-12">
+									<div className="clearfix">
+										<div className="eventStatus-msg">
+											<EventStatusMSG />
+										</div>
+									</div>
+								</div>
+							</div>
+						</React.Fragment>
+					)}
 				{/* this section is for event image */}
 				{/* Regitration container */}
 				<div className="section-container">
@@ -484,7 +546,6 @@ const EventItem = props => {
 						</div>
 					)}
 				</div>
-
 				<div className="section-container">
 					<div className="page-basic-container">
 						<div className="about-description">
