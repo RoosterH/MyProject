@@ -113,8 +113,11 @@ const ClubAccountManager = React.lazy(() =>
 const ClubCredential = React.lazy(() =>
 	import('./clubDashboard/components/ClubCredential')
 );
-const ClubAccount = React.lazy(() =>
-	import('./clubDashboard/components/ClubAccount')
+const ClubSES = React.lazy(() =>
+	import('./clubDashboard/components/ClubSES')
+);
+const ClubPayment = React.lazy(() =>
+	import('./clubDashboard/components/ClubPayment')
 );
 const ClubEventSettings = React.lazy(() =>
 	import('./clubDashboard/components/ClubEventSettings')
@@ -231,8 +234,11 @@ const App = () => {
 				<Route path="/clubs/credential/:clubId" exact>
 					<ClubCredential />
 				</Route>
-				<Route path="/clubs/account/:clubId" exact>
-					<ClubAccount />
+				<Route path="/clubs/ses/:clubId" exact>
+					<ClubSES />
+				</Route>
+				<Route path="/clubs/payment/:clubId" exact>
+					<ClubPayment />
 				</Route>
 				<Route path="/clubs/eventSettings/:clubId" exact>
 					<ClubEventSettings />
@@ -482,8 +488,11 @@ const App = () => {
 				<Route path="/clubs/credential/:clubId" exact>
 					<ClubCredential />
 				</Route>
-				<Route path="/clubs/account/:clubId" exact>
-					<ClubAccount />
+				<Route path="/clubs/ses/:clubId" exact>
+					<ClubSES />
+				</Route>
+				<Route path="/clubs/payment/:clubId" exact>
+					<ClubPayment />
 				</Route>
 				<Route path="/clubs/eventSettings/:clubId" exact>
 					<ClubEventSettings />

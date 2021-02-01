@@ -124,6 +124,10 @@ router.get('/credential/:cid', clubsController.getClubCredential);
 
 router.get('/account/:cid', clubsController.getClubAccount);
 
+router.get('/sesEmail/:cid', clubsController.getClubSesEmail);
+
+router.patch('/sesEmail/:cid', clubsController.updateClubSesEmail);
+
 router.get(
 	'/eventSettings/:cid',
 	clubsController.getClubEventSettings

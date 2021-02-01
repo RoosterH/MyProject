@@ -12,6 +12,11 @@ const clubSchema = new Schema({
 		unique: true,
 		set: v => v.toLowerCase()
 	},
+	sesEmail: {
+		type: String,
+		required: true,
+		set: v => v.toLowerCase()
+	},
 	password: { type: String, required: true, minlength: 6 },
 	// there is no resized image for club, originalImage is uploaded from clubs
 	originalImage: { type: String, require: true },

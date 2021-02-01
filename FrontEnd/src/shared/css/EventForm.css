@@ -26,6 +26,28 @@
 	margin-block-end: 0.2rem;
 }
 
+.h4red {
+	/* font-size: 25px; */
+	display: inline-block;
+	font-size: 12px;
+	font-weight: 500;
+	/* margin-inline-start: 1.5rem; */
+	margin-inline-start: 0rem;
+	margin-block-end: 0.2rem;
+	color: rgba(255, 0, 0, 0.562);
+}
+
+.h4green {
+	/* font-size: 25px; */
+	display: inline-block;
+	font-size: 12px;
+	font-weight: 500;
+	/* margin-inline-start: 1.5rem; */
+	margin-inline-start: 0rem;
+	margin-block-end: 0.2rem;
+	color: rgb(9, 136, 37);
+}
+
 .event-form-header h5 {
 	font-size: 12px;
 	font-weight: 400;
@@ -431,6 +453,23 @@
 		font-weight: 400;
 		margin-inline-start: 1.5rem;
 		margin-block-end: 0.2rem;
+	}
+
+	.h4red {
+		display: inline-block;
+		font-size: 14px;
+		font-weight: 500;
+		margin-inline-start: 1.5rem;
+		margin-block-end: 0.2rem;
+		color: rgba(255, 0, 0, 0.562);
+	}
+	.h4green {
+		display: inline-block;
+		font-size: 14px;
+		font-weight: 500;
+		margin-inline-start: 1.5rem;
+		margin-block-end: 0.2rem;
+		color: rgb(9, 136, 37);
 	}
 
 	.event-form-header h5 {

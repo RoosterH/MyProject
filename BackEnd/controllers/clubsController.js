@@ -252,6 +252,7 @@ const createClub = async (req, res, next) => {
 	let newClub = new Club({
 		name,
 		email,
+		sesEmail: email,
 		originalImage: originalImageLocation,
 		image: cloudFrontImageLocation,
 		password: hashedPassword,
@@ -1137,6 +1138,183 @@ const getClubAccount = async (req, res, next) => {
 		clubAccount: clubAccount.toObject({
 			getters: true
 		})
+	});
+};
+
+// GET /api/clubs/sesEmail/:cid
+const getClubSesEmail = async (req, res, next) => {
+	let clubIdParam = req.params.cid;
+	const clubId = req.userData;
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'getClubSesEmail process failed.  You are not allowed to get club account.',
+			403
+		);
+		return next(error);
+	}
+
+	try {
+		var club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'getClubSesEmail process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError('No club in the DB.', 404);
+		return next(error);
+	}
+
+	AWS.config.update({
+		accessKeyId: process.env.AWS_ACCESSKEYID,
+		secretAccessKey: process.env.AWS_SECRETACCESSKEY,
+		region: process.env.S3_REGION
+	});
+
+	// create Nodemailer SES transporter
+	const SES = new AWS.SES({
+		apiVersion: '2010-12-01'
+	});
+
+	// check to see if email has been verified
+	let sesEmail = club.sesEmail;
+	var params = {
+		Identities: [sesEmail]
+	};
+
+	try {
+		const callBack = (err, data) => {
+			verificationAttributes = data.VerificationAttributes;
+			// verificationAttributes returns a map { 'myseattime@gmail.com': { VerificationStatus: 'Pending' } }
+			// VerificationStatus: "Pending", "Success", "Failed", "TemporaryFailure", "NotStarted"
+			let emailFound = verificationAttributes[sesEmail];
+			if (!emailFound) {
+				// email not yet sent to AWS for verifiation
+				return res.status(200).json({
+					sesEmail: sesEmail,
+					verificationStatus: 'NOTFOUND'
+				});
+			} else {
+				let verificationStatus =
+					verificationAttributes[sesEmail].VerificationStatus;
+				if (verificationStatus === 'Success') {
+					return res.status(200).json({
+						sesEmail: sesEmail,
+						verificationStatus: 'SUCCESS'
+					});
+				} else {
+					return res.status(200).json({
+						sesEmail: sesEmail,
+						verificationStatus: 'RESEND'
+					});
+				}
+			}
+		};
+		await SES.getIdentityVerificationAttributes(params, callBack);
+	} catch (err) {
+		console.log('getIdentityVerificationAttributes err = ', err);
+		const error = new HttpError(
+			'getClubSesEmail getIdentityVerificationAttributes process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+};
+
+// PATCH /api/clubs/sesEmail/:cid
+const updateClubSesEmail = async (req, res, next) => {
+	let clubIdParam = req.params.cid;
+	const clubId = req.userData;
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'updateClubSesEmail process failed.  You are not allowed to get club account.',
+			403
+		);
+		return next(error);
+	}
+
+	try {
+		var club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'updateClubSesEmail process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError('No club in the DB.', 404);
+		return next(error);
+	}
+
+	const { email, resend } = req.body;
+
+	AWS.config.update({
+		accessKeyId: process.env.AWS_ACCESSKEYID,
+		secretAccessKey: process.env.AWS_SECRETACCESSKEY,
+		region: process.env.S3_REGION
+	});
+
+	// create Nodemailer SES transporter
+	const SES = new AWS.SES({
+		apiVersion: '2010-12-01'
+	});
+
+	let oldSesEmail = club.sesEmail;
+	// delete old verified email
+	var deleteParams = {
+		Identity: oldSesEmail
+	};
+
+	if (!resend) {
+		SES.deleteIdentity(deleteParams, function (err, data) {
+			if (err) {
+				console.log('deleteIdentity err = ', err.stack);
+			} else {
+				console.log('deleteIdentity data = ', data);
+			}
+		});
+	}
+
+	var params = {
+		EmailAddress: email /* required */,
+		TemplateName: 'SESVerificationTemplate' /* required */,
+		ConfigurationSetName: ''
+	};
+
+	SES.sendCustomVerificationEmail(params, function (err, data) {
+		if (err) {
+			// an error occurred
+			console.log('sendCustomVerificationEmail err = ', err.stack);
+		} else {
+			// successful response
+			console.log('sendCustomVerificationEmail data = ', data);
+		}
+	});
+
+	try {
+		club.sesEmail = email;
+		await club.save();
+	} catch (err) {
+		console.log(
+			'updateClubSesEmail process failed @ saving sesEmail. = ',
+			err
+		);
+		const error = new HttpError(
+			'updateClubSesEmail process failed @ saving sesEmail. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// setup with AWS SES
+
+	res.status(200).json({
+		sesEmail: email
 	});
 };
 
@@ -2336,6 +2514,8 @@ exports.getClubEventSettings = getClubEventSettings;
 exports.getClubCredential = getClubCredential;
 exports.getClubStripeAccount = getClubStripeAccount;
 exports.getClubMemberList = getClubMemberList;
+exports.getClubSesEmail = getClubSesEmail;
+exports.updateClubSesEmail = updateClubSesEmail;
 exports.deleteClub = deleteClub;
 exports.logoutClub = logoutClub;
 exports.getEventForm = getEventForm;

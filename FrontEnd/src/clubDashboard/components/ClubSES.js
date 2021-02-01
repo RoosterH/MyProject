@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import NavigationPrompt from 'react-router-navigation-prompt';
+import isEmail from 'validator/lib/isEmail';
 
 import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
@@ -14,7 +15,7 @@ import { ClubAuthContext } from '../../shared/context/auth-context';
 
 import '../../shared/css/EventForm.css';
 
-const ClubCredential = () => {
+const ClubSES = () => {
 	const {
 		isLoading,
 		error,
@@ -61,11 +62,7 @@ const ClubCredential = () => {
 
 	const [OKLeavePage, setOKLeavePage] = useState('true');
 	let initialValues = {
-		email: '',
-		password: '******',
-		oldPassword: '',
-		newPassword: '',
-		passwordValidation: ''
+		email: ''
 	};
 
 	const validateEmail = value => {
@@ -73,29 +70,23 @@ const ClubCredential = () => {
 		if (!value) {
 			error = 'Email is required.';
 		} else {
-			const pattern = /[a-z0-9A-Z!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9A-Z!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-			if (!pattern.test(value)) {
+			if (!isEmail(value)) {
 				error = 'Please enter a valid email';
 			}
 		}
 		return error;
 	};
 
-	const [validatePassword, setValidatePassword] = useState(
-		() => value => {
-			let error;
-			if (!value) {
-				error = 'Password is required.';
-			} else if (value.length < 6) {
-				error = 'Minimum password length is 6 characters.';
-			}
-			return error;
-		}
+	const [sesEmail, setSesEmail] = useState();
+	const [verificationStatus, setVerificationStatus] = useState(
+		'SUCCESS'
 	);
-
-	const [loadedClubCredential, setLoadedClubCredential] = useState();
+	const [saveButtonEnabled, setSaveButtonEnabled] = useState(true);
+	const [resendButtonEnabled, setResendButtonEnabled] = useState(
+		true
+	);
 	useEffect(() => {
-		const fetchClubCredential = async () => {
+		const fetchSesEmail = async () => {
 			try {
 				const [
 					responseData,
@@ -103,7 +94,7 @@ const ClubCredential = () => {
 					responseMessage
 				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL +
-						`/clubs/credential/${clubId}`,
+						`/clubs/sesEmail/${clubId}`,
 					'GET',
 					null,
 					{
@@ -111,16 +102,28 @@ const ClubCredential = () => {
 						Authorization: 'Bearer ' + clubAuthContext.clubToken
 					}
 				);
-				// Need to set the loadedClubProfile so we will set initialValues again.
+				// Need to set the sesEmail so we will set initialValues again.
 				// Without it, form will keep the old initial values.
-				setLoadedClubCredential(responseData.clubCredential);
+				setSesEmail(responseData.sesEmail);
+				setVerificationStatus(responseData.verificationStatus);
+				if (responseData.verificationStatus === 'SUCCESS') {
+					// if email is already verified at AWS, disable both SAVE and RESEND button
+					setSaveButtonEnabled(false);
+					setResendButtonEnabled(false);
+				} else if (responseData.verificationStatus === 'NOTFOUND') {
+					// if email is not yet sent to AWS for verification, enable SAVE button, disable RESEND button
+					setSaveButtonEnabled(true);
+					setResendButtonEnabled(false);
+				} else if (responseData.verificationStatus === 'RESEND') {
+					// if email is sent to AWS for verification, disable SAVE button, enable RESEND button
+					setSaveButtonEnabled(false);
+					setResendButtonEnabled(true);
+				}
 			} catch (err) {}
 		};
-		fetchClubCredential();
-	}, [clubId, setLoadedClubCredential]);
+		fetchSesEmail();
+	}, [clubId, setSesEmail]);
 
-	const [verification, setVerification] = useState(false);
-	const [saveButtonEnabled, setSaveButtonEnabled] = useState(false);
 	const submitHandler = async values => {
 		try {
 			const [
@@ -128,12 +131,12 @@ const ClubCredential = () => {
 				responseStatus,
 				responseMessage
 			] = await sendRequest(
-				process.env.REACT_APP_BACKEND_URL + '/clubs/credential',
+				process.env.REACT_APP_BACKEND_URL +
+					`/clubs/sesEmail/${clubId}`,
 				'PATCH',
 				JSON.stringify({
-					oldPassword: values.oldPassword,
-					newPassword: values.newPassword,
-					passwordValidation: values.passwordValidation
+					email: values.email,
+					resend: false
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -141,13 +144,38 @@ const ClubCredential = () => {
 					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
-			// Need to set the loadedClubProfile so we will set initialValues again.
+			// Need to set the sesEmail so we will set initialValues again.
 			// Without it, form will keep the old initial values.
-			setVerification(responseData.verification);
+			setSesEmail(responseData.sesEmail);
 			setSaveButtonEnabled(false);
 		} catch (err) {}
 	};
-
+	const resendHandler = async values => {
+		try {
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL +
+					`/clubs/sesEmail/${clubId}`,
+				'PATCH',
+				JSON.stringify({
+					email: values.email,
+					resend: true
+				}),
+				{
+					'Content-Type': 'application/json',
+					// adding JWT to header for authentication, JWT contains clubId
+					Authorization: 'Bearer ' + clubAuthContext.clubToken
+				}
+			);
+			// Need to set the sesEmail so we will set initialValues again.
+			// Without it, form will keep the old initial values.
+			setSesEmail(responseData.sesEmail);
+			setSaveButtonEnabled(false);
+		} catch (err) {}
+	};
 	if (isLoading) {
 		return (
 			<div className="center">
@@ -156,20 +184,29 @@ const ClubCredential = () => {
 		);
 	}
 
-	if (loadedClubCredential) {
+	if (sesEmail) {
 		initialValues = {
-			email: loadedClubCredential.email,
-			password: '******',
-			oldPassword: '',
-			newPassword: '',
-			passwordValidation: ''
+			email: sesEmail
 		};
 	}
 
-	const credentialForm = () => (
+	const emailVerificationForm = () => (
 		<div className="event-form">
 			<div className="event-form-header">
-				<h4>Club Credentials</h4>
+				<h4>Setup Email for Communication Center</h4>
+				{verificationStatus !== 'SUCCESS' && (
+					<div className="h4red">
+						After saving the email address, we will send you a
+						verification email. Please verify it to activate your
+						communication center services.
+					</div>
+				)}
+				{verificationStatus === 'SUCCESS' && (
+					<div className="h4green">
+						Email verification succeeded. Communication Center is now
+						activated.
+					</div>
+				)}
 				<hr className="event-form__hr" />
 			</div>
 			<Formik
@@ -179,17 +216,6 @@ const ClubCredential = () => {
 					submitHandler(values);
 					if (actions.isSubmitting) {
 						actions.setSubmitting(false);
-					}
-					if (!actions.isSubmitting) {
-						setValidatePassword(() => value => {
-							let error;
-							if (!value) {
-								error = 'Password is required.';
-							} else if (value.length < 6) {
-								error = 'Minimum password length is 6 characters.';
-							}
-							return error;
-						});
 					}
 				}}>
 				{({
@@ -205,9 +231,9 @@ const ClubCredential = () => {
 				}) => (
 					<Form className="event-form-container">
 						<label
-							htmlFor="stripePublicKey"
+							htmlFor="email"
 							className="event-form__label_inline">
-							Email
+							Email (Can be different from club email)
 						</label>
 						<button
 							type="button"
@@ -215,87 +241,20 @@ const ClubCredential = () => {
 							onClick={toggleShowEmailButton}>
 							{showEmailButton}
 						</button>
-						<fieldset disabled>
-							<Field
-								id="email"
-								name="email"
-								type={showEmail ? 'text' : 'password'}
-								className="event-form__field"
-							/>
-						</fieldset>
-						<label htmlFor="password" className="event-form__label">
-							Password (For security, password will not be displayed)
-						</label>
-						<fieldset disabled>
-							<Field
-								id="password"
-								name="password"
-								type="password"
-								className="event-form__field"
-							/>
-						</fieldset>
-						<label
-							htmlFor="oldPassword"
-							className="event-form__label">
-							Please Enter Old Password
-						</label>
+						{/* <fieldset disabled> */}
 						<Field
-							id="oldPassword"
-							name="oldPassword"
-							type="password"
-							validate={validatePassword}
+							id="email"
+							name="email"
+							type={showEmail ? 'text' : 'password'}
 							className="event-form__field"
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-								setSaveButtonEnabled(true);
-							}}
+							validate={validateEmail}
 						/>
-						<label
-							htmlFor="newPassword"
-							className="event-form__label">
-							Please Enter New Password (Minimum 6 characters)
-						</label>
-						<Field
-							id="newPassword"
-							name="newPassword"
-							type="password"
-							validate={validatePassword}
-							className="event-form__field"
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-								setSaveButtonEnabled(true);
-							}}
-						/>
-						{touched.newPassword && errors.newPassword && (
+						{touched.email && errors.email && (
 							<div className="event-form__field-error">
-								{errors.newPassword}
+								{errors.email}
 							</div>
 						)}
-						<label
-							htmlFor="passwordValidation"
-							className="event-form__label">
-							Re-Enter New Password
-						</label>
-						<Field
-							id="passwordValidation"
-							name="passwordValidation"
-							type="password"
-							validate={validatePassword}
-							className="event-form__field"
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-								setSaveButtonEnabled(true);
-							}}
-						/>
-						{touched.passwordValidation &&
-							errors.passwordValidation && (
-								<div className="event-form__field-error">
-									{errors.passwordValidation}
-								</div>
-							)}
+						{/* </fieldset> */}
 						<Button
 							type="submit"
 							size="medium"
@@ -306,7 +265,17 @@ const ClubCredential = () => {
 							onClick={e => {
 								setFieldValue('isSaveButton', false, false);
 							}}>
-							Change Password
+							Save
+						</Button>
+						<Button
+							type="submit"
+							size="medium"
+							margin-left="1.5rem"
+							disabled={!resendButtonEnabled}
+							onClick={e => {
+								resendHandler('isSaveButton', false, false);
+							}}>
+							Resend Verification Email
 						</Button>
 						<NavigationPrompt
 							afterConfirm={() => {
@@ -358,9 +327,9 @@ const ClubCredential = () => {
 	return (
 		<React.Fragment>
 			<ErrorModal error={error} onClear={clearError} />
-			{!isLoading && credentialForm()}
+			{!isLoading && emailVerificationForm()}
 		</React.Fragment>
 	);
 };
 
-export default ClubCredential;
+export default ClubSES;

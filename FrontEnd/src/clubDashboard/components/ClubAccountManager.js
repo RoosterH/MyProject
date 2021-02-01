@@ -3,7 +3,8 @@ import { useHistory } from 'react-router-dom';
 import Button from '../../shared/components/FormElements/Button';
 import ClubCredential from './ClubCredential';
 import ClubStripe from './ClubStripe';
-import ClubAccount from './ClubAccount';
+import ClubSES from './ClubSES';
+import ClubPayment from './ClubPayment';
 import ClubEventSettings from './ClubEventSettings';
 import RedirectExternalURL from '../../shared/hooks/redirectExternalURL';
 import '../../shared/css/EventForm.css';
@@ -27,8 +28,10 @@ const ClubAccountManager = () => {
 	const [stripeClass, setStripeClass] = useState(
 		'editeventmanager-grey'
 	);
-	const [account, setAccount] = useState(false);
-	const [accountClass, setAccountClass] = useState(
+	const [ses, setSES] = useState(false);
+	const [sesClass, setSESClass] = useState('editeventmanager-grey');
+	const [payment, setPayment] = useState(false);
+	const [paymentClass, setPaymentClass] = useState(
 		'editeventmanager-grey'
 	);
 	const [eventSettings, setEventSettings] = useState(false);
@@ -44,7 +47,6 @@ const ClubAccountManager = () => {
 
 	useEffect(() => {
 		if (stripeConnectURL) {
-			console.log('found stripe URL = ', stripeConnectURL);
 			clubAuthContext.setClubRedirectURL(stripeConnectURL);
 			history.push('/stripeConnect/');
 		}
@@ -55,29 +57,49 @@ const ClubAccountManager = () => {
 		setCredentialClass('editeventmanager-orange');
 		setStripe(false);
 		setStripeClass('editeventmanager-grey');
-		setAccount(false);
-		setAccountClass('editeventmanager-grey');
+		setSES(false);
+		setSESClass('editeventmanager-grey');
+		setPayment(false);
+		setPaymentClass('editeventmanager-grey');
 		setEventSettings(false);
 		setEventSettingsClass('editeventmanager-grey');
 	};
+
 	const stripeClickHandler = () => {
 		setCredential(false);
 		setCredentialClass('editeventmanager-grey');
 		setStripe(true);
 		setStripeClass('editeventmanager-orange');
-		setAccount(false);
-		setAccountClass('editeventmanager-grey');
+		setSES(false);
+		setSESClass('editeventmanager-grey');
+		setPayment(false);
+		setPaymentClass('editeventmanager-grey');
 		setEventSettings(false);
 		setEventSettingsClass('editeventmanager-grey');
 	};
 
-	const accountClickHandler = () => {
+	const sesClickHandler = () => {
 		setCredential(false);
 		setCredentialClass('editeventmanager-grey');
 		setStripe(false);
 		setStripeClass('editeventmanager-grey');
-		setAccount(true);
-		setAccountClass('editeventmanager-orange');
+		setSES(true);
+		setSESClass('editeventmanager-orange');
+		setPayment(false);
+		setPaymentClass('editeventmanager-grey');
+		setEventSettings(false);
+		setEventSettingsClass('editeventmanager-grey');
+	};
+
+	const paymentClickHandler = () => {
+		setCredential(false);
+		setCredentialClass('editeventmanager-grey');
+		setStripe(false);
+		setStripeClass('editeventmanager-grey');
+		setSES(false);
+		setSESClass('editeventmanager-grey');
+		setPayment(true);
+		setPaymentClass('editeventmanager-orange');
 		setEventSettings(false);
 		setEventSettingsClass('editeventmanager-grey');
 	};
@@ -87,14 +109,16 @@ const ClubAccountManager = () => {
 		setCredentialClass('editeventmanager-grey');
 		setStripe(false);
 		setStripeClass('editeventmanager-grey');
-		setAccount(false);
-		setAccountClass('editeventmanager-grey');
+		setSES(false);
+		setSESClass('editeventmanager-grey');
+		setPayment(false);
+		setPaymentClass('editeventmanager-grey');
 		setEventSettings(true);
 		setEventSettingsClass('editeventmanager-orange');
 	};
 
 	// set defualt page, if none is false, we will use eventInfo as default
-	if (!credential && !stripe && !account && !eventSettings) {
+	if (!credential && !stripe && !ses && !payment && !eventSettings) {
 		credentialClickHandler();
 	}
 
@@ -122,9 +146,15 @@ const ClubAccountManager = () => {
 							Stripe
 						</Button>
 						<Button
-							size={accountClass}
+							size={sesClass}
 							autoFocus
-							onClick={accountClickHandler}>
+							onClick={sesClickHandler}>
+							Email
+						</Button>
+						<Button
+							size={paymentClass}
+							autoFocus
+							onClick={paymentClickHandler}>
 							Payment
 						</Button>
 						<Button
@@ -139,7 +169,8 @@ const ClubAccountManager = () => {
 						{stripe && (
 							<ClubStripe getStripeConnectURL={getStripeConnectURL} />
 						)}
-						{account && <ClubAccount />}
+						{ses && <ClubSES />}
+						{payment && <ClubPayment />}
 						{eventSettings && <ClubEventSettings />}
 					</div>
 				</div>

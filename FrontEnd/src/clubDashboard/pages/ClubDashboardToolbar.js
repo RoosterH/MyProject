@@ -101,14 +101,14 @@ const ClubDashboardToolbar = () => {
 
 					<li className="dashboard-nav-menu dropdown">
 						<Link
-							to="/clubs/manageClub/list"
+							to="/clubs/communicationCenter"
 							exact="exact"
 							className="dropdown-greybutton">
 							<i
 								className="fa fa-sort-desc pull-right"
 								aria-hidden="true"
 							/>
-							Communication Center (In development)
+							Communication Center
 						</Link>
 						{/* <div className="dropdown-content">
 							<NavLink to={'/clubs/events/new'} exact>
