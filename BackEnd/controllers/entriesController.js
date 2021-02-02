@@ -19,7 +19,8 @@ const ClubMember = require('../models/clubMember');
 const NumberTable = require('../models/numberTable');
 const {
 	sendRegistrationConfirmationEmail,
-	sendAddToEntryListEmail
+	sendAddToEntryListEmail,
+	sendChangeRunGroupEmail
 } = require('../util/nodeMailer');
 
 const { compare } = require('bcryptjs');
@@ -3328,6 +3329,271 @@ const deleteEntryByClub = async (req, res, next) => {
 	});
 };
 
+const changeEntryGroup = async (req, res, next) => {
+	let clubId = req.userData;
+	// Validate event exists, if not send back an error.
+	const entryId = req.params.entryId;
+
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		const error = new HttpError(
+			`changeEntryGroup process failed. Please check your data: ${result.array()}`,
+			422
+		);
+		return next(error);
+	}
+	const { oldGroup, newGroup, daySelected } = req.body;
+	let entry;
+	try {
+		entry = await Entry.findById(entryId).populate('eventId');
+	} catch (err) {
+		const error = new HttpError(
+			'Internal error in changeEntryGroup when retrieving entry.',
+			500
+		);
+		return next(error);
+	}
+	// validate addEntryByClub is from same clubId
+	if (clubId !== entry.clubId.toString()) {
+		const error = new HttpError(
+			'Not authorized to change entry group.',
+			403
+		);
+		return next(error);
+	}
+
+	if (!entry) {
+		// we should not find any entry here
+		const error = new HttpError(
+			'changeEntryGroup User entry cannot be found.',
+			400
+		);
+		return next(error);
+	}
+
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		console.log('1605 err = ', err);
+		const error = new HttpError(
+			'changeEntryGroup process failed during club validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!club) {
+		const error = new HttpError(
+			'changeEntryGroup process faile.',
+			500
+		);
+		return next(error);
+	}
+	// Validate userId exists. If not, sends back an error
+	let user;
+	// req.userData is inserted in check-auth.js
+	let userId = entry.userId;
+	try {
+		user = await User.findById(userId);
+	} catch (err) {
+		const error = new HttpError(
+			'changeEntryGroup process failed during user validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!user) {
+		const error = new HttpError(
+			'changeEntryGroup faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
+	let event;
+	try {
+		event = await Event.findById(entry.eventId.id);
+	} catch (err) {
+		const cerror = new HttpError(
+			'Internal error in changeEntryGroup when retrieving event.',
+			500
+		);
+		return next(error);
+	}
+	if (!event) {
+		const error = new HttpError(
+			'Internal error in changeEntryGroup event not found.',
+			500
+		);
+		return next(error);
+	}
+
+	let entryReport;
+	try {
+		entryReport = await EntryReport.findById(event.entryReportId);
+	} catch (err) {
+		const error = new HttpError(
+			'`changeEntryGroup process internal failure entryReport not found',
+			404
+		);
+		return next(error);
+	}
+	if (!entryReport) {
+		const error = new HttpError(
+			'`changeEntryGroup process internal failure entryReport not in DB',
+			404
+		);
+		return next(error);
+	}
+
+	// find how many days
+	let days = entryReport.entries.length;
+
+	// Since this is changed by event organizer, we will not touch event full and flag
+	// we only modify entryReport.entries
+	for (let i = 0; i < days; ++i) {
+		if (i !== daySelected) {
+			continue;
+		}
+		var oldGroupName = event.runGroupOptions[i][oldGroup];
+		var newGroupName = event.runGroupOptions[i][newGroup];
+		// validate oldGroupName
+		if (entry.runGroup[i] !== oldGroupName) {
+			console.log(
+				'changeEntryGroup Failed to change the group. Old group does not match.'
+			);
+			const error = new HttpError(
+				'changeEntryGroup Failed to change the group. Old group does not match.',
+				500
+			);
+			return next(error);
+		}
+		// modify entry group
+		entry.runGroup.set(i, newGroupName);
+
+		// update entryReport runGroupNumEntries, we do not care group cap here because
+		// it's modified by club
+		let runGroupNumEntries = [];
+		runGroupNumEntries = entryReport.runGroupNumEntries[i];
+		runGroupNumEntries[oldGroup]--;
+		runGroupNumEntries[newGroup]++;
+		entryReport.runGroupNumEntries.set(i, runGroupNumEntries);
+	}
+
+	try {
+		const session = await mongoose.startSession();
+		session.startTransaction();
+		await entry.save({ session: session });
+		// remove entryReport
+		await entryReport.save({ session: session });
+		// only both tasks succeed, we commit the transaction
+		await session.commitTransaction();
+	} catch (err) {
+		console.log('2595 err = ', err);
+		const error = new HttpError(
+			'changeEntryGroup Failed to add the entry to entry list.  Please try it later.',
+			500
+		);
+		return next(error);
+	}
+
+	try {
+		// send email to user
+		sendChangeRunGroupEmail(
+			user.firstName,
+			user.email,
+			club.name,
+			club.sesEmail,
+			event.name,
+			event.id,
+			event.startDate,
+			entry.runGroup,
+			entry.waitlist,
+			oldGroupName,
+			newGroupName,
+			daySelected
+		);
+	} catch (err) {
+		console.log('sendChangeRunGroupEmail err = ', err);
+	}
+
+	// once it's done, prepare to reutrn entrylist back to frontend
+	// get entires
+	let entries = entryReport.entries;
+	// if there is no entry, should not have a waitlist, either.
+	if (entries.length === 0) {
+		res.status(404).json({
+			entryData: []
+		});
+	}
+
+	let mutipleDayEntryData = [];
+	for (let i = 0; i < days; ++i) {
+		let entryData = [];
+		let eList = entries[i];
+		for (let j = 0; j < eList.length; ++j) {
+			let entry;
+			try {
+				entry = await Entry.findById(eList[j]).populate('carId');
+			} catch (err) {
+				const error = new HttpError(
+					'changeEntryGroup Cannot find the entry in getEntryReport entry. Please try again later.',
+					500
+				);
+				return next(error);
+			}
+			if (!entry) {
+				const error = new HttpError(
+					'changeEntryGroup Internal error entry not found in getEntryReport.',
+					500
+				);
+				return next(error);
+			}
+
+			// add car to entry
+			let car =
+				entry.carId.year +
+				' ' +
+				entry.carId.make +
+				' ' +
+				entry.carId.model;
+			if (entry.carId.trimLevel != undefined) {
+				car += ' ' + entry.carId.trimLevel;
+			}
+			// use {strict:false} to add undefined attribute in schema to existing json obj
+			entry.set('car', car, { strict: false });
+			entryData.push(entry);
+		}
+		mutipleDayEntryData.push(entryData);
+	}
+
+	res.status(200).json({
+		entryData: mutipleDayEntryData.map(entryData =>
+			entryData.map(data =>
+				data.toObject({
+					getters: true,
+					transform: (doc, ret, opt) => {
+						delete ret['userId'];
+						delete ret['clubId'];
+						delete ret['clubName'];
+						delete ret['eventId'];
+						delete ret['eventName'];
+						delete ret['carId'];
+						delete ret['disclaimer'];
+						delete ret['time'];
+						delete ret['published'];
+						return ret;
+					}
+				})
+			)
+		)
+	});
+};
+
 exports.createEntry = createEntry;
 exports.updateCar = updateCar;
 exports.updateClassNumber = updateClassNumber;
@@ -3343,3 +3609,4 @@ exports.authentication = authentication;
 exports.updatePaymentStatus = updatePaymentStatus;
 exports.addEntryByClub = addEntryByClub;
 exports.deleteEntryByClub = deleteEntryByClub;
+exports.changeEntryGroup = changeEntryGroup;

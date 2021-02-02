@@ -161,6 +161,7 @@ const EntryReport = props => {
 					continue;
 				}
 				let entry = {
+					id: entries[j].id,
 					lastName: entries[j].userLastName,
 					firstName: entries[j].userFirstName,
 					// for lookup field, we need to provide key in lookup array, we use index as key
@@ -299,6 +300,54 @@ const EntryReport = props => {
 		}
 	};
 
+	// change entry list run group
+	const [oldGroup, setOldGroup] = useState('');
+	const [newGroup, setNewGroup] = useState('');
+	const [changeGroupDay, setChangeGroupDay] = useState(0);
+	const [entryToBeChanged, setEntryToBeChanged] = useState();
+
+	// getting confirmation from MTable about showing up modal
+	const confirmEntryToBeChanged = (entryId, oldGroup, newGroup) => {
+		if (entryId) {
+			setEntryToBeChanged(entryId);
+			setOldGroup(oldGroup);
+			setNewGroup(newGroup);
+		}
+	};
+
+	useEffect(() => {
+		const changeGroupHandler = async () => {
+			// send request to backend to add an entry
+			let responseData, responseStatus, responseMessage;
+			// send request to backend to charge all the entries
+			try {
+				[
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
+					process.env.REACT_APP_BACKEND_URL +
+						`/entries/runGroup/${entryToBeChanged}`,
+					'PATCH',
+					JSON.stringify({
+						oldGroup: oldGroup,
+						newGroup: newGroup,
+						daySelected: daySelection - 1
+					}),
+					{
+						'Content-Type': 'application/json',
+						// adding JWT to header for authentication
+						Authorization: 'Bearer ' + clubAuthContext.clubToken
+					}
+				);
+			} catch (err) {}
+			composeEntryDataArray(responseData.entryData);
+		};
+		if (entryToBeChanged) {
+			changeGroupHandler();
+		}
+	}, [entryToBeChanged, oldGroup, newGroup, daySelection]);
+
 	// callback for Day Buttons
 	const daySelectionCallback = index => {
 		// index starts from 1, because we use day 1, day 2, ...
@@ -377,6 +426,7 @@ const EntryReport = props => {
 						workerAssignmentLookup={workerAssignmentLookup}
 						lunchOptionLookup={lunchOptionLookup}
 						confirmAddUser={confirmAddUser}
+						confirmEntryToBeChanged={confirmEntryToBeChanged}
 					/>
 				)}
 		</React.Fragment>

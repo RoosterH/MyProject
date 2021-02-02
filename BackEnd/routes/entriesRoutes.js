@@ -123,4 +123,13 @@ router.post(
 	entriesController.addEntryByClub
 );
 
+router.patch(
+	'/runGroup/:entryId',
+	[
+		check('oldGroup').not().isEmpty(),
+		check('newGroup').not().isEmpty(),
+		check('daySelected').not().isEmpty()
+	],
+	entriesController.changeEntryGroup
+);
 module.exports = router;

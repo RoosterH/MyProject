@@ -23,6 +23,7 @@ const MaterialTableEntryReport = props => {
 		? props.lunchOptionLookup
 		: [];
 	let confirmAddUser = props.confirmAddUser;
+	let confirmEntryToBeChanged = props.confirmEntryToBeChanged;
 
 	const [data, setData] = useState([]);
 	useEffect(() => {
@@ -64,23 +65,54 @@ const MaterialTableEntryReport = props => {
 								marginTop: '10px',
 								marginLeft: '20px'
 							}}
+							cellEditable={{
+								onCellEditApproved: (
+									newValue,
+									oldValue,
+									rowData,
+									columnDef
+								) => {
+									return new Promise((resolve, reject) => {
+										console.log('newValue: ' + newValue);
+										console.log('rowData=', rowData);
+										confirmEntryToBeChanged(
+											rowData.id,
+											oldValue,
+											newValue
+										);
+										setTimeout(resolve, 1000);
+									});
+								}
+							}}
 							columns={[
-								{ title: 'Last Name', field: 'lastName' },
+								{
+									title: 'Last Name',
+									field: 'lastName',
+									editable: 'never'
+								},
 								{
 									title: 'First Name',
 									field: 'firstName',
-									filtering: false
+									filtering: false,
+									editable: 'never'
 								},
 								{
 									title: 'Car Number',
 									field: 'carNumber',
-									filtering: false
+									filtering: false,
+									editable: 'never'
 								},
-								{ title: 'Car', field: 'car', filtering: false },
+								{
+									title: 'Car',
+									field: 'car',
+									filtering: false,
+									editable: 'never'
+								},
 								{
 									title: 'Race Class',
 									field: 'raceClass',
-									lookup: raceClassLookup
+									lookup: raceClassLookup,
+									editable: 'never'
 								},
 								{
 									title: 'Run Group',
@@ -90,7 +122,8 @@ const MaterialTableEntryReport = props => {
 								{
 									title: 'Worker Group',
 									field: 'workerAssignment',
-									lookup: workerAssignmentLookup
+									lookup: workerAssignmentLookup,
+									editable: 'never'
 								}
 							]}
 							options={{
@@ -121,23 +154,48 @@ const MaterialTableEntryReport = props => {
 								marginTop: '10px',
 								marginLeft: '20px'
 							}}
+							cellEditable={{
+								onCellEditApproved: (
+									newValue,
+									oldValue,
+									rowData,
+									columnDef
+								) => {
+									return new Promise((resolve, reject) => {
+										console.log('newValue: ' + newValue);
+										setTimeout(resolve, 1000);
+									});
+								}
+							}}
 							columns={[
-								{ title: 'Last Name', field: 'lastName' },
+								{
+									title: 'Last Name',
+									field: 'lastName',
+									editable: 'never'
+								},
 								{
 									title: 'First Name',
 									field: 'firstName',
-									filtering: false
+									filtering: false,
+									editable: 'never'
 								},
 								{
 									title: 'Car Number',
 									field: 'carNumber',
-									filtering: false
+									filtering: false,
+									editable: 'never'
 								},
-								{ title: 'Car', field: 'car', filtering: false },
+								{
+									title: 'Car',
+									field: 'car',
+									filtering: false,
+									editable: 'never'
+								},
 								{
 									title: 'Race Class',
 									field: 'raceClass',
-									lookup: raceClassLookup
+									lookup: raceClassLookup,
+									editable: 'never'
 								},
 								{
 									title: 'Run Group',
@@ -147,12 +205,14 @@ const MaterialTableEntryReport = props => {
 								{
 									title: 'Worker Group',
 									field: 'workerAssignment',
-									lookup: workerAssignmentLookup
+									lookup: workerAssignmentLookup,
+									editable: 'never'
 								},
 								{
 									title: 'Lunch',
 									field: 'lunchOption',
-									lookup: lunchOptionLookup
+									lookup: lunchOptionLookup,
+									editable: 'never'
 								}
 							]}
 							options={{
@@ -254,18 +314,42 @@ const MaterialTableEntryReport = props => {
 						<MaterialTable
 							title={title}
 							data={data}
+							cellEditable={{
+								onCellEditApproved: (
+									newValue,
+									oldValue,
+									rowData,
+									columnDef
+								) => {
+									return new Promise((resolve, reject) => {
+										console.log('newValue: ' + newValue);
+										setTimeout(resolve, 1000);
+									});
+								}
+							}}
 							columns={[
-								{ title: 'User Name', field: 'userName' },
+								{
+									title: 'User Name',
+									field: 'userName',
+									editable: 'never'
+								},
 								{
 									title: 'Car Number',
 									field: 'carNumber',
-									filtering: false
+									filtering: false,
+									editable: 'never'
 								},
-								{ title: 'Car', field: 'car', filtering: false },
+								{
+									title: 'Car',
+									field: 'car',
+									filtering: false,
+									editable: 'never'
+								},
 								{
 									title: 'Race Class',
 									field: 'raceClass',
-									lookup: raceClassLookup
+									lookup: raceClassLookup,
+									editable: 'never'
 								},
 								{
 									title: 'Run Group',
@@ -275,7 +359,8 @@ const MaterialTableEntryReport = props => {
 								{
 									title: 'Worker Group',
 									field: 'workerAssignment',
-									lookup: workerAssignmentLookup
+									lookup: workerAssignmentLookup,
+									editable: 'never'
 								}
 							]}
 							options={{
@@ -292,18 +377,42 @@ const MaterialTableEntryReport = props => {
 						<MaterialTable
 							title={title}
 							data={data}
+							cellEditable={{
+								onCellEditApproved: (
+									newValue,
+									oldValue,
+									rowData,
+									columnDef
+								) => {
+									return new Promise((resolve, reject) => {
+										console.log('newValue: ' + newValue);
+										setTimeout(resolve, 1000);
+									});
+								}
+							}}
 							columns={[
-								{ title: 'User Name', field: 'userName' },
+								{
+									title: 'User Name',
+									field: 'userName',
+									editable: 'never'
+								},
 								{
 									title: 'Car Number',
 									field: 'carNumber',
-									filtering: false
+									filtering: false,
+									editable: 'never'
 								},
-								{ title: 'Car', field: 'car', filtering: false },
+								{
+									title: 'Car',
+									field: 'car',
+									filtering: false,
+									editable: 'never'
+								},
 								{
 									title: 'Race Class',
 									field: 'raceClass',
-									lookup: raceClassLookup
+									lookup: raceClassLookup,
+									editable: 'never'
 								},
 								{
 									title: 'Run Group',
@@ -313,12 +422,14 @@ const MaterialTableEntryReport = props => {
 								{
 									title: 'Worker Group',
 									field: 'workerAssignment',
-									lookup: workerAssignmentLookup
+									lookup: workerAssignmentLookup,
+									editable: 'never'
 								},
 								{
 									title: 'Lunch',
 									field: 'lunchOption',
-									lookup: lunchOptionLookup
+									lookup: lunchOptionLookup,
+									editable: 'never'
 								}
 							]}
 							options={{
@@ -334,6 +445,26 @@ const MaterialTableEntryReport = props => {
 					<MaterialTable
 						title={`${eventName} Waitlist - ${waitlistData.length} on the list`}
 						data={waitlistData}
+						style={{
+							border: '2px solid gray',
+							maxWidth: '1450px',
+							overflow: 'scroll',
+							marginTop: '10px',
+							marginLeft: '20px'
+						}}
+						cellEditable={{
+							onCellEditApproved: (
+								newValue,
+								oldValue,
+								rowData,
+								columnDef
+							) => {
+								return new Promise((resolve, reject) => {
+									console.log('newValue: ' + newValue);
+									setTimeout(resolve, 1000);
+								});
+							}
+						}}
 						columns={[
 							{ title: 'User Name', field: 'userName' },
 							{
@@ -363,6 +494,31 @@ const MaterialTableEntryReport = props => {
 							exportButton: true,
 							columnsButton: true
 						}}
+						components={{
+							OverlayLoading: props => (
+								<div className="center">
+									<LoadingSpinner />
+								</div>
+							)
+						}}
+						actions={[
+							rowData => ({
+								icon: 'add',
+								tooltip: 'Add to Entry',
+								onClick: (event, rowData) => {
+									// flag to display modal to ask for confirmation
+									confirmAddUser(true, rowData.id);
+
+									// need to set timeout to have the table load the new value
+									setTimeout(() => {
+										// const dataUpdate = [...data];
+										// const index = rowData.tableData.id;
+										// return to payment center then send a request to backend
+										// entryToDelete(rowData);
+									}, 1000);
+								}
+							})
+						]}
 					/>
 				)}
 			</div>
