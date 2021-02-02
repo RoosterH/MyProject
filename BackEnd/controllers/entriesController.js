@@ -20,7 +20,8 @@ const NumberTable = require('../models/numberTable');
 const {
 	sendRegistrationConfirmationEmail,
 	sendAddToEntryListEmail,
-	sendChangeRunGroupEmail
+	sendChangeRunGroupEmail,
+	sendChargeConfirmationEmail
 } = require('../util/nodeMailer');
 
 const { compare } = require('bcryptjs');
@@ -2128,6 +2129,24 @@ const chargeEntry = async (req, res, next) => {
 		return next(error);
 	}
 
+	let event;
+	try {
+		event = await Event.findById(entry.eventId);
+	} catch (err) {
+		const cerror = new HttpError(
+			'Internal error in chargeEntry when retrieving event.',
+			500
+		);
+		return next(error);
+	}
+	if (!event) {
+		const error = new HttpError(
+			'Internal error in chargeEntry event not found.',
+			500
+		);
+		return next(error);
+	}
+
 	let user;
 	try {
 		user = await User.findById(entry.userId);
@@ -2240,6 +2259,25 @@ const chargeEntry = async (req, res, next) => {
 		);
 		return next(error);
 	}
+	// send charge confirmation email
+	try {
+		sendChargeConfirmationEmail(
+			user.firstName,
+			user.email,
+			club.name,
+			club.sesEmail,
+			event.name,
+			event.id,
+			paymentStatus,
+			payment.entryFee
+		);
+	} catch (err) {
+		console.log(
+			'chargeEntry sendChargeConfirmationEmail failed = ',
+			err
+		);
+	}
+
 	if (errorCode !== '') {
 		console.log('errorCode = ', errorCode);
 		console.log('paymentStatus = ', paymentStatus);

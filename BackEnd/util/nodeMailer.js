@@ -4,6 +4,9 @@ const moment = require('moment');
 
 const event = require('../models/event');
 const NOT_ATTENDING = 'Not Attending';
+const PAID = 'Paid';
+const AUTHENTICATION = 'Require Authentication';
+const DECLINED = 'Declined';
 
 const sendVerificationEmail = async (
 	isUser,
@@ -568,10 +571,101 @@ const sendChangeRunGroupEmail = async (
 	}
 };
 
+const sendChargeConfirmationEmail = async (
+	recipientName,
+	recipientEmail,
+	clubName,
+	clubEmail,
+	eventName,
+	eventId,
+	paymentStatus,
+	entryFee
+) => {
+	// configure AWS SDK
+	// AWS.config.loadFromPath('config.json');
+	AWS.config.update({
+		accessKeyId: process.env.AWS_ACCESSKEYID,
+		secretAccessKey: process.env.AWS_SECRETACCESSKEY,
+		region: process.env.S3_REGION
+	});
+
+	// create Nodemailer SES transporter
+	let transporter = nodemailer.createTransport({
+		SES: new AWS.SES({
+			apiVersion: '2010-12-01'
+		}),
+		sendingRate: 14 // max 14 messages per second
+	});
+
+	let from = '"' + clubName + '" ' + '<' + clubEmail + '>';
+	let eventLink = process.env.MYSEATTIME + '/events/' + eventId;
+	let MSG = '';
+	if (paymentStatus === PAID) {
+		MSG =
+			'Your payment has been successfully charged. Thanks for attending the event. See you next time.';
+	} else if (paymentStatus === AUTHENTICATION) {
+		MSG =
+			'You are required to authenticate your credit card.  Please log in to event using the following link ' +
+			eventLink +
+			'. Click on Modify Entry button => Registration to authenticate it.  Thank you!';
+	} else if (paymentStatus === DECLINED) {
+		MSG =
+			'Your credit card was declined. Please log in to event using the following link ' +
+			eventLink +
+			'. Click on Modify Entry button => Registration to provide a new credit card.  Thank you!';
+	}
+
+	// send email
+	let info;
+	try {
+		info = await transporter.sendMail({
+			from: from,
+			to: recipientEmail,
+			subject: clubName + ' ' + eventName + ' payment status update',
+			text:
+				'Hi ' +
+				recipientName +
+				',\n\n' +
+				'Your payment for ' +
+				clubName +
+				' ' +
+				eventName +
+				' has been processed.\n' +
+				'Here is the payment status.\n' +
+				'Entry Fee: $' +
+				entryFee +
+				'\n' +
+				`Payment Status: ` +
+				MSG,
+			html:
+				'<p style="color:black;">Hi ' +
+				recipientName +
+				', </p>' +
+				'<p style="color:black;">Your payment for ' +
+				clubName +
+				' ' +
+				eventName +
+				' has been processed.</p>' +
+				'<p>Here is the payment status.</p>' +
+				'<p style="color:black;">Entry Fee: $' +
+				entryFee +
+				'</p>' +
+				'<p style="color:black;">Payment Status: ' +
+				MSG +
+				'</p>',
+			sender: clubEmail,
+			replyTo: clubEmail
+		});
+	} catch (err) {
+		console.log('nodemailer err = ', err);
+	}
+};
+
 module.exports = {
 	sendVerificationEmail,
 	sendAccountActivationEmail,
 	sendRegistrationConfirmationEmail,
 	sendAddToEntryListEmail,
-	sendChangeRunGroupEmail
+	sendChangeRunGroupEmail,
+	sendChargeConfirmationEmail
 };
