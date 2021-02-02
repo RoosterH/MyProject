@@ -18,7 +18,8 @@ const UserAccount = require('../models/userAccount');
 const ClubMember = require('../models/clubMember');
 const NumberTable = require('../models/numberTable');
 const {
-	sendRegistrationConfirmationEmail
+	sendRegistrationConfirmationEmail,
+	sendAddToEntryListEmail
 } = require('../util/nodeMailer');
 
 const { compare } = require('bcryptjs');
@@ -2084,7 +2085,7 @@ const chargeEntry = async (req, res, next) => {
 	}
 	if (!club) {
 		const error = new HttpError(
-			'chargeEntry process faied with unauthorized request. Forgot to login?',
+			'chargeEntry process failed with unauthorized request. Forgot to login?',
 			404
 		);
 		return next(error);
@@ -2617,7 +2618,7 @@ const addEntryByClub = async (req, res, next) => {
 		);
 		return next(error);
 	}
-	// validat deletion is from same clubId
+	// validate addEntryByClub is from same clubId
 	if (clubId !== entry.clubId.toString()) {
 		const error = new HttpError('Not authorized to add entry.', 403);
 		return next(error);
@@ -2632,6 +2633,20 @@ const addEntryByClub = async (req, res, next) => {
 		return next(error);
 	}
 
+	try {
+		club = await Club.findById(clubId);
+	} catch (err) {
+		console.log('1605 err = ', err);
+		const error = new HttpError(
+			'addEntryByClub process failed during club validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!club) {
+		const error = new HttpError('addEntryByClub process faile.', 500);
+		return next(error);
+	}
 	// Validate userId exists. If not, sends back an error
 	let user;
 	// req.userData is inserted in check-auth.js
@@ -2802,6 +2817,24 @@ const addEntryByClub = async (req, res, next) => {
 		return next(error);
 	}
 
+	try {
+		// send email to user
+		sendAddToEntryListEmail(
+			user.firstName,
+			user.email,
+			club.name,
+			club.sesEmail,
+			event.name,
+			event.id,
+			event.startDate,
+			entry.runGroup,
+			entry.waitlist,
+			payment.paymentMethod,
+			payment.entryFee
+		);
+	} catch (err) {
+		console.log('sendAddToEntryListEmail err = ', err);
+	}
 	// once it's done, prepare to reutrn entrylist back to frontend
 	// get entires
 	let entries = entryReport.entries;

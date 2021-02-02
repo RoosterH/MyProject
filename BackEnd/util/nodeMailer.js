@@ -266,8 +266,159 @@ const sendRegistrationConfirmationEmail = async (
 	}
 };
 
+const sendAddToEntryListEmail = async (
+	recipientName,
+	recipientEmail,
+	clubName,
+	clubEmail,
+	eventName,
+	eventId,
+	startDate,
+	runGroups,
+	waitlist,
+	paymentMethod,
+	entryFee
+) => {
+	// configure AWS SDK
+	// AWS.config.loadFromPath('config.json');
+	AWS.config.update({
+		accessKeyId: process.env.AWS_ACCESSKEYID,
+		secretAccessKey: process.env.AWS_SECRETACCESSKEY,
+		region: process.env.S3_REGION
+	});
+
+	// create Nodemailer SES transporter
+	let transporter = nodemailer.createTransport({
+		SES: new AWS.SES({
+			apiVersion: '2010-12-01'
+		}),
+		sendingRate: 14 // max 14 messages per second
+	});
+
+	let from = '"' + clubName + '" ' + '<' + clubEmail + '>';
+	let newStatus = '';
+	for (let i = 0; i < waitlist.length; ++i) {
+		if (waitlist[i]) {
+			if (newStatus === '') {
+				newStatus +=
+					moment(startDate).add(i, 'd').format('L') +
+					': ' +
+					runGroups[i] +
+					'- waitlist';
+			} else {
+				newStatus +=
+					', ' +
+					moment(startDate).add(i, 'd').format('L') +
+					': ' +
+					runGroups[i] +
+					'- waitlist';
+			}
+		} else {
+			// entry list
+			if (newStatus === '') {
+				if (runGroups[i] === NOT_ATTENDING) {
+					newStatus +=
+						moment(startDate).add(i, 'd').format('L') +
+						': ' +
+						runGroups[i] +
+						'.';
+				} else {
+					newStatus +=
+						moment(startDate).add(i, 'd').format('L') +
+						': ' +
+						runGroups[i] +
+						'- entry confirmed';
+				}
+			} else {
+				if (runGroups[i] === NOT_ATTENDING) {
+					newStatus +=
+						moment(startDate).add(i, 'd').format('L') +
+						': ' +
+						runGroups[i];
+				} else {
+					newStatus +=
+						', ' +
+						moment(startDate).add(i, 'd').format('L') +
+						': ' +
+						runGroups[i] +
+						'- entry confirmed';
+				}
+			}
+		}
+	}
+
+	let eventLink = process.env.MYSEATTIME + '/events/' + eventId;
+	let method = paymentMethod === 'onSite' ? 'On Site' : 'Stripe';
+	// send email
+	let info;
+	try {
+		info = await transporter.sendMail({
+			from: from,
+			to: recipientEmail,
+			subject:
+				clubName +
+				' ' +
+				eventName +
+				' waitlist status update - Important',
+			text:
+				'Hi ' +
+				recipientName +
+				',\n\n' +
+				'Your entry for ' +
+				clubName +
+				' ' +
+				eventName +
+				' has been updated by event organizer.\n' +
+				'Here is the new entry status.\n' +
+				`Status: ` +
+				newStatus +
+				'\n' +
+				'Payment Method: ' +
+				method +
+				'\n' +
+				'Entry Fee: $' +
+				entryFee +
+				'\n' +
+				'Event Link: ' +
+				eventLink +
+				'\n' +
+				'Thanks for registering the event.\n' +
+				'Enjoy Driving!',
+			html:
+				'<p style="color:black;">Hi ' +
+				recipientName +
+				', </p>' +
+				'<p style="color:black;">You entry for ' +
+				clubName +
+				' ' +
+				eventName +
+				' has been updated by event organizer.</p>' +
+				'<p>Here is the new entry status.</p>' +
+				'<p style="color:black;">Status: ' +
+				newStatus +
+				'</p>' +
+				'<p style="color:black;">Payment Method: ' +
+				method +
+				'</p>' +
+				'<p style="color:black;">Entry Fee: $' +
+				entryFee +
+				'</p>' +
+				'<p style="color:black;">Event Link: ' +
+				eventLink +
+				'</p>' +
+				'<p style="color:black;">Thanks for registering the event.</p>' +
+				'<p style="color:black;">Enjoy Driving!</p>',
+			sender: clubEmail,
+			replyTo: clubEmail
+		});
+	} catch (err) {
+		console.log('nodemailer err = ', err);
+	}
+};
+
 module.exports = {
 	sendVerificationEmail,
 	sendAccountActivationEmail,
-	sendRegistrationConfirmationEmail
+	sendRegistrationConfirmationEmail,
+	sendAddToEntryListEmail
 };
