@@ -759,6 +759,74 @@ const sendChargeAllConfirmationEmail = async (
 	}
 };
 
+const sendRefundEmail = async (
+	recipientName,
+	recipientEmail,
+	clubName,
+	clubEmail,
+	eventName,
+	eventId,
+	refundFee
+) => {
+	// configure AWS SDK
+	// AWS.config.loadFromPath('config.json');
+	AWS.config.update({
+		accessKeyId: process.env.AWS_ACCESSKEYID,
+		secretAccessKey: process.env.AWS_SECRETACCESSKEY,
+		region: process.env.S3_REGION
+	});
+
+	// create Nodemailer SES transporter
+	let transporter = nodemailer.createTransport({
+		SES: new AWS.SES({
+			apiVersion: '2010-12-01'
+		}),
+		sendingRate: 14 // max 14 messages per second
+	});
+
+	let from = '"' + clubName + '" ' + '<' + clubEmail + '>';
+
+	// send email
+	let info;
+	try {
+		info = await transporter.sendMail({
+			from: from,
+			to: recipientEmail,
+			subject:
+				clubName + ' ' + eventName + ' payment refund notification',
+			text:
+				'Hi ' +
+				recipientName +
+				',\n\n' +
+				clubName +
+				' has issued a refund for event ' +
+				eventName +
+				' in the amount of $' +
+				refundFee +
+				'.\n' +
+				'It usually takes 7-10 business days to refund the money back to your credit card.\n\n' +
+				'Thanks you!',
+			html:
+				'<p style="color:black;">Hi ' +
+				recipientName +
+				', </p>' +
+				'<p style="color:black;">' +
+				clubName +
+				' has issued a refund for event ' +
+				eventName +
+				' in the amount of $' +
+				refundFee +
+				'.</p>' +
+				'<p>It usually takes 7-10 business days to refund the money back to your credit card.</p>' +
+				'<p style="color:black;">Thank you! </p>',
+			sender: clubEmail,
+			replyTo: clubEmail
+		});
+	} catch (err) {
+		console.log('nodemailer err = ', err);
+	}
+};
+
 module.exports = {
 	sendVerificationEmail,
 	sendAccountActivationEmail,
@@ -766,5 +834,6 @@ module.exports = {
 	sendAddToEntryListEmail,
 	sendChangeRunGroupEmail,
 	sendChargeConfirmationEmail,
-	sendChargeAllConfirmationEmail
+	sendChargeAllConfirmationEmail,
+	sendRefundEmail
 };

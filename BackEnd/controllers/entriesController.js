@@ -21,7 +21,8 @@ const {
 	sendRegistrationConfirmationEmail,
 	sendAddToEntryListEmail,
 	sendChangeRunGroupEmail,
-	sendChargeConfirmationEmail
+	sendChargeConfirmationEmail,
+	sendRefundEmail
 } = require('../util/nodeMailer');
 
 const { compare } = require('bcryptjs');
@@ -1631,7 +1632,7 @@ const deleteEntry = async (req, res, next) => {
 
 	let event;
 	try {
-		event = await Event.findById(entry.eventId.id);
+		event = await Event.findById(entry.eventId);
 	} catch (err) {
 		const error = new HttpError(
 			'Internal error in cancelEntry when retrieving event.',
@@ -2373,6 +2374,57 @@ const refund = async (req, res, next) => {
 		return next(error);
 	}
 
+	try {
+		club = await Club.findById(entry.clubId);
+	} catch (err) {
+		console.log('2380 err = ', err);
+		const error = new HttpError(
+			'refund process failed during club validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!club) {
+		const error = new HttpError('refund process faile.', 500);
+		return next(error);
+	}
+
+	let user;
+	try {
+		user = await User.findById(entry.userId);
+	} catch (err) {
+		const error = new HttpError(
+			'refund process failed during user validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!user) {
+		const error = new HttpError(
+			'refund faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
+	let event;
+	try {
+		event = await Event.findById(entry.eventId);
+	} catch (err) {
+		const cerror = new HttpError(
+			'Internal error in refund when retrieving event.',
+			500
+		);
+		return next(error);
+	}
+	if (!event) {
+		const error = new HttpError(
+			'Internal error in refund event not found.',
+			500
+		);
+		return next(error);
+	}
+
 	let paymentId = entry.paymentId;
 	let payment;
 	try {
@@ -2393,11 +2445,15 @@ const refund = async (req, res, next) => {
 		return next(error);
 	}
 
-	// onSite paymentMethod
+	// stripe paymentMethod
 	if (payment.paymentMethod === 'stripe') {
 		// stripe payment method
 		let refund;
+		console.log('payment.refundFee = ', payment.refundFee);
 		try {
+			// ! payment.refundFee is $100 but when we send to Stripe, we need to *100
+			// ! A positive integer in cents representing how much of this charge to refund.
+			// ! Can refund only up to the remaining, unrefunded amount of the charge.
 			refund = await stripe.refunds.create({
 				amount: payment.refundFee * 100,
 				payment_intent: payment.stripePaymentIntentId
@@ -2421,6 +2477,20 @@ const refund = async (req, res, next) => {
 			return next(error);
 		}
 		payment.set('stripeRefundId', refund.id, { strict: false });
+		// send charge confirmation email
+		try {
+			sendRefundEmail(
+				user.firstName,
+				user.email,
+				club.name,
+				club.sesEmail,
+				event.name,
+				event.id,
+				payment.refundFee
+			);
+		} catch (err) {
+			console.log('refund sendRefundEmail failed = ', err);
+		}
 	}
 	payment.paymentStatus = 'Refunded';
 
@@ -2710,7 +2780,7 @@ const addEntryByClub = async (req, res, next) => {
 
 	let event;
 	try {
-		event = await Event.findById(entry.eventId.id);
+		event = await Event.findById(entry.eventId);
 	} catch (err) {
 		const cerror = new HttpError(
 			'Internal error in addEntryByClub when retrieving event.',
@@ -3070,7 +3140,7 @@ const deleteEntryByClub = async (req, res, next) => {
 
 	let event;
 	try {
-		event = await Event.findById(entry.eventId.id);
+		event = await Event.findById(entry.eventId);
 	} catch (err) {
 		const error = new HttpError(
 			'Internal error in deleteEntryByClub when retrieving event.',
@@ -3454,7 +3524,7 @@ const changeEntryGroup = async (req, res, next) => {
 
 	let event;
 	try {
-		event = await Event.findById(entry.eventId.id);
+		event = await Event.findById(entry.eventId);
 	} catch (err) {
 		const cerror = new HttpError(
 			'Internal error in changeEntryGroup when retrieving event.',
