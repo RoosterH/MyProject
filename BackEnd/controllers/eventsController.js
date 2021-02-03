@@ -16,7 +16,9 @@ const ClubAccount = require('../models/clubAccount');
 const Payment = require('../models/payment');
 const Stripe = require('./stripeController');
 const { Encrypt, Decrypt } = require('../util/crypto');
-
+const {
+	sendChargeAllConfirmationEmail
+} = require('../util/nodeMailer');
 const { min } = require('moment');
 const entry = require('../models/entry');
 const { EventBridge } = require('aws-sdk');
@@ -2035,6 +2037,7 @@ const chargeAll = async (req, res, next) => {
 	}
 
 	let processError = false;
+	let emailContents = [];
 	// start charging one by one
 	for (let i = 0; i < combinedEntries.length; ++i) {
 		let user;
@@ -2075,14 +2078,14 @@ const chargeAll = async (req, res, next) => {
 		}
 
 		let paymentMethod = payment.paymentMethod;
-		let paymentStatus = 'Unpaid',
+		let paymentStatus = UNPAID,
 			errorCode = '';
 		if (paymentMethod === ONSITE) {
 			paymentStatus = PAID;
 			payment.stripeFee = 0;
 			payment.refundFee = payment.entryFee;
 		} else if (paymentMethod === STRIPE) {
-			if (payment.paymentStatus !== 'Unpaid') {
+			if (payment.paymentStatus !== UNPAID) {
 				continue;
 			}
 			// create paymentIntent, calling stripe.paymentIntents.create
@@ -2124,6 +2127,14 @@ const chargeAll = async (req, res, next) => {
 			}
 			// save paymentIntentId, if err.code is AUTHENTICATION, we need paymentIntentId to handle the post-procecssing tasks
 			payment.stripePaymentIntentId = paymentIntent.id;
+
+			let emailContent = {};
+			emailContent.recipientName = user.firstName;
+			emailContent.recipientEmail = user.email;
+			emailContent.paymentStatus = paymentStatus;
+			emailContent.entryFee = payment.entryFee;
+
+			emailContents.push(emailContent);
 		} else {
 			console.log('2026 = paymentMethod error');
 			processError = true;
@@ -2137,6 +2148,24 @@ const chargeAll = async (req, res, next) => {
 			console.log('1975 = ', err);
 			processError = true;
 		}
+	}
+
+	// sendChargeAllConfirmationEmail
+	try {
+		sendChargeAllConfirmationEmail(
+			club.name,
+			club.sesEmail,
+			event.name,
+			event.id,
+			emailContents
+		);
+	} catch (err) {
+		// DO NOT send next(error) to front end because it will abort the rest of operations
+		// since the charge is done, we don't really care about sending email failed or not
+		console.log(
+			'sendChargeAllConfirmationEmail error = ',
+			sendChargeAllConfirmationEmail
+		);
 	}
 
 	// once it's done, prepare to reutrn paymentReport back to frontend
