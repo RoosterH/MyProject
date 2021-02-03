@@ -876,10 +876,10 @@ const SubmitEntry = props => {
 					footerClass="event-item__modal-actions"
 					footer={
 						<React.Fragment>
-							<Button size="small" inverse onClick={closeDELHandler}>
+							<Button inverse onClick={closeDELHandler}>
 								NO
 							</Button>
-							<Button size="small" danger onClick={deleteHandler}>
+							<Button danger onClick={deleteHandler}>
 								YES
 							</Button>
 						</React.Fragment>

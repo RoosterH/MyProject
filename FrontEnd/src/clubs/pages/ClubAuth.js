@@ -392,7 +392,7 @@ const ClubAuth = () => {
 				{/* <Button inverse to="/clubs/signup">
 					SIGNUP
 				</Button> */}
-				<Button size="small" inverse onClick={switchModeHandler}>
+				<Button inverse onClick={switchModeHandler}>
 					SWITCH TO {isLoginMode ? 'SIGNUP' : 'LOGIN'}
 				</Button>
 			</div>

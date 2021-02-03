@@ -440,10 +440,7 @@ const UserAuth = () => {
 					footerClass="event-item__modal-actions"
 					footer={
 						<React.Fragment>
-							<Button
-								size="small"
-								inverse
-								onClick={closeSignupModalHandler}>
+							<Button inverse onClick={closeSignupModalHandler}>
 								OK
 							</Button>
 						</React.Fragment>

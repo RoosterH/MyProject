@@ -606,10 +606,10 @@ const UpdateEventRegistration = props => {
 					footerClass="event-item__modal-actions"
 					footer={
 						<React.Fragment>
-							<Button size="small" inverse onClick={closeDELHandler}>
+							<Button inverse onClick={closeDELHandler}>
 								CANCEL
 							</Button>
-							<Button size="small" danger onClick={deleteHandler}>
+							<Button danger onClick={deleteHandler}>
 								DELETE
 							</Button>
 						</React.Fragment>
