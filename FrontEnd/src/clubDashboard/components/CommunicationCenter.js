@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import './ClubManager.css';
 
-const ClubCommunicationCenter = () => {
+const CommunicationCenter = () => {
 	const clubAuthContext = useContext(ClubAuthContext);
 	let cid = clubAuthContext.clubId;
 	let clubName = clubAuthContext.clubName;
@@ -72,4 +72,4 @@ const ClubCommunicationCenter = () => {
 	);
 };
 
-export default ClubCommunicationCenter;
+export default CommunicationCenter;

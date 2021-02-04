@@ -13,7 +13,7 @@ import EmailComposer from './EmailComposer.js';
 import '../../shared/css/Auth.css';
 import './ClubMemberList.css';
 
-const ClubCommsMembers = () => {
+const CommsMembers = () => {
 	const clubAuthContext = useContext(ClubAuthContext);
 	const [csvFileValid, setCsvFileValid] = useState(true);
 	const {
@@ -159,4 +159,4 @@ const ClubCommsMembers = () => {
 	);
 };
 
-export default ClubCommsMembers;
+export default CommsMembers;
