@@ -101,7 +101,7 @@ const ClubDashboardToolbar = () => {
 
 					<li className="dashboard-nav-menu dropdown">
 						<Link
-							to="/clubs/communicationCenter"
+							to="/clubs/commsCenter/"
 							exact="exact"
 							className="dropdown-greybutton">
 							<i
@@ -110,14 +110,14 @@ const ClubDashboardToolbar = () => {
 							/>
 							Communication Center
 						</Link>
-						{/* <div className="dropdown-content">
-							<NavLink to={'/clubs/events/new'} exact>
-								Add New Event
+						<div className="dropdown-content">
+							<NavLink to={`/clubs/commsMembers/${cid}`} exact>
+								Member Center
 							</NavLink>
-							<NavLink to={`/events/club/${cid}/`} exact>
-								CLUB EVENTS
+							<NavLink to={`/clubs/commsMembers/${cid}/`} exact>
+								Event Center
 							</NavLink>
-						</div> */}
+						</div>
 					</li>
 
 					<li className="dashboard-nav-menu dropdown">

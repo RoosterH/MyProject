@@ -827,6 +827,53 @@ const sendRefundEmail = async (
 	}
 };
 
+const sendClubEmail = async (
+	recipients,
+	subject,
+	content,
+	clubName,
+	clubEmail
+) => {
+	// configure AWS SDK
+	// AWS.config.loadFromPath('config.json');
+	AWS.config.update({
+		accessKeyId: process.env.AWS_ACCESSKEYID,
+		secretAccessKey: process.env.AWS_SECRETACCESSKEY,
+		region: process.env.S3_REGION
+	});
+
+	// create Nodemailer SES transporter
+	let transporter = nodemailer.createTransport({
+		SES: new AWS.SES({
+			apiVersion: '2010-12-01'
+		}),
+		sendingRate: 14 // max 14 messages per second
+	});
+
+	let from = '"' + clubName + '" ' + '<' + clubEmail + '>';
+
+	// DO NOT USE Throttling here as it is going to send emails infinitely
+	for (let i = 0; i < recipients.length; ++i) {
+		const recipientName = recipients[i].firstName;
+		const recipientEmail = recipients[i].email;
+		// send email
+		let info;
+		try {
+			info = transporter.sendMail({
+				from: from,
+				to: recipientEmail,
+				subject: subject,
+				text: content,
+				html: content,
+				sender: clubEmail,
+				replyTo: clubEmail
+			});
+		} catch (err) {
+			console.log('nodemailer err = ', err);
+		}
+	}
+};
+
 module.exports = {
 	sendVerificationEmail,
 	sendAccountActivationEmail,
@@ -835,5 +882,6 @@ module.exports = {
 	sendChangeRunGroupEmail,
 	sendChargeConfirmationEmail,
 	sendChargeAllConfirmationEmail,
-	sendRefundEmail
+	sendRefundEmail,
+	sendClubEmail
 };

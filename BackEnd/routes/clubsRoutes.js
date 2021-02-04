@@ -140,6 +140,21 @@ router.get(
 
 router.get('/memberList/:cid', clubsController.getClubMemberList);
 
+router.get(
+	'/commsMemberList/:cid',
+	clubsController.getClubCommsMemberList
+);
+
+router.post(
+	'/sendEmail/:cid',
+	[
+		check('recipients').not().isEmpty(),
+		check('subject').not().isEmpty(),
+		check('content').not().isEmpty()
+	],
+	clubsController.sendEmail
+);
+
 router.post(
 	'/uploadMemberList/:cid',
 	fileUpload.single('memberList'),

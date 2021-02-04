@@ -110,6 +110,12 @@ const ClubPhotos = React.lazy(() =>
 const ClubAccountManager = React.lazy(() =>
 	import('./clubDashboard/components/ClubAccountManager')
 );
+const ClubCommunicationCenter = React.lazy(() =>
+	import('./clubDashboard/components/ClubCommunicationCenter')
+);
+const ClubCommsMembers = React.lazy(() =>
+	import('./clubDashboard/components/ClubCommsMembers')
+);
 const ClubCredential = React.lazy(() =>
 	import('./clubDashboard/components/ClubCredential')
 );
@@ -230,6 +236,12 @@ const App = () => {
 				</Route>
 				<Route path="/clubs/accountManager/:clubId" exact>
 					<ClubAccountManager />
+				</Route>
+				<Route path="/clubs/commsCenter/" exact>
+					<ClubCommunicationCenter />
+				</Route>
+				<Route path="/clubs/commsMembers/:clubId" exact>
+					<ClubCommsMembers />
 				</Route>
 				<Route path="/clubs/credential/:clubId" exact>
 					<ClubCredential />
@@ -442,6 +454,9 @@ const App = () => {
 				{/*** To aviod unauthorized requests, all the pages below need to add loginValidation ***/}
 				<Route path="/clubs/clubManager" exact>
 					<ClubManager />
+				</Route>
+				<Route path="/clubs/commsMembers/:clubId" exact>
+					<ClubCommsMembers />
 				</Route>
 				<Route path="/clubs/eventManager" exact>
 					<EventManager />

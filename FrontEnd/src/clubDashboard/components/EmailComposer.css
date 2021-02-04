@@ -1,0 +1,88 @@
+.emailcomposer-title {
+	display: inline;
+	font-size: 16px;
+	font-weight: 400;
+	margin: 0.5rem 1.5rem;
+}
+.emailcomposer-container {
+	display: block;
+	list-style: none;
+	margin: 1rem 1rem 2rem 1rem;
+	padding: 0;
+	justify-content: center;
+	/* height: 777px; */
+	width: 80%;
+
+	position: fixed;
+	margin-left: 10%;
+}
+
+.demo-editor {
+	height: 600px !important;
+	border: 1px solid #f1f1f1 !important;
+	padding: 5px !important;
+	border-radius: 2px !important;
+}
+
+.wrapper-class {
+	padding: 1rem;
+	border: 1px solid #ccc;
+}
+.editor-class {
+	height: 600px !important;
+	/* border: 1px solid #f1f1f1 !important; */
+	padding: 5px !important;
+	border-radius: 2px !important;
+
+	background-color: rgb(245, 245, 245);
+	/* padding: 1rem; */
+	border: 1px solid #ccc;
+}
+.toolbar-class {
+	border: 1px solid #ccc;
+}
+
+.subject__label {
+	display: inline-block;
+	font-size: 15px;
+	margin: 0rem 0.1rem 0.2rem 1.5rem;
+}
+
+.subject__field {
+	display: inline-block;
+	/* without solid, color does not work properly */
+	border-style: solid;
+	border-color: #c2c2c2;
+	font-size: 15px;
+	font-family: 'Montserrat', sans-serif;
+	width: 89%;
+	height: 1.9rem;
+	margin: 0rem 0.1rem 0.5rem 1.5rem;
+}
+
+@media (max-width: 780px) {
+	.emailcomposer-container {
+		list-style: none;
+		margin: 2rem 1rem 2rem 1rem;
+		padding: 0rem 1rem;
+		justify-content: center;
+		width: 90%;
+		height: 500px;
+	}
+	.demo-editor {
+		height: 345px !important;
+		border: 1px solid #f1f1f1 !important;
+		padding: 5px !important;
+		border-radius: 2px !important;
+	}
+	.editor-class {
+		height: 300px !important;
+		/* border: 1px solid #f1f1f1 !important; */
+		padding: 5px !important;
+		border-radius: 2px !important;
+
+		background-color: rgb(245, 245, 245);
+		/* padding: 1rem; */
+		border: 1px solid #ccc;
+	}
+}

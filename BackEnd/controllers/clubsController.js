@@ -15,10 +15,12 @@ const User = require('../models/user');
 const UserAccount = require('../models/userAccount');
 const crypto = require('crypto');
 const Event = require('../models/event');
+const Email = require('../models/email');
 const { Encrypt, Decrypt } = require('../util/crypto');
 const {
 	sendVerificationEmail,
-	sendAccountActivationEmail
+	sendAccountActivationEmail,
+	sendClubEmail
 } = require('../util/nodeMailer');
 const Token = require('../models/token');
 
@@ -2497,6 +2499,165 @@ const deleteMember = async (req, res, next) => {
 	res.status(200).json({});
 };
 
+// GET /api/clubs/commsMember/:cid
+const getClubCommsMemberList = async (req, res, next) => {
+	let clubIdParam = req.params.cid;
+	const clubId = req.userData;
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'You are not authorized to get club communicataion member list.',
+			403
+		);
+		return next(error);
+	}
+
+	let club;
+	try {
+		// we don't want to return password field
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'getClubCommsMemberList failed @ finding club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'getClubCommsMemberList club process failed no club found.',
+			404
+		);
+		return next(error);
+	}
+
+	// find all the clubMember that are associated with this club
+	try {
+		var members = await ClubMember.find({ clubId: clubId });
+	} catch (err) {
+		const error = new HttpError(
+			'getClubCommsMemberList Get club member list process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// compose responseData
+	// lastName, firstName, email, phone,
+	let memberList = [];
+
+	for (let i = 0; i < members.length; ++i) {
+		let member = members[i];
+		let lastName = member.lastName;
+		let firstName = member.firstName;
+		var email = member.email;
+
+		// retrieve user info from userAccount if exists
+		if (member.userId) {
+			try {
+				var user = await User.findById(member.userId);
+			} catch (err) {
+				console.log('getClubMemberList failed @ finding user');
+			}
+			if (user) {
+				// if user is signed up, use user's email
+				email = user.email;
+				// get userAccount
+				try {
+					var userAccount = await UserAccount.findById(
+						user.accountId
+					);
+				} catch (err) {
+					console.log(
+						'getClubMemberList failed @ finding userAccout'
+					);
+				}
+				if (userAccount) {
+					var phone = Decrypt(userAccount.phone);
+				}
+			}
+		}
+
+		var newMember = {
+			userId: member.userId,
+			lastName: lastName,
+			firstName: firstName,
+			email: email,
+			phone: phone
+		};
+
+		memberList.push(newMember);
+	}
+	res.status(200).json({
+		memberList: memberList
+	});
+};
+
+const sendEmail = async (req, res, next) => {
+	let clubIdParam = req.params.cid;
+	const clubId = req.userData;
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'You are not authorized to send email.',
+			403
+		);
+		return next(error);
+	}
+
+	let club;
+	try {
+		// we don't want to return password field
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'sendEmail failed @ finding club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'sendEmail club process failed no club found.',
+			404
+		);
+		return next(error);
+	}
+
+	const { recipients, subject, content } = req.body;
+	// not everyone has userId because people may not register yet
+	let recipientIds = [];
+	for (let i = 0; i < recipients.length; ++i) {
+		if (recipients[i].userId) {
+			recipientIds.push(recipients[i].userId);
+		}
+	}
+
+	let email = new Email({
+		recipientIds: recipientIds,
+		subject: subject,
+		content: content,
+		clubId: club.id,
+		timeStamp: moment()
+	});
+
+	try {
+		sendClubEmail(
+			recipients,
+			subject,
+			content,
+			club.name,
+			club.sesEmail
+		);
+		const mail = await email.save();
+	} catch (err) {
+		console.log('err = ', err);
+	}
+	res.status(200).json({
+		status: 'OK'
+	});
+};
+
 exports.getAllClubs = getAllClubs;
 exports.getClubById = getClubById;
 exports.getClubProfileForUsers = getClubProfileForUsers;
@@ -2525,3 +2686,5 @@ exports.uploadMemberList = uploadMemberList;
 exports.addMember = addMember;
 exports.updateMember = updateMember;
 exports.deleteMember = deleteMember;
+exports.getClubCommsMemberList = getClubCommsMemberList;
+exports.sendEmail = sendEmail;
