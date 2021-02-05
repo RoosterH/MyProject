@@ -21,7 +21,9 @@ const emailSchema = new mongoose.Schema({
 	eventId: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'Event'
-	}
+	},
+	// number of recipients, because recipientIds does not necessarily have all the recipients
+	recipientNum: { type: Number, required: true }
 });
 
 module.exports = mongoose.model('Email', emailSchema);

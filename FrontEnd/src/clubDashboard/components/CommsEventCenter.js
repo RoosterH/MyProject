@@ -159,7 +159,6 @@ const CommsEventCenter = props => {
 			recipient.firstName = selections[i].firstName;
 			recipient.email = selections[i].email;
 			recipient.phone = selections[i].phone;
-			console.log('recipient = ', recipient);
 			recipients.push(recipient);
 		}
 		setEmailRecipient(recipients);

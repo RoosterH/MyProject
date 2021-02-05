@@ -46,8 +46,6 @@ const EmailComposer = props => {
 	};
 
 	const submitHandler = values => {
-		console.log('I am in submit');
-		console.log('values = ', values);
 		getEmailContent(values.subject, convertedContent);
 		setOKLeavePage(true);
 	};

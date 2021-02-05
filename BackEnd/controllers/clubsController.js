@@ -2635,6 +2635,7 @@ const sendEmail = async (req, res, next) => {
 
 	let email = new Email({
 		recipientIds: recipientIds,
+		recipientNum: recipients.length,
 		subject: subject,
 		content: content,
 		clubId: club.id,
