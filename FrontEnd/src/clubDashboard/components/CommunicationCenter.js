@@ -28,27 +28,27 @@ const CommunicationCenter = () => {
 
 			<div className="list-content">
 				<div className="list-content-link">
-					<Link to={`/clubs/commsMembers/${cid}`}>
+					<Link to={`/clubs/commsMemberCenter/${cid}`}>
 						<i
 							className="fa fa-sort-desc pull-right"
 							aria-hidden="true"
 						/>
 						Member Center
 					</Link>
-					<Link to={`/clubs/profileManager/${cid}`} exact="exact">
+					<Link to={`/clubs/commsMemberCenter/${cid}`} exact="exact">
 						<p className="list-content-desc">
 							Send out a blast email to all the members or individual
 							emails.
 						</p>
 					</Link>
-					<Link to={`/clubs/accountManager/${cid}`} exact="exact">
+					<Link to={`/clubs/commsEventSelector/${cid}`} exact="exact">
 						<i
 							className="fa fa-sort-desc pull-right"
 							aria-hidden="true"
 						/>
 						Event Center
 					</Link>
-					<Link to={`/clubs/accountManager/${cid}`} exact="exact">
+					<Link to={`/clubs/commsEventSelector/${cid}`} exact="exact">
 						<p className="list-content-desc">
 							You can contact a specific event attendees from here.
 						</p>

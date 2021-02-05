@@ -69,6 +69,12 @@ router.get('/entryreport/:eid', eventsController.getEntryReport);
 // get event payment report
 router.get('/paymentReport/:eid', eventsController.getPaymentReport);
 
+// get communication center event entry report
+router.get(
+	'/commsEntryReport/:eid',
+	eventsController.getCommsEntryReport
+);
+
 // last valid day to allow for event addition, modification, or deletion
 let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');
 // only clubs are able to create an event

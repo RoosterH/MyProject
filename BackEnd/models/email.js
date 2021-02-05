@@ -17,6 +17,10 @@ const emailSchema = new mongoose.Schema({
 		type: mongoose.Schema.Types.ObjectId,
 		required: true,
 		ref: 'Club'
+	},
+	eventId: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Event'
 	}
 });
 

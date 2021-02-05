@@ -93,9 +93,6 @@ const ClubDashboardToolbar = () => {
 							<NavLink to={`/clubs/dataCenterSelector/${cid}`} exact>
 								Data Center
 							</NavLink>
-							{/* <a href="#">Pending Waitlist Invitations</a>
-							<a href="#">Detailed Analytics</a>
-							<a href="#">User Credits</a> */}
 						</div>
 					</li>
 
@@ -111,10 +108,10 @@ const ClubDashboardToolbar = () => {
 							Communication Center
 						</Link>
 						<div className="dropdown-content">
-							<NavLink to={`/clubs/commsMembers/${cid}`} exact>
+							<NavLink to={`/clubs/commsMemberCenter/${cid}`} exact>
 								Member Center
 							</NavLink>
-							<NavLink to={`/clubs/commsMembers/${cid}/`} exact>
+							<NavLink to={`/clubs/commsEventSelector/${cid}/`} exact>
 								Event Center
 							</NavLink>
 						</div>

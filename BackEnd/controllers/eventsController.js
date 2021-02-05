@@ -2487,6 +2487,129 @@ const getEntryReportForUsers = async (req, res, next) => {
 	}
 };
 
+// GET /api/events/coomsEntryrRport/:eid - this is for Club communication center event center
+const getCommsEntryReport = async (req, res, next) => {
+	// req.params is getting the eid from url, such as /api/events/:id
+	const eventId = req.params.eid;
+	let event;
+	try {
+		event = await Event.findById(eventId).populate('entryReportId');
+	} catch (err) {
+		console.log('err = ', err);
+		// this error is displayed if the request to the DB had some issues
+		const error = new HttpError(
+			'getCommsEntryReport Cannot find the event for the entry list. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'getCommsEntryReport Could not find the event. Please try later.',
+			404
+		);
+		return next(error);
+	}
+
+	let entryReport = event.entryReportId;
+	if (!entryReport) {
+		const error = new HttpError(
+			'getCommsEntryReport Could not find the event entry report. Please try later.',
+			404
+		);
+		return next(error);
+	}
+
+	// get entires
+	let entries = entryReport.entries;
+	// if there is no entry, should not have a waitlist, either.
+	if (entries.length === 0) {
+		res.status(404).json({
+			entryData: []
+		});
+	}
+
+	let days = entries.length;
+	let mutipleDayEntryData = [];
+	let eventName = '';
+	// for communication center, we need to add a choice for all the attendees in multiple day events.
+	let allEntries = [];
+	for (let i = 0; i < days; ++i) {
+		let eList = entries[i];
+		let entryData = [];
+		for (let j = 0; j < eList.length; ++j) {
+			let entry;
+			try {
+				entry = await Entry.findById(eList[j]).populate('carId');
+			} catch (err) {
+				const error = new HttpError(
+					'Cannot find the entry in getCommsEntryReport entry. Please try again later.',
+					500
+				);
+				return next(error);
+			}
+			if (!entry) {
+				const error = new HttpError(
+					'Internal error entry not found in getCommsEntryReport.',
+					500
+				);
+				return next(error);
+			}
+			if (eventName === '') {
+				eventName = entry.eventName;
+			}
+			let user;
+			try {
+				user = await User.findById(entry.userId);
+			} catch (err) {
+				const error = new HttpError(
+					'Cannot find the user in getCommsEntryReport. Please try again later.',
+					500
+				);
+				return next(error);
+			}
+			if (!user) {
+				const error = new HttpError(
+					'Internal error user not found in getCommsEntryReport.',
+					500
+				);
+				return next(error);
+			}
+
+			let tmpEntry = {};
+			tmpEntry.userId = entry.userId;
+			tmpEntry.lastName = entry.userLastName;
+			tmpEntry.firstName = entry.userFirstName;
+			tmpEntry.email = user.email;
+			tmpEntry.phone = user.phone;
+
+			entryData.push(tmpEntry);
+			if (days > 1) {
+				allEntries.push(tmpEntry);
+			}
+		}
+
+		mutipleDayEntryData.push(entryData);
+	}
+
+	// for communication center, we need to add a choice for all the attendees on multiple day events.
+	if (days > 1) {
+		// remove duplicates
+		allEntries = allEntries.filter(
+			(entry, index, self) =>
+				index === self.findIndex(t => t.email === entry.email)
+		);
+		// put all entries to the beginning of the multipleDayEntryData
+		mutipleDayEntryData.unshift(allEntries);
+	}
+
+	res.status(200).json({
+		eventId: event.id,
+		eventName: event.name,
+		entryData: mutipleDayEntryData
+	});
+};
 // export a pointer of the function
 exports.getAllEvents = getAllEvents;
 exports.getEventById = getEventById;
@@ -2508,3 +2631,4 @@ exports.getEntryForm = getEntryForm;
 exports.createUpdateEntryForm = createUpdateEntryForm;
 exports.chargeAll = chargeAll;
 exports.getEntryReportForUsers = getEntryReportForUsers;
+exports.getCommsEntryReport = getCommsEntryReport;

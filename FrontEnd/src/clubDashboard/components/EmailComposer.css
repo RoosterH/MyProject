@@ -45,7 +45,7 @@
 .subject__label {
 	display: inline-block;
 	font-size: 15px;
-	margin: 0rem 0.1rem 0.2rem 1.5rem;
+	margin: 0rem 0.1rem 0.2rem 0rem;
 }
 
 .subject__field {
@@ -60,10 +60,19 @@
 	margin: 0rem 0.1rem 0.5rem 1.5rem;
 }
 
+.recipient-nonEventCenter {
+	margin-left: 12.3rem;
+	font-size: 15px;
+}
+
+.recipient-eventCenter {
+	margin: 0rem 0rem 0rem 14.9rem;
+	font-size: 15px;
+}
 @media (max-width: 780px) {
 	.emailcomposer-container {
 		list-style: none;
-		margin: 2rem 1rem 2rem 1rem;
+		margin: 0rem 1rem 2rem 1rem;
 		padding: 0rem 1rem;
 		justify-content: center;
 		width: 90%;
@@ -84,5 +93,29 @@
 		background-color: rgb(245, 245, 245);
 		/* padding: 1rem; */
 		border: 1px solid #ccc;
+	}
+	.recipient-nonEventCenter {
+		margin-left: 0rem;
+		font-size: 14px;
+	}
+	.recipient-eventCenter {
+		margin: 0rem 0rem 0rem 0rem;
+		font-size: 14px;
+	}
+	.subject__label {
+		display: inline-block;
+		font-size: 14px;
+		margin: 0rem 0.1rem 0.2rem 0rem;
+	}
+	.subject__field {
+		display: inline-block;
+		/* without solid, color does not work properly */
+		border-style: solid;
+		border-color: #c2c2c2;
+		font-size: 14px;
+		font-family: 'Montserrat', sans-serif;
+		width: 65%;
+		height: 1.9rem;
+		margin: 0rem 0.1rem 0.5rem 1.5rem;
 	}
 }

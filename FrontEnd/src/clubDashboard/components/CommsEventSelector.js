@@ -29,7 +29,11 @@ const CommsEventSelector = () => {
 			<div className="list-header clearfix">
 				<div className="selector-title">Please select an event</div>
 			</div>
-			<ClubEvents clubId={clubId} dataCenter={true} readOnly={true} />
+			<ClubEvents
+				clubId={clubId}
+				commsCenter={true}
+				readOnly={true}
+			/>
 		</React.Fragment>
 	);
 };

@@ -75,6 +75,7 @@ const EventList = props => {
 					paymentCenter={props.paymentCenter}
 					refundCenter={props.refundCenter}
 					dataCenter={props.dataCenter}
+					commsCenter={props.commsCenter}
 				/>
 			))}
 		</ul>

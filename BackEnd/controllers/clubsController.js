@@ -2624,7 +2624,7 @@ const sendEmail = async (req, res, next) => {
 		return next(error);
 	}
 
-	const { recipients, subject, content } = req.body;
+	const { eventId, recipients, subject, content } = req.body;
 	// not everyone has userId because people may not register yet
 	let recipientIds = [];
 	for (let i = 0; i < recipients.length; ++i) {
@@ -2638,6 +2638,7 @@ const sendEmail = async (req, res, next) => {
 		subject: subject,
 		content: content,
 		clubId: club.id,
+		eventId: eventId,
 		timeStamp: moment()
 	});
 

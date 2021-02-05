@@ -27,6 +27,9 @@ const ClubEvents = props => {
 	// dataCenter true is for data center
 	let dataCenter = props.dataCenter ? props.dataCenter : false;
 
+	// dataCenter true is for data center
+	let commsCenter = props.commsCenter ? props.commsCenter : false;
+
 	const [loadedEvents, setLoadedEvents] = useState();
 	const {
 		isLoading,
@@ -61,7 +64,8 @@ const ClubEvents = props => {
 						entryReportManager ||
 						paymentCenter ||
 						refundCenter ||
-						dataCenter
+						dataCenter ||
+						commsCenter
 					) {
 						[
 							responseData,
@@ -133,6 +137,7 @@ const ClubEvents = props => {
 					paymentCenter={paymentCenter}
 					refundCenter={refundCenter}
 					dataCenter={dataCenter}
+					commsCenter={commsCenter}
 				/>
 			)}
 		</React.Fragment>

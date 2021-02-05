@@ -113,8 +113,8 @@ const ClubAccountManager = React.lazy(() =>
 const ClubCommunicationCenter = React.lazy(() =>
 	import('./clubDashboard/components/CommunicationCenter')
 );
-const CommsMembers = React.lazy(() =>
-	import('./clubDashboard/components/CommsMembers')
+const CommsMemberCenter = React.lazy(() =>
+	import('./clubDashboard/components/CommsMemberCenter')
 );
 const CommsEventSelector = React.lazy(() =>
 	import('./clubDashboard/components/CommsEventSelector')
@@ -243,8 +243,8 @@ const App = () => {
 				<Route path="/clubs/commsCenter/" exact>
 					<ClubCommunicationCenter />
 				</Route>
-				<Route path="/clubs/commsMembers/:clubId" exact>
-					<CommsMembers />
+				<Route path="/clubs/commsMemberCenter/:clubId" exact>
+					<CommsMemberCenter />
 				</Route>
 				<Route path="/clubs/commsEventSelector/:clubId" exact>
 					<CommsEventSelector />
@@ -461,8 +461,8 @@ const App = () => {
 				<Route path="/clubs/clubManager" exact>
 					<ClubManager />
 				</Route>
-				<Route path="/clubs/commsMembers/:clubId" exact>
-					<CommsMembers />
+				<Route path="/clubs/commsMemberCenter/:clubId" exact>
+					<CommsMemberCenter />
 				</Route>
 				<Route path="/clubs/commsEventSelector/:clubId" exact>
 					<CommsEventSelector />

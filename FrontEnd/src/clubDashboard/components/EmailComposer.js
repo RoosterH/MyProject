@@ -16,6 +16,7 @@ import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import './EmailComposer.css';
 
 const EmailComposer = props => {
+	const isEventCenter = props.commsEventCenter;
 	const clubAuthContext = useContext(ClubAuthContext);
 	const [OKLeavePage, setOKLeavePage] = useState('true');
 
@@ -42,7 +43,6 @@ const EmailComposer = props => {
 			convertToRaw(editorState.getCurrentContent())
 		);
 		setConvertedContent(currentContentAsHTML);
-		console.log('currentContentAsHTML = ', currentContentAsHTML);
 	};
 
 	const submitHandler = values => {
@@ -100,9 +100,7 @@ const EmailComposer = props => {
 					values
 				}) => (
 					<Form className="event-form-container">
-						<label
-							htmlFor="subject"
-							className="event-form__label_inline">
+						<label htmlFor="subject" className="subject__label">
 							Subject :
 						</label>
 						<Field
@@ -121,7 +119,7 @@ const EmailComposer = props => {
 								{errors.subject}
 							</div>
 						)}
-						<EditorField />
+						<EditorField name="editorfield" />
 						<Button
 							type="submit"
 							size="medium"
@@ -178,13 +176,30 @@ const EmailComposer = props => {
 
 	return (
 		<React.Fragment>
-			<div className="list-header clearfix">
-				<div className="emailcomposer-title">Compose Email</div>
-			</div>
-			<div className="emailcomposer-container">
-				<div>Recipient: total recipients {recipientNum}</div>
-				{emailForm()}
-			</div>
+			{!isEventCenter && (
+				<React.Fragment>
+					<div className="list-header clearfix">
+						<div className="emailcomposer-title">Compose Email</div>
+					</div>
+					<div className="emailcomposer-container">
+						<div className="recipient-nonEventCenter">
+							Recipient: total recipients {recipientNum}
+						</div>
+						{emailForm()}
+					</div>
+				</React.Fragment>
+			)}
+			{isEventCenter && (
+				<React.Fragment>
+					<div className="list-header clearfix">
+						<div className="emailcomposer-title">Compose Email</div>
+					</div>
+					<div className="recipient-eventCenter">
+						Recipient: total recipients {recipientNum}
+					</div>
+					{emailForm()}
+				</React.Fragment>
+			)}
 		</React.Fragment>
 	);
 };
