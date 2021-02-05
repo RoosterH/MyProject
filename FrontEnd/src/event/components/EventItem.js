@@ -429,7 +429,7 @@ const EventItem = props => {
 							</div>
 						</React.Fragment>
 					)}
-				<div class="main-container">
+				<div className="main-container">
 					<div className="row">
 						{/* left side */}
 						<div className="eventitem-col">
