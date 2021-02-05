@@ -200,6 +200,11 @@
 	background-color: rgb(245, 177, 245);
 	color: black;
 }
+
+.emailarchive-preview {
+	padding: 1rem;
+	margin-top: 1rem;
+}
 @media (max-width: 780px) {
 	/* New Event Manager */
 	.li-tab {

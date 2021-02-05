@@ -114,6 +114,9 @@ const ClubDashboardToolbar = () => {
 							<NavLink to={`/clubs/commsEventSelector/${cid}/`} exact>
 								Event Center
 							</NavLink>
+							<NavLink to={`/clubs/commsEmailArchive/${cid}/`} exact>
+								Email Archive
+							</NavLink>
 						</div>
 					</li>
 

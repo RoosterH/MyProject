@@ -8,7 +8,7 @@ import Modal from '../../shared/components/UIElements/Modal';
 
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import { useHttpClient } from '../../shared/hooks/http-hook';
-import MaterialTableCommsMembers from './MaterialTableCommsMembers.js';
+import MaterialTableCommsMemberCenter from './MaterialTableCommsMemberCenter.js';
 import EmailComposer from './EmailComposer.js';
 import '../../shared/css/Auth.css';
 import './ClubMemberList.css';
@@ -142,7 +142,7 @@ const CommsMemberCenter = () => {
 				</Modal>
 			)}
 			{materialData && !emailRecipient && (
-				<MaterialTableCommsMembers
+				<MaterialTableCommsMemberCenter
 					showLoading={showLoading}
 					clubName={clubAuthContext.clubName}
 					memberList={materialData}

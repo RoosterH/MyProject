@@ -53,19 +53,18 @@ const CommunicationCenter = () => {
 							You can contact a specific event attendees from here.
 						</p>
 					</Link>
-					{/* <Link to={`/clubs/teamManager/${cid}`} exact="exact">
+					<Link to={`/clubs/commsEmailArchive/${cid}`} exact="exact">
 						<i
 							className="fa fa-sort-desc pull-right"
 							aria-hidden="true"
 						/>
-						Team Manager
+						Email Archive
 					</Link>
-					<Link to={`/clubs/teamManager/${cid}`} exact="exact">
+					<Link to={`/clubs/commsEmailArchive/${cid}`} exact="exact">
 						<p className="list-content-desc">
-							Manage Your Team Invite your co-workers to access your
-							club dashboard.
+							Check email history here.
 						</p>
-					</Link> */}
+					</Link>
 				</div>
 			</div>
 		</React.Fragment>

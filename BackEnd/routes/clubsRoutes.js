@@ -145,6 +145,11 @@ router.get(
 	clubsController.getClubCommsMemberList
 );
 
+router.get(
+	'/commsEmailArchive/:cid',
+	clubsController.getClubCommsEmailArchive
+);
+
 router.post(
 	'/sendEmail/:cid',
 	[

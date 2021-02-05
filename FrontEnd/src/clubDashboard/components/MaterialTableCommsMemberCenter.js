@@ -4,7 +4,7 @@ import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
 import './ClubManager.css';
 
-const MaterialTableCommsMembers = props => {
+const MaterialTableCommsMemberCenter = props => {
 	// create a ref to clear all the selections after sending email
 	const tableRef = useRef();
 	let clubName = props.clubName;
@@ -86,4 +86,4 @@ const MaterialTableCommsMembers = props => {
 	);
 };
 
-export default MaterialTableCommsMembers;
+export default MaterialTableCommsMemberCenter;

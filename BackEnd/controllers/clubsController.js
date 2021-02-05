@@ -2660,6 +2660,76 @@ const sendEmail = async (req, res, next) => {
 	});
 };
 
+// GET /api/clubs/commsEmailArchive/:cid
+const getClubCommsEmailArchive = async (req, res, next) => {
+	let clubIdParam = req.params.cid;
+	const clubId = req.userData;
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'You are not authorized to get club email archives.',
+			403
+		);
+		return next(error);
+	}
+
+	let club;
+	try {
+		// we don't want to return password field
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'getClubCommsEmailArchive failed @ finding club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'getClubCommsEmailArchive process failed no club found.',
+			404
+		);
+		return next(error);
+	}
+
+	// find all the clubMember that are associated with this club
+	try {
+		var emails = await Email.find({ clubId: clubId });
+	} catch (err) {
+		const error = new HttpError(
+			'getClubCommsEmailArchive get email archive process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	for (let i = 0; i < emails.length; ++i) {
+		if (emails[i].eventId) {
+			try {
+				var event = await Event.findById(emails[i].eventId);
+			} catch (err) {
+				const error = new HttpError(
+					'getClubCommsEmailArchive failed @ finding event. Please try again later.',
+					500
+				);
+				return next(error);
+			}
+			if (!event) {
+				const error = new HttpError(
+					'getClubCommsEmailArchive process failed no event found.',
+					404
+				);
+				return next(error);
+			}
+			emails[i].set('eventName', event.name, { strict: false });
+		}
+	}
+
+	res.status(200).json({
+		emailArchive: emails
+	});
+};
+
 exports.getAllClubs = getAllClubs;
 exports.getClubById = getClubById;
 exports.getClubProfileForUsers = getClubProfileForUsers;
@@ -2690,3 +2760,4 @@ exports.updateMember = updateMember;
 exports.deleteMember = deleteMember;
 exports.getClubCommsMemberList = getClubCommsMemberList;
 exports.sendEmail = sendEmail;
+exports.getClubCommsEmailArchive = getClubCommsEmailArchive;
