@@ -2009,7 +2009,6 @@ const formAnalysis = data => {
 
 // POST '/api/clubs/uploadMemberList/:cid'
 const uploadMemberList = async (req, res, next) => {
-	console.log('2');
 	let clubIdParam = req.params.cid;
 	let clubId = req.userData;
 
@@ -2176,6 +2175,10 @@ const uploadMemberList = async (req, res, next) => {
 		}
 		await session.commitTransaction();
 	} catch (err) {
+		console.log(
+			'Upload club member list failed to save, please try again later. err = ',
+			err
+		);
 		const error = new HttpError(
 			'Upload club member list failed to save, please try again later.',
 			500

@@ -16,6 +16,7 @@ const Payment = require('../models/payment');
 const Stripe = require('./stripeController');
 const UserAccount = require('../models/userAccount');
 const ClubMember = require('../models/clubMember');
+const ClubEventSettings = require('../models/clubEventSettings');
 const NumberTable = require('../models/numberTable');
 const {
 	sendRegistrationConfirmationEmail,
@@ -188,14 +189,49 @@ const createEntry = async (req, res, next) => {
 			userId: userId
 		});
 	} catch (err) {
-		console.log('Unable to look up club member = ', err);
+		console.log('Unable to look up club member with userId = ', err);
 		// unable to find
 		const error = new HttpError(
-			'Unable to look up club member. Please try later.',
+			'Unable to look up club member with userId. Please try later.',
 			500
 		);
 		return next(error);
 	}
+
+	// User exists in member list but never registered any event with the club yet.
+	// flag to save clubMember
+	let updateClubMember = false;
+	// match first and last name to see if there is a match from imported member list file
+	if (!clubMember) {
+		try {
+			clubMember = await ClubMember.findOne({
+				lastName: user.lastName,
+				firstName: user.firstName
+			});
+		} catch (err) {
+			console.log(
+				'Unable to look up club member with last/first name = ',
+				err
+			);
+			// unable to find
+			const error = new HttpError(
+				'Unable to look up club member with last/first name. Please try later.',
+				500
+			);
+			return next(error);
+		}
+
+		if (clubMember) {
+			console.log('found matched member');
+			// match found, need to link user to the existing clubMember
+			clubMember.set('userId', user.id, { strict: true });
+			// update email with user.email
+			clubMember.set('email', user.email, { strict: true });
+			updateClubMember = true;
+			console.log('clubMember = ', clubMember);
+		}
+	}
+
 	let newClubMember = null;
 	if (!clubMember) {
 		// todo check whether the carNumber is available
@@ -470,6 +506,71 @@ const createEntry = async (req, res, next) => {
 			}
 		}
 
+		let [
+			registrationAnsChoices,
+			registrationAnsTexts
+		] = parseSingleDayAnswer(
+			event.registrationOptions,
+			answer,
+			REGISTRATION
+		);
+
+		// check if registration answer matches club member status
+		try {
+			var clubEventSettings = await ClubEventSettings.findById(
+				club.eventSettingsId
+			);
+		} catch (err) {
+			console.log(
+				'create entry error @ finding club event settings = ',
+				err
+			);
+			const error = new HttpError(
+				'create entry error @ finding club event settings',
+				500
+			);
+			return next(error);
+		}
+		if (!clubEventSettings) {
+			console.log('create entry failed finding club event settings');
+			const error = new HttpError(
+				'create entry failed finding club event settings.',
+				400
+			);
+			return next(error);
+		}
+
+		if (clubEventSettings.memberSystem) {
+			if (
+				(!clubMember ||
+					(clubMember && clubMember.memberExp === undefined)) &&
+				registrationAnsTexts.startsWith('Member')
+			) {
+				console.log(
+					'Registration failed. You are not a member of the club.'
+				);
+				const error = new HttpError(
+					'Registration failed. You are not a member of the club. Please refresh the page to restart the registration and select non-member to register the event.',
+					400
+				);
+				return next(error);
+			}
+			if (
+				clubMember &&
+				moment(clubMember.memberExp).isBefore(event.startDate) &&
+				registrationAnsTexts.startsWith('Member')
+			) {
+				console.log(
+					'Registration failed. Your membership has expired'
+				);
+				const error = new HttpError(
+					'Registration failed. Your membership has expired.  Please refresh the page to restart the registration and select non-member to register the event.',
+					400
+				);
+				return next(error);
+			}
+		}
+
 		// find answer of Registration option
 		let answerRegistration = '';
 		for (let i = 0; i < answer.length; ++i) {
@@ -569,7 +670,9 @@ const createEntry = async (req, res, next) => {
 		try {
 			const session = await mongoose.startSession();
 			session.startTransaction();
-			if (newClubMember) {
+			if (updateClubMember) {
+				await clubMember.save({ session: session });
+			} else if (newClubMember) {
 				await newClubMember.save({ session: session });
 			}
 			await entry.save({ session: session });

@@ -52,6 +52,10 @@ const eventSchema = new Schema({
 	numGroups: { type: Number, required: true },
 	// if true, we will create an array runGroupNumEntries with numGroup elements. Each element value cannot exceed totalCap / numGroups.
 	capDistribution: { type: Boolean, required: true },
+	//! registrationOption is required
+	// Registration options defined by club in the event entry form such as member or non-member
+	// this is initialized in club.createEventForm
+	registrationOptions: [{ type: String, requird: true }],
 	//! raceClass is optional
 	// Race class options defined by club in the event entry form
 	raceClassOptions: [{ type: String, requird: true }],

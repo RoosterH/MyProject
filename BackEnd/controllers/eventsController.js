@@ -1801,6 +1801,8 @@ const createUpdateEntryForm = async (req, res, next) => {
 					} else {
 						entry.set('lunchOptions', choices, { strict: false });
 					}
+				} else if (fieldName === 'Registration') {
+					event.registrationOptions = choices;
 				}
 			}
 		});

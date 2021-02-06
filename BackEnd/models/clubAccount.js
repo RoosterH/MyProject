@@ -16,7 +16,6 @@ const clubAccountSchema = new Schema({
 		required: true,
 		default: {}
 	}
-	// memberSystem: { type: Boolean, require: true, default: false }
 });
 
 module.exports = mongoose.model('ClubAccount', clubAccountSchema);
