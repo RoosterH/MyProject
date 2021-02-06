@@ -46,18 +46,22 @@ const CommsEmailArchive = () => {
 
 	const [materialData, setMaterialData] = useState();
 	useEffect(() => {
+		let dataArray = [];
 		if (emailArchive) {
 			for (let i = 0; i < emailArchive.length; ++i) {
 				// construct material data
 				let data = {};
 				data.timeStamp = moment(emailArchive[i].timeStamp).format(
-					'MMMM Do YYYY, h:mm:ss a'
+					'lll'
 				);
 				data.subject = emailArchive[i].subject;
 				data.eventName = emailArchive[i].eventName;
 				data.recipientNum = emailArchive[i].recipientNum;
+				data.content = emailArchive[i].content;
+				dataArray.push(data);
 			}
-			setMaterialData(emailArchive);
+
+			setMaterialData(dataArray);
 			setShowLoading(false);
 		}
 	}, [emailArchive, setMaterialData]);
