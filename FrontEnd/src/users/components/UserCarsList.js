@@ -32,7 +32,7 @@ const UserCarsList = props => {
 	};
 
 	return (
-		<ul className="events-list">
+		<ul className="garage-list">
 			{props.items.map(car => (
 				<UserCarsItem
 					// In React, each child in the array should have a unique "key" prop

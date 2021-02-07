@@ -10,6 +10,7 @@ import { useHttpClient } from '../../shared/hooks/http-hook';
 import { UserAuthContext } from '../../shared/context/auth-context';
 
 import '../../shared/css/EventForm.css';
+import { NavigateBeforeSharp } from '@material-ui/icons';
 const EventForm = props => {
 	let eId = props.eventId;
 	let entryId = props.entryId;
@@ -82,6 +83,45 @@ const EventForm = props => {
 	// 	url += '/' + storageData.userId;
 	// }
 
+	// get event status
+	const [eventStatus, setEventStatus] = useState([]);
+	useEffect(() => {
+		console.log('getEventStatus');
+		const getEventStatus = async () => {
+			try {
+				var [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
+					process.env.REACT_APP_BACKEND_URL +
+						`/events/eventStatus/${eId}`,
+					'GET',
+					null,
+					{
+						'Content-Type': 'application/json'
+					}
+				);
+			} catch (err) {}
+			setEventStatus(responseData.eventStatus);
+		};
+		getEventStatus();
+	}, []);
+
+	const EventStatusMSG = () => {
+		let MSG = '';
+		for (let i = 0; i < eventStatus.length; ++i) {
+			MSG += eventStatus[i] + '   ';
+		}
+		// registration closed in less than 3 days
+		return (
+			<p className="h3red" role="alert">
+				{MSG}
+			</p>
+		);
+	};
+
+	// get entry form
 	useEffect(() => {
 		let mounted = true;
 		const fetchForm = async () => {
@@ -177,6 +217,7 @@ const EventForm = props => {
 
 			{formData && formData.length > 0 && (
 				<div className="event-formgenerator-container">
+					<EventStatusMSG />
 					<div className="modal-content">
 						<ReactFormGenerator
 							answer_data={formAnswer}

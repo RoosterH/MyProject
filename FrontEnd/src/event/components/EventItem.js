@@ -40,7 +40,6 @@ const EventItem = props => {
 	// get current event registration status
 	const [eventStatus, setEventStatus] = useState([]);
 	useEffect(() => {
-		console.log('getEventStatus');
 		const getEventStatus = async () => {
 			try {
 				var [
@@ -57,20 +56,19 @@ const EventItem = props => {
 					}
 				);
 			} catch (err) {}
-			console.log('responseData = ', responseData);
 			setEventStatus(responseData.eventStatus);
 		};
 		getEventStatus();
 	}, []);
 
 	const EventStatusMSG = () => {
-		let MSG = '';
+		let MSG = 'Current Event Status: ';
 		for (let i = 0; i < eventStatus.length; ++i) {
 			MSG += eventStatus[i];
 		}
 		// registration closed in less than 3 days
 		return (
-			<p className="alert alert-danger" role="alert">
+			<p className="h3red" role="alert">
 				{MSG}
 			</p>
 		);

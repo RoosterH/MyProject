@@ -61,3 +61,30 @@
 	margin: auto;
 	/* no-repeat scroll 0 0; */
 }
+
+@media (max-width: 780px) {
+	.auth-form-label {
+		display: block;
+		margin: 0.5rem 1rem 0.5rem 0rem;
+	}
+
+	.auth-form-input {
+		display: block;
+		width: 90%;
+		margin: 0.5rem 1rem 0.5rem 0rem;
+	}
+
+	.auth-form-error {
+		margin: 0rem 0rem 0rem 0rem;
+		font-style: italic;
+		color: red;
+	}
+
+	.auth-footer-div {
+		max-width: 25rem;
+		margin: 1rem auto;
+	}
+	.auth-footer-div p {
+		margin: 0.6rem 1rem 0.5rem 0rem;
+	}
+}
