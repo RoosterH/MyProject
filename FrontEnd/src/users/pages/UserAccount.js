@@ -498,7 +498,6 @@ const UserAccount = () => {
 						)}
 						<NavigationPrompt
 							afterConfirm={() => {
-								// localStorage.removeItem('eventID');
 								formContext.setIsInsideForm(false);
 							}}
 							// Confirm navigation if going to a path that does not start with current path:
