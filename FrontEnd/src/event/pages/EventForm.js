@@ -86,7 +86,6 @@ const EventForm = props => {
 	// get event status
 	const [eventStatus, setEventStatus] = useState([]);
 	useEffect(() => {
-		console.log('getEventStatus');
 		const getEventStatus = async () => {
 			try {
 				var [

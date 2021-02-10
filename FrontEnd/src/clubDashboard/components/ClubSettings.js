@@ -15,13 +15,18 @@ import { ClubAuthContext } from '../../shared/context/auth-context';
 import '../../shared/css/EventForm.css';
 import './ClubManager.css';
 
-const ClubEventSettings = () => {
+const ClubSettings = () => {
 	const {
 		isLoading,
 		error,
 		sendRequest,
 		clearError
 	} = useHttpClient();
+
+	const [hasMemberSystem, setHasMemberSystem] = useState(false);
+	const [collectMembershipFee, setCollectMembershipFee] = useState(
+		false
+	);
 
 	const clubAuthContext = useContext(ClubAuthContext);
 	const clubId = clubAuthContext.clubId;
@@ -43,16 +48,16 @@ const ClubEventSettings = () => {
 	const [OKLeavePage, setOKLeavePage] = useState(true);
 	let initialValues = {
 		memberSystem: 'false',
+		collectMembershipFee: 'false',
+		membershipFee: '0',
 		hostPrivateEvent: 'false',
 		carNumber: 'true'
 	};
 
-	const [
-		loadedClubEventSettings,
-		setLoadedClubEventSettings
-	] = useState();
+	const [loadedClubSettings, setLoadedClubSettings] = useState();
+
 	useEffect(() => {
-		const fetchClubEventSettings = async () => {
+		const fetchClubSettings = async () => {
 			try {
 				const [
 					responseData,
@@ -60,7 +65,7 @@ const ClubEventSettings = () => {
 					responseMessage
 				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL +
-						`/clubs/eventSettings/${clubId}`,
+						`/clubs/clubSettings/${clubId}`,
 					'GET',
 					null,
 					{
@@ -68,18 +73,13 @@ const ClubEventSettings = () => {
 						Authorization: 'Bearer ' + clubAuthContext.clubToken
 					}
 				);
-				// Need to set the loadedClubEventSettings so we will set initialValues again.
+				// Need to set the loadedClubSettings so we will set initialValues again.
 				// Without it, form will keep the old initial values.
-				setLoadedClubEventSettings(responseData.clubEventSettings);
+				setLoadedClubSettings(responseData.clubSettings);
 			} catch (err) {}
 		};
-		fetchClubEventSettings();
-	}, [
-		clubId,
-		setLoadedClubEventSettings,
-		sendRequest,
-		clubAuthContext
-	]);
+		fetchClubSettings();
+	}, [clubId, setLoadedClubSettings, sendRequest, clubAuthContext]);
 
 	const [saveButtonEnabled, setSaveButtonEnabled] = useState(false);
 	const submitHandler = async values => {
@@ -89,10 +89,13 @@ const ClubEventSettings = () => {
 				responseStatus,
 				responseMessage
 			] = await sendRequest(
-				process.env.REACT_APP_BACKEND_URL + `/clubs/eventSettings`,
+				process.env.REACT_APP_BACKEND_URL + `/clubs/clubSettings`,
 				'PATCH',
 				JSON.stringify({
 					memberSystem: values.memberSystem === 'true' ? true : false,
+					collectMembershipFee:
+						values.collectMembershipFee === 'true' ? true : false,
+					membershipFee: values.membershipFee,
 					hostPrivateEvent:
 						values.hostPrivateEvent === 'true' ? true : false,
 					carNumber: values.carNumber === 'true' ? true : false
@@ -103,13 +106,23 @@ const ClubEventSettings = () => {
 					Authorization: 'Bearer ' + clubAuthContext.clubToken
 				}
 			);
-			// Need to set the loadedClubEventSettings so we will set initialValues again.
+			// Need to set the loadedClubSettings so we will set initialValues again.
 			// Without it, form will keep the old initial values.
-			setLoadedClubEventSettings(responseData.clubEventSettings);
+			setLoadedClubSettings(responseData.clubSettings);
+			console.log('responseData = ', responseData);
 			setOKLeavePage(true);
 			setSaveButtonEnabled(false);
 		} catch (err) {}
 	};
+
+	useEffect(() => {
+		if (loadedClubSettings) {
+			setHasMemberSystem(loadedClubSettings.memberSystem);
+			setCollectMembershipFee(
+				loadedClubSettings.collectMembershipFee
+			);
+		}
+	}, [loadedClubSettings]);
 
 	if (isLoading) {
 		return (
@@ -119,22 +132,26 @@ const ClubEventSettings = () => {
 		);
 	}
 
-	if (loadedClubEventSettings) {
+	if (loadedClubSettings) {
 		initialValues = {
-			memberSystem: loadedClubEventSettings.memberSystem
+			memberSystem: loadedClubSettings.memberSystem
 				? 'true'
 				: 'false',
-			hostPrivateEvent: loadedClubEventSettings.hostPrivateEvent
+			collectMembershipFee: loadedClubSettings.collectMembershipFee
 				? 'true'
 				: 'false',
-			carNumber: loadedClubEventSettings.carNumber ? 'true' : 'false'
+			membershipFee: loadedClubSettings.membershipFee,
+			hostPrivateEvent: loadedClubSettings.hostPrivateEvent
+				? 'true'
+				: 'false',
+			carNumber: loadedClubSettings.carNumber ? 'true' : 'false'
 		};
 	}
 
 	const accountForm = () => (
 		<div className="event-form">
 			<div className="event-form-header">
-				<h4>Select Event Settings</h4>
+				<h4>Club Settings</h4>
 				<hr className="event-form__hr" />
 			</div>
 			<Formik
@@ -173,6 +190,12 @@ const ClubEventSettings = () => {
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
+									}}
+									onChange={event => {
+										// need handleChange to be able to get option values correctly
+										// i.e. this is true evalue
+										handleChange(event);
+										setHasMemberSystem(true);
 										setSaveButtonEnabled(true);
 									}}
 								/>
@@ -187,15 +210,99 @@ const ClubEventSettings = () => {
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
+									}}
+									onChange={event => {
+										// need handleChange to be able to get option values correctly
+										// i.e. this is false value
+										handleChange(event);
+										setHasMemberSystem(false);
 										setSaveButtonEnabled(true);
 									}}
 								/>
 								&nbsp;No
 							</label>
 						</div>
+						{hasMemberSystem && (
+							<React.Fragment>
+								<div
+									id="my-radio-group"
+									className="event-form__label">
+									Enable MYSeatTime to Collect Membership Fee:{' '}
+								</div>
+								<div
+									role="group"
+									aria-labelledby="my-radio-group"
+									className="event-form__field_radio">
+									<label>
+										<Field
+											type="radio"
+											name="collectMembershipFee"
+											value="true"
+											onBlur={event => {
+												handleBlur(event);
+												setOKLeavePage(false);
+											}}
+											onChange={event => {
+												handleChange(event);
+												setCollectMembershipFee(true);
+												setSaveButtonEnabled(true);
+											}}
+										/>
+										&nbsp;Yes
+									</label>
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									<label>
+										<Field
+											type="radio"
+											name="collectMembershipFee"
+											value="false"
+											onBlur={event => {
+												handleBlur(event);
+												setOKLeavePage(false);
+											}}
+											onChange={event => {
+												handleChange(event);
+												setCollectMembershipFee(false);
+												setSaveButtonEnabled(true);
+											}}
+										/>
+										&nbsp;No
+									</label>
+								</div>{' '}
+							</React.Fragment>
+						)}
+						{collectMembershipFee && (
+							<React.Fragment>
+								<label
+									htmlFor="membershipFee"
+									className="event-form__label_inline">
+									Annual Membership Fee: $
+								</label>
+								<Field
+									id="membershipFee"
+									name="membershipFee"
+									type="text"
+									className="event-form__field_quarter"
+									onBlur={event => {
+										handleBlur(event);
+										setOKLeavePage(false);
+									}}
+									onChange={event => {
+										// need handleChange to be able to get option values correctly
+										// i.e. this is false value
+										handleChange(event);
+										setSaveButtonEnabled(true);
+									}}
+								/>
+							</React.Fragment>
+						)}
 						<br />
 						<div id="my-radio-group" className="event-form__label">
-							Enable Prive Event:{' '}
+							Enable Prive Event:
+							<p>
+								A private event will not be shown at search page. It
+								can only be shared via a URL.{' '}
+							</p>
 						</div>
 						<div
 							role="group"
@@ -209,6 +316,11 @@ const ClubEventSettings = () => {
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
+									}}
+									onChange={event => {
+										// need handleChange to be able to get option values correctly
+										// i.e. this is false value
+										handleChange(event);
 										setSaveButtonEnabled(true);
 									}}
 								/>
@@ -223,6 +335,11 @@ const ClubEventSettings = () => {
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
+									}}
+									onChange={event => {
+										// need handleChange to be able to get option values correctly
+										// i.e. this is false value
+										handleChange(event);
 										setSaveButtonEnabled(true);
 									}}
 								/>
@@ -266,22 +383,6 @@ const ClubEventSettings = () => {
 							</label>
 						</div>
 						<br />
-						{/* <div id="my-radio-group" className="event-form__label">
-							<label>
-								<Field
-									id="hostPrivateEvent"
-									name="hostPrivateEvent"
-									type="checkbox"
-									onBlur={event => {
-										handleBlur(event);
-										setOKLeavePage(false);
-										setSaveButtonEnabled(true);
-									}}
-								/>
-								&nbsp; Check the box if your club hosts private events
-								that will be only shared by event link.
-							</label>
-						</div> */}
 						<br />
 						<Button
 							type="submit"
@@ -306,7 +407,8 @@ const ClubEventSettings = () => {
 								// OKLeavePage meaning form was not touched yet
 								if (
 									OKLeavePage ||
-									nextLocation.pathname === '/clubs/auth'
+									(nextLocation &&
+										nextLocation.pathname === '/clubs/auth')
 								) {
 									return false;
 								} else {
@@ -350,4 +452,4 @@ const ClubEventSettings = () => {
 	);
 };
 
-export default ClubEventSettings;
+export default ClubSettings;

@@ -106,7 +106,7 @@ const UpdateEventRegistration = props => {
 	const [privateEvent, setPrivateEvent] = useState(false);
 
 	useEffect(() => {
-		const getClubEventSettings = async () => {
+		const getClubSettings = async () => {
 			try {
 				const [
 					responseData,
@@ -114,7 +114,7 @@ const UpdateEventRegistration = props => {
 					responseMessage
 				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL +
-						`/clubs/eventSettings/${clubId}`,
+						`/clubs/clubSettings/${clubId}`,
 					'GET',
 					null,
 					{
@@ -123,13 +123,13 @@ const UpdateEventRegistration = props => {
 					}
 				);
 				setHostPrivateEvent(
-					responseData.clubEventSettings.hostPrivateEvent
+					responseData.clubSettings.hostPrivateEvent
 				);
 			} catch (err) {
 				console.log('err = ', err);
 			}
 		};
-		getClubEventSettings();
+		getClubSettings();
 	}, []);
 
 	// initialize local storage

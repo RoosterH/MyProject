@@ -40,5 +40,7 @@ export const UserAuthContext = createContext({
 	userAccountStatus: false,
 	userLogin: () => {},
 	userLogout: () => {},
-	setUserRedirectURL: () => {}
+	setUserRedirectURL: () => {},
+	setUserAccountStatusHook: () => {},
+	removeUserEntry: () => {}
 });

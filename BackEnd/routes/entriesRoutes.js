@@ -20,7 +20,7 @@ router.post(
 	[
 		check('carId').not().isEmpty(),
 		check('carNumber').not().isEmpty(),
-		// check('raceClass').not().isEmpty(),
+		check('payMembership').not().isEmpty(),
 		check('answer').not().isEmpty(),
 		check('disclaimer').not().equals(true),
 		check('paymentMethod').not().isEmpty(),

@@ -144,6 +144,9 @@ const UserAccount = () => {
 				setValidDriver(responseData.validDriver);
 				setDisclaimer(responseData.disclaimer);
 				setCompleted(responseData.completed);
+				userAuthContext.setUserAccountStatusHook(
+					responseData.completed
+				);
 			} catch (err) {}
 		};
 		fetchUserAccount();
@@ -185,6 +188,9 @@ const UserAccount = () => {
 			setDisclaimer(responseData.disclaimer);
 			setSaveButtonEnabled(false);
 			setCompleted(responseData.completed);
+			userAuthContext.setUserAccountStatusHook(
+				responseData.completed
+			);
 		} catch (err) {}
 	};
 

@@ -163,6 +163,9 @@ const ClubAccount = () => {
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
+									}}
+									onChange={event => {
+										handleChange(event);
 										setSaveButtonEnabled(true);
 									}}
 								/>
@@ -177,6 +180,9 @@ const ClubAccount = () => {
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
+									}}
+									onChange={event => {
+										handleChange(event);
 										setSaveButtonEnabled(true);
 									}}
 								/>
@@ -199,6 +205,9 @@ const ClubAccount = () => {
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
+									}}
+									onChange={event => {
+										handleChange(event);
 										setSaveButtonEnabled(true);
 									}}
 								/>
@@ -213,6 +222,9 @@ const ClubAccount = () => {
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
+									}}
+									onChange={event => {
+										handleChange(event);
 										setSaveButtonEnabled(true);
 									}}
 								/>

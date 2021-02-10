@@ -110,4 +110,9 @@ router.patch(
 
 router.delete('/:uid', usersController.deleteUser);
 
+router.get(
+	'/userClubInfo/:uid/:eid',
+	usersController.getUserClubInfo
+);
+
 module.exports = router;

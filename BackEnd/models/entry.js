@@ -63,7 +63,8 @@ const entrySchema = new Schema({
 	runGroup: [{ type: String, required: true }],
 	//runGroup: { type: String, required: true },
 	workerAssignment: [{ type: String, required: true }],
-	lunchOption: { type: String }
+	lunchOption: { type: String },
+	payMembership: { type: Boolean, require: true, default: false }
 });
 
 // 1st argument is the name will be used as the collection name in MongoDB,

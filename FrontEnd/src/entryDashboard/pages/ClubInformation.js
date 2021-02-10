@@ -12,25 +12,72 @@ import Button from '../../shared/components/FormElements/Button';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 import { UserAuthContext } from '../../shared/context/auth-context';
 import { FormContext } from '../../shared/context/form-context';
+import { useHttpClient } from '../../shared/hooks/http-hook';
 
 import '../../shared/css/EventForm.css';
 
-const Classification = props => {
+const ClubInformation = props => {
+	const eventId = props.eventId;
 	const [initialized, setInitialized] = useState(false);
 	const userAuthContext = useContext(UserAuthContext);
+	const userId = userAuthContext.userId;
 	const formContext = useContext(FormContext);
+	const {
+		isLoading,
+		error,
+		sendRequest,
+		clearError
+	} = useHttpClient();
+	const [saveButtonEnabled, setSaveButtonEnabled] = useState(false);
 
 	// continueStatus controls when to return props.newEventStatus back to NewEventManager
 	const [continueStatus, setContinueStatus] = useState(false);
 	const [formValues, setFormValues] = useState();
 
+	// get membership information and car number from backend
+	const [
+		clubCollectMembershipFee,
+		setClubCollectMembershipFee
+	] = useState(false);
+	const [membershipFee, setMembershipFee] = useState('0');
+	const [memberExp, setMemberExp] = useState();
+	const [clubName, setClubName] = useState('');
+	useEffect(() => {
+		const fetchMemberCarInfo = async () => {
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL +
+					`/users/userClubInfo/${userId}/${eventId}`,
+				'GET',
+				null,
+				{
+					'Content-Type': 'application/json',
+					// adding JWT to header for authentication, JWT contains clubId
+					Authorization: 'Bearer ' + userAuthContext.userToken
+				}
+			);
+			setClubCollectMembershipFee(responseData.collectMembershipFee);
+			setMembershipFee(responseData.membershipFee);
+			setMemberExp(responseData.memberExp);
+			setClubName(responseData.clubName);
+		};
+
+		fetchMemberCarInfo();
+	}, []);
+
 	// this is the return function that passes finishing status back to NewEventManager
 	useEffect(() => {
 		if (continueStatus) {
-			props.classificationStatus(continueStatus);
+			props.clubInformationStatus(continueStatus);
 			if (formValues !== undefined && formValues) {
 				props.carNumberHandler(formValues.carNumber);
-				// props.raceClassHandler(formValues.raceClass);
+
+				props.payMembershipHandler(
+					formValues.membershipFee === 'true' ? true : false
+				);
 			}
 		}
 	}, [continueStatus, props, formValues]);
@@ -90,7 +137,6 @@ const Classification = props => {
 			moment.ISO_8601
 		);
 		eventFormData['carNumber'] = '';
-		eventFormData['raceGroup'] = '';
 		localStorage.setItem(
 			'eventFormData',
 			JSON.stringify(eventFormData)
@@ -102,8 +148,8 @@ const Classification = props => {
 	};
 
 	const initialValues = {
-		carNumber: carNumber
-		// raceClass: raceClass
+		carNumber: carNumber,
+		membershipFee: 'false'
 	};
 
 	const updateEventFormData = (key, value) => {
@@ -132,27 +178,23 @@ const Classification = props => {
 		}
 	);
 
-	// const [validateRaceClass, setValidateRaceClass] = useState(
-	// 	() => value => {
-	// 		let error;
-	// 		if (!value) {
-	// 			error = 'Club member # is required.';
-	// 		}
-	// 		return error;
-	// 	}
-	// );
-	/***** End of Form Validation *****/
-
 	const submitHandler = values => {
 		// return back to NewEntryManager
 		setContinueStatus(true);
 		setFormValues(values);
 	};
 
+	const [memberExpDate, setMemberExpDate] = useState();
+	useEffect(() => {
+		if (memberExp) {
+			setMemberExpDate(moment(memberExp).format('L'));
+		}
+	}, [memberExp]);
+
 	const eventForm = values => (
 		<div className="event-form">
 			<div className="event-form-header">
-				<h4>Car Number</h4>
+				<h4>Club Related Information</h4>
 				<h5>&nbsp;All fields are required</h5>
 				<hr className="event-form__hr" />
 			</div>
@@ -170,9 +212,114 @@ const Classification = props => {
 					setFieldValue,
 					submitted,
 					touched,
-					handleBlur
+					handleBlur,
+					handleChange
 				}) => (
 					<Form className="event-form-container">
+						{clubCollectMembershipFee && memberExp && (
+							<React.Fragment>
+								<label className="event-form__label">
+									<i className="fal fa-id-card fa-lg"></i>
+									&nbsp; Your Membership Expiration Date:{' '}
+									{memberExpDate}
+								</label>
+								<label
+									htmlFor="membershipFee"
+									className="event-form__label_inline">
+									Renew Membership for ${membershipFee} /year:
+								</label>
+								<div
+									role="group"
+									aria-labelledby="my-radio-group"
+									className="event-form__field_radio">
+									<label>
+										<Field
+											type="radio"
+											name="membershipFee"
+											value="true"
+											onBlur={event => {
+												handleBlur(event);
+												setOKLeavePage(false);
+											}}
+											onChange={event => {
+												handleChange(event);
+												setSaveButtonEnabled(true);
+											}}
+										/>
+										&nbsp;Yes
+									</label>
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									<label>
+										<Field
+											type="radio"
+											name="membershipFee"
+											value="false"
+											onBlur={event => {
+												handleBlur(event);
+												setOKLeavePage(false);
+											}}
+											onChange={event => {
+												handleChange(event);
+												setSaveButtonEnabled(true);
+											}}
+										/>
+										&nbsp;No
+									</label>
+								</div>{' '}
+							</React.Fragment>
+						)}
+						{clubCollectMembershipFee && !memberExp && (
+							<React.Fragment>
+								<label className="event-form__label">
+									<i className="fal fa-id-card fa-lg"></i>&nbsp; You
+									are not a member of {clubName}
+								</label>
+								<label
+									htmlFor="membershipFee"
+									className="event-form__label_inline">
+									Join membership for ${membershipFee} /year:
+								</label>
+								<div
+									role="group"
+									aria-labelledby="my-radio-group"
+									className="event-form__field_radio">
+									<label>
+										<Field
+											type="radio"
+											name="membershipFee"
+											value="true"
+											onBlur={event => {
+												handleBlur(event);
+												setOKLeavePage(false);
+											}}
+											onChange={event => {
+												handleChange(event);
+												setSaveButtonEnabled(true);
+											}}
+										/>
+										&nbsp;Yes
+									</label>
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									<label>
+										<Field
+											type="radio"
+											name="membershipFee"
+											value="false"
+											onBlur={event => {
+												handleBlur(event);
+												setOKLeavePage(false);
+											}}
+											onChange={event => {
+												handleChange(event);
+												setSaveButtonEnabled(true);
+											}}
+										/>
+										&nbsp;No
+									</label>
+								</div>{' '}
+							</React.Fragment>
+						)}
+
 						<label htmlFor="carNumber" className="event-form__label">
 							<i className="fal fa-question-circle"></i>
 							&nbsp; Car Number
@@ -188,6 +335,11 @@ const Classification = props => {
 								handleBlur(event);
 								updateEventFormData('carNumber', event.target.value);
 								setOKLeavePage(false);
+								setSaveButtonEnabled(true);
+							}}
+							onChange={event => {
+								handleChange(event);
+								setSaveButtonEnabled(true);
 							}}
 						/>
 						{touched.carNumber && errors.carNumber && (
@@ -219,7 +371,9 @@ const Classification = props => {
 							type="submit"
 							size="small-block"
 							margin-left="1.5rem"
-							disabled={isSubmitting || !isValid}>
+							disabled={
+								isSubmitting || !isValid || !saveButtonEnabled
+							}>
 							SAVE &amp; CONTINUE
 						</Button>
 						<NavigationPrompt
@@ -280,4 +434,4 @@ const Classification = props => {
 	return <React.Fragment>{eventForm()}</React.Fragment>;
 };
 
-export default Classification;
+export default ClubInformation;

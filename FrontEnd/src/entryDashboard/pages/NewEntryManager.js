@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 
 import CarSelector from './CarSelector';
-import Classification from './Classification';
+import ClubInformation from './ClubInformation';
 import EventForm from '../../event/pages/EventForm';
 import SubmitEntry from './SubmitEntry';
 import { UserAuthContext } from '../../shared/context/auth-context';
@@ -48,13 +48,13 @@ const NewEntryManager = props => {
 	// collect information from each tab, we will send them to backend via SUBMIT tab
 	const [carId, setCarId] = useState();
 	const [carNumber, setCarNumber] = useState();
-	// const [raceClass, setRaceClass] = useState();
+	const [payMembership, setPayMembership] = useState(false);
 	const [formAnswer, setFormAnswer] = useState();
 
 	const [carSelector, setCarSelector] = useState(false);
 	const [carSelectorClass, setCarSelectorClass] = useState('li-tab');
-	const [classification, setClassification] = useState(false);
-	const [classificationClass, setClassificationClass] = useState(
+	const [clubInformation, setClubInformation] = useState(false);
+	const [clubInformationClass, setClubInformationClass] = useState(
 		'li-tab'
 	);
 	const [form, setFform] = useState(false);
@@ -66,19 +66,19 @@ const NewEntryManager = props => {
 	const carSelectorClickHandler = () => {
 		setCarSelector(true);
 		setCarSelectorClass('li-tab_orange');
-		setClassification(false);
-		setClassificationClass('li-tab');
+		setClubInformation(false);
+		setClubInformationClass('li-tab');
 		setFform(false);
 		setFformClass('li-tab');
 		setSubmit(false);
 		setSubmitClass('li-tab');
 		setPercentage('25');
 	};
-	const classificationClickHandler = () => {
+	const clubInformationClickHandler = () => {
 		setCarSelector(false);
 		setCarSelectorClass('li-tab');
-		setClassification(true);
-		setClassificationClass('li-tab_orange');
+		setClubInformation(true);
+		setClubInformationClass('li-tab_orange');
 		setFform(false);
 		setFformClass('li-tab');
 		setSubmit(false);
@@ -88,8 +88,8 @@ const NewEntryManager = props => {
 	const formClickHandler = () => {
 		setCarSelector(false);
 		setCarSelectorClass('li-tab');
-		setClassification(false);
-		setClassificationClass('li-tab');
+		setClubInformation(false);
+		setClubInformationClass('li-tab');
 		setFform(true);
 		setFformClass('li-tab_orange');
 		setSubmit(false);
@@ -99,8 +99,8 @@ const NewEntryManager = props => {
 	const submitClickHandler = () => {
 		setCarSelector(false);
 		setCarSelectorClass('li-tab');
-		setClassification(false);
-		setClassificationClass('li-tab');
+		setClubInformation(false);
+		setClubInformationClass('li-tab');
 		setFform(false);
 		setFformClass('li-tab');
 		setSubmit(true);
@@ -113,7 +113,7 @@ const NewEntryManager = props => {
 	};
 
 	// set defualt page, if none is false, we will use carSelector as default
-	if (!carSelector && !classification && !form && !submit) {
+	if (!carSelector && !clubInformation && !form && !submit) {
 		carSelectorClickHandler();
 	}
 
@@ -129,26 +129,26 @@ const NewEntryManager = props => {
 		setCarId(cId);
 	};
 	useEffect(() => {
-		// if carSelectorStatus is true, move to the next stage => classification.
+		// if carSelectorStatus is true, move to the next stage => clubinformation.
 		if (carSelectorStatus) {
-			classificationClickHandler();
+			clubInformationClickHandler();
 		}
-	}, [carSelectorStatus, classificationClickHandler]);
+	}, [carSelectorStatus, clubInformationClickHandler]);
 
 	// getting continue status back from <NumberClass />
-	const [classificationStatus, setClassificationStatus] = useState(
+	const [clubInformationStatus, setClubInformationStatus] = useState(
 		false
 	);
-	const classificationHandler = status => {
+	const clubInformationHandler = status => {
 		if (status) {
-			setClassificationStatus(true);
+			setClubInformationStatus(true);
 		}
 	};
 	useEffect(() => {
-		if (classificationStatus) {
+		if (clubInformationStatus) {
 			formClickHandler();
 		}
-	}, [classificationStatus, formClickHandler]);
+	}, [clubInformationStatus, formClickHandler]);
 
 	const carNumberHandler = number => {
 		if (number) {
@@ -156,11 +156,11 @@ const NewEntryManager = props => {
 		}
 	};
 
-	// const raceClassHandler = rclass => {
-	// 	if (rclass) {
-	// 		setRaceClass(rclass);
-	// 	}
-	// };
+	const payMembershipHandler = pay => {
+		if (pay) {
+			setPayMembership(pay);
+		}
+	};
 
 	// getting continue status back from <Form />
 	const [formStatus, setFormStatus] = useState(false);
@@ -215,7 +215,7 @@ const NewEntryManager = props => {
 					<br />
 					<ul className="nav nav-tabs">
 						<li className={carSelectorClass}>Car</li>
-						<li className={classificationClass}>Car Number</li>
+						<li className={clubInformationClass}>Club Information</li>
 						<li className={formClass}>Form</li>
 						<li className={submitClass}>Submit</li>
 					</ul>
@@ -228,11 +228,12 @@ const NewEntryManager = props => {
 								isNewEntry={true}
 							/>
 						)}
-						{classification && (
-							<Classification
-								classificationStatus={classificationHandler}
+						{clubInformation && (
+							<ClubInformation
+								eventId={eventId}
+								clubInformationStatus={clubInformationHandler}
 								carNumberHandler={carNumberHandler}
-								// raceClassHandler={raceClassHandler}
+								payMembershipHandler={payMembershipHandler}
 							/>
 						)}
 						{form && (
@@ -250,7 +251,7 @@ const NewEntryManager = props => {
 								eventName={eventName}
 								carId={carId}
 								carNumber={carNumber}
-								// raceClass={raceClass}
+								payMembership={payMembership}
 								formAnswer={formAnswer}
 								editingMode={false}
 							/>

@@ -78,8 +78,7 @@ const ClubAuth = () => {
 					 * Warning: Can't perform a React state update on an unmounted component. when
 					 * trying to redirect page after logging
 					 */
-
-					history.push(`/clubs/clubManager/`);
+					console.log('inside else ');
 					// club.id is coming from clubsController loginClub
 					// id is from {getters: true}
 					clubAuthContext.clubLogin(
@@ -87,6 +86,7 @@ const ClubAuth = () => {
 						responseData.name,
 						responseData.token
 					);
+					history.push(`/clubs/clubManager/`);
 				}
 			} catch (err) {
 				// empty. Custom hook takes care of it already
@@ -356,7 +356,6 @@ const ClubAuth = () => {
 			</Formik>
 		</div>
 	);
-	console.log('showsignupmodal = ', showSignupModal);
 	return (
 		<React.Fragment>
 			{/* error coming from const [error, setError] = useState(); */}

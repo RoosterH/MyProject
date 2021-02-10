@@ -38,10 +38,10 @@ const clubSchema = new Schema({
 		ref: 'ClubAccount',
 		default: '000000000000'
 	},
-	eventSettingsId: {
+	clubSettingsId: {
 		type: mongoose.Types.ObjectId,
 		required: true,
-		ref: 'ClubEventSettings',
+		ref: 'ClubSettings',
 		default: '000000000000'
 	},
 	profileId: {

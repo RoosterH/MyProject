@@ -2,10 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import NavigationPrompt from 'react-router-navigation-prompt';
-
-// import { EditorState } from 'draft-js';
-// import { RichEditorExample } from '../components/RichEditor';
-// import 'draft-js/dist/Draft.css';
+import moment from 'moment';
 
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
@@ -17,7 +14,8 @@ import { FormContext } from '../../shared/context/form-context';
 
 import '../../shared/css/EventForm.css';
 
-const EditClassification = props => {
+const EditClubInformation = props => {
+	const eventId = props.eventId;
 	const {
 		isLoading,
 		error,
@@ -26,6 +24,7 @@ const EditClassification = props => {
 	} = useHttpClient();
 
 	const userAuthContext = useContext(UserAuthContext);
+	const userId = userAuthContext.userId;
 	const formContext = useContext(FormContext);
 
 	// this is the return function that passes finishing status back to NewEventManager
@@ -53,9 +52,52 @@ const EditClassification = props => {
 	const [OKLeavePage, setOKLeavePage] = useState(true);
 
 	const initialValues = {
-		carNumber: props.carNumber
-		// raceClass: props.raceClass
+		carNumber: props.carNumber,
+		membershipFee: 'false'
 	};
+
+	// get membership information and car number from backend
+	const [
+		clubCollectMembershipFee,
+		setClubCollectMembershipFee
+	] = useState(false);
+	const [membershipFee, setMembershipFee] = useState('0');
+	const [memberExp, setMemberExp] = useState();
+	const [clubName, setClubName] = useState('');
+	useEffect(() => {
+		const fetchMemberCarInfo = async () => {
+			const [
+				responseData,
+				responseStatus,
+				responseMessage
+			] = await sendRequest(
+				process.env.REACT_APP_BACKEND_URL +
+					`/users/userClubInfo/${userId}/${eventId}`,
+				'GET',
+				null,
+				{
+					'Content-Type': 'application/json',
+					// adding JWT to header for authentication, JWT contains clubId
+					Authorization: 'Bearer ' + userAuthContext.userToken
+				}
+			);
+			console.log('responseData = ', responseData);
+			setClubCollectMembershipFee(responseData.collectMembershipFee);
+			setMembershipFee(responseData.membershipFee);
+			setMemberExp(responseData.memberExp);
+			setClubName(responseData.clubName);
+		};
+
+		fetchMemberCarInfo();
+	}, []);
+
+	const [memberExpDate, setMemberExpDate] = useState();
+	useEffect(() => {
+		console.log('memberExp = ', memberExp);
+		if (memberExp) {
+			setMemberExpDate(moment(memberExp).format('L'));
+		}
+	}, [memberExp]);
 
 	/***** Form Validation Section  *****/
 	const [validateCarNumber, setValidateCarNumber] = useState(
@@ -94,7 +136,7 @@ const EditClassification = props => {
 				responseMessage
 			] = await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
-					`/entries/classNumber/${props.entryId}`,
+					`/entries/clubInformation/${props.entryId}`,
 				'PATCH',
 				JSON.stringify({
 					carNumber: values.carNumber
@@ -106,7 +148,6 @@ const EditClassification = props => {
 				}
 			);
 
-			console.log('responseData = ', responseData);
 			props.getNewEntry(responseData.entry);
 		} catch (err) {}
 	};
@@ -114,7 +155,7 @@ const EditClassification = props => {
 	const eventForm = values => (
 		<div className="event-form">
 			<div className="event-form-header">
-				<h4>Race Number and Class</h4>
+				<h4>Club Related Information</h4>
 				<h5>&nbsp;All fields are required</h5>
 				<hr className="event-form__hr" />
 			</div>
@@ -136,9 +177,23 @@ const EditClassification = props => {
 					handleBlur
 				}) => (
 					<Form className="event-form-container">
+						{clubCollectMembershipFee && memberExp && (
+							<label className="event-form__label">
+								<i className="fal fa-id-card fa-lg"></i>
+								&nbsp; Your Membership Expiration Date:{' '}
+								{memberExpDate}.
+							</label>
+						)}
+						{clubCollectMembershipFee && !memberExp && (
+							<label className="event-form__label">
+								<i className="fal fa-id-card fa-lg"></i>&nbsp; You are
+								not a member of {clubName}.
+							</label>
+						)}
+						<br />
 						<label htmlFor="carNumber" className="event-form__label">
 							<i className="fal fa-question-circle"></i>
-							&nbsp; Car Number
+							&nbsp; Club Information
 						</label>
 						<Field
 							id="carNumber"
@@ -235,4 +290,4 @@ const EditClassification = props => {
 	);
 };
 
-export default EditClassification;
+export default EditClubInformation;

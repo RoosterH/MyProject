@@ -9,7 +9,7 @@ const HttpError = require('../models/httpError');
 const Club = require('../models/club');
 const ClubProfile = require('../models/clubProfile');
 const ClubAccount = require('../models/clubAccount');
-const ClubEventSettings = require('../models/clubEventSettings');
+const ClubSettings = require('../models/clubSettings');
 const ClubMember = require('../models/clubMember');
 const User = require('../models/user');
 const UserAccount = require('../models/userAccount');
@@ -229,9 +229,11 @@ const createClub = async (req, res, next) => {
 	});
 
 	// create club event settings
-	const newClubEventSettings = new ClubEventSettings({
+	const newClubSettings = new ClubSettings({
 		hostPrivateEvent: false,
-		memberSystem: false
+		memberSystem: false,
+		collectMembershipFee: false,
+		membershipFee: '0'
 	});
 
 	// ! DO NOT REMOVE
@@ -279,13 +281,13 @@ const createClub = async (req, res, next) => {
 		let profile = await newClubProfile.save({ session: session });
 		newClubAccount.clubId = newClub.id;
 		let account = await newClubAccount.save({ session: session });
-		newClubEventSettings.clubId = newClub.id;
-		let eventSettings = await newClubEventSettings.save({
+		newClubSettings.clubId = newClub.id;
+		let clubSettings = await newClubSettings.save({
 			session: session
 		});
 		newClub.profileId = profile.id;
 		newClub.accountId = account.id;
-		newClub.eventSettingsId = eventSettings.id;
+		newClub.clubSettingsId = clubSettings.id;
 		await newClub.save({ session: session });
 		await session.commitTransaction();
 	} catch (err) {
@@ -1027,8 +1029,8 @@ const updateClubAccount = async (req, res, next) => {
 	});
 };
 
-// PATCH '/api/clubs/:cid'
-const updateClubEventSettings = async (req, res, next) => {
+// PATCH '/api/clubSettings/:cid'
+const updateClubSettings = async (req, res, next) => {
 	// validate request
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
@@ -1044,16 +1046,21 @@ const updateClubEventSettings = async (req, res, next) => {
 		return next(error);
 	}
 
-	const { hostPrivateEvent, memberSystem } = req.body;
+	const {
+		memberSystem,
+		collectMembershipFee,
+		membershipFee,
+		hostPrivateEvent
+	} = req.body;
 	// use clubId from token instead of getting it from url to avoid hacking
 	// req.userData is added in check-clubAuth middleware, information comes from front end
 	// req.header.authorization
 	const clubId = req.userData;
-	let clubEventSettings;
+	let clubSettings;
 	try {
-		clubEventSettings = await ClubEventSettings.findOne({ clubId });
+		clubSettings = await ClubSettings.findOne({ clubId });
 	} catch (err) {
-		console.log('updateClubEventSettings find club err = ', err);
+		console.log('updateClubSettings find club err = ', err);
 		const error = new HttpError(
 			'Update club event settings process failed, please try again later.',
 			500
@@ -1061,7 +1068,7 @@ const updateClubEventSettings = async (req, res, next) => {
 		return next(error);
 	}
 
-	if (!clubEventSettings) {
+	if (!clubSettings) {
 		const error = new HttpError(
 			'Update club event settings failed finding account.',
 			404
@@ -1090,10 +1097,12 @@ const updateClubEventSettings = async (req, res, next) => {
 		return next(error);
 	}
 
-	clubEventSettings.hostPrivateEvent = hostPrivateEvent;
-	clubEventSettings.memberSystem = memberSystem;
+	clubSettings.hostPrivateEvent = hostPrivateEvent;
+	clubSettings.memberSystem = memberSystem;
+	clubSettings.collectMembershipFee = collectMembershipFee;
+	clubSettings.membershipFee = membershipFee;
 	try {
-		await clubEventSettings.save();
+		await clubSettings.save();
 	} catch (err) {
 		const error = new HttpError(
 			'Update club event settings process failed to save, please try again later.',
@@ -1101,8 +1110,9 @@ const updateClubEventSettings = async (req, res, next) => {
 		);
 		return next(error);
 	}
+	console.log('clubSettings = ', clubSettings);
 	res.status(200).json({
-		clubEventSettings: clubEventSettings.toObject({
+		clubSettings: clubSettings.toObject({
 			getters: true
 		})
 	});
@@ -1320,8 +1330,8 @@ const updateClubSesEmail = async (req, res, next) => {
 	});
 };
 
-// GET /api/clubs/eventSettings/:cid
-const getClubEventSettings = async (req, res, next) => {
+// GET /api/clubs/clubSettings/:cid
+const getClubSettings = async (req, res, next) => {
 	let clubIdParam = req.params.cid;
 	const clubId = req.userData;
 	if (clubIdParam !== clubId) {
@@ -1333,7 +1343,7 @@ const getClubEventSettings = async (req, res, next) => {
 	}
 
 	try {
-		var clubEventSettings = await ClubEventSettings.findOne({
+		var clubSettings = await ClubSettings.findOne({
 			clubId: clubId
 		});
 	} catch (err) {
@@ -1344,7 +1354,7 @@ const getClubEventSettings = async (req, res, next) => {
 		return next(error);
 	}
 
-	if (!clubEventSettings) {
+	if (!clubSettings) {
 		const error = new HttpError(
 			'No club event settings in the DB.',
 			404
@@ -1353,7 +1363,7 @@ const getClubEventSettings = async (req, res, next) => {
 	}
 
 	res.status(200).json({
-		clubEventSettings: clubEventSettings.toObject({
+		clubSettings: clubSettings.toObject({
 			getters: true
 		})
 	});
@@ -1503,10 +1513,10 @@ const getClubMemberList = async (req, res, next) => {
 		return next(error);
 	}
 
-	let clubEventSettings;
+	let clubSettings;
 	try {
 		// we don't want to return password field
-		clubEventSettings = await ClubEventSettings.findOne({
+		clubSettings = await ClubSettings.findOne({
 			clubId: clubId
 		});
 	} catch (err) {
@@ -1516,7 +1526,7 @@ const getClubMemberList = async (req, res, next) => {
 		);
 		return next(error);
 	}
-	if (!clubEventSettings) {
+	if (!clubSettings) {
 		const error = new HttpError(
 			'getClubMemberList cannot find club event settings',
 			500
@@ -1524,7 +1534,7 @@ const getClubMemberList = async (req, res, next) => {
 		return next(error);
 	}
 
-	let memberSystem = clubEventSettings.memberSystem;
+	let memberSystem = clubSettings.memberSystem;
 
 	// compose responseData
 	// lastName, firstName, email, memberNumber, memberStatus, memberExp, address, city, state, zip,
@@ -2040,9 +2050,9 @@ const uploadMemberList = async (req, res, next) => {
 		return next(error);
 	}
 
-	let clubEventSettings;
+	let clubSettings;
 	try {
-		clubEventSettings = await ClubEventSettings.findOne({
+		clubSettings = await ClubSettings.findOne({
 			clubId: clubId
 		});
 	} catch (err) {
@@ -2052,14 +2062,14 @@ const uploadMemberList = async (req, res, next) => {
 		);
 		return next(error);
 	}
-	if (!clubEventSettings) {
+	if (!clubSettings) {
 		const error = new HttpError(
 			'uploadMemberList cannot find club event settings',
 			500
 		);
 		return next(error);
 	}
-	let memberSystem = clubEventSettings.memberSystem;
+	let memberSystem = clubSettings.memberSystem;
 
 	// check the uploaded file
 	// file: {
@@ -2343,6 +2353,8 @@ const updateMember = async (req, res, next) => {
 		memberExpOld
 	} = req.body;
 
+	// Reason to normalize last and first name because member list is imported.
+	// The format may be different.
 	let normLastName =
 		lastNameNew.charAt(0).toUpperCase() +
 		lastNameNew.slice(1).toLowerCase();
@@ -2353,14 +2365,14 @@ const updateMember = async (req, res, next) => {
 
 	var member = null;
 	try {
+		// DO NOT include memberExpOld to query because MongoDB has time, memberExpOld has date only
 		member = await ClubMember.findOne({
 			userId: userId,
 			clubId: clubId,
 			lastName: lastNameOld,
 			firstName: firstNameOld,
 			email: emailOld,
-			memberNumber: memberNumberOld,
-			memberExp: memberExpOld
+			memberNumber: memberNumberOld
 		});
 	} catch (err) {
 		const error = new HttpError(
@@ -2744,9 +2756,9 @@ exports.updateClubCredential = updateClubCredential;
 exports.updateClubProfile = updateClubProfile;
 exports.getClubProfile = getClubProfile;
 exports.updateClubAccount = updateClubAccount;
-exports.updateClubEventSettings = updateClubEventSettings;
+exports.updateClubSettings = updateClubSettings;
 exports.getClubAccount = getClubAccount;
-exports.getClubEventSettings = getClubEventSettings;
+exports.getClubSettings = getClubSettings;
 exports.getClubCredential = getClubCredential;
 exports.getClubStripeAccount = getClubStripeAccount;
 exports.getClubMemberList = getClubMemberList;

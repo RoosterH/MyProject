@@ -88,12 +88,12 @@ router.patch(
 );
 
 router.patch(
-	'/eventSettings',
+	'/clubSettings',
 	[
 		check('memberSystem').not().isEmpty(),
 		check('hostPrivateEvent').not().isEmpty()
 	],
-	clubsController.updateClubEventSettings
+	clubsController.updateClubSettings
 );
 
 // update club info
@@ -128,10 +128,7 @@ router.get('/sesEmail/:cid', clubsController.getClubSesEmail);
 
 router.patch('/sesEmail/:cid', clubsController.updateClubSesEmail);
 
-router.get(
-	'/eventSettings/:cid',
-	clubsController.getClubEventSettings
-);
+router.get('/clubSettings/:cid', clubsController.getClubSettings);
 
 router.get(
 	'/stripeAccount/:cid',

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 
 import Button from '../../shared/components/FormElements/Button';
 import CarSelector from './CarSelector';
-import EditClassification from './EditClassification';
+import EditClubInformation from './EditClubInformation';
 import EventForm from '../../event/pages/EventForm';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
@@ -117,8 +117,8 @@ const EditEntryManager = props => {
 	const [carSelectorClass, setCarSelectorClass] = useState(
 		'editeventmanager-grey'
 	);
-	const [classification, setClassification] = useState(false);
-	const [classificationClass, setClassificationClass] = useState(
+	const [clubInformation, setClubInformation] = useState(false);
+	const [clubInformationClass, setClubInformationClass] = useState(
 		'editeventmanager-grey'
 	);
 	const [form, setFform] = useState(false);
@@ -134,19 +134,19 @@ const EditEntryManager = props => {
 	const carSelectorClickHandler = () => {
 		setCarSelector(true);
 		setCarSelectorClass('editeventmanager-orange');
-		setClassification(false);
-		setClassificationClass('editeventmanager-grey');
+		setClubInformation(false);
+		setClubInformationClass('editeventmanager-grey');
 		setFform(false);
 		setFformClass('editeventmanager-grey');
 		setSubmit(false);
 		setSubmitClass('editeventmanager-grey');
 		setPercentage('0');
 	};
-	const classificationClickHandler = () => {
+	const clubInformationClickHandler = () => {
 		setCarSelector(false);
 		setCarSelectorClass('editeventmanager-grey');
-		setClassification(true);
-		setClassificationClass('editeventmanager-orange');
+		setClubInformation(true);
+		setClubInformationClass('editeventmanager-orange');
 		setFform(false);
 		setFformClass('editeventmanager-grey');
 		setSubmit(false);
@@ -156,8 +156,8 @@ const EditEntryManager = props => {
 	const formClickHandler = () => {
 		setCarSelector(false);
 		setCarSelectorClass('editeventmanager-grey');
-		setClassification(false);
-		setClassificationClass('editeventmanager-grey');
+		setClubInformation(false);
+		setClubInformationClass('editeventmanager-grey');
 		setFform(true);
 		setFformClass('editeventmanager-orange');
 		setSubmit(false);
@@ -167,8 +167,8 @@ const EditEntryManager = props => {
 	const submitClickHandler = () => {
 		setCarSelector(false);
 		setCarSelectorClass('editeventmanager-grey');
-		setClassification(false);
-		setClassificationClass('editeventmanager-grey');
+		setClubInformation(false);
+		setClubInformationClass('editeventmanager-grey');
 		setFform(false);
 		setFformClass('editeventmanager-grey');
 		setSubmit(true);
@@ -184,7 +184,7 @@ const EditEntryManager = props => {
 	useEffect(() => {
 		if (
 			!carSelector &&
-			!classification &&
+			!clubInformation &&
 			!form &&
 			!submit &&
 			!regClosed
@@ -195,7 +195,7 @@ const EditEntryManager = props => {
 		}
 	}, [
 		carSelector,
-		classification,
+		clubInformation,
 		form,
 		submit,
 		regClosed,
@@ -254,11 +254,11 @@ const EditEntryManager = props => {
 							Car
 						</Button>
 						<Button
-							size={classificationClass}
+							size={clubInformationClass}
 							disabled={regClosed}
 							autoFocus
-							onClick={classificationClickHandler}>
-							Car Number
+							onClick={clubInformationClickHandler}>
+							Club Information
 						</Button>
 						<Button
 							size={formClass}
@@ -284,8 +284,9 @@ const EditEntryManager = props => {
 								getNewEntry={getNewEntry}
 							/>
 						)}
-						{classification && (
-							<EditClassification
+						{clubInformation && (
+							<EditClubInformation
+								eventId={eventId}
 								entryId={entryId}
 								userId={userId}
 								carNumber={carNumber}

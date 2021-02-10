@@ -16,10 +16,11 @@ const Payment = require('../models/payment');
 const Stripe = require('./stripeController');
 const UserAccount = require('../models/userAccount');
 const ClubMember = require('../models/clubMember');
-const ClubEventSettings = require('../models/clubEventSettings');
+const ClubSettings = require('../models/clubSettings');
 const NumberTable = require('../models/numberTable');
 const {
 	sendRegistrationConfirmationEmail,
+	sendRegistrationNotificationEmail,
 	sendAddToEntryListEmail,
 	sendChangeRunGroupEmail,
 	sendChargeConfirmationEmail,
@@ -117,6 +118,7 @@ const createEntry = async (req, res, next) => {
 	const {
 		carId,
 		carNumber,
+		payMembership,
 		answer,
 		disclaimer,
 		paymentMethod,
@@ -235,7 +237,7 @@ const createEntry = async (req, res, next) => {
 	let newClubMember = null;
 	if (!clubMember) {
 		// todo check whether the carNumber is available
-
+		console.log('no club member');
 		// create a new member
 		newClubMember = new ClubMember({
 			userId: userId,
@@ -245,6 +247,40 @@ const createEntry = async (req, res, next) => {
 			clubId: event.clubId,
 			carNumber: carNumber
 		});
+		console.log('newClubMember = ', newClubMember);
+	}
+
+	// handle membership
+	let memberExp;
+	if (payMembership) {
+		if (clubMember) {
+			console.log('258 clubMember = ', clubMember);
+			if (clubMember.memberExp) {
+				console.log('in 260');
+				// check if current expiration date has expired yet
+				if (moment(clubMember.memberExp).isAfter(moment())) {
+					// not yet expired, extended based on the current expiration date
+					clubMember.memberExp = moment(clubMember.memberExp).add(
+						1,
+						'y'
+					);
+				} else {
+					// expired, add one year starting from today
+					clubMember.memberExp = moment().add(1, 'y');
+				}
+			} else {
+				console.log('in 273');
+				clubMember.set('memberExp', moment().add(1, 'y'), {
+					strict: true
+				});
+			}
+			memberExp = clubMember.memberExp;
+			console.log('278 = memberExp = ', memberExp);
+			updateClubMember = true;
+		} else if (newClubMember) {
+			newClubMember.memberExp = moment().add(1, 'y');
+			memberExp = moment().add(1, 'y');
+		}
 	}
 
 	let multiDayEvent = event.multiDayEvent;
@@ -434,7 +470,8 @@ const createEntry = async (req, res, next) => {
 			waitlist: waitlist,
 			groupWaitlist: groupFull,
 			runGroup: runGroupAnsTexts,
-			workerAssignment: workerAssignmentAnsTexts
+			workerAssignment: workerAssignmentAnsTexts,
+			payMembership: false
 		});
 
 		// calculate price according to attendingDays * price/event
@@ -517,8 +554,8 @@ const createEntry = async (req, res, next) => {
 
 		// check if registration answer matches club member status
 		try {
-			var clubEventSettings = await ClubEventSettings.findById(
-				club.eventSettingsId
+			var clubSettings = await ClubSettings.findById(
+				club.clubSettingsId
 			);
 		} catch (err) {
 			console.log(
@@ -531,7 +568,7 @@ const createEntry = async (req, res, next) => {
 			);
 			return next(error);
 		}
-		if (!clubEventSettings) {
+		if (!clubSettings) {
 			console.log('create entry failed finding club event settings');
 			const error = new HttpError(
 				'create entry failed finding club event settings.',
@@ -540,10 +577,11 @@ const createEntry = async (req, res, next) => {
 			return next(error);
 		}
 
-		if (clubEventSettings.memberSystem) {
+		if (clubSettings.memberSystem) {
 			if (
 				(!clubMember ||
 					(clubMember && clubMember.memberExp === undefined)) &&
+				!payMembership &&
 				registrationAnsTexts.startsWith('Member')
 			) {
 				console.log(
@@ -558,6 +596,7 @@ const createEntry = async (req, res, next) => {
 			if (
 				clubMember &&
 				moment(clubMember.memberExp).isBefore(event.startDate) &&
+				!payMembership &&
 				registrationAnsTexts.startsWith('Member')
 			) {
 				console.log(
@@ -647,6 +686,11 @@ const createEntry = async (req, res, next) => {
 			}
 		}
 		totalPriceNum = totalPriceNum + parseFloat(lunchPrice);
+		if (payMembership) {
+			totalPriceNum =
+				totalPriceNum + parseFloat(clubSettings.membershipFee);
+			entry.payMembership = true;
+		}
 
 		// re-format to string
 		totalPrice = totalPriceNum.toString();
@@ -673,6 +717,7 @@ const createEntry = async (req, res, next) => {
 			if (updateClubMember) {
 				await clubMember.save({ session: session });
 			} else if (newClubMember) {
+				console.log('newClubMember = ', newClubMember);
 				await newClubMember.save({ session: session });
 			}
 			await entry.save({ session: session });
@@ -757,7 +802,27 @@ const createEntry = async (req, res, next) => {
 			runGroupAnsTexts,
 			fullMessage,
 			paymentMethod,
-			totalPrice
+			totalPrice,
+			payMembership,
+			clubSettings.membershipFee,
+			memberExp
+		);
+		// send notification email to club to inform about a new entry
+		sendRegistrationNotificationEmail(
+			club.name,
+			club.sesEmail,
+			user.lastName,
+			user.firstName,
+			event.name,
+			event.id,
+			event.startDate,
+			runGroupAnsTexts,
+			fullMessage,
+			paymentMethod,
+			totalPrice,
+			payMembership,
+			clubSettings.membershipFee,
+			memberExp
 		);
 	} catch (err) {
 		console.log(
@@ -1691,7 +1756,6 @@ const deleteEntry = async (req, res, next) => {
 		return next(error);
 	}
 	let eventName = entry.eventId.name;
-
 	if (!entry) {
 		// we should not find any entry here
 		const error = new HttpError('User entry cannot be found.', 400);
@@ -1826,6 +1890,46 @@ const deleteEntry = async (req, res, next) => {
 		return next(error);
 	}
 
+	// check if user signup/renew membership
+	if (entry.payMembership) {
+		let event;
+		try {
+			event = await Event.findById(entry.eventId);
+		} catch (err) {
+			const error = new HttpError(
+				'deleteEntry Entry submission process internal failure during event retrieval',
+				500
+			);
+			return next(error);
+		}
+		if (!event) {
+			const error = new HttpError(
+				'deleteEntry Entry submission process internal failure',
+				404
+			);
+			return next(error);
+		}
+		// check club has this user as club member, if not we will add it to club member list
+		try {
+			var clubMember = await ClubMember.findOne({
+				clubId: event.clubId,
+				userId: user.id
+			});
+		} catch (err) {
+			console.log(
+				'deleteEntry Unable to look up club member with userId = ',
+				err
+			);
+			// unable to find
+			const error = new HttpError(
+				'deleteEntry Unable to look up club member with userId. Please try later.',
+				500
+			);
+			return next(error);
+		}
+		clubMember.memberExp = moment(clubMember.memberExp).add(-1, 'y');
+	}
+
 	// remove entry from user entries
 	user.entries.pull(entryId);
 	try {
@@ -1833,6 +1937,9 @@ const deleteEntry = async (req, res, next) => {
 		// event.clubId.events
 		const session = await mongoose.startSession();
 		session.startTransaction();
+		if (entry.payMembership) {
+			await clubMember.save({ session: session });
+		}
 		await user.save({ session: session });
 		// remove payment
 		if (payment) {

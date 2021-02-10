@@ -158,7 +158,10 @@ const sendRegistrationConfirmationEmail = async (
 	runGroups,
 	fullMSG,
 	paymentMethod,
-	entryFee
+	entryFee,
+	payMembership,
+	membershipFee,
+	memberExp
 ) => {
 	// configure AWS SDK
 	// AWS.config.loadFromPath('config.json');
@@ -194,6 +197,12 @@ const sendRegistrationConfirmationEmail = async (
 			}
 		}
 	}
+	let actualEntryFee = entryFee;
+	if (payMembership) {
+		actualEntryFee = (
+			parseFloat(entryFee) - parseFloat(membershipFee)
+		).toString();
+	}
 	let MSG =
 		fullMSG !== ''
 			? fullMSG +
@@ -201,6 +210,22 @@ const sendRegistrationConfirmationEmail = async (
 			: 'You have successfully registered for the event.';
 	let eventLink = process.env.MYSEATTIME + '/events/' + eventId;
 	let method = paymentMethod === 'onSite' ? 'On Site' : 'Stripe';
+	let membershipMSG = payMembership
+		? 'New membership expiration date: ' +
+		  moment(memberExp).format('L') +
+		  '\n' +
+		  'Membership Fee: $' +
+		  membershipFee +
+		  '\n'
+		: '';
+	let membershipMSGHtml = payMembership
+		? '<p style="color:black;"> New membership expiration date: ' +
+		  moment(memberExp).format('L') +
+		  '</p>' +
+		  '<p style="color:black;"> Membership Fee: $' +
+		  membershipFee +
+		  '</p>'
+		: '';
 	// send email
 	let info;
 	try {
@@ -224,11 +249,12 @@ const sendRegistrationConfirmationEmail = async (
 				'Status: ' +
 				MSG +
 				'\n' +
+				membershipMSG +
 				'Payment Method: ' +
 				method +
 				'\n' +
 				'Entry Fee: $' +
-				entryFee +
+				actualEntryFee +
 				'\n' +
 				'Event Link: ' +
 				eventLink +
@@ -250,11 +276,12 @@ const sendRegistrationConfirmationEmail = async (
 				'<p style="color:black;">Status: ' +
 				MSG +
 				'</p>' +
+				membershipMSGHtml +
 				'<p style="color:black;">Payment Method: ' +
 				method +
 				'</p>' +
 				'<p style="color:black;">Entry Fee: $' +
-				entryFee +
+				actualEntryFee +
 				'</p>' +
 				'<p style="color:black;">Event Link: ' +
 				eventLink +
@@ -263,6 +290,166 @@ const sendRegistrationConfirmationEmail = async (
 				'<p style="color:black;">Enjoy Driving!</p>',
 			sender: clubEmail,
 			replyTo: clubEmail
+		});
+	} catch (err) {
+		console.log('nodemailer err = ', err);
+	}
+};
+
+const sendRegistrationNotificationEmail = async (
+	recipientName,
+	recipientEmail,
+	userLastName,
+	userFirstName,
+	eventName,
+	eventId,
+	startDate,
+	runGroups,
+	fullMSG,
+	paymentMethod,
+	entryFee,
+	payMembership,
+	membershipFee,
+	memberExp
+) => {
+	// configure AWS SDK
+	// AWS.config.loadFromPath('config.json');
+	AWS.config.update({
+		accessKeyId: process.env.AWS_ACCESSKEYID,
+		secretAccessKey: process.env.AWS_SECRETACCESSKEY,
+		region: process.env.S3_REGION
+	});
+
+	// create Nodemailer SES transporter
+	let transporter = nodemailer.createTransport({
+		SES: new AWS.SES({
+			apiVersion: '2010-12-01'
+		}),
+		sendingRate: 14 // max 14 messages per second
+	});
+
+	let from = '"MYSeatTime.com " ' + '<admin@myseattime.com>';
+	let dateRunGroups = '';
+	for (let i = 0; i < runGroups.length; ++i) {
+		if (runGroups[i] !== NOT_ATTENDING) {
+			if (dateRunGroups === '') {
+				dateRunGroups +=
+					moment(startDate).add(i, 'd').format('L') +
+					': ' +
+					runGroups[i];
+			} else {
+				dateRunGroups +=
+					', ' +
+					moment(startDate).add(i, 'd').format('L') +
+					': ' +
+					runGroups[i];
+			}
+		}
+	}
+	let actualEntryFee = entryFee;
+	if (payMembership) {
+		actualEntryFee = (
+			parseFloat(entryFee) - parseFloat(membershipFee)
+		).toString();
+	}
+	let MSG =
+		fullMSG !== ''
+			? fullMSG +
+			  ' Registrant is on the waitlist. Please notify the registrant if there is a spot available.'
+			: 'Registrant has successfully registered for the event.';
+	let eventLink = process.env.MYSEATTIME + '/events/' + eventId;
+	let method = paymentMethod === 'onSite' ? 'On Site' : 'Stripe';
+	let membershipMSG = payMembership
+		? 'Membership signup/renewal. New membership expiration date: ' +
+		  moment(memberExp).format('L') +
+		  '\n' +
+		  'Membership Fee: $' +
+		  membershipFee +
+		  '\n'
+		: '';
+	let membershipMSGHtml = payMembership
+		? '<p style="color:black;"> Membership signup/renewal. New expiration date: ' +
+		  moment(memberExp).format('L') +
+		  '</p>' +
+		  '<p style="color:black;"> Membership Fee: $' +
+		  membershipFee +
+		  '</p>'
+		: '';
+	// send email
+	let info;
+	try {
+		info = await transporter.sendMail({
+			from: from,
+			to: recipientEmail,
+			subject:
+				recipientName +
+				' ' +
+				eventName +
+				' registration notification',
+			text:
+				'Hi ' +
+				recipientName +
+				',\n\n' +
+				'A new registration for ' +
+				recipientName +
+				' ' +
+				eventName +
+				' has been submitted.\n' +
+				'Driver Name: ' +
+				userLastName +
+				', ' +
+				userFirstName +
+				'/n' +
+				`Date: ` +
+				dateRunGroups +
+				'\n' +
+				'Status: ' +
+				MSG +
+				'\n' +
+				membershipMSG +
+				'Payment Method: ' +
+				method +
+				'\n' +
+				'Entry Fee: $' +
+				actualEntryFee +
+				'\n' +
+				'Event Link: ' +
+				eventLink +
+				'\n' +
+				'Thanks for using MYSeatTime.\n',
+			html:
+				'<p style="color:black;">Hi ' +
+				recipientName +
+				', </p>' +
+				'<p style="color:black;">A new registration for ' +
+				recipientName +
+				' ' +
+				eventName +
+				' has been submitted.</p>' +
+				'<p>Driver Name: ' +
+				userLastName +
+				', ' +
+				userFirstName +
+				'</p>' +
+				'<p style="color:black;">Date: ' +
+				dateRunGroups +
+				'</p>' +
+				'<p style="color:black;">Status: ' +
+				MSG +
+				'</p>' +
+				membershipMSGHtml +
+				'<p style="color:black;">Payment Method: ' +
+				method +
+				'</p>' +
+				'<p style="color:black;">Entry Fee: $' +
+				actualEntryFee +
+				'</p>' +
+				'<p style="color:black;">Event Link: ' +
+				eventLink +
+				'</p>' +
+				'<p style="color:black;">Thanks for using MYSeatTime.</p>',
+			sender: 'admin@myseattime.com',
+			replyTo: 'myseattime@gmail.com'
 		});
 	} catch (err) {
 		console.log('nodemailer err = ', err);
@@ -878,6 +1065,7 @@ module.exports = {
 	sendVerificationEmail,
 	sendAccountActivationEmail,
 	sendRegistrationConfirmationEmail,
+	sendRegistrationNotificationEmail,
 	sendAddToEntryListEmail,
 	sendChangeRunGroupEmail,
 	sendChargeConfirmationEmail,

@@ -23,7 +23,7 @@ const clubMemberSchema = new Schema({
 	},
 	memberNumber: { type: String, default: '0000' },
 	memberExp: { type: Date },
-	carNumber: { type: String }
+	carNumber: { type: String, default: '' }
 });
 
 module.exports = mongoose.model('ClubMember', clubMemberSchema);

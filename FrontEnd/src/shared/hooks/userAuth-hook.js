@@ -111,6 +111,27 @@ export const useUserAuth = () => {
 		setURL(url);
 	}, []);
 
+	const setUserAccountStatusHook = useCallback(val => {
+		setUserAccountStatus(val);
+
+		// Save value to localStorage so we can read the value from it when page gets refreshed.
+		// Otherwise, refresh will erase userAuthContext data.
+		let userData = JSON.parse(localStorage.getItem('userData'));
+		userData.userAccountStatus = val;
+		localStorage.setItem('userData', JSON.stringify(userData));
+	}, []);
+
+	const removeUserEntry = useCallback(entryId => {
+		let entries;
+		entries = userEntries.filter(entry => entry.id !== entryId);
+		setUserEntries(entries);
+
+		// Save value to localStorage so we can read the value from it when page gets refreshed.
+		// Otherwise, refresh will erase userAuthContext data.
+		let userData = JSON.parse(localStorage.getItem('userData'));
+		userData.userEntries = entries;
+		localStorage.setItem('userData', JSON.stringify(userData));
+	});
 	return {
 		userToken,
 		userLogin,
@@ -121,6 +142,8 @@ export const useUserAuth = () => {
 		userImage,
 		userRedirectURL,
 		userAccountStatus,
-		setUserRedirectURL
+		setUserRedirectURL,
+		setUserAccountStatusHook,
+		removeUserEntry
 	};
 };

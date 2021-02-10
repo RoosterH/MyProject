@@ -56,7 +56,9 @@ const EventItem = props => {
 					}
 				);
 			} catch (err) {}
-			setEventStatus(responseData.eventStatus);
+			if (responseData.eventStatus) {
+				setEventStatus(responseData.eventStatus);
+			}
 		};
 		getEventStatus();
 	}, []);
@@ -277,10 +279,11 @@ const EventItem = props => {
 	useEffect(() => {
 		if (userAuthContext.userId) {
 			let storageData = JSON.parse(localStorage.getItem('userData'));
+			// to prevent hacking, we use userAuthContext
 			if (storageData.userId === userAuthContext.userId) {
-				setUserAccountStatus(storageData.userAccountStatus);
+				setUserAccountStatus(userAuthContext.userAccountStatus);
 				let userEntries = storageData.userEntries;
-				if (!storageData.userAccountStatus) {
+				if (!userAuthContext.userAccountStatus) {
 					// actually we are not displaying button, only gives accountStatusMSG
 					setButtonName('DISABLED');
 				} else if (userEntries) {

@@ -131,8 +131,8 @@ const ClubSES = React.lazy(() =>
 const ClubPayment = React.lazy(() =>
 	import('./clubDashboard/components/ClubPayment')
 );
-const ClubEventSettings = React.lazy(() =>
-	import('./clubDashboard/components/ClubEventSettings')
+const ClubSettings = React.lazy(() =>
+	import('./clubDashboard/components/ClubSettings')
 );
 const ClubStripe = React.lazy(() =>
 	import('./clubDashboard/components/ClubStripe')
@@ -210,7 +210,9 @@ const App = () => {
 		userImage,
 		userRedirectURL,
 		setUserRedirectURL,
-		userAccountStatus
+		userAccountStatus,
+		setUserAccountStatusHook,
+		removeUserEntry
 	} = useUserAuth();
 
 	const { isInsideForm, setIsInsideForm } = useFormHook();
@@ -264,8 +266,8 @@ const App = () => {
 				<Route path="/clubs/payment/:clubId" exact>
 					<ClubPayment />
 				</Route>
-				<Route path="/clubs/eventSettings/:clubId" exact>
-					<ClubEventSettings />
+				<Route path="/clubs/clubSettings/:clubId" exact>
+					<ClubSettings />
 				</Route>
 				<Route path="/clubs/stripe/:clubId" exact>
 					<ClubStripe />
@@ -527,8 +529,8 @@ const App = () => {
 				<Route path="/clubs/payment/:clubId" exact>
 					<ClubPayment />
 				</Route>
-				<Route path="/clubs/eventSettings/:clubId" exact>
-					<ClubEventSettings />
+				<Route path="/clubs/clubSettings/:clubId" exact>
+					<ClubSettings />
 				</Route>
 				<Route path="/clubs/stripe/:clubId" exact>
 					<ClubStripe />
@@ -638,7 +640,9 @@ const App = () => {
 					userAccountStatus: userAccountStatus,
 					userLogin: userLogin,
 					userLogout: userLogout,
-					setUserRedirectURL: setUserRedirectURL
+					setUserRedirectURL: setUserRedirectURL,
+					setUserAccountStatusHook: setUserAccountStatusHook,
+					removeUserEntry: removeUserEntry
 				}}>
 				<FormContext.Provider
 					value={{

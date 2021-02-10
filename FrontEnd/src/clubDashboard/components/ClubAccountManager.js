@@ -5,7 +5,7 @@ import ClubCredential from './ClubCredential';
 import ClubStripe from './ClubStripe';
 import ClubSES from './ClubSES';
 import ClubPayment from './ClubPayment';
-import ClubEventSettings from './ClubEventSettings';
+import ClubSettings from './ClubSettings';
 import RedirectExternalURL from '../../shared/hooks/redirectExternalURL';
 import '../../shared/css/EventForm.css';
 import '../../shared/css/EventItem.css';
@@ -34,8 +34,8 @@ const ClubAccountManager = () => {
 	const [paymentClass, setPaymentClass] = useState(
 		'editeventmanager-grey'
 	);
-	const [eventSettings, setEventSettings] = useState(false);
-	const [eventSettingsClass, setEventSettingsClass] = useState(
+	const [clubSettings, setClubSettings] = useState(false);
+	const [clubSettingsClass, setClubSettingsClass] = useState(
 		'editeventmanager-grey'
 	);
 
@@ -61,8 +61,8 @@ const ClubAccountManager = () => {
 		setSESClass('editeventmanager-grey');
 		setPayment(false);
 		setPaymentClass('editeventmanager-grey');
-		setEventSettings(false);
-		setEventSettingsClass('editeventmanager-grey');
+		setClubSettings(false);
+		setClubSettingsClass('editeventmanager-grey');
 	};
 
 	const stripeClickHandler = () => {
@@ -74,8 +74,8 @@ const ClubAccountManager = () => {
 		setSESClass('editeventmanager-grey');
 		setPayment(false);
 		setPaymentClass('editeventmanager-grey');
-		setEventSettings(false);
-		setEventSettingsClass('editeventmanager-grey');
+		setClubSettings(false);
+		setClubSettingsClass('editeventmanager-grey');
 	};
 
 	const sesClickHandler = () => {
@@ -87,8 +87,8 @@ const ClubAccountManager = () => {
 		setSESClass('editeventmanager-orange');
 		setPayment(false);
 		setPaymentClass('editeventmanager-grey');
-		setEventSettings(false);
-		setEventSettingsClass('editeventmanager-grey');
+		setClubSettings(false);
+		setClubSettingsClass('editeventmanager-grey');
 	};
 
 	const paymentClickHandler = () => {
@@ -100,11 +100,11 @@ const ClubAccountManager = () => {
 		setSESClass('editeventmanager-grey');
 		setPayment(true);
 		setPaymentClass('editeventmanager-orange');
-		setEventSettings(false);
-		setEventSettingsClass('editeventmanager-grey');
+		setClubSettings(false);
+		setClubSettingsClass('editeventmanager-grey');
 	};
 
-	const eventSettingsClickHandler = () => {
+	const clubSettingsClickHandler = () => {
 		setCredential(false);
 		setCredentialClass('editeventmanager-grey');
 		setStripe(false);
@@ -113,12 +113,12 @@ const ClubAccountManager = () => {
 		setSESClass('editeventmanager-grey');
 		setPayment(false);
 		setPaymentClass('editeventmanager-grey');
-		setEventSettings(true);
-		setEventSettingsClass('editeventmanager-orange');
+		setClubSettings(true);
+		setClubSettingsClass('editeventmanager-orange');
 	};
 
 	// set defualt page, if none is false, we will use eventInfo as default
-	if (!credential && !stripe && !ses && !payment && !eventSettings) {
+	if (!credential && !stripe && !ses && !payment && !clubSettings) {
 		credentialClickHandler();
 	}
 
@@ -158,10 +158,10 @@ const ClubAccountManager = () => {
 							Payment
 						</Button>
 						<Button
-							size={eventSettingsClass}
+							size={clubSettingsClass}
 							autoFocus
-							onClick={eventSettingsClickHandler}>
-							Event Settings
+							onClick={clubSettingsClickHandler}>
+							Club Settings
 						</Button>
 					</ul>
 					<div className="tab-content">
@@ -171,7 +171,7 @@ const ClubAccountManager = () => {
 						)}
 						{ses && <ClubSES />}
 						{payment && <ClubPayment />}
-						{eventSettings && <ClubEventSettings />}
+						{clubSettings && <ClubSettings />}
 					</div>
 				</div>
 			</div>

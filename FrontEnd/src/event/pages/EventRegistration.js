@@ -85,10 +85,10 @@ const EventRegistration = props => {
 
 	const [OKLeavePage, setOKLeavePage] = useState(true);
 
-	// get clubEventSettings from backend to determine wheather to display private event checkbox
+	// get clubSettings from backend to determine wheather to display private event checkbox
 	const [hostPrivateEvent, setHostPrivateEvent] = useState(false);
 	useEffect(() => {
-		const getClubEventSettings = async () => {
+		const getClubSettings = async () => {
 			try {
 				const [
 					responseData,
@@ -96,7 +96,7 @@ const EventRegistration = props => {
 					responseMessage
 				] = await sendRequest(
 					process.env.REACT_APP_BACKEND_URL +
-						`/clubs/eventSettings/${clubId}`,
+						`/clubs/clubSettings/${clubId}`,
 					'GET',
 					null,
 					{
@@ -105,13 +105,13 @@ const EventRegistration = props => {
 					}
 				);
 				setHostPrivateEvent(
-					responseData.clubEventSettings.hostPrivateEvent
+					responseData.clubSettings.hostPrivateEvent
 				);
 			} catch (err) {
 				console.log('err = ', err);
 			}
 		};
-		getClubEventSettings();
+		getClubSettings();
 	}, []);
 	// local storage gets the higest priority
 	// get from localStorage

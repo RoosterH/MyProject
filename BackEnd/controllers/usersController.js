@@ -10,6 +10,7 @@ const {
 	sendVerificationEmail,
 	sendAccountActivationEmail
 } = require('../util/nodeMailer');
+const Club = require('../models/club');
 const Entry = require('../models/entry');
 const Event = require('../models/event');
 const HttpError = require('../models/httpError');
@@ -18,6 +19,8 @@ const Stripe = require('./stripeController');
 const User = require('../models/user');
 const UserAccount = require('../models/userAccount');
 const Token = require('../models/token');
+const ClubMember = require('../models/clubMember');
+const ClubSettings = require('../models/clubSettings');
 
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 
@@ -1315,6 +1318,147 @@ const updateUserCredential = async (req, res, next) => {
 	});
 };
 
+// GET /api/users/clubInfo/:uid/:eid
+const getUserClubInfo = async (req, res, next) => {
+	const uId = req.params.uid;
+	const eId = req.params.eid;
+
+	try {
+		var user = await User.findById(uId);
+	} catch (err) {
+		const error = new HttpError(
+			'getUserClubInfo Entry form submission process failed during user validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!user) {
+		const error = new HttpError(
+			'getUserClubInfo Entry form submission faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
+	let event;
+	try {
+		event = await Event.findById(eId);
+	} catch (err) {
+		console.log('err = ', err);
+		// this error is displayed if the request to the DB had some issues
+		const error = new HttpError(
+			'getUserClubInfo Cannot find the event for the entry list. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'getUserClubInfo Could not find the event. Please try later.',
+			404
+		);
+		return next(error);
+	}
+
+	try {
+		var club = await Club.findById(event.clubId);
+	} catch (err) {
+		console.log('err = ', err);
+		const error = new HttpError(
+			'getUserClubInfo Get events by owner club ID process failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'getUserClubInfo Could not find the club owner.',
+			404
+		);
+		return next(error);
+	}
+
+	// look for clubMember using userId and clubId
+	try {
+		var clubMember = await ClubMember.findOne({
+			userId: uId,
+			clubId: club.id
+		});
+	} catch (err) {
+		console.log(
+			'getUserClubInfo Get clubMember failed.  err = ',
+			err
+		);
+		const error = new HttpError(
+			'getUserClubInfo Get clubMember failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	// if not found, try with lastName and firstName
+	if (!clubMember) {
+		try {
+			clubMember = await ClubMember.findOne({
+				lastName: user.lastName,
+				firstName: user.firstName
+			});
+		} catch (err) {
+			console.log(
+				'getUserClubInfo Unable to look up club member with last/first name = ',
+				err
+			);
+			// unable to find
+			const error = new HttpError(
+				'getUserClubInfo Unable to look up club member with last/first name. Please try later.',
+				500
+			);
+			return next(error);
+		}
+	}
+
+	let memberExp = moment();
+	if (clubMember) {
+		if (clubMember.memberExp !== undefined) {
+			memberExp = moment(clubMember.memberExp).format('L');
+		} else {
+			memberExp = undefined;
+		}
+	} else {
+		memberExp = undefined;
+	}
+
+	try {
+		var clubSettings = await ClubSettings.findById(
+			club.clubSettingsId
+		);
+	} catch {
+		const error = new HttpError(
+			'getUserClubInfo retrieving clubSettings process failed. Please try again later',
+			500
+		);
+		return next(error);
+	}
+
+	if (!clubSettings) {
+		const error = new HttpError(
+			'getUserClubInfo retrieving clubSettings from DB failed. Please try again later',
+			404
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		clubName: club.name,
+		memberExp: memberExp,
+		memberSystem: clubSettings.memberSystem,
+		collectMembershipFee: clubSettings.collectMembershipFee,
+		membershipFee: clubSettings.membershipFee
+	});
+};
+
 exports.getAllUsers = getAllUsers;
 exports.getUserById = getUserById;
 exports.createUser = createUser;
@@ -1331,3 +1475,4 @@ exports.getEvents = getEvents;
 exports.getEntry = getEntry;
 exports.getEventEntryForm = getEventEntryForm;
 exports.getEventEntryFormWithAnswer = getEventEntryFormWithAnswer;
+exports.getUserClubInfo = getUserClubInfo;

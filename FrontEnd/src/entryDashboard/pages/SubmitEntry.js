@@ -36,7 +36,7 @@ const SubmitEntry = props => {
 	let eventName = props.eventName;
 	let carId = props.carId;
 	let carNumber = props.carNumber;
-	// let raceClass = props.raceClass;
+	let payMembership = props.payMembership;
 	let formAnswer = props.formAnswer;
 	const editingMode = props.editingMode;
 	const [paymentStatus, setPaymentStatus] = useState(
@@ -408,7 +408,7 @@ const SubmitEntry = props => {
 					JSON.stringify({
 						carId: carId,
 						carNumber: carNumber,
-						// raceClass: raceClass,
+						payMembership: payMembership,
 						answer: formAnswer,
 						disclaimer: disclaimer,
 						paymentMethod: paymentMethod,
@@ -473,15 +473,9 @@ const SubmitEntry = props => {
 			);
 
 			if (responseStatus === 200) {
-				// remove entry from localStorage
-				let userData = JSON.parse(localStorage.getItem('userData'));
-				let index = userData.userEntries.indexOf(entryId);
-				userData.userEntries.splice(index, 1);
-				localStorage.setItem('userData', JSON.stringify(userData));
+				// remove entry from userAuthContext and localStorage
+				userAuthContext.removeUserEntry(entryId);
 			}
-
-			// after deleting event, forward to eventManager, we do not want to send null event back
-			// even we have a callback from EditEventManager
 			history.push(`/users/events/${userAuthContext.userId}`);
 		} catch (err) {}
 	};
