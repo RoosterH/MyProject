@@ -63,9 +63,9 @@ const ClubAuth = () => {
 					history.push(`/clubs/verification/${values.email}`);
 				} else if (clubAuthContext.clubRedirectURL) {
 					clubAuthContext.clubLogin(
-						responseData.token,
 						responseData.clubId,
 						responseData.name,
+						responseData.token,
 						responseData.image
 					);
 					history.push(clubAuthContext.clubRedirectURL);
