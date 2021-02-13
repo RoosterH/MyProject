@@ -88,56 +88,6 @@ const ClubAvailableCarNumbers = () => {
 		setShowLoading(false);
 	}, [clubTakenCarNumbers, startNumber, endNumber, setMaterialData]);
 
-	const [memberToBeUpdatedNew, setMemberToBeUpdatedNew] = useState();
-	const [memberToBeUpdatedOld, setMemberToBeUpdatedOld] = useState();
-	// getting confirmation from MTable to update a member
-	const confirmUpdateMember = (newData, oldData) => {
-		if (newData) {
-			setMemberToBeUpdatedNew(newData);
-			setMemberToBeUpdatedOld(oldData);
-		}
-	};
-
-	useEffect(() => {
-		const updateMemberHandler = async () => {
-			let userId = memberToBeUpdatedNew.userId;
-			let lastName = memberToBeUpdatedNew.lastName;
-			let firstName = memberToBeUpdatedNew.firstName;
-			let carNumberNew = memberToBeUpdatedNew.carNumber;
-			let carNumberOld = memberToBeUpdatedOld.carNumber;
-
-			try {
-				const [
-					responseData,
-					responseStatus,
-					responseMessage
-				] = await sendRequest(
-					process.env.REACT_APP_BACKEND_URL +
-						`/clubs/carNumber/${clubAuthContext.clubId}`,
-					'POST',
-					JSON.stringify({
-						userId: userId,
-						lastName: lastName,
-						firstName: firstName,
-						carNumberOld: carNumberOld,
-						carNumberNew: carNumberNew
-					}),
-					{
-						'Content-Type': 'application/json',
-						// adding JWT to header for authentication
-						Authorization: 'Bearer ' + clubAuthContext.clubToken
-					}
-				);
-			} catch (err) {
-				// something wrong, roll back the changes
-				console.log('refresh here');
-			}
-		};
-		if (memberToBeUpdatedNew) {
-			updateMemberHandler();
-		}
-	}, [memberToBeUpdatedNew, memberToBeUpdatedOld]);
-
 	const clearErrorHandler = () => {
 		clearError();
 	};
@@ -151,7 +101,6 @@ const ClubAvailableCarNumbers = () => {
 						showLoading={showLoading}
 						clubName={clubAuthContext.clubName}
 						numberList={materialData}
-						confirmUpdateMember={confirmUpdateMember}
 					/>
 				</div>
 			)}

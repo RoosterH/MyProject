@@ -1983,21 +1983,21 @@ const getClubTakenCarNumbers = async (req, res, next) => {
 		return next(error);
 	}
 
-	let memberSystem = clubSettings.memberSystem;
-
-	// compose responseData
-	// carNumber
 	let carNumbers = [];
-	for (let i = 0; i < memberList.length; ++i) {
-		let member = memberList[i];
-		if (member.carNumber) {
-			let index = binarySearch(
-				carNumbers,
-				parseInt(member.carNumber),
-				0,
-				carNumbers.length - 1
-			);
-			carNumbers.splice(index, 0, parseInt(member.carNumber));
+	// only club has a distinct car number system that we need to get the taken numbers
+	if (clubSettings.carNumberSystem) {
+		// compose responseData
+		for (let i = 0; i < memberList.length; ++i) {
+			let member = memberList[i];
+			if (member.carNumber) {
+				let index = binarySearch(
+					carNumbers,
+					parseInt(member.carNumber),
+					0,
+					carNumbers.length - 1
+				);
+				carNumbers.splice(index, 0, parseInt(member.carNumber));
+			}
 		}
 	}
 
@@ -3226,13 +3226,16 @@ const updateCarNumber = async (req, res, next) => {
 		);
 		return next(error);
 	}
-	console.log('clubSettings = ', clubSettings);
+
 	// club has distinc number system, we need to make sure new number is not already taken
 	if (clubSettings.carNumberSystem) {
 		// get all the clubMembers
 		// find all the clubMemberList that are associated with this club
 		try {
-			var memberList = await ClubMember.find({ clubId: clubId });
+			var memberFound = await ClubMember.findOne({
+				clubId: clubId,
+				carNumber: carNumberNew
+			});
 		} catch (err) {
 			const error = new HttpError(
 				'Get club member list process failed. Please try again later.',
@@ -3240,16 +3243,15 @@ const updateCarNumber = async (req, res, next) => {
 			);
 			return next(error);
 		}
-		for (let i = 0; i < memberList.length; ++i) {
-			if (memberList[i].carNumber === carNumberNew) {
-				const error = new HttpError(
-					'Number ' +
-						carNumberNew +
-						' is taken. Please choose a different number.',
-					400
-				);
-				return next(error);
-			}
+
+		if (memberFound) {
+			const error = new HttpError(
+				'Number ' +
+					carNumberNew +
+					' is taken. Please choose a different number.',
+				400
+			);
+			return next(error);
 		}
 	}
 
