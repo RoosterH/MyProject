@@ -119,10 +119,9 @@ const ClubDashboardToolbar = () => {
 							</NavLink>
 						</div>
 					</li>
-
 					<li className="dashboard-nav-menu dropdown">
 						<Link
-							to="/clubs/RegistrationManager"
+							to="/clubs/memberManager"
 							exact="exact"
 							className="dropdown-blackbutton">
 							<i
@@ -135,10 +134,11 @@ const ClubDashboardToolbar = () => {
 							<NavLink to={`/clubs/memberList/${cid}`} exact>
 								Member List
 							</NavLink>
-							<NavLink
-								to={`/clubs/paymentCenterSelector/${cid}`}
-								exact>
-								Car Numbers
+							<NavLink to={`/clubs/carNumbers/${cid}`} exact>
+								Car Number List
+							</NavLink>
+							<NavLink to={`/clubs/availCarNumbers/${cid}`} exact>
+								Available Car Numbers
 							</NavLink>
 						</div>
 					</li>

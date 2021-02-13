@@ -15,7 +15,12 @@
 	text-align: center;
 }
 .available-nunmber-table {
-	margin-left: 25rem;
+	margin-left: 15rem;
+}
+
+.entrylist-table {
+	font-size: 12px;
+	font-weight: 400;
 }
 
 @media (max-width: 780px) {

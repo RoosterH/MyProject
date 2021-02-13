@@ -198,6 +198,12 @@
 	margin: 0rem 0.1rem 0.2rem 1.5rem;
 }
 
+.event-form__label_inline_number {
+	display: inline-block;
+	font-size: 15px;
+	margin: 0rem 0.1rem 0.2rem 0.1rem;
+}
+
 .event-form__field_quarter {
 	display: inline-block;
 	/* without solid, color does not work properly */
@@ -208,6 +214,18 @@
 	width: 80%;
 	height: 1.9rem;
 	margin: 0rem 0.1rem 0.5rem 1.5rem;
+}
+
+.event-form__field_number {
+	display: inline-block;
+	/* without solid, color does not work properly */
+	border-style: solid;
+	border-color: #c2c2c2;
+	font-size: 15px;
+	font-family: 'Montserrat', sans-serif;
+	width: 15%;
+	height: 1.9rem;
+	margin: 0rem 0.1rem 0.5rem 0.5rem;
 }
 
 .event-form__field-textarea {
@@ -355,6 +373,28 @@
 	margin-left: 1.5rem;
 }
 
+.event-form__field-startnumber-error {
+	display: inline-block;
+	/* without solid, color does not work properly */
+	font-size: 12px;
+	font-family: 'Montserrat', sans-serif;
+	color: #b10101;
+	width: 10%;
+	height: 3rem;
+	margin: 0rem 0.1rem 0.5rem 9rem;
+}
+
+.event-form__field-endnumber-error {
+	display: inline-block;
+	/* without solid, color does not work properly */
+	font-size: 12px;
+	font-family: 'Montserrat', sans-serif;
+	color: #b10101;
+	width: 10%;
+	height: 3rem;
+	margin: 0rem 0.1rem 0.5rem 3rem;
+}
+
 .event-form h2 {
 	font-weight: bold;
 }
@@ -362,6 +402,13 @@
 .event-form-errmsg {
 	font-weight: bold;
 	color: #b10101;
+}
+
+.refresh-page-msg {
+	font-size: 14px;
+	font-weight: bold;
+	color: #b10101;
+	margin-left: 1.5rem;
 }
 
 .event-form__coursemap {
@@ -574,6 +621,12 @@
 		margin: 0rem 0.1rem 0.2rem 1.5rem;
 	}
 
+	.event-form__label_inline_number {
+		display: inline-block;
+		font-size: 15px;
+		margin: 0rem 0.5rem 0.2rem 0.5rem;
+	}
+
 	.event-form__field_quarter {
 		display: inline-block;
 		/* without solid, color does not work properly */
@@ -584,6 +637,18 @@
 		width: 20.2%;
 		height: 1.9rem;
 		margin: 0rem 0.1rem 0.5rem 1.5rem;
+	}
+
+	.event-form__field_number {
+		display: inline-block;
+		/* without solid, color does not work properly */
+		border-style: solid;
+		border-color: #c2c2c2;
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		width: 5%;
+		height: 1.9rem;
+		margin: 0rem 0.1rem 0.5rem 0.5rem;
 	}
 
 	.event-form__field-textarea {
@@ -764,6 +829,28 @@
 		width: 43%;
 		height: 1.9rem;
 		margin: 0rem 0rem 0.5rem 1rem;
+	}
+
+	.event-form__field-startnumber-error {
+		display: inline-block;
+		/* without solid, color does not work properly */
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		color: #b10101;
+		width: 5%;
+		height: 1.9rem;
+		margin: 0rem 0.1rem 0.5rem 9.5rem;
+	}
+
+	.event-form__field-endnumber-error {
+		display: inline-block;
+		/* without solid, color does not work properly */
+		font-size: 15px;
+		font-family: 'Montserrat', sans-serif;
+		color: #b10101;
+		width: 5%;
+		height: 1.9rem;
+		margin: 0rem 0.1rem 0.5rem 3rem;
 	}
 
 	.event-form h2 {

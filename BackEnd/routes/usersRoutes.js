@@ -78,7 +78,18 @@ router.get('/events/:uid', usersController.getEvents);
 // get event entry
 router.get('/entry/:eid', usersController.getEntry);
 
+// get event entry
+router.get(
+	'/clubTakenCarNumbers/:cid',
+	usersController.getClubTakenCarNumbers
+);
+
 router.post('/logout', usersController.logoutUser);
+
+router.post(
+	'/registerClubCarNumber/:cid',
+	usersController.registerClubCarNumber
+);
 
 router.patch(
 	'/account/:uid',

@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import NavigationPrompt from 'react-router-navigation-prompt';
+import * as Yup from 'yup';
 
 import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
@@ -27,6 +28,8 @@ const ClubSettings = () => {
 	const [collectMembershipFee, setCollectMembershipFee] = useState(
 		false
 	);
+	const [startNumber, setStartNumber] = useState('');
+	const [endNumber, setEndNumber] = useState('');
 
 	const clubAuthContext = useContext(ClubAuthContext);
 	const clubId = clubAuthContext.clubId;
@@ -51,7 +54,9 @@ const ClubSettings = () => {
 		collectMembershipFee: 'false',
 		membershipFee: '0',
 		hostPrivateEvent: 'false',
-		carNumber: 'true'
+		carNumberSystem: 'true',
+		startNumber: 0,
+		endNumber: 999
 	};
 
 	const [loadedClubSettings, setLoadedClubSettings] = useState();
@@ -98,7 +103,10 @@ const ClubSettings = () => {
 					membershipFee: values.membershipFee,
 					hostPrivateEvent:
 						values.hostPrivateEvent === 'true' ? true : false,
-					carNumber: values.carNumber === 'true' ? true : false
+					carNumberSystem:
+						values.carNumberSystem === 'true' ? true : false,
+					startNumber: values.startNumber,
+					endNumber: values.endNumber
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -109,7 +117,6 @@ const ClubSettings = () => {
 			// Need to set the loadedClubSettings so we will set initialValues again.
 			// Without it, form will keep the old initial values.
 			setLoadedClubSettings(responseData.clubSettings);
-			console.log('responseData = ', responseData);
 			setOKLeavePage(true);
 			setSaveButtonEnabled(false);
 		} catch (err) {}
@@ -144,9 +151,24 @@ const ClubSettings = () => {
 			hostPrivateEvent: loadedClubSettings.hostPrivateEvent
 				? 'true'
 				: 'false',
-			carNumber: loadedClubSettings.carNumber ? 'true' : 'false'
+			carNumberSystem: loadedClubSettings.carNumberSystem
+				? 'true'
+				: 'false',
+			startNumber: loadedClubSettings.startNumber,
+			endNumber: loadedClubSettings.endNumber
 		};
 	}
+
+	const numberRangeValidationSchema = Yup.object().shape({
+		startNumber: Yup.number()
+			.min(0, '>= 0')
+			.max(Yup.ref('endNumber'), '< End Number')
+			.required(),
+		endNumber: Yup.number()
+			.min(Yup.ref('startNumber'), '> Start Number')
+			.max(10000, '<= 9999')
+			.required()
+	});
 
 	const accountForm = () => (
 		<div className="event-form">
@@ -157,6 +179,7 @@ const ClubSettings = () => {
 			<Formik
 				enableReinitialize={true}
 				initialValues={initialValues}
+				validationSchema={numberRangeValidationSchema}
 				onSubmit={(values, actions) => {
 					submitHandler(values);
 					if (actions.isSubmitting) {
@@ -282,7 +305,7 @@ const ClubSettings = () => {
 									id="membershipFee"
 									name="membershipFee"
 									type="text"
-									className="event-form__field_quarter"
+									className="event-form__field_number"
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
@@ -298,10 +321,10 @@ const ClubSettings = () => {
 						)}
 						<br />
 						<div id="my-radio-group" className="event-form__label">
-							Enable Prive Event:
+							Enable Private Event:
 							<p>
 								A private event will not be shown at search page. It
-								can only be shared via a URL.{' '}
+								can only be shared via URL.{' '}
 							</p>
 						</div>
 						<div
@@ -348,7 +371,7 @@ const ClubSettings = () => {
 						</div>
 						<br />
 						<div id="my-radio-group" className="event-form__label">
-							Car Number:
+							Car Number System:
 						</div>
 						<div
 							role="group"
@@ -357,30 +380,94 @@ const ClubSettings = () => {
 							<label>
 								<Field
 									type="radio"
-									name="carNumber"
+									name="carNumberSystem"
 									value="true"
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
+									}}
+									onChange={event => {
+										// need handleChange to be able to get option values correctly
+										// i.e. this is false value
+										handleChange(event);
 										setSaveButtonEnabled(true);
 									}}
 								/>
-								&nbsp;No Duplicated Numbers
+								&nbsp;Distinct Numbers
 							</label>
 							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 							<label>
 								<Field
 									type="radio"
-									name="carNumber"
+									name="carNumberSystem"
 									value="false"
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
+									}}
+									onChange={event => {
+										// need handleChange to be able to get option values correctly
+										// i.e. this is false value
+										handleChange(event);
 										setSaveButtonEnabled(true);
 									}}
 								/>
-								&nbsp;Sharing Numbers
+								&nbsp;Shared Numbers
 							</label>
+						</div>
+						<label
+							htmlFor="startNumber"
+							className="event-form__label_inline">
+							Number Range:
+						</label>
+						<Field
+							id="startNumber"
+							name="startNumber"
+							type="text"
+							className="event-form__field_number"
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+							}}
+							onChange={event => {
+								// need handleChange to be able to get option values correctly
+								// i.e. this is false value
+								handleChange(event);
+								setSaveButtonEnabled(true);
+							}}
+						/>{' '}
+						<label
+							htmlFor="endNumber"
+							className="event-form__label_inline_number">
+							to
+						</label>
+						<Field
+							id="endNumber"
+							name="endNumber"
+							type="text"
+							className="event-form__field_number"
+							onBlur={event => {
+								handleBlur(event);
+								setOKLeavePage(false);
+							}}
+							onChange={event => {
+								// need handleChange to be able to get option values correctly
+								// i.e. this is false value
+								handleChange(event);
+								setSaveButtonEnabled(true);
+							}}
+						/>
+						<div>
+							{touched.startNumber && errors.startNumber && (
+								<div className="event-form__field-startnumber-error">
+									{errors.startNumber}
+								</div>
+							)}
+							{touched.endNumber && errors.endNumber && (
+								<div className="event-form__field-endnumber-error">
+									{errors.endNumber}
+								</div>
+							)}
 						</div>
 						<br />
 						<br />

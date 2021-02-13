@@ -250,11 +250,11 @@ const sendRegistrationConfirmationEmail = async (
 				MSG +
 				'\n' +
 				membershipMSG +
-				'Payment Method: ' +
-				method +
-				'\n' +
 				'Entry Fee: $' +
 				actualEntryFee +
+				'\n' +
+				'Payment Method: ' +
+				method +
 				'\n' +
 				'Event Link: ' +
 				eventLink +
@@ -277,11 +277,11 @@ const sendRegistrationConfirmationEmail = async (
 				MSG +
 				'</p>' +
 				membershipMSGHtml +
-				'<p style="color:black;">Payment Method: ' +
-				method +
-				'</p>' +
 				'<p style="color:black;">Entry Fee: $' +
 				actualEntryFee +
+				'</p>' +
+				'<p style="color:black;">Payment Method: ' +
+				method +
 				'</p>' +
 				'<p style="color:black;">Event Link: ' +
 				eventLink +
@@ -407,11 +407,11 @@ const sendRegistrationNotificationEmail = async (
 				MSG +
 				'\n' +
 				membershipMSG +
-				'Payment Method: ' +
-				method +
-				'\n' +
 				'Entry Fee: $' +
 				actualEntryFee +
+				'\n' +
+				'Payment Method: ' +
+				method +
 				'\n' +
 				'Event Link: ' +
 				eventLink +
@@ -438,11 +438,11 @@ const sendRegistrationNotificationEmail = async (
 				MSG +
 				'</p>' +
 				membershipMSGHtml +
-				'<p style="color:black;">Payment Method: ' +
-				method +
-				'</p>' +
 				'<p style="color:black;">Entry Fee: $' +
 				actualEntryFee +
+				'</p>' +
+				'<p style="color:black;">Payment Method: ' +
+				method +
 				'</p>' +
 				'<p style="color:black;">Event Link: ' +
 				eventLink +

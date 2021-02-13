@@ -1,12 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
-
-// import { EditorState } from 'draft-js';
-// import { RichEditorExample } from '../components/RichEditor';
-import 'draft-js/dist/Draft.css';
 
 import Button from '../../shared/components/FormElements/Button';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
@@ -28,7 +24,7 @@ const ClubInformation = props => {
 		sendRequest,
 		clearError
 	} = useHttpClient();
-	const [saveButtonEnabled, setSaveButtonEnabled] = useState(false);
+	const [saveButtonEnabled, setSaveButtonEnabled] = useState(true);
 
 	// continueStatus controls when to return props.newEventStatus back to NewEventManager
 	const [continueStatus, setContinueStatus] = useState(false);
@@ -41,31 +37,40 @@ const ClubInformation = props => {
 	] = useState(false);
 	const [membershipFee, setMembershipFee] = useState('0');
 	const [memberExp, setMemberExp] = useState();
+	const [clubId, setClubId] = useState();
 	const [clubName, setClubName] = useState('');
-	useEffect(() => {
-		const fetchMemberCarInfo = async () => {
-			const [
-				responseData,
-				responseStatus,
-				responseMessage
-			] = await sendRequest(
-				process.env.REACT_APP_BACKEND_URL +
-					`/users/userClubInfo/${userId}/${eventId}`,
-				'GET',
-				null,
-				{
-					'Content-Type': 'application/json',
-					// adding JWT to header for authentication, JWT contains clubId
-					Authorization: 'Bearer ' + userAuthContext.userToken
-				}
-			);
-			setClubCollectMembershipFee(responseData.collectMembershipFee);
-			setMembershipFee(responseData.membershipFee);
-			setMemberExp(responseData.memberExp);
-			setClubName(responseData.clubName);
-		};
+	const [carNumber, setCarNumber] = useState('');
 
-		fetchMemberCarInfo();
+	useEffect(() => {
+		const getUserClubInfoFirst = async () => {
+			try {
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
+					process.env.REACT_APP_BACKEND_URL +
+						`/users/userClubInfo/${userId}/${eventId}`,
+					'GET',
+					null,
+					{
+						'Content-Type': 'application/json',
+						// adding JWT to header for authentication, JWT contains userId
+						Authorization: 'Bearer ' + userAuthContext.userToken
+					}
+				);
+				console.log('responseData = ', responseData);
+				setClubCollectMembershipFee(
+					responseData.collectMembershipFee
+				);
+				setMembershipFee(responseData.membershipFee);
+				setMemberExp(responseData.memberExp);
+				setClubId(responseData.clubId);
+				setClubName(responseData.clubName);
+				setCarNumber(responseData.carNumber);
+			} catch (err) {}
+		};
+		getUserClubInfoFirst();
 	}, []);
 
 	// this is the return function that passes finishing status back to NewEventManager
@@ -103,9 +108,6 @@ const ClubInformation = props => {
 		}
 	}, [location, userAuthContext]);
 
-	const [carNumber, setCarNumber] = useState('');
-	// const [raceClass, setRaceClass] = useState('');
-
 	// initialize local storage
 	// Get the existing data
 	var eventFormData = localStorage.getItem('eventFormData');
@@ -126,9 +128,6 @@ const ClubInformation = props => {
 		if (eventFormData.carNumber) {
 			setCarNumber(eventFormData.carNumber);
 		}
-		// if (eventFormData.raceClass) {
-		// 	setRaceClass(eventFormData.raceClass);
-		// }
 	} else if (!initialized) {
 		setInitialized(true);
 		// initialize localStorage
@@ -163,21 +162,6 @@ const ClubInformation = props => {
 		);
 	};
 
-	/***** Form Validation Section  *****/
-	const [validateCarNumber, setValidateCarNumber] = useState(
-		() => value => {
-			let error;
-			if (!value) {
-				error = 'Car number is required.';
-			}
-			let numVal = parseInt(value);
-			if (isNaN(numVal)) {
-				error = 'Please inputer a number.';
-			}
-			return error;
-		}
-	);
-
 	const submitHandler = values => {
 		// return back to NewEntryManager
 		setContinueStatus(true);
@@ -187,7 +171,8 @@ const ClubInformation = props => {
 	const [memberExpDate, setMemberExpDate] = useState();
 	useEffect(() => {
 		if (memberExp) {
-			setMemberExpDate(moment(memberExp).format('L'));
+			const date = new Date(memberExp);
+			setMemberExpDate(moment(date.toISOString()).format('L'));
 		}
 	}, [memberExp]);
 
@@ -319,60 +304,50 @@ const ClubInformation = props => {
 								</div>{' '}
 							</React.Fragment>
 						)}
-
 						<label htmlFor="carNumber" className="event-form__label">
-							<i className="fal fa-question-circle"></i>
+							<i className="fad fa-car-side fa-lg"></i>
 							&nbsp; Car Number
 						</label>
-						<Field
-							id="carNumber"
-							name="carNumber"
-							type="text"
-							className="event-form__field_quarter"
-							validate={validateCarNumber}
-							onBlur={event => {
-								// without handBlure(event) touched.name will not work
-								handleBlur(event);
-								updateEventFormData('carNumber', event.target.value);
-								setOKLeavePage(false);
-								setSaveButtonEnabled(true);
-							}}
-							onChange={event => {
-								handleChange(event);
-								setSaveButtonEnabled(true);
-							}}
-						/>
-						{touched.carNumber && errors.carNumber && (
-							<div className="event-form__field-error_quarter">
-								{errors.carNumber}
-							</div>
+						{!carNumber && (
+							<React.Fragment>
+								<label
+									htmlFor="carNumber"
+									className="event-form__label">
+									<Link
+										to={{
+											pathname: `/users/registerCarNumber/${clubId}`,
+											state: {
+												parentURL: `/events/newEntryManager/${eventId}`
+											}
+										}}>
+										{/* target="_blank"> */}
+										{/* rel="noopener noreferrer"> */}
+										<i className="fad fa-link fa-lg"></i>
+										&nbsp; Please click on the link to register a car
+										number.
+									</Link>
+								</label>
+							</React.Fragment>
 						)}
-						{/* <label htmlFor="numGroups" className="event-form__label">
-							<i className="fal fa-address-card"></i>
-							&nbsp; Race class
-						</label>
-						<Field
-							id="raceClass"
-							name="raceClass"
-							type="text"
-							className="event-form__field_quarter"
-							validate={validateRaceClass}
-							onBlur={event => {
-								handleBlur(event);
-								updateEventFormData('raceClass', event.target.value);
-								setOKLeavePage(false);
-							}}></Field>
-						{touched.raceClass && errors.raceClass && (
-							<div className="event-form__field-error_quarter">
-								{errors.raceClass}
-							</div>
-						)} */}
+						{carNumber && (
+							<fieldset disabled>
+								<Field
+									id="carNumber"
+									name="carNumber"
+									type="text"
+									className="event-form__field_quarter"
+								/>
+							</fieldset>
+						)}
 						<Button
 							type="submit"
 							size="small-block"
 							margin-left="1.5rem"
 							disabled={
-								isSubmitting || !isValid || !saveButtonEnabled
+								isSubmitting ||
+								!isValid ||
+								!saveButtonEnabled ||
+								!carNumber
 							}>
 							SAVE &amp; CONTINUE
 						</Button>

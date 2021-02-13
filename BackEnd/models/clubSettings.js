@@ -13,7 +13,11 @@ const clubSettingsSchema = new Schema({
 		require: true,
 		default: false
 	},
-	membershipFee: { type: String, require: true, default: '0' }
+	membershipFee: { type: String, require: true, default: '0' },
+	// car number system true: distinct numbers, false: shared numbers
+	carNumberSystem: { type: Boolean, require: true, default: true },
+	startNumber: { type: Number, require: true, default: 0 },
+	endNumber: { type: Number, require: true, default: 999 }
 });
 
 module.exports = mongoose.model('ClubSettings', clubSettingsSchema);

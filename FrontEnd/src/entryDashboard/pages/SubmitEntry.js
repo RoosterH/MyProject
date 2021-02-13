@@ -200,38 +200,40 @@ const SubmitEntry = props => {
 
 	useEffect(() => {
 		const getEntryFeePaymentOption = async () => {
-			const [
-				responseData,
-				responseStatus,
-				responseMessage
-			] = await sendRequest(
-				process.env.REACT_APP_BACKEND_URL +
-					`/entries/entryFee/${eventId}`,
-				'POST',
-				JSON.stringify({
-					answer: formAnswer
-				}),
-				{
-					'Content-type': 'application/json',
-					// adding JWT to header for authentication
-					Authorization: 'Bearer ' + userAuthContext.userToken
+			try {
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
+					process.env.REACT_APP_BACKEND_URL +
+						`/entries/entryFee/${eventId}`,
+					'POST',
+					JSON.stringify({
+						answer: formAnswer
+					}),
+					{
+						'Content-type': 'application/json',
+						// adding JWT to header for authentication
+						Authorization: 'Bearer ' + userAuthContext.userToken
+					}
+				);
+				setEntryFee(responseData.entryFee);
+
+				// for EditingMode
+				// paymentMethod is what user chose how to pay for the entry fee
+				let paymentMethod = responseData.paymentMethod;
+				setPaymentMethod(paymentMethod);
+
+				// paymentOptions is the payment options offered by club that contains "stripe" and/or "onSite"
+				let paymentOptions = responseData.paymentOptions;
+				if (paymentOptions.indexOf('onSite') > -1) {
+					setOnSite(true);
 				}
-			);
-			setEntryFee(responseData.entryFee);
-
-			// for EditingMode
-			// paymentMethod is what user chose how to pay for the entry fee
-			let paymentMethod = responseData.paymentMethod;
-			setPaymentMethod(paymentMethod);
-
-			// paymentOptions is the payment options offered by club that contains "stripe" and/or "onSite"
-			let paymentOptions = responseData.paymentOptions;
-			if (paymentOptions.indexOf('onSite') > -1) {
-				setOnSite(true);
-			}
-			if (paymentOptions.indexOf('stripe') > -1) {
-				setStripePay(true);
-			}
+				if (paymentOptions.indexOf('stripe') > -1) {
+					setStripePay(true);
+				}
+			} catch (err) {}
 		};
 		getEntryFeePaymentOption();
 	}, [

@@ -224,13 +224,11 @@ const createEntry = async (req, res, next) => {
 		}
 
 		if (clubMember) {
-			console.log('found matched member');
 			// match found, need to link user to the existing clubMember
 			clubMember.set('userId', user.id, { strict: true });
 			// update email with user.email
 			clubMember.set('email', user.email, { strict: true });
 			updateClubMember = true;
-			console.log('clubMember = ', clubMember);
 		}
 	}
 
@@ -247,16 +245,13 @@ const createEntry = async (req, res, next) => {
 			clubId: event.clubId,
 			carNumber: carNumber
 		});
-		console.log('newClubMember = ', newClubMember);
 	}
 
 	// handle membership
 	let memberExp;
 	if (payMembership) {
 		if (clubMember) {
-			console.log('258 clubMember = ', clubMember);
 			if (clubMember.memberExp) {
-				console.log('in 260');
 				// check if current expiration date has expired yet
 				if (moment(clubMember.memberExp).isAfter(moment())) {
 					// not yet expired, extended based on the current expiration date
@@ -269,13 +264,11 @@ const createEntry = async (req, res, next) => {
 					clubMember.memberExp = moment().add(1, 'y');
 				}
 			} else {
-				console.log('in 273');
 				clubMember.set('memberExp', moment().add(1, 'y'), {
 					strict: true
 				});
 			}
 			memberExp = clubMember.memberExp;
-			console.log('278 = memberExp = ', memberExp);
 			updateClubMember = true;
 		} else if (newClubMember) {
 			newClubMember.memberExp = moment().add(1, 'y');

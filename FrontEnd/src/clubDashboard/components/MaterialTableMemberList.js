@@ -4,7 +4,7 @@ import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 
 import './ClubManager.css';
 
-const MaterialTableEntryReport = props => {
+const MaterialTableMemberList = props => {
 	let clubName = props.clubName;
 	let memberList = props.memberList;
 	let showLoading = props.showLoading;
@@ -416,4 +416,4 @@ const MaterialTableEntryReport = props => {
 	);
 };
 
-export default MaterialTableEntryReport;
+export default MaterialTableMemberList;

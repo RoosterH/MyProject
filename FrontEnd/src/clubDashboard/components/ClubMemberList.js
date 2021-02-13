@@ -101,11 +101,15 @@ const ClubMemberList = () => {
 	const fileUploadForm = values => (
 		<div className="fileuploadform-frame">
 			<div className="auth-div">
-				<p className="auth-form-header">
+				<p className="upload-file-header">
 					<i className="fas fa-flag-checkered" />
 					&nbsp;Upload member list file with the following fields.
-					Field names are case sensitive. MemberNumber/Expires are
-					optional. (csv format only)
+					Field names are case sensitive.
+					MemberNumber/Expires/CarNumber are optional. (csv format
+					only)
+					<p className="upload-file-header-red">
+						Do NOT leave empty rows at the end of the file.
+					</p>
 					<img
 						src={CSVExample}
 						alt="FirstName, LastName, Email, MemberNumber, Expires"

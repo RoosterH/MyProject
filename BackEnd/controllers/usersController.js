@@ -1326,6 +1326,7 @@ const getUserClubInfo = async (req, res, next) => {
 	try {
 		var user = await User.findById(uId);
 	} catch (err) {
+		console.log('getUserClubInfo user err = ', err);
 		const error = new HttpError(
 			'getUserClubInfo Entry form submission process failed during user validation. Please try again later.',
 			500
@@ -1333,6 +1334,7 @@ const getUserClubInfo = async (req, res, next) => {
 		return next(error);
 	}
 	if (!user) {
+		console.log('getUserClubInfo user not found err = ', err);
 		const error = new HttpError(
 			'getUserClubInfo Entry form submission faied with unauthorized request. Forgot to login?',
 			404
@@ -1354,6 +1356,7 @@ const getUserClubInfo = async (req, res, next) => {
 	}
 	// this error is for DB not be able to find the event with provided ID
 	if (!event) {
+		console.log('getUserClubInfo event not found');
 		const error = new HttpError(
 			'getUserClubInfo Could not find the event. Please try later.',
 			404
@@ -1371,8 +1374,8 @@ const getUserClubInfo = async (req, res, next) => {
 		);
 		return next(error);
 	}
-
 	if (!club) {
+		console.log('getUserClubInfo club err = ', err);
 		const error = new HttpError(
 			'getUserClubInfo Could not find the club owner.',
 			404
@@ -1420,11 +1423,15 @@ const getUserClubInfo = async (req, res, next) => {
 	}
 
 	let memberExp = moment();
+	let carNumber = '';
 	if (clubMember) {
 		if (clubMember.memberExp !== undefined) {
 			memberExp = moment(clubMember.memberExp).format('L');
 		} else {
 			memberExp = undefined;
+		}
+		if (clubMember.carNumber !== undefined) {
+			carNumber = clubMember.carNumber;
 		}
 	} else {
 		memberExp = undefined;
@@ -1451,14 +1458,237 @@ const getUserClubInfo = async (req, res, next) => {
 	}
 
 	res.status(200).json({
+		clubId: club.id,
 		clubName: club.name,
 		memberExp: memberExp,
+		carNumber: carNumber,
 		memberSystem: clubSettings.memberSystem,
 		collectMembershipFee: clubSettings.collectMembershipFee,
 		membershipFee: clubSettings.membershipFee
 	});
 };
 
+// GET /api/users/clubTakenCarNumbers/:cid
+const getClubTakenCarNumbers = async (req, res, next) => {
+	let uId = req.userData;
+	try {
+		var user = await User.findById(uId);
+	} catch (err) {
+		const error = new HttpError(
+			'getClubTakenCarNumbers process failed during user validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!user) {
+		const error = new HttpError(
+			'getClubTakenCarNumbers submission faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
+	let clubId = req.params.cid;
+	try {
+		console.log('userController 1490 clubId = ', clubId);
+		// we don't want to return password field
+		var club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'getClubTakenCarNumbers failed @ finding club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!club) {
+		const error = new HttpError(
+			'getClubTakenCarNumbers club process failed no club found.',
+			404
+		);
+		return next(error);
+	}
+
+	// find all the clubMemberList that are associated with this club
+	try {
+		var memberList = await ClubMember.find({ clubId: clubId });
+	} catch (err) {
+		const error = new HttpError(
+			'getClubTakenCarNumbers process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	try {
+		// we don't want to return password field
+		var clubSettings = await ClubSettings.findOne({
+			clubId: clubId
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'getClubTakenCarNumbers failed finding club event settings. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!clubSettings) {
+		const error = new HttpError(
+			'getClubTakenCarNumbers cannot find club event settings',
+			500
+		);
+		return next(error);
+	}
+
+	// compose responseData
+	// carNumber
+	let carNumbers = [];
+	for (let i = 0; i < memberList.length; ++i) {
+		let member = memberList[i];
+		if (member.carNumber) {
+			let index = binarySearch(
+				carNumbers,
+				parseInt(member.carNumber),
+				0,
+				carNumbers.length - 1
+			);
+			carNumbers.splice(index, 0, parseInt(member.carNumber));
+		}
+	}
+
+	res.status(200).json({
+		clubName: club.name,
+		takenCarNumbers: carNumbers,
+		startNumber: clubSettings.startNumber,
+		endNumber: clubSettings.endNumber
+	});
+};
+
+const binarySearch = (array, element, low, high) => {
+	if (array.length === 0) {
+		return 0;
+	}
+	if (low >= high) {
+		return element > array[low] ? low + 1 : low;
+	}
+	let mid = Math.floor((low + high) / 2);
+	if (element === array[mid]) {
+		return mid + 1;
+	}
+	if (element > array[mid]) {
+		return binarySearch(array, element, mid + 1, high);
+	}
+	return binarySearch(array, element, low, mid - 1);
+};
+
+const registerClubCarNumber = async (req, res, next) => {
+	const userId = req.userData;
+	try {
+		var user = await User.findById(userId);
+	} catch (err) {
+		const error = new HttpError(
+			'registerClubCarNumber process failed during user validation. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!user) {
+		const error = new HttpError(
+			'registerClubCarNumber submission faied with unauthorized request. Forgot to login?',
+			404
+		);
+		return next(error);
+	}
+
+	let clubId = req.params.cid;
+	try {
+		var club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'registerClubCarNumber failed @ finding club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!club) {
+		const error = new HttpError(
+			'registerClubCarNumber club process failed no club found.',
+			404
+		);
+		return next(error);
+	}
+
+	const { carNumber } = req.body;
+	let clubMember;
+	// find all the clubMemberList that are associated with this club
+	try {
+		clubMember = await ClubMember.findOne({
+			clubId: clubId,
+			userId: userId
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'registerClubCarNumber  process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// User exists in member list but never registered any event with the club yet.
+	// flag to save clubMember
+	// match first and last name to see if there is a match from imported member list file
+	if (!clubMember) {
+		try {
+			clubMember = await ClubMember.findOne({
+				lastName: user.lastName,
+				firstName: user.firstName
+			});
+		} catch (err) {
+			console.log(
+				'registerClubCarNumber Unable to look up club member with last/first name = ',
+				err
+			);
+			// unable to find
+			const error = new HttpError(
+				'registerClubCarNumber Unable to look up club member with last/first name. Please try later.',
+				500
+			);
+			return next(error);
+		}
+	}
+
+	if (clubMember) {
+		// match found, need to link user to the existing clubMember
+		clubMember.set('userId', userId, { strict: true });
+		// update email with user.email
+		clubMember.set('email', user.email, { strict: true });
+		clubMember.set('carNumber', carNumber, { strict: true });
+	} else {
+		// create a new member
+		clubMember = new ClubMember({
+			userId: userId,
+			lastName: user.lastName,
+			firstName: user.firstName,
+			email: user.email,
+			clubId: event.clubId,
+			carNumber: carNumber
+		});
+	}
+
+	try {
+		await clubMember.save();
+	} catch (err) {
+		console.log('1686 err = ', err);
+		const error = new HttpError(
+			'registerClubCarNumber save clubMember process failed due to technical issue. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		carNumber: carNumber
+	});
+};
 exports.getAllUsers = getAllUsers;
 exports.getUserById = getUserById;
 exports.createUser = createUser;
@@ -1476,3 +1706,5 @@ exports.getEntry = getEntry;
 exports.getEventEntryForm = getEventEntryForm;
 exports.getEventEntryFormWithAnswer = getEventEntryFormWithAnswer;
 exports.getUserClubInfo = getUserClubInfo;
+exports.getClubTakenCarNumbers = getClubTakenCarNumbers;
+exports.registerClubCarNumber = registerClubCarNumber;

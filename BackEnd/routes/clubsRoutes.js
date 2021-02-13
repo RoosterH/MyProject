@@ -91,7 +91,8 @@ router.patch(
 	'/clubSettings',
 	[
 		check('memberSystem').not().isEmpty(),
-		check('hostPrivateEvent').not().isEmpty()
+		check('hostPrivateEvent').not().isEmpty(),
+		check('carNumber').not().isEmpty()
 	],
 	clubsController.updateClubSettings
 );
@@ -147,6 +148,13 @@ router.get(
 	clubsController.getClubCommsEmailArchive
 );
 
+router.get('/carNumbers/:cid', clubsController.getClubCarNumbers);
+
+router.get(
+	'/takenCarNumbers/:cid',
+	clubsController.getClubTakenCarNumbers
+);
+
 router.post(
 	'/sendEmail/:cid',
 	[
@@ -184,6 +192,17 @@ router.patch(
 		check('emailOld').normalizeEmail().isEmail()
 	],
 	clubsController.updateMember
+);
+
+router.patch(
+	'/carNumber/:cid',
+	[
+		check('lastName').not().isEmpty(),
+		check('firstName').not().isEmpty(),
+		check('carNumberOld').not().isEmpty(),
+		check('carNumberNew').not().isEmpty()
+	],
+	clubsController.updateCarNumber
 );
 
 router.delete(

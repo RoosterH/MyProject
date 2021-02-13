@@ -122,6 +122,9 @@ const CommsEventSelector = React.lazy(() =>
 const CommsEmailArchive = React.lazy(() =>
 	import('./clubDashboard/components/CommsEmailArchive')
 );
+const ClubMemberManager = React.lazy(() =>
+	import('./clubDashboard/components/ClubMemberManager')
+);
 const ClubCredential = React.lazy(() =>
 	import('./clubDashboard/components/ClubCredential')
 );
@@ -158,6 +161,12 @@ const ClubVerificationRequest = React.lazy(() =>
 const ClubMemberList = React.lazy(() =>
 	import('./clubDashboard/components/ClubMemberList')
 );
+const ClubCarNumbers = React.lazy(() =>
+	import('./clubDashboard/components/ClubCarNumbers')
+);
+const ClubAvailableCarNumbers = React.lazy(() =>
+	import('./clubDashboard/components/ClubAvailableCarNumbers')
+);
 // user section
 // const Users = React.lazy(() => import('./users/pages/Users'));
 const UserAuth = React.lazy(() => import('./users/pages/UserAuth'));
@@ -184,6 +193,9 @@ const UserVerificationRequest = React.lazy(() =>
 );
 const UserCredential = React.lazy(() =>
 	import('./users/pages/UserCredential')
+);
+const UserRegisterCarNumber = React.lazy(() =>
+	import('./users/pages/UserRegisterCarNumber')
 );
 const VideoChannel = React.lazy(() =>
 	import('./videoChannel/pages/VideoChannel')
@@ -257,6 +269,9 @@ const App = () => {
 				<Route path="/clubs/commsEmailArchive/:clubId" exact>
 					<CommsEmailArchive />
 				</Route>
+				<Route path="/clubs/memberManager" exact>
+					<ClubMemberManager />
+				</Route>
 				<Route path="/clubs/credential/:clubId" exact>
 					<ClubCredential />
 				</Route>
@@ -277,6 +292,12 @@ const App = () => {
 				</Route>
 				<Route path="/clubs/memberList/:clubId" exact>
 					<ClubMemberList />
+				</Route>
+				<Route path="/clubs/carNumbers/:clubId" exact>
+					<ClubCarNumbers />
+				</Route>
+				<Route path="/clubs/availCarNumbers/:clubId" exact>
+					<ClubAvailableCarNumbers />
 				</Route>
 				<Route path="/clubs/eventManager/" exact>
 					<EventManager />
@@ -361,6 +382,11 @@ const App = () => {
 				<Route
 					path="/users/clubEvents/:clubId"
 					component={ClubEventsForUsers}
+					exact
+				/>
+				<Route
+					path="/users/registerCarNumber/:clubId"
+					component={UserRegisterCarNumber}
 					exact
 				/>
 				<Route
@@ -478,6 +504,9 @@ const App = () => {
 				<Route path="/clubs/commsEmailArchive/:clubId" exact>
 					<CommsEmailArchive />
 				</Route>
+				<Route path="/clubs/memberManager" exact>
+					<ClubMemberManager />
+				</Route>
 				<Route path="/clubs/eventManager" exact>
 					<EventManager />
 				</Route>
@@ -547,9 +576,20 @@ const App = () => {
 				<Route path="/clubs/memberList/:clubId" exact>
 					<ClubMemberList />
 				</Route>
+				<Route path="/clubs/carNumbers/:clubId" exact>
+					<ClubCarNumbers />
+				</Route>
+				<Route path="/clubs/availCarNumbers/:clubId" exact>
+					<ClubAvailableCarNumbers />
+				</Route>
 				<Route
 					path="/users/clubEvents/:clubId"
 					component={ClubEventsForUsers}
+					exact
+				/>
+				<Route
+					path="/users/registerCarNumber/:clubId"
+					component={UserRegisterCarNumber}
 					exact
 				/>
 				<Route

@@ -30,6 +30,7 @@ const { request } = require('express');
 const { CostExplorer } = require('aws-sdk');
 const AWS = require('aws-sdk');
 const club = require('../models/club');
+const car = require('../models/car');
 
 // GET /api/clubs/
 const getAllClubs = async (req, res, next) => {
@@ -233,7 +234,10 @@ const createClub = async (req, res, next) => {
 		hostPrivateEvent: false,
 		memberSystem: false,
 		collectMembershipFee: false,
-		membershipFee: '0'
+		membershipFee: '0',
+		carNumberSystem: true,
+		startNumber: 0,
+		endNumber: 999
 	});
 
 	// ! DO NOT REMOVE
@@ -1050,8 +1054,13 @@ const updateClubSettings = async (req, res, next) => {
 		memberSystem,
 		collectMembershipFee,
 		membershipFee,
-		hostPrivateEvent
+		hostPrivateEvent,
+		carNumberSystem,
+		startNumber,
+		endNumber
 	} = req.body;
+
+	console.log('req.body = ', req.body);
 	// use clubId from token instead of getting it from url to avoid hacking
 	// req.userData is added in check-clubAuth middleware, information comes from front end
 	// req.header.authorization
@@ -1067,7 +1076,6 @@ const updateClubSettings = async (req, res, next) => {
 		);
 		return next(error);
 	}
-
 	if (!clubSettings) {
 		const error = new HttpError(
 			'Update club event settings failed finding account.',
@@ -1101,6 +1109,9 @@ const updateClubSettings = async (req, res, next) => {
 	clubSettings.memberSystem = memberSystem;
 	clubSettings.collectMembershipFee = collectMembershipFee;
 	clubSettings.membershipFee = membershipFee;
+	clubSettings.carNumberSystem = carNumberSystem;
+	clubSettings.startNumber = startNumber;
+	clubSettings.endNumber = endNumber;
 	try {
 		await clubSettings.save();
 	} catch (err) {
@@ -1642,6 +1653,378 @@ const getClubMemberList = async (req, res, next) => {
 	});
 };
 
+// GET /api/clubs/carNumber/:cid
+const getClubCarNumbers = async (req, res, next) => {
+	let clubIdParam = req.params.cid;
+	const clubId = req.userData;
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'You are not authorized to get club member list.',
+			403
+		);
+		return next(error);
+	}
+
+	try {
+		// we don't want to return password field
+		var club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'getClubCarNumbers failed @ finding club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!club) {
+		const error = new HttpError(
+			'getClubCarNumbers club process failed no club found.',
+			404
+		);
+		return next(error);
+	}
+
+	// find all the clubMemberList that are associated with this club
+	try {
+		var memberList = await ClubMember.find({ clubId: clubId });
+	} catch (err) {
+		const error = new HttpError(
+			'getClubCarNumbers process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	let clubSettings;
+	try {
+		// we don't want to return password field
+		clubSettings = await ClubSettings.findOne({
+			clubId: clubId
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'getClubCarNumbers failed finding club event settings. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!clubSettings) {
+		const error = new HttpError(
+			'getClubCarNumbers cannot find club event settings',
+			500
+		);
+		return next(error);
+	}
+
+	// compose responseData
+	// lastName, firstName, carNumber
+	let carNumbers = [];
+	for (let i = 0; i < memberList.length; ++i) {
+		let member = memberList[i];
+		if (member.carNumber) {
+			let tmp = {};
+			// we only push the one with carNumber
+			tmp.userId = member.userId;
+			tmp.lastName = member.lastName;
+			tmp.firstName = member.firstName;
+			tmp.carNumber = parseInt(member.carNumber); // need to parseInt so MTable can sort the number correctly
+			carNumbers.push(tmp);
+		}
+	}
+	res.status(200).json({
+		carNumbers: carNumbers,
+		startNumber: clubSettings.startNumber,
+		endNumber: clubSettings.endNumber
+	});
+};
+
+// POST '/api/clubs/uploadCarNumber/:cid'
+const uploadCarNumbers = async (req, res, next) => {
+	let clubIdParam = req.params.cid;
+	let clubId = req.userData;
+
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'You are not authorized to upload car number list.',
+			403
+		);
+		return next(error);
+	}
+
+	let club;
+	try {
+		// we don't want to return password field
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'uploadCarNumbers failed @ finding club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'uploadCarNumbers club process failed no club found.',
+			404
+		);
+		return next(error);
+	}
+
+	let clubSettings;
+	try {
+		clubSettings = await ClubSettings.findOne({
+			clubId: clubId
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'uploadCarNumbers failed finding club event settings. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!clubSettings) {
+		const error = new HttpError(
+			'uploadCarNumbers cannot find club event settings',
+			500
+		);
+		return next(error);
+	}
+
+	// check the uploaded file
+	// file: {
+	// 	fieldname: 'memberList',
+	// 	originalname: 'GGLC.csv',
+	// 	encoding: '7bit',
+	// 	mimetype: 'text/csv',
+	// 	size: 526,
+	// 	bucket: 'myseattime-dev',
+	// 	key: 'memberList/22d81090-6152-11eb-ae33-f76350259af4.csv',
+	// 	acl: 'public-read',
+	// 	contentType: 'application/octet-stream',
+	// 	metadata: { fieldName: 'memberList' },
+	// 	location: 'https://myseattime-dev.s3.us-west-1.amazonaws.com/memberList/22d81090-6152-11eb-ae33-f76350259af4.csv',
+	// 	etag: '"b44ea3289e85d612f5a835e1ae5741bf"'
+	//   },
+	if (req.file) {
+		let bucket = req.file.bucket;
+		let res = req.file.location.split('/');
+		// res[3]: carNumbers, res[4]: 22d81090-6152-11eb-ae33-f76350259af4.csv
+		let key = res[3] + '/' + res[4];
+		const params = {
+			Bucket: bucket,
+			Key: key
+		};
+
+		const S3 = new AWS.S3();
+		try {
+			// get csv file and create stream
+			const stream = S3.getObject(params).createReadStream();
+			// convert csv file (stream) to JSON format data
+			var jsonResult = await csvtojson().fromStream(stream);
+		} catch (err) {
+			console.log('uploadCarNumbers S3 object ');
+			const error = new HttpError(
+				'uploadCarNumbers cannot find club account',
+				500
+			);
+			return next(error);
+		}
+
+		try {
+			let versions;
+			let listObjectParams = {
+				Bucket: bucket,
+				Prefix: key
+			};
+			const previousVersion = await S3.listObjectVersions(
+				listObjectParams
+			)
+				.promise()
+				.then(result => {
+					versions = result.Versions;
+				});
+			let version = versions[0].VersionId;
+			const deleteParams = {
+				Bucket: bucket,
+				Delete: {
+					Objects: [
+						{
+							Key: key,
+							VersionId: version
+						}
+					],
+					Quiet: false
+				}
+			};
+
+			// delete file from S3 versioned bucket
+			S3.deleteObjects(deleteParams, (err, data) => {
+				if (err) {
+					console.log('');
+					const error = new HttpError(
+						'uploadCarNumbers cannot find club account',
+						500
+					);
+					return next(error);
+				}
+			});
+		} catch (err) {
+			console.log('uploadCarNumbers S3 delete object error = ', err);
+			const error = new HttpError(
+				'uploadCarNumbers cannot delete S3 object',
+				500
+			);
+			return next(error);
+		}
+	}
+
+	let carNumbers = [];
+	try {
+		const session = await mongoose.startSession();
+		session.startTransaction();
+
+		for (let i = 0; i < jsonResult.length; ++i) {
+			let newClubMember = new ClubMember({
+				clubId: clubId,
+				lastName: jsonResult[i].LastName,
+				firstName: jsonResult[i].FirstName,
+				carNumber: jsonResult[i].Number
+			});
+			// find matching clubMember and assign car number to it
+			await newClubMember.save({ session: session });
+			let member = {
+				lastName: jsonResult[i].LastName,
+				firstName: jsonResult[i].FirstName,
+				memberNumber: jsonResult[i].MemberNumber,
+				memberExp: jsonResult[i].Expires,
+				email: jsonResult[i].Email
+			};
+			carNumbers.push(member);
+		}
+		await session.commitTransaction();
+	} catch (err) {
+		console.log(
+			'Upload car number list failed to save, please try again later. err = ',
+			err
+		);
+		const error = new HttpError(
+			'Upload car number list failed to save, please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		carNumbers: carNumbers
+	});
+};
+
+// GET /api/clubs/takenCarNumbers/:cid
+const getClubTakenCarNumbers = async (req, res, next) => {
+	let clubIdParam = req.params.cid;
+	const clubId = req.userData;
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'You are not authorized to get club member list.',
+			403
+		);
+		return next(error);
+	}
+
+	let club;
+	try {
+		// we don't want to return password field
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'getClubCarNumbers failed @ finding club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (!club) {
+		const error = new HttpError(
+			'getClubCarNumbers club process failed no club found.',
+			404
+		);
+		return next(error);
+	}
+
+	// find all the clubMemberList that are associated with this club
+	try {
+		var memberList = await ClubMember.find({ clubId: clubId });
+	} catch (err) {
+		const error = new HttpError(
+			'getClubCarNumbers process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	let clubSettings;
+	try {
+		// we don't want to return password field
+		clubSettings = await ClubSettings.findOne({
+			clubId: clubId
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'getClubCarNumbers failed finding club event settings. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!clubSettings) {
+		const error = new HttpError(
+			'getClubCarNumbers cannot find club event settings',
+			500
+		);
+		return next(error);
+	}
+
+	let memberSystem = clubSettings.memberSystem;
+
+	// compose responseData
+	// carNumber
+	let carNumbers = [];
+	for (let i = 0; i < memberList.length; ++i) {
+		let member = memberList[i];
+		if (member.carNumber) {
+			let index = binarySearch(
+				carNumbers,
+				parseInt(member.carNumber),
+				0,
+				carNumbers.length - 1
+			);
+			carNumbers.splice(index, 0, parseInt(member.carNumber));
+		}
+	}
+
+	res.status(200).json({
+		takenCarNumbers: carNumbers,
+		startNumber: clubSettings.startNumber,
+		endNumber: clubSettings.endNumber
+	});
+};
+
+const binarySearch = (array, element, low, high) => {
+	if (array.length === 0) {
+		return 0;
+	}
+	if (low >= high) {
+		return element > array[low] ? low + 1 : low;
+	}
+	let mid = Math.floor((low + high) / 2);
+	if (element === array[mid]) {
+		return mid + 1;
+	}
+	if (element > array[mid]) {
+		return binarySearch(array, element, mid + 1, high);
+	}
+	return binarySearch(array, element, low, mid - 1);
+};
+
 // DELETE '/api/clubs/:cid'
 const deleteClub = async (req, res, next) => {
 	const clubId = req.userData; // use clubId in the jwt instaed of getting it from url
@@ -2165,21 +2548,28 @@ const uploadMemberList = async (req, res, next) => {
 		session.startTransaction();
 
 		for (let i = 0; i < jsonResult.length; ++i) {
+			let normLastName =
+				jsonResult[i].LastName.charAt(0).toUpperCase() +
+				jsonResult[i].LastName.slice(1).toLowerCase();
+			let normFirstName =
+				jsonResult[i].FirstName.charAt(0).toUpperCase() +
+				jsonResult[i].FirstName.slice(1).toLowerCase();
 			let newClubMember = new ClubMember({
 				clubId: clubId,
-				lastName: jsonResult[i].LastName,
-				firstName: jsonResult[i].FirstName,
+				lastName: normLastName,
+				firstName: normFirstName,
 				memberNumber: jsonResult[i].MemberNumber,
 				memberExp: jsonResult[i].Expires,
-				email: jsonResult[i].Email
+				email: jsonResult[i].Email,
+				carNumber: jsonResult[i].CarNumber
 			});
 			await newClubMember.save({ session: session });
 			let member = {
-				lastName: jsonResult[i].LastName,
-				firstName: jsonResult[i].FirstName,
+				lastName: normLastName,
+				firstName: normFirstName,
 				memberNumber: jsonResult[i].MemberNumber,
 				memberExp: jsonResult[i].Expires,
-				email: jsonResult[i].Email
+				email: jsonResult[i].Email.toLowerCase()
 			};
 			memberList.push(member);
 		}
@@ -2745,6 +3135,171 @@ const getClubCommsEmailArchive = async (req, res, next) => {
 	});
 };
 
+// PATCH /clubs/carNumber/:cid
+const updateCarNumber = async (req, res, next) => {
+	// validate request
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const errorFormatter = ({ value, msg, param, location }) => {
+			return `${param} : ${msg} `;
+		};
+		const result = validationResult(req).formatWith(errorFormatter);
+		const error = new HttpError(
+			`updateCarNumber process failed, please check your data: ${result.array()}`,
+			422
+		);
+
+		return next(error);
+	}
+
+	let clubIdParam = req.params.cid;
+	let clubId = req.userData;
+
+	if (clubIdParam !== clubId) {
+		const error = new HttpError(
+			'You are not authorized to update car member.',
+			403
+		);
+		return next(error);
+	}
+
+	let club;
+	try {
+		// we don't want to return password field
+		club = await Club.findById(clubId);
+	} catch (err) {
+		const error = new HttpError(
+			'updateCarNumber failed @ finding club. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!club) {
+		const error = new HttpError(
+			'updateCarNumber club process failed no club found.',
+			404
+		);
+		return next(error);
+	}
+
+	let clubSettings;
+	try {
+		clubSettings = await ClubSettings.findOne({ clubId });
+	} catch (err) {
+		console.log('updateCarNumber find club err = ', err);
+		const error = new HttpError(
+			'Update car number process failed, please try again later.',
+			500
+		);
+		return next(error);
+	}
+	if (!clubSettings) {
+		const error = new HttpError(
+			'Update car number settings failed finding account.',
+			404
+		);
+		console.log('cannot find event settings');
+		return next(error);
+	}
+
+	const {
+		userId,
+		lastName,
+		firstName,
+		carNumberOld,
+		carNumberNew
+	} = req.body;
+
+	// check new number is in the number range
+	if (
+		carNumberNew < clubSettings.startNumber ||
+		carNumberNew > clubSettings.endNumber
+	) {
+		const error = new HttpError(
+			carNumberNew +
+				' is not in the car number range. (' +
+				clubSettings.startNumber +
+				' to ' +
+				clubSettings.endNumber +
+				')',
+			400
+		);
+		return next(error);
+	}
+	console.log('clubSettings = ', clubSettings);
+	// club has distinc number system, we need to make sure new number is not already taken
+	if (clubSettings.carNumberSystem) {
+		// get all the clubMembers
+		// find all the clubMemberList that are associated with this club
+		try {
+			var memberList = await ClubMember.find({ clubId: clubId });
+		} catch (err) {
+			const error = new HttpError(
+				'Get club member list process failed. Please try again later.',
+				500
+			);
+			return next(error);
+		}
+		for (let i = 0; i < memberList.length; ++i) {
+			if (memberList[i].carNumber === carNumberNew) {
+				const error = new HttpError(
+					'Number ' +
+						carNumberNew +
+						' is taken. Please choose a different number.',
+					400
+				);
+				return next(error);
+			}
+		}
+	}
+
+	var member = null;
+	try {
+		// DO NOT include memberExpOld to query because MongoDB has time, memberExpOld has date only
+		member = await ClubMember.findOne({
+			userId: userId,
+			clubId: clubId,
+			lastName: lastName,
+			firstName: firstName,
+			carNumber: carNumberOld
+		});
+	} catch (err) {
+		const error = new HttpError(
+			'updateMember failed @ finding member using userId. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// if still member not found
+	if (!member) {
+		const error = new HttpError(
+			'updateCarNumber failed @ finding member. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	if (member) {
+		member.carNumber = carNumberNew;
+	}
+
+	try {
+		await member.save();
+	} catch (err) {
+		console.log('update car number failed @ saving member = ', err);
+		const error = new HttpError(
+			'updateCarNumber process failed @ saving member.',
+			500
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		member: member
+	});
+};
+
 exports.getAllClubs = getAllClubs;
 exports.getClubById = getClubById;
 exports.getClubProfileForUsers = getClubProfileForUsers;
@@ -2762,6 +3317,8 @@ exports.getClubSettings = getClubSettings;
 exports.getClubCredential = getClubCredential;
 exports.getClubStripeAccount = getClubStripeAccount;
 exports.getClubMemberList = getClubMemberList;
+exports.getClubCarNumbers = getClubCarNumbers;
+exports.getClubTakenCarNumbers = getClubTakenCarNumbers;
 exports.getClubSesEmail = getClubSesEmail;
 exports.updateClubSesEmail = updateClubSesEmail;
 exports.deleteClub = deleteClub;
@@ -2770,8 +3327,10 @@ exports.getEventForm = getEventForm;
 exports.createEventForm = createEventForm;
 exports.publishEvent = publishEvent;
 exports.uploadMemberList = uploadMemberList;
+exports.uploadCarNumbers = uploadCarNumbers;
 exports.addMember = addMember;
 exports.updateMember = updateMember;
+exports.updateCarNumber = updateCarNumber;
 exports.deleteMember = deleteMember;
 exports.getClubCommsMemberList = getClubCommsMemberList;
 exports.sendEmail = sendEmail;

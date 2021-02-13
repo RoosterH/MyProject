@@ -66,26 +66,30 @@ const EditClubInformation = props => {
 	const [clubName, setClubName] = useState('');
 	useEffect(() => {
 		const fetchMemberCarInfo = async () => {
-			const [
-				responseData,
-				responseStatus,
-				responseMessage
-			] = await sendRequest(
-				process.env.REACT_APP_BACKEND_URL +
-					`/users/userClubInfo/${userId}/${eventId}`,
-				'GET',
-				null,
-				{
-					'Content-Type': 'application/json',
-					// adding JWT to header for authentication, JWT contains clubId
-					Authorization: 'Bearer ' + userAuthContext.userToken
-				}
-			);
-			console.log('responseData = ', responseData);
-			setClubCollectMembershipFee(responseData.collectMembershipFee);
-			setMembershipFee(responseData.membershipFee);
-			setMemberExp(responseData.memberExp);
-			setClubName(responseData.clubName);
+			try {
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
+					process.env.REACT_APP_BACKEND_URL +
+						`/users/userClubInfo/${userId}/${eventId}`,
+					'GET',
+					null,
+					{
+						'Content-Type': 'application/json',
+						// adding JWT to header for authentication, JWT contains clubId
+						Authorization: 'Bearer ' + userAuthContext.userToken
+					}
+				);
+				console.log('responseData = ', responseData);
+				setClubCollectMembershipFee(
+					responseData.collectMembershipFee
+				);
+				setMembershipFee(responseData.membershipFee);
+				setMemberExp(responseData.memberExp);
+				setClubName(responseData.clubName);
+			} catch (err) {}
 		};
 
 		fetchMemberCarInfo();
