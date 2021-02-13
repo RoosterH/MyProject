@@ -78,7 +78,6 @@ const ClubAuth = () => {
 					 * Warning: Can't perform a React state update on an unmounted component. when
 					 * trying to redirect page after logging
 					 */
-					console.log('inside else ');
 					// club.id is coming from clubsController loginClub
 					// id is from {getters: true}
 					clubAuthContext.clubLogin(

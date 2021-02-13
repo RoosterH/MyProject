@@ -5,7 +5,6 @@ import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import './ClubManager.css';
 
 const MaterialTableAvailableCarNumberList = props => {
-	console.log('props = ', props);
 	let numberList = props.numberList;
 	let showLoading = props.showLoading;
 	let clubName = props.clubName;
