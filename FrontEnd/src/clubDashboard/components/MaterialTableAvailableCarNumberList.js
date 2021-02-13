@@ -33,7 +33,7 @@ const MaterialTableAvailableCarNumberList = props => {
 					}}
 					style={{
 						border: '2px solid gray',
-						maxWidth: '300px',
+						maxWidth: '400px',
 						marginTop: '10px',
 						marginLeft: '20px'
 					}}
