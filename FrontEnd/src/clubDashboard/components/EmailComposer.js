@@ -28,17 +28,16 @@ const EmailComposer = props => {
 		EditorState.createEmpty()
 	);
 
+	// convertedContent is the HTML content
 	const [convertedContent, setConvertedContent] = useState(null);
 
+	// Editor change handler, 1. set editor state, 2. convert content to HTML
 	const handleEditorChange = state => {
 		setEditorState(state);
 		convertContentToHTML(state);
 	};
-
+	// convert Editor content from Raw to HTML
 	const convertContentToHTML = () => {
-		// let currentContentAsHTML = convertToHTML(
-		// 	editorState.getCurrentContent()
-		// );
 		let currentContentAsHTML = draftToHtml(
 			convertToRaw(editorState.getCurrentContent())
 		);
