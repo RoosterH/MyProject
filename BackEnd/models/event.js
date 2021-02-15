@@ -16,6 +16,7 @@ const eventSchema = new Schema({
 	multiDayEvent: { type: Boolean, required: true },
 	startDate: { type: Date, required: true },
 	endDate: { type: Date, required: true },
+	priorityRegEndDate: { type: Date, required: true },
 	regStartDate: { type: Date, required: true },
 	regEndDate: { type: Date, required: true },
 	venue: { type: String, required: true },

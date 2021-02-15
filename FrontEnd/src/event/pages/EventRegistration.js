@@ -21,6 +21,8 @@ import { FormContext } from '../../shared/context/form-context';
 
 import '../../shared/css/EventForm.css';
 
+const PRIORITY_REG_END_DATE = '2021, 01, 01';
+
 const EventRegistration = props => {
 	let eventId = props.eventId;
 	const [initialized, setInitialized] = useState(false);
@@ -113,6 +115,36 @@ const EventRegistration = props => {
 		};
 		getClubSettings();
 	}, []);
+
+	// get regStartDate from backend to determine the last day of the priority registration date
+	// priority registartion date must be at least one day before regStartDate; otherwise users
+	// won't have enough window to see the event
+	const [regStartDate, setRegStartDate] = useState();
+	useEffect(() => {
+		const getRegStartDate = async () => {
+			try {
+				const [
+					responseData,
+					responseStatus,
+					responseMessage
+				] = await sendRequest(
+					process.env.REACT_APP_BACKEND_URL +
+						`/events/regStartDate/${eventId}`,
+					'GET',
+					null,
+					{
+						// adding JWT to header for authentication
+						Authorization: 'Bearer ' + clubAuthContext.clubToken
+					}
+				);
+				setRegStartDate(responseData.regStartDate);
+			} catch (err) {
+				console.log('err = ', err);
+			}
+		};
+		getRegStartDate();
+	}, []);
+
 	// local storage gets the higest priority
 	// get from localStorage
 	if (
@@ -165,7 +197,12 @@ const EventRegistration = props => {
 		numGroups: numGroups,
 		capDistribution: capDistribution,
 		multiDayEvent: multiDayEvent,
-		privateEvent: privateEvent
+		privateEvent: privateEvent,
+		priorityRegistration: false,
+		priorityRegEndDate: moment()
+			.add(1, 'days')
+			.format('YYYY-MM-DD')
+			.toString()
 	};
 
 	const updateEventFormData = (key, value) => {
@@ -190,6 +227,13 @@ const EventRegistration = props => {
 
 	const history = useHistory();
 	const saveHandler = async (values, actions) => {
+		console.log(
+			'values.priorityRegistration = ',
+			values.priorityRegistration
+		);
+		let priorityRegEndDate = values.priorityRegistration
+			? values.priorityRegEndDate
+			: moment(PRIORITY_REG_END_DATE);
 		try {
 			await sendRequest(
 				process.env.REACT_APP_BACKEND_URL +
@@ -200,7 +244,9 @@ const EventRegistration = props => {
 					numGroups: values.numGroups,
 					capDistribution: values.capDistribution,
 					multiDayEvent: values.multiDayEvent,
-					privateEvent: values.privateEvent
+					privateEvent: values.privateEvent,
+					priorityRegistration: values.priorityRegistration,
+					priorityRegEndDate: priorityRegEndDate
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -384,6 +430,47 @@ const EventRegistration = props => {
 								check the box if each day represent a single event.
 							</label>
 						)}
+						<label className="event-form__checkbox">
+							<Field
+								id="priorityRegistration"
+								name="priorityRegistration"
+								type="checkbox"
+								onBlur={event => {
+									handleBlur(event);
+									setOKLeavePage(false);
+								}}
+							/>
+							&nbsp; Enable priority registration. (Only visible via
+							event link.)
+						</label>
+						{values.priorityRegistration && (
+							<React.Fragment>
+								<label
+									className="event-form__checkbox"
+									htmlFor="priorityRegEndDate">
+									Priority Registration End Date (Must be at least one
+									day prior to offical registration start date)
+								</label>
+								<Field
+									id="priorityRegEndDate"
+									name="priorityRegEndDate"
+									type="date"
+									min={moment()
+										.add(1, 'days')
+										.format('YYYY-MM-DD')
+										.toString()}
+									max={moment(regStartDate)
+										.add(-1, 'days')
+										.format('YYYY-MM-DD')
+										.toString()}
+									className="event-form__enddate"
+									onBlur={event => {
+										handleBlur(event);
+										setOKLeavePage(false);
+									}}
+								/>
+							</React.Fragment>
+						)}
 						{hostPrivateEvent && (
 							<label className="event-form__checkbox">
 								<Field
@@ -396,7 +483,7 @@ const EventRegistration = props => {
 									}}
 								/>
 								&nbsp; Check the box if this is a private event. (A
-								private event is only visivle with the event link.)
+								private event is only visible via the event link.)
 							</label>
 						)}
 						{/* error message not working */}

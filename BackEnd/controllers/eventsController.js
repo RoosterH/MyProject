@@ -830,11 +830,13 @@ const getEventsByDate = async (req, res, next) => {
 	const { eventType, startDate, endDate, distance, zip } = req.body;
 	let events;
 	// index {type: 1, startDate: 1}, covered query {type, startDate} is indexed
+	let currentTime = new Date();
 	try {
 		events = await Event.find(
 			{
 				type: eventType,
 				startDate: { $gte: startDate, $lte: endDate },
+				priorityRegEndDate: { $lte: currentTime },
 				published: true,
 				privateEvent: false
 			},
@@ -985,7 +987,8 @@ const createEvent = async (req, res, next) => {
 		raceClassOptions: [],
 		runGroupOptions: [],
 		workerAssignments: [],
-		closed: false
+		closed: false,
+		priorityRegEndDate: new Date(2021, 00, 01) // the month is 0-indexed
 	});
 
 	// ! DO NOT REMOVE
@@ -1279,8 +1282,11 @@ const createUpdateEventRegistration = async (req, res, next) => {
 		numGroups,
 		capDistribution,
 		multiDayEvent,
-		privateEvent
+		privateEvent,
+		priorityRegistration,
+		priorityRegEndDate
 	} = req.body;
+
 	event.totalCap = totalCap;
 	if (totalCap !== undefined || totalCap !== 0) {
 		// initialize to avoid updating keeps adding elements to array
@@ -1294,7 +1300,14 @@ const createUpdateEventRegistration = async (req, res, next) => {
 	event.published = false;
 	event.multiDayEvent = multiDayEvent;
 	event.privateEvent = privateEvent;
-
+	if (priorityRegEndDate) {
+		var ISOTime = new Date(priorityRegEndDate);
+		event.priorityRegEndDate = moment(ISOTime)
+			.add(23, 'h')
+			.add(59, 'm')
+			.add(59, 's')
+			.format();
+	}
 	// if capDistribution is true, we will create numGroups groups.
 	// Each group can only have totalCap / numGroups participants
 	// add day1 runGroupNumEntries
@@ -1538,13 +1551,19 @@ const updateEvent = async (req, res, next) => {
 		return next(error);
 	}
 
+	// convert to ISO 8601 strings
+	var ISOTime = new Date(regEndDate);
 	// update event info
 	event.name = name;
 	event.type = type;
 	event.startDate = moment(startDate);
 	event.endDate = moment(endDate);
 	event.regStartDate = moment(regStartDate);
-	event.regEndDate = moment(regEndDate);
+	event.regEndDate = moment(ISOTime)
+		.add(23, 'h')
+		.add(59, 'm')
+		.add(59, 's')
+		.format();
 	event.venue = venue;
 	event.address = address;
 	event.description = description;
@@ -2612,6 +2631,40 @@ const getCommsEntryReport = async (req, res, next) => {
 		entryData: mutipleDayEntryData
 	});
 };
+
+// GET /api/regStartDate/:eid
+const getRegStartDate = async (req, res, next) => {
+	// req.params is getting the eid from url, such as /api/events/:id
+	const eventId = req.params.eid;
+
+	let event;
+	try {
+		event = await Event.findById(eventId);
+	} catch (err) {
+		// this error is displayed if the request to the DB had some issues
+		console.log('err = ', err);
+		const error = new HttpError(
+			'getRegEndDate Get event by ID process failed. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'getRegEndDate Could not find the event with the provided id',
+			404
+		);
+		return next(error);
+	}
+
+	// convert Mongoose object to a normal js object and get rid of _ of _id using getters: true
+	res.status(200).json({
+		regStartDate: event.regStartDate
+	});
+};
+
 // export a pointer of the function
 exports.getAllEvents = getAllEvents;
 exports.getEventById = getEventById;
@@ -2634,3 +2687,4 @@ exports.createUpdateEntryForm = createUpdateEntryForm;
 exports.chargeAll = chargeAll;
 exports.getEntryReportForUsers = getEntryReportForUsers;
 exports.getCommsEntryReport = getCommsEntryReport;
+exports.getRegStartDate = getRegStartDate;

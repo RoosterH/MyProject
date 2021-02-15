@@ -21,6 +21,8 @@ import { FormContext } from '../../shared/context/form-context';
 
 import '../../shared/css/EventForm.css';
 
+const PRIORITY_REG_END_DATE = '2021-01-01';
+
 const UpdateEventRegistration = props => {
 	const history = useHistory();
 	let eventId = props.event.id;
@@ -182,13 +184,19 @@ const UpdateEventRegistration = props => {
 		localStorage.removeItem('eventFormData');
 	};
 
+	let priorityRegEndDate =
+		moment(props.event.priorityRegEndDate).format('YYYY-MM-DD') ===
+		PRIORITY_REG_END_DATE
+			? moment().add(1, 'days').format('YYYY-MM-DD')
+			: moment(props.event.priorityRegEndDate).format('YYYY-MM-DD');
 	const initialValues = {
 		// editorState: new EditorState.createEmpty(),
 		totalCap: props.event.totalCap,
 		numGroups: props.event.numGroups,
 		capDistribution: props.event.capDistribution,
 		multiDayEvent: props.event.multiDayEvent,
-		privateEvent: props.event.privateEvent
+		privateEvent: props.event.privateEvent,
+		priorityRegEndDate: priorityRegEndDate
 	};
 
 	const updateEventFormData = (key, value) => {
@@ -479,6 +487,85 @@ const UpdateEventRegistration = props => {
 								check the box if each day represent a single event.
 							</label>
 						)}
+						{values.priorityRegEndDate !==
+							moment('2021-01-01').format('YYYY-MM-DD') && (
+							<React.Fragment>
+								<label
+									className="event-form__checkbox"
+									htmlFor="priorityRegEndDate">
+									Priority Registration End Date (Must be at least one
+									day prior to offical registration start date)
+								</label>
+								<Field
+									id="priorityRegEndDate"
+									name="priorityRegEndDate"
+									type="date"
+									min={moment()
+										.add(1, 'days')
+										.format('YYYY-MM-DD')
+										.toString()}
+									max={moment(props.event.regStartDate)
+										.add(-1, 'days')
+										.format('YYYY-MM-DD')
+										.toString()}
+									className="event-form__enddate"
+									disabled={published}
+									onBlur={event => {
+										handleBlur(event);
+										setOKLeavePage(false);
+									}}
+								/>
+							</React.Fragment>
+						)}
+						{values.priorityRegEndDate ===
+							moment('2021-01-01').format('YYYY-MM-DD') &&
+							!published && (
+								<React.Fragment>
+									<label className="event-form__checkbox">
+										<Field
+											id="priorityRegistration"
+											name="priorityRegistration"
+											type="checkbox"
+											onBlur={event => {
+												handleBlur(event);
+												setOKLeavePage(false);
+											}}
+										/>
+										&nbsp; Enable priority registration. (Only visible
+										via event link.)
+									</label>
+									{values.priorityRegistration && (
+										<React.Fragment>
+											<label
+												className="event-form__checkbox"
+												htmlFor="priorityRegEndDate">
+												Priority Registration End Date (Must be at
+												least one day prior to offical registration
+												start date)
+											</label>
+											<Field
+												id="priorityRegEndDate"
+												name="priorityRegEndDate"
+												type="date"
+												min={moment()
+													.add(1, 'days')
+													.format('YYYY-MM-DD')
+													.toString()}
+												max={moment(props.event.regStartDate)
+													.add(-1, 'days')
+													.format('YYYY-MM-DD')
+													.toString()}
+												className="event-form__enddate"
+												disabled={published}
+												onBlur={event => {
+													handleBlur(event);
+													setOKLeavePage(false);
+												}}
+											/>
+										</React.Fragment>
+									)}
+								</React.Fragment>
+							)}
 						{hostPrivateEvent && (
 							<label className="event-form__checkbox">
 								<Field
@@ -492,7 +579,7 @@ const UpdateEventRegistration = props => {
 									}}
 								/>
 								&nbsp; Check the box if this is a private event. (A
-								private event is only visivle with the event link.)
+								private event is only visible via the event link.)
 							</label>
 						)}
 						<Button

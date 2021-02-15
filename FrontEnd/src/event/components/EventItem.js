@@ -155,12 +155,16 @@ const EventItem = props => {
 	const [regTimeline, setRegTimeline] = useState('0');
 	let regStartDate = props.event.regStartDate;
 	let regEndDate = props.event.regEndDate;
+	let priorityRegEndDate = props.event.priorityRegEndDate;
 	let now = moment();
 	useEffect(() => {
 		if (registrationClosed) {
 			setOpenRegistration(false);
 		} else {
 			if (moment(regStartDate) > now) {
+				if (moment().isSameOrBefore(priorityRegEndDate)) {
+					setOpenRegistration(true);
+				}
 				setRegTimeline('0');
 			} else {
 				if (moment(regEndDate) - now > 604800000) {

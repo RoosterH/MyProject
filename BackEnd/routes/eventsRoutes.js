@@ -75,6 +75,9 @@ router.get(
 	eventsController.getCommsEntryReport
 );
 
+// get communication center event entry report
+router.get('/regStartDate/:eid', eventsController.getRegStartDate);
+
 // last valid day to allow for event addition, modification, or deletion
 let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');
 // only clubs are able to create an event
