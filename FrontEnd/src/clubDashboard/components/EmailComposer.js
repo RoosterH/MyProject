@@ -23,7 +23,7 @@ const EmailComposer = props => {
 	let recipientNum = props.recipientNumber;
 	let getEmailContent = props.getEmailContent;
 	// EditorState provides a snapshot of the editor state. This includes the undo/redo history, contents, and cursor.
-	//  start with an empty state created using the createEmpty method of EditorState
+	// start with an empty state created using the createEmpty method of EditorState
 	const [editorState, setEditorState] = useState(() =>
 		EditorState.createEmpty()
 	);
@@ -57,18 +57,19 @@ const EmailComposer = props => {
 		return error;
 	};
 
-	const EditorField = ({ label, ...props }) => {
-		const [field, meta, helpers] = useField(props);
-		return (
-			<Editor
-				editorState={editorState}
-				onEditorStateChange={handleEditorChange}
-				wrapperClassName="wrapper-class"
-				editorClassName="editor-class"
-				toolbarClassName="toolbar-class"
-			/>
-		);
-	};
+	// not needed, keep it as an example of useField
+	// const EditorField = ({ label, ...props }) => {
+	// 	const [field, meta, helpers] = useField(props);
+	// 	return (
+	// 		<Editor
+	// 			editorState={editorState}
+	// 			onEditorStateChange={handleEditorChange}
+	// 			wrapperClassName="wrapper-class"
+	// 			editorClassName="editor-class"
+	// 			toolbarClassName="toolbar-class"
+	// 		/>
+	// 	);
+	// };
 
 	const initialValues = {
 		subject: ''
@@ -116,7 +117,16 @@ const EmailComposer = props => {
 								{errors.subject}
 							</div>
 						)}
-						<EditorField name="editorfield" />
+						{/* DO NOT USE FORMIK useField, it slows down the typing speed also causes scroll
+						    bar re-position issue */}
+						{/* !!! NO  <EditorField name="editorfield" /> */}
+						<Editor
+							editorState={editorState}
+							onEditorStateChange={handleEditorChange}
+							wrapperClassName="wrapper-class"
+							editorClassName="editor-class"
+							toolbarClassName="toolbar-class"
+						/>
 						<Button
 							type="submit"
 							size="medium"
@@ -173,6 +183,7 @@ const EmailComposer = props => {
 
 	return (
 		<React.Fragment>
+			{/* to all members for this club */}
 			{!isEventCenter && (
 				<React.Fragment>
 					<div className="list-header clearfix">

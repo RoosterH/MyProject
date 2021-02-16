@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { useField, Field, Form, Formik } from 'formik';
 import { useHistory, useLocation } from 'react-router-dom';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
@@ -17,6 +17,14 @@ import { useHttpClient } from '../../shared/hooks/http-hook';
 import '../../shared/css/EventForm.css';
 import '../../shared/css/EventItem.css';
 import { eventTypes } from '../../event/components/EventTypes';
+
+// Editor related components
+import { EditorState, convertToRaw, ContentState } from 'draft-js';
+import { Editor } from 'react-draft-wysiwyg';
+import draftToHtml from 'draftjs-to-html';
+import htmlToDraft from 'html-to-draftjs';
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+import '../../clubDashboard/components/EmailComposer.css';
 
 const UpdateEvent = props => {
 	const [loadedEvent, setLoadedEvent] = useState(props.event);
@@ -230,6 +238,100 @@ const UpdateEvent = props => {
 			setSaveButtonEnabled(false);
 			props.returnNewEvent(responseData.event);
 		} catch (err) {}
+	};
+
+	// ******   Event Description Field **********
+	// EditorState provides a snapshot of the editor state. This includes the undo/redo history, contents, and cursor.
+	// start with an empty state created using the createEmpty method of EditorState
+	const [
+		descriptionEditorState,
+		setDescriptionEditorState
+	] = useState(() => EditorState.createEmpty());
+
+	useEffect(() => {
+		// convert plain HTML to DraftJS Editor content
+		// set editorState to the state with the new content
+		if (loadedEvent && loadedEvent.description) {
+			const blocksFromHtml = htmlToDraft(loadedEvent.description);
+			const { contentBlocks, entityMap } = blocksFromHtml;
+			const contentState = ContentState.createFromBlockArray(
+				contentBlocks,
+				entityMap
+			);
+			const editorState = EditorState.createWithContent(contentState);
+			setDescriptionEditorState(editorState);
+		}
+	}, [
+		loadedEvent,
+		htmlToDraft,
+		EditorState,
+		setDescriptionEditorState
+	]);
+
+	// convertedDescription is the HTML content
+	const [convertedDescription, setConvertedDescription] = useState();
+
+	// Editor change handler, 1. set editor state, 2. convert content to HTML
+	const handleDescriptionEditorChange = state => {
+		setDescriptionEditorState(state);
+		convertDescriptionToHTML(state);
+		setSaveButtonEnabled(true);
+		setOKLeavePage(false);
+	};
+	// convert Editor content from Raw to HTML
+	const convertDescriptionToHTML = () => {
+		let currentContentAsHTML = draftToHtml(
+			convertToRaw(descriptionEditorState.getCurrentContent())
+		);
+
+		setConvertedDescription(currentContentAsHTML);
+	};
+
+	// ******   Event Instruction Field **********
+	// EditorState provides a snapshot of the editor state. This includes the undo/redo history, contents, and cursor.
+	// start with an empty state created using the createEmpty method of EditorState
+	const [
+		instructionEditorState,
+		setInstructionEditorState
+	] = useState(() => EditorState.createEmpty());
+
+	useEffect(() => {
+		// convert plain HTML to DraftJS Editor content
+		// set editorState to the state with the new content
+		if (loadedEvent && loadedEvent.instruction) {
+			const blocksFromHtml = htmlToDraft(loadedEvent.instruction);
+			const { contentBlocks, entityMap } = blocksFromHtml;
+			const contentState = ContentState.createFromBlockArray(
+				contentBlocks,
+				entityMap
+			);
+			const editorState = EditorState.createWithContent(contentState);
+			setInstructionEditorState(editorState);
+		}
+	}, [
+		loadedEvent,
+		htmlToDraft,
+		EditorState,
+		setInstructionEditorState
+	]);
+
+	// convertedInstruction is the HTML content
+	const [convertedInstruction, setConvertedInstruction] = useState();
+
+	// Editor change handler, 1. set editor state, 2. convert content to HTML
+	const handleInstructionEditorChange = state => {
+		setInstructionEditorState(state);
+		convertInstructionToHTML(state);
+		setSaveButtonEnabled(true);
+		setOKLeavePage(false);
+	};
+	// convert Editor content from Raw to HTML
+	const convertInstructionToHTML = () => {
+		let currentContentAsHTML = draftToHtml(
+			convertToRaw(instructionEditorState.getCurrentContent())
+		);
+
+		setConvertedInstruction(currentContentAsHTML);
 	};
 
 	if (isLoading) {
@@ -533,45 +635,24 @@ const UpdateEvent = props => {
 							className="event-form__label">
 							Event Description
 						</label>
-						<Field
-							id="decription"
-							name="description"
-							as="textarea"
-							rows="15"
-							cols="50"
-							placeholder="Please enter event description"
-							className="event-form__field-textarea"
-							validate={validateDescription}
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-								setSaveButtonEnabled(true);
-							}}
+						<Editor
+							editorState={descriptionEditorState}
+							onEditorStateChange={handleDescriptionEditorChange}
+							wrapperClassName="event-form__editor-container"
+							editorClassName="editor-class"
+							toolbarClassName="toolbar-class"
 						/>
-						{touched.description && errors.description && (
-							<div className="event-form__field-error">
-								{errors.description}
-							</div>
-						)}
 						<label
 							htmlFor="instruction"
 							className="event-form__label">
 							Event Instruction
 						</label>
-						<Field
-							id="instruction"
-							name="instruction"
-							as="textarea"
-							rows="15"
-							cols="50"
-							placeholder="Please enter event instruction"
-							className="event-form__field-textarea"
-							validate={validateInstruction}
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-								setSaveButtonEnabled(true);
-							}}
+						<Editor
+							editorState={instructionEditorState}
+							onEditorStateChange={handleInstructionEditorChange}
+							wrapperClassName="event-form__editor-container"
+							editorClassName="editor-class"
+							toolbarClassName="toolbar-class"
 						/>
 						{touched.instruction && errors.instruction && (
 							<div className="event-form__field-error">
@@ -600,7 +681,7 @@ const UpdateEvent = props => {
 								clubAuthContext.setClubRedirectURL(null);
 								// OKLeavePage meaning form was not touched yet
 								if (
-									OKLeavePage ||
+									OKLeavePage &&
 									nextLocation.pathname === '/clubs/auth'
 								) {
 									localStorage.removeItem('eventID');

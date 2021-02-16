@@ -1,13 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { Field, Form, Formik } from 'formik';
+import { useField, Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
 import * as Yup from 'yup';
-
-// import { EditorState } from 'draft-js';
-// import { RichEditorExample } from '../components/RichEditor';
-// import 'draft-js/dist/Draft.css';
 
 import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
@@ -18,9 +14,17 @@ import PromptModal from '../../shared/components/UIElements/PromptModal';
 import { useHttpClient } from '../../shared/hooks/http-hook';
 import { ClubAuthContext } from '../../shared/context/auth-context';
 import { FormContext } from '../../shared/context/form-context';
-
+import '../../shared/css/EventItem.css';
 import '../../shared/css/EventForm.css';
 import { eventTypes } from '../../event/components/EventTypes';
+
+// Editor related components
+import { EditorState, convertToRaw } from 'draft-js';
+import { Editor } from 'react-draft-wysiwyg';
+import draftToHtml from 'draftjs-to-html';
+import htmlToDraft from 'html-to-draftjs';
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+import '../../clubDashboard/components/EmailComposer.css';
 
 const NewEvent = props => {
 	const [initialized, setInitialized] = useState(false);
@@ -59,7 +63,7 @@ const NewEvent = props => {
 
 	useEffect(() => {
 		props.isMultiDayEvent(isMultiDayEvent);
-	}, [isMultiDayEvent]);
+	}, [isMultiDayEvent, props]);
 
 	const {
 		isLoading,
@@ -170,7 +174,6 @@ const NewEvent = props => {
 	};
 
 	const initialValues = {
-		// editorState: new EditorState.createEmpty(),
 		name: name,
 		type: type,
 		startDate: startDate,
@@ -218,8 +221,10 @@ const NewEvent = props => {
 			);
 			formData.append('venue', values.venue);
 			formData.append('address', values.address);
-			formData.append('description', values.description);
-			formData.append('instruction', values.instruction);
+			formData.append('description', convertedDescription);
+			formData.append('instruction', convertedInstruction);
+
+			console.log('formData = ', formData);
 			const [
 				responseData,
 				responseStatus,
@@ -243,6 +248,56 @@ const NewEvent = props => {
 			// move to next stage
 			setContinueStatus(true);
 		} catch (err) {}
+	};
+
+	// ******   Event Description Field **********
+	// EditorState provides a snapshot of the editor state. This includes the undo/redo history, contents, and cursor.
+	// start with an empty state created using the createEmpty method of EditorState
+	const [
+		descriptionEditorState,
+		setDescriptionEditorState
+	] = useState(() => EditorState.createEmpty());
+
+	// convertedContent is the HTML content
+	const [convertedDescription, setConvertedDescription] = useState();
+
+	// Editor change handler, 1. set editor state, 2. convert content to HTML
+	const handleDescriptionEditorChange = state => {
+		setDescriptionEditorState(state);
+		convertDescriptionToHTML(state);
+	};
+	// convert Editor content from Raw to HTML
+	const convertDescriptionToHTML = () => {
+		let currentContentAsHTML = draftToHtml(
+			convertToRaw(descriptionEditorState.getCurrentContent())
+		);
+
+		setConvertedDescription(currentContentAsHTML);
+	};
+
+	// ******  Event Instruction Field **********
+	// EditorState provides a snapshot of the editor state. This includes the undo/redo history, contents, and cursor.
+	// start with an empty state created using the createEmpty method of EditorState
+	const [
+		instructionEditorState,
+		setInstructionEditorState
+	] = useState(() => EditorState.createEmpty());
+
+	// convertedContent is the HTML content
+	const [convertedInstruction, setConvertedInstruction] = useState();
+
+	// Editor change handler, 1. set editor state, 2. convert content to HTML
+	const handleInstructionEditorChange = state => {
+		setInstructionEditorState(state);
+		convertInstructionToHTML(state);
+	};
+	// convert Editor content from Raw to HTML
+	const convertInstructionToHTML = () => {
+		let currentContentAsHTML = draftToHtml(
+			convertToRaw(instructionEditorState.getCurrentContent())
+		);
+
+		setConvertedInstruction(currentContentAsHTML);
 	};
 
 	/***** Form Validation Section  *****/
@@ -342,7 +397,6 @@ const NewEvent = props => {
 		}
 	);
 	/***** End of Form Validation *****/
-
 	const eventForm = values => (
 		<div className="event-form">
 			<div className="event-form-header">
@@ -599,52 +653,24 @@ const NewEvent = props => {
 								{errors.address}
 							</div>
 						)}
-						{/* <label
-							htmlFor="description"
-							className="event-form__label">
-							Event Description
-						</label>
-						<RichEditorExample
-							editorState={values.editorState}
-							onChange={setFieldValue}
-							validate={validateDescription}
-							onBlur={event => {
-								handleBlur(event);
-								updateEventFormData(
-									'description',
-									event.target.value
-								);
-								if (event.target.value) {
-									setDescriptionOK(false);
-								} else {
-									setDescriptionOK(true);
-								}
-							}}
-						/> */}
 						<label
 							htmlFor="description"
 							className="event-form__label">
 							<i className="fal fa-edit" />
 							&nbsp; Event Description
 						</label>
-						<Field
-							id="decription"
-							name="description"
-							as="textarea"
-							rows="15"
-							cols="50"
-							placeholder="Please enter event description"
-							className="event-form__field-textarea"
-							validate={validateDescription}
-							onBlur={event => {
-								handleBlur(event);
-								updateEventFormData(
-									'description',
-									event.target.value
-								);
-								setOKLeavePage(false);
-							}}
+						<Editor
+							editorState={descriptionEditorState}
+							onEditorStateChange={handleDescriptionEditorChange}
+							wrapperClassName="event-form__editor-container"
+							editorClassName="editor-class"
+							toolbarClassName="toolbar-class"
 						/>
+						{convertedDescription === <p></p> && (
+							<div className="event-form__field-error">
+								"Event description is required"
+							</div>
+						)}
 						{touched.description && errors.description && (
 							<div className="event-form__field-error">
 								{errors.description}
@@ -656,23 +682,12 @@ const NewEvent = props => {
 							<i className="fal fa-list-alt" />
 							&nbsp; Event Instruction
 						</label>
-						<Field
-							id="instruction"
-							name="instruction"
-							as="textarea"
-							rows="15"
-							cols="50"
-							placeholder="Please enter event instruction"
-							className="event-form__field-textarea"
-							validate={validateInstruction}
-							onBlur={event => {
-								handleBlur(event);
-								updateEventFormData(
-									'instruction',
-									event.target.value
-								);
-								setOKLeavePage(false);
-							}}
+						<Editor
+							editorState={instructionEditorState}
+							onEditorStateChange={handleInstructionEditorChange}
+							wrapperClassName="event-form__editor-container"
+							editorClassName="editor-class"
+							toolbarClassName="toolbar-class"
 						/>
 						{touched.instruction && errors.instruction && (
 							<div className="event-form__field-error">
@@ -686,14 +701,6 @@ const NewEvent = props => {
 							disabled={isSubmitting || !isValid}>
 							SAVE &amp; CONTINUE
 						</Button>
-						{/* <Button
-							type="button"
-							size="medium"
-							margin-left="1.5rem"
-							disabled={!contButton}
-							onClick={continueHandler}>
-							CONTINUE
-						</Button> */}
 						<NavigationPrompt
 							afterConfirm={() => {
 								formContext.setIsInsideForm(false);
@@ -758,6 +765,9 @@ const NewEvent = props => {
 				</div>
 			)}
 			{eventForm()}
+			<div className="page-basic-container">
+				<div className="page-footer"></div>
+			</div>
 		</React.Fragment>
 	);
 };

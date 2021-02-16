@@ -677,6 +677,35 @@
 		margin: 0rem 0.1rem 0.5rem 1.5rem;
 	}
 
+	.event-form__editor-container {
+		box-sizing: content-box;
+		/* without solid, color does not work properly */
+		border-style: solid;
+		border-color: #c2c2c2;
+		border-width: 1px;
+		/* font-size: 15px; */
+		/* font-family: 'Montserrat', sans-serif; */
+		width: 90%;
+		/* height: 20rem; */
+		height: 37.2rem;
+		margin: 0rem 0.1rem 0.5rem 1.5rem;
+		padding: 0rem 0rem 5rem 0rem;
+	}
+
+	.event-form__editevent-editor-container {
+		box-sizing: content-box;
+		/* without solid, color does not work properly */
+		border-style: solid;
+		border-color: #c2c2c2;
+		border-width: 1px;
+		/* font-size: 15px; */
+		/* font-family: 'Montserrat', sans-serif; */
+		width: 90%;
+		height: 37.2rem;
+		margin: 0rem 0.1rem 0.5rem 1.5rem;
+		padding: 0rem 0rem 5rem 0rem;
+	}
+
 	.event-form__field-creditcard-inline {
 		display: inline-block;
 		/* without solid, color does not work properly */
