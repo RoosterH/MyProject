@@ -463,7 +463,7 @@ const EventRegistration = props => {
 										.add(-1, 'days')
 										.format('YYYY-MM-DD')
 										.toString()}
-									className="event-form__enddate"
+									className="event-form__checkbox"
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);

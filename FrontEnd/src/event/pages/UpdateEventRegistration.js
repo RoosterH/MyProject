@@ -4,10 +4,6 @@ import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
 
-// import { EditorState } from 'draft-js';
-// import { RichEditorExample } from '../components/RichEditor';
-import 'draft-js/dist/Draft.css';
-
 import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
@@ -508,7 +504,7 @@ const UpdateEventRegistration = props => {
 										.add(-1, 'days')
 										.format('YYYY-MM-DD')
 										.toString()}
-									className="event-form__enddate"
+									className="event-form__checkbox"
 									disabled={published}
 									onBlur={event => {
 										handleBlur(event);
@@ -555,7 +551,7 @@ const UpdateEventRegistration = props => {
 													.add(-1, 'days')
 													.format('YYYY-MM-DD')
 													.toString()}
-												className="event-form__enddate"
+												className="event-form__checkbox"
 												disabled={published}
 												onBlur={event => {
 													handleBlur(event);
