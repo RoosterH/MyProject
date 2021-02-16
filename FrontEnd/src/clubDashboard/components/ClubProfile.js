@@ -14,6 +14,14 @@ import { FormContext } from '../../shared/context/form-context';
 import '../../shared/css/EventForm.css';
 import '../../shared/css/EventItem.css';
 
+// Editor related components
+import { EditorState, convertToRaw, ContentState } from 'draft-js';
+import { Editor } from 'react-draft-wysiwyg';
+import draftToHtml from 'draftjs-to-html';
+import htmlToDraft from 'html-to-draftjs';
+import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
+import './EmailComposer.css';
+
 const ClubProfile = () => {
 	const [loadedClubProfile, setLoadedClubProfile] = useState();
 	const {
@@ -143,6 +151,101 @@ const ClubProfile = () => {
 		fetchClubProfile();
 	}, [clubId, setLoadedClubProfile]);
 
+	// ******   Club Description Field **********
+	// EditorState provides a snapshot of the editor state. This includes the undo/redo history, contents, and cursor.
+	// start with an empty state created using the createEmpty method of EditorState
+	const [
+		descriptionEditorState,
+		setDescriptionEditorState
+	] = useState(() => EditorState.createEmpty());
+
+	useEffect(() => {
+		// convert plain HTML to DraftJS Editor content
+		// set editorState to the state with the new content
+		if (loadedClubProfile && loadedClubProfile.description) {
+			const blocksFromHtml = htmlToDraft(
+				loadedClubProfile.description
+			);
+			const { contentBlocks, entityMap } = blocksFromHtml;
+			const contentState = ContentState.createFromBlockArray(
+				contentBlocks,
+				entityMap
+			);
+			const editorState = EditorState.createWithContent(contentState);
+			setDescriptionEditorState(editorState);
+		}
+	}, [
+		loadedClubProfile,
+		htmlToDraft,
+		EditorState,
+		setDescriptionEditorState
+	]);
+
+	// convertedDescription is the HTML content
+	const [convertedDescription, setConvertedDescription] = useState();
+
+	// Editor change handler, 1. set editor state, 2. convert content to HTML
+	const handleDescriptionEditorChange = state => {
+		setDescriptionEditorState(state);
+		convertDescriptionToHTML(state);
+		setSaveButtonEnabled(true);
+		setOKLeavePage(false);
+	};
+	// convert Editor content from Raw to HTML
+	const convertDescriptionToHTML = () => {
+		let currentContentAsHTML = draftToHtml(
+			convertToRaw(descriptionEditorState.getCurrentContent())
+		);
+
+		setConvertedDescription(currentContentAsHTML);
+	};
+
+	// ******   Event Schedule Field **********
+	// EditorState provides a snapshot of the editor state. This includes the undo/redo history, contents, and cursor.
+	// start with an empty state created using the createEmpty method of EditorState
+	const [scheduleEditorState, setScheduleEditorState] = useState(() =>
+		EditorState.createEmpty()
+	);
+
+	useEffect(() => {
+		// convert plain HTML to DraftJS Editor content
+		// set editorState to the state with the new content
+		if (loadedClubProfile && loadedClubProfile.schedule) {
+			const blocksFromHtml = htmlToDraft(loadedClubProfile.schedule);
+			const { contentBlocks, entityMap } = blocksFromHtml;
+			const contentState = ContentState.createFromBlockArray(
+				contentBlocks,
+				entityMap
+			);
+			const editorState = EditorState.createWithContent(contentState);
+			setScheduleEditorState(editorState);
+		}
+	}, [
+		loadedClubProfile,
+		htmlToDraft,
+		EditorState,
+		setScheduleEditorState
+	]);
+
+	// convertedSchedule is the HTML content
+	const [convertedSchedule, setConvertedSchedule] = useState();
+
+	// Editor change handler, 1. set editor state, 2. convert content to HTML
+	const handleScheduleEditorChange = state => {
+		setScheduleEditorState(state);
+		convertScheduleToHTML(state);
+		setSaveButtonEnabled(true);
+		setOKLeavePage(false);
+	};
+	// convert Editor content from Raw to HTML
+	const convertScheduleToHTML = () => {
+		let currentContentAsHTML = draftToHtml(
+			convertToRaw(scheduleEditorState.getCurrentContent())
+		);
+
+		setConvertedSchedule(currentContentAsHTML);
+	};
+
 	const [saveButtonEnabled, setSaveButtonEnabled] = useState(false);
 	const submitHandler = async values => {
 		try {
@@ -187,8 +290,8 @@ const ClubProfile = () => {
 			faceBook: loadedClubProfile.faceBook,
 			youTube: loadedClubProfile.youTube,
 			contactEmail: loadedClubProfile.contactEmail,
-			description: loadedClubProfile.description,
-			schedule: loadedClubProfile.schedule
+			description: convertedDescription,
+			schedule: convertedSchedule
 		};
 	}
 
@@ -346,51 +449,25 @@ const ClubProfile = () => {
 							className="event-form__label">
 							Club Description
 						</label>
-						<Field
-							id="decription"
-							name="description"
-							as="textarea"
-							rows="15"
-							cols="50"
-							placeholder="Please enter club description"
-							className="event-form__field-textarea"
-							validate={validateDescription}
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-								setSaveButtonEnabled(true);
-							}}
+						<Editor
+							editorState={descriptionEditorState}
+							onEditorStateChange={handleDescriptionEditorChange}
+							wrapperClassName="event-form__editor-container"
+							editorClassName="editor-class"
+							toolbarClassName="toolbar-class"
 							placeholder="About the club"
 						/>
-						{touched.description && errors.description && (
-							<div className="event-form__field-error">
-								{errors.description}
-							</div>
-						)}
 						<label htmlFor="schedule" className="event-form__label">
 							Event Schedule
 						</label>
-						<Field
-							id="schedule"
-							name="schedule"
-							as="textarea"
-							rows="15"
-							cols="50"
-							placeholder="Please enter event schedule"
-							className="event-form__field-textarea"
-							validate={validateSchedule}
-							onBlur={event => {
-								handleBlur(event);
-								setOKLeavePage(false);
-								setSaveButtonEnabled(true);
-							}}
-							placeholder="TBD"
+						<Editor
+							editorState={scheduleEditorState}
+							onEditorStateChange={handleScheduleEditorChange}
+							wrapperClassName="event-form__editor-container"
+							editorClassName="editor-class"
+							toolbarClassName="toolbar-class"
+							placeholder="Yearly Event Schedule"
 						/>
-						{touched.schedule && errors.schedule && (
-							<div className="event-form__field-error">
-								{errors.schedule}
-							</div>
-						)}
 						<Button
 							type="submit"
 							size="medium"
