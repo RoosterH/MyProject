@@ -369,12 +369,14 @@ const createEntry = async (req, res, next) => {
 	}
 
 	let groupFull = [];
+	let groupClosed = [];
 	// if event sets capDistribution, check group cap to see if the run gorup is full
 	if (event.capDistribution) {
 		let capPerGroup = Math.floor(event.totalCap / event.numGroups);
 		for (let i = 0; i < days; ++i) {
 			if (runGroupAnsTexts[i] === NOT_ATTENDING) {
 				groupFull.push(false);
+				groupClosed.push(false);
 			} else if (
 				// entryReport.runGroupNumEntries[i][j] is a 2-D array, i for day, j for group
 				// runGroupAnsChoices[i] is the answer for i day
@@ -382,8 +384,20 @@ const createEntry = async (req, res, next) => {
 				capPerGroup
 			) {
 				groupFull.push(true);
+				groupClosed.push(false);
+			} else if (
+				!entryReport.runGroupRegistrationStatus[i][
+					runGroupAnsChoices[i]
+				]
+			) {
+				// if group registration is cloed by club, we use groupClosed[] to keep track of the group reg status
+				// to display a proper message.
+				// groupFull is used to indicate user registration status
+				groupFull.push(true);
+				groupClosed.push(true);
 			} else {
 				groupFull.push(false);
+				groupClosed.push(false);
 			}
 		}
 	} else {
@@ -762,23 +776,39 @@ const createEntry = async (req, res, next) => {
 				// moment format('L') means format to local time "MM/DD/YYYY"
 				fullMessage +=
 					moment(startDate).add(i, 'd').format('L') +
-					' event is Full. ';
+					' event is full. ';
 			} else {
 				fullMessage = 'Event is full. You will not be charged.';
 			}
 		} else if (groupFull[i]) {
 			if (days > 1) {
-				fullMessage +=
-					moment(startDate).add(i, 'd').format('L') +
-					' group ' +
-					runGroupAnsTexts[i] +
-					' is Full.  ';
+				if (groupClosed[i]) {
+					fullMessage +=
+						moment(startDate).add(i, 'd').format('L') +
+						' group ' +
+						runGroupAnsTexts[i] +
+						' registration is closed.  ';
+				} else {
+					fullMessage +=
+						moment(startDate).add(i, 'd').format('L') +
+						' group ' +
+						runGroupAnsTexts[i] +
+						' is full.  ';
+				}
 			} else {
-				fullMessage +=
-					runGroupAnsTexts[i] +
-					' group is Full. You will be charged for $' +
-					totalPrice +
-					'.';
+				if (groupClosed[i]) {
+					fullMessage +=
+						runGroupAnsTexts[i] +
+						' group registration is closed. You will be charged for $' +
+						totalPrice +
+						'.';
+				} else {
+					fullMessage +=
+						runGroupAnsTexts[i] +
+						' group is full. You will be charged for $' +
+						totalPrice +
+						'.';
+				}
 			}
 		}
 	}
@@ -1183,12 +1213,14 @@ const updateFormAnswer = async (req, res, next) => {
 	}
 
 	let groupFull = [];
+	let groupClosed = [];
 	// check group cap to see if the run gorup is full
 	if (event.capDistribution) {
 		let capPerGroup = Math.floor(event.totalCap / event.numGroups);
 		for (let i = 0; i < days; ++i) {
 			if (runGroupAnsTexts[i] === NOT_ATTENDING) {
 				groupFull.push(false);
+				groupClosed.push(false);
 			} else if (
 				// entryReport.runGroupNumEntries[i][j] is a 2-D array, i for day, j for group
 				// runGroupAnsChoices[i] is the answer for i day
@@ -1196,8 +1228,17 @@ const updateFormAnswer = async (req, res, next) => {
 				capPerGroup
 			) {
 				groupFull.push(true);
+				groupClosed.push(false);
+			} else if (
+				!entryReport.runGroupRegistrationStatus[i][
+					runGroupAnsChoices[i]
+				]
+			) {
+				groupFull.push(true);
+				groupClosed.push(true);
 			} else {
 				groupFull.push(false);
+				groupClosed.push(false);
 			}
 		}
 	} else {
@@ -1251,7 +1292,7 @@ const updateFormAnswer = async (req, res, next) => {
 		let newIndex = runGroupAnsChoices[i];
 		// old run group same as new run group, skip
 		if (
-			oldIndex == newIndex &&
+			oldIndex === newIndex &&
 			runGroupAnsTexts[i] !== NOT_ATTENDING
 		) {
 			// check if previous entry is on the waitlist

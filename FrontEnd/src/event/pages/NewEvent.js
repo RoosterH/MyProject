@@ -224,7 +224,6 @@ const NewEvent = props => {
 			formData.append('description', convertedDescription);
 			formData.append('instruction', convertedInstruction);
 
-			console.log('formData = ', formData);
 			const [
 				responseData,
 				responseStatus,

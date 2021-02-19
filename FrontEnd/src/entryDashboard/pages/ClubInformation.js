@@ -59,7 +59,6 @@ const ClubInformation = props => {
 						Authorization: 'Bearer ' + userAuthContext.userToken
 					}
 				);
-				console.log('responseData = ', responseData);
 				setClubCollectMembershipFee(
 					responseData.collectMembershipFee
 				);
@@ -224,7 +223,9 @@ const ClubInformation = props => {
 											value="true"
 											onBlur={event => {
 												handleBlur(event);
-												setOKLeavePage(false);
+												// set OKLeavePage to true because we don't want to show prompt when users
+												// click on car number link
+												setOKLeavePage(true);
 											}}
 											onChange={event => {
 												handleChange(event);
@@ -241,7 +242,9 @@ const ClubInformation = props => {
 											value="false"
 											onBlur={event => {
 												handleBlur(event);
-												setOKLeavePage(false);
+												// set OKLeavePage to true because we don't want to show prompt when users
+												// click on car number link
+												setOKLeavePage(true);
 											}}
 											onChange={event => {
 												handleChange(event);
@@ -275,7 +278,7 @@ const ClubInformation = props => {
 											value="true"
 											onBlur={event => {
 												handleBlur(event);
-												setOKLeavePage(false);
+												setOKLeavePage(true);
 											}}
 											onChange={event => {
 												handleChange(event);
@@ -292,7 +295,9 @@ const ClubInformation = props => {
 											value="false"
 											onBlur={event => {
 												handleBlur(event);
-												setOKLeavePage(false);
+												// set OKLeavePage to true because we don't want to show prompt when users
+												// click on car number link
+												setOKLeavePage(true);
 											}}
 											onChange={event => {
 												handleChange(event);
@@ -320,6 +325,7 @@ const ClubInformation = props => {
 												parentURL: `/events/newEntryManager/${eventId}`
 											}
 										}}>
+										{/* Not to open a new tab for a better UX */}
 										{/* target="_blank"> */}
 										{/* rel="noopener noreferrer"> */}
 										<i className="fad fa-link fa-lg"></i>

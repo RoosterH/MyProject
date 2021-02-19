@@ -62,6 +62,11 @@ const ClubDashboardToolbar = () => {
 							<NavLink to={`/clubs/viewEventSelector/${cid}`} exact>
 								View Events
 							</NavLink>
+							<NavLink
+								to={`/clubs/runGroupManagerSelector/${cid}`}
+								exact>
+								Run Group Manager
+							</NavLink>
 						</div>
 					</li>
 

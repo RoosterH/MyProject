@@ -1669,7 +1669,7 @@ const registerClubCarNumber = async (req, res, next) => {
 			lastName: user.lastName,
 			firstName: user.firstName,
 			email: user.email,
-			clubId: event.clubId,
+			clubId: clubId,
 			carNumber: carNumber
 		});
 	}

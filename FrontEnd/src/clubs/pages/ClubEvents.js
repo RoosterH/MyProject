@@ -30,6 +30,11 @@ const ClubEvents = props => {
 	// dataCenter true is for data center
 	let commsCenter = props.commsCenter ? props.commsCenter : false;
 
+	// runGroupManager
+	let runGroupManager = props.runGroupManager
+		? props.runGroupManager
+		: false;
+
 	const [loadedEvents, setLoadedEvents] = useState();
 	const {
 		isLoading,
@@ -65,7 +70,8 @@ const ClubEvents = props => {
 						paymentCenter ||
 						refundCenter ||
 						dataCenter ||
-						commsCenter
+						commsCenter ||
+						runGroupManager
 					) {
 						[
 							responseData,
@@ -138,6 +144,7 @@ const ClubEvents = props => {
 					refundCenter={refundCenter}
 					dataCenter={dataCenter}
 					commsCenter={commsCenter}
+					runGroupManager={runGroupManager}
 				/>
 			)}
 		</React.Fragment>

@@ -17,8 +17,6 @@ import '../../shared/css/Auth.css';
 import './UserRegisterCarNumber.css';
 
 const UserRegisterCarNumber = props => {
-	console.log('props = ', props);
-	console.log('state = ', props.location.state);
 	let history = useHistory();
 	let parentURL = props.location.state.parentURL;
 
@@ -105,12 +103,10 @@ const UserRegisterCarNumber = props => {
 	// showModal is true after sening request to register car number at backend
 	const [showModal, setShowModal] = useState(false);
 	const numberHandler = number => {
-		console.log('number = ', number);
 		setPickedNumber(number);
 	};
 
 	useEffect(() => {
-		console.log('pickedNumber = ', pickedNumber);
 		const updateCarNumberHandler = async () => {
 			try {
 				const [

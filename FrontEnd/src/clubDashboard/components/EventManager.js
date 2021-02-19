@@ -57,6 +57,24 @@ const EventManager = () => {
 							to view.
 						</p>
 					</Link>
+					{/* link to <RunGroupManager /> */}
+					<Link
+						to={`/clubs/runGroupManagerSelector/${cid}`}
+						exact="exact">
+						<i
+							className="fa fa-sort-desc pull-right"
+							aria-hidden="true"
+						/>
+						Run Group Manager
+					</Link>
+					<Link
+						to={`/clubs/runGroupManagerSelector/${cid}`}
+						exact="exact">
+						<p className="list-content-desc">
+							Control run group registration to keep the number of
+							attendees in each group balanced.
+						</p>
+					</Link>
 				</div>
 			</div>
 		</React.Fragment>

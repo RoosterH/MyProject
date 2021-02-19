@@ -95,6 +95,9 @@ const NewEvent = React.lazy(() => import('./event/pages/NewEvent'));
 const ViewEventSelector = React.lazy(() =>
 	import('./clubDashboard/components/ViewEventSelector')
 );
+const RunGroupManagerSelector = React.lazy(() =>
+	import('./clubDashboard/components/RunGroupManagerSelector')
+);
 const UpdateEvent = React.lazy(() =>
 	import('./event/pages/UpdateEvent')
 );
@@ -319,6 +322,9 @@ const App = () => {
 				</Route>
 				<Route path="/clubs/viewEventSelector/:clubId" exact>
 					<ViewEventSelector />
+				</Route>
+				<Route path="/clubs/runGroupManagerSelector/:clubId" exact>
+					<RunGroupManagerSelector />
 				</Route>
 				<Route path="/clubs/paymentCenterSelector/:clubId" exact>
 					<PaymentCenterSelector />
@@ -609,6 +615,9 @@ const App = () => {
 				/>
 				<Route path="/clubs/viewEventSelector/:clubId" exact>
 					<ViewEventSelector />
+				</Route>
+				<Route path="/clubs/runGroupManagerSelector/:clubId" exact>
+					<runGroupManagerSelector />
 				</Route>
 				<Route path="/events/formbuilder/:id" exact>
 					<FormBuilder />

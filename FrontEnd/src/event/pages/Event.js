@@ -14,6 +14,7 @@ import PaymentCenterEventItem from '../components/PaymentCenterEventItem';
 import RefundCenterEventItem from '../components/RefundCenterEventItem';
 import DataCenterEventItem from '../components/DataCenterEventItem';
 import CommsCenterEventItem from '../components/CommsCenterEventItem';
+import RunGroupManagerEventItem from '../components/RunGroupManagerEventItem';
 
 // Events is called in App.js where the route been defined
 // 2 routes to call Event component
@@ -32,7 +33,8 @@ const Event = props => {
 		paymentCenter,
 		refundCenter,
 		dataCenter,
-		commsCenter;
+		commsCenter,
+		runGroupManager;
 	// if called by pasting event link to the browser, props.location.state === undefined
 	if (props.location.state !== undefined) {
 		eId = props.location.state.props.id;
@@ -47,6 +49,7 @@ const Event = props => {
 		refundCenter = props.location.state.props.refundCenter;
 		dataCenter = props.location.state.props.dataCenter;
 		commsCenter = props.location.state.props.commsCenter;
+		runGroupManager = props.location.state.props.runGroupManager;
 	}
 
 	const [clubOwnerRequest, setClubOwnerRequest] = useState(false);
@@ -76,7 +79,8 @@ const Event = props => {
 					!paymentCenter &&
 					!refundCenter &&
 					!dataCenter &&
-					!commsCenter
+					!commsCenter &&
+					!runGroupManager
 				) {
 					// this route is for owner club to query an owned event
 					[
@@ -194,6 +198,27 @@ const Event = props => {
 					);
 					setClubOwnerRequest(true);
 					setLoadedEntryData(responseData);
+				} else if (
+					clubId === clubAuthContext.clubId &&
+					runGroupManager
+				) {
+					// This route is for owner club to manage event run group registration
+					[
+						responseData,
+						responseStatus,
+						responseMessage
+					] = await sendRequest(
+						process.env.REACT_APP_BACKEND_URL +
+							`/events/runGroupManager/${eId}`,
+						'GET',
+						null,
+						{
+							// adding JWT to header for authentication, JWT contains clubId
+							Authorization: 'Bearer ' + clubAuthContext.clubToken
+						}
+					);
+					setClubOwnerRequest(true);
+					setLoadedEntryData(responseData);
 				} else {
 					// this route is to query an event from users
 					[
@@ -270,13 +295,28 @@ const Event = props => {
 				commsCenter && (
 					<CommsCenterEventItem commsCenterData={loadedEntryData} />
 				)}
+			{!isLoading &&
+				loadedEntryData &&
+				clubOwnerRequest &&
+				readOnly &&
+				runGroupManager && (
+					<RunGroupManagerEventItem
+						runGroupManagerData={loadedEntryData}
+						eventId={eId}
+					/>
+				)}
 			{/* For users, clubs don't own the event, and OwnerClub wants to view event, we will go to
 			EventItem */}
 			{!isLoading &&
 				loadedEvent &&
 				clubOwnerRequest &&
 				readOnly &&
-				!entryReportManager && (
+				!entryReportManager &&
+				!paymentCenter &&
+				!refundCenter &&
+				!dataCenter &&
+				!commsCenter &&
+				!runGroupManager && (
 					<EventItem event={loadedEvent} clubReadOnly={true} />
 				)}
 			{/* For users, clubs don't own the event, and OwnerClub wants to view event, we will go to

@@ -75,8 +75,23 @@ router.get(
 	eventsController.getCommsEntryReport
 );
 
-// get communication center event entry report
+// get official registration start date, this is for priority registration end date
 router.get('/regStartDate/:eid', eventsController.getRegStartDate);
+
+// get runGroupManager event data
+router.get(
+	'/runGroupManager/:eid',
+	eventsController.getRunGroupManagerData
+);
+
+router.patch(
+	'/runGroupManager/:eid',
+	[
+		(check('daySelected').not().isEmpty(),
+		check('group').not().isEmpty())
+	],
+	eventsController.changeRunGroupRegistration
+);
 
 // last valid day to allow for event addition, modification, or deletion
 let validFormModDate = moment().add(1, 'days').format('YYYY-MM-DD');

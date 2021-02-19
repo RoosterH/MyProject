@@ -26,14 +26,14 @@
 	padding-left: 0.5rem;
 }
 
-.h3red {
-	/* font-size: 25px; */
+.h3redMSG {
+	font-family: 'Racing Sans One', cursive;
 	display: block;
 	font-size: 14px;
-	font-weight: 700;
-	margin-inline-start: 0rem;
+	font-weight: Regular 400;
+	margin-left: 1.5rem;
 	margin-block-end: 0.2rem;
-	color: rgba(255, 0, 0, 0.562);
+	color: rgb(192, 3, 3);
 }
 
 .registration-container {
@@ -434,6 +434,10 @@ toggle-section .sub-heading .toggle-btn {
 	text-align: left-align;
 }
 
+.event-description {
+	overflow-x: auto;
+}
+
 .page-footer {
 	line-height: 21px;
 	margin-bottom: 10rem;
@@ -610,5 +614,14 @@ toggle-section .sub-heading .toggle-btn {
 		position: relative;
 		/* width: 57%; */
 		width: 100%;
+	}
+	.h3redMSG {
+		font-family: 'Racing Sans One', cursive;
+		display: block;
+		font-size: 22px;
+		font-weight: Regular 400;
+		margin-left: 1.5rem;
+		margin-block-end: 0.2rem;
+		color: rgb(192, 3, 3);
 	}
 }

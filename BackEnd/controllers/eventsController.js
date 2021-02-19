@@ -30,6 +30,7 @@ const UNPAID = 'Unpaid';
 const PAID = 'Paid';
 const AUTHENTICATION = 'Require Authentication';
 const DECLINED = 'Declined';
+const NOT_ATTENDING = 'Not Attending';
 
 const errMsg = errors => {
 	var msg;
@@ -338,19 +339,46 @@ const getEventStatus = async (req, res, next) => {
 			let groupNum = runGroupOptions[i].length;
 			let groupCap = totalCap / groupNum;
 			for (let j = 0; j < groupNum; ++j) {
+				if (runGroupOptions[i][j] === NOT_ATTENDING) {
+					continue;
+				}
 				let groupStatusMSG = '';
 				if (runGroupNumEntries[i][j] >= groupCap) {
-					groupStatusMSG = runGroupOptions[i][j] + ' is full.';
+					groupStatusMSG = 'full';
+				} else if (!entryReport.runGroupRegistrationStatus[i][j]) {
+					groupStatusMSG = 'closed';
 				}
 				if (groupStatusMSG !== '') {
 					if (dayStatusMSG === '') {
-						dayStatusMSG +=
-							moment(startDate).add(i, 'd').format('L') +
-							': ' +
-							runGroupOptions[i][j] +
-							' is full.';
+						if (groupStatusMSG === 'full') {
+							dayStatusMSG +=
+								moment(startDate).add(i, 'd').format('L') +
+								': ' +
+								runGroupOptions[i][j] +
+								' is full. ';
+						} else if (groupStatusMSG === 'closed') {
+							// closed
+							dayStatusMSG +=
+								moment(startDate).add(i, 'd').format('L') +
+								': ' +
+								runGroupOptions[i][j] +
+								' is closed. ';
+						}
 					} else {
-						dayStatusMSG += ' ' + runGroupOptions[i][j] + ' is full.';
+						if (groupStatusMSG === 'full') {
+							dayStatusMSG +=
+								moment(startDate).add(i, 'd').format('L') +
+								': ' +
+								runGroupOptions[i][j] +
+								' is full. ';
+						} else if (groupStatusMSG === 'closed') {
+							// closed
+							dayStatusMSG +=
+								moment(startDate).add(i, 'd').format('L') +
+								': ' +
+								runGroupOptions[i][j] +
+								' is closed. ';
+						}
 					}
 				}
 			}
@@ -949,6 +977,7 @@ const createEvent = async (req, res, next) => {
 		entries: [[]],
 		waitlist: [[]],
 		runGroupNumEntries: [[]],
+		runGroupRegistrationStatus: [[]],
 		full: [],
 		totalEntries: []
 	});
@@ -1313,14 +1342,17 @@ const createUpdateEventRegistration = async (req, res, next) => {
 	// add day1 runGroupNumEntries
 	// re-init array before push
 	entryReport.runGroupNumEntries = [];
+	entryReport.runGroupRegistrationStatus = [];
 
 	// run group is named starting from 0 so there is no problem to match with index
 	let group = [];
+	let groupRegStatus = [];
 	for (let i = 0; i < numGroups; ++i) {
 		group.push(0);
+		groupRegStatus.push(true);
 	}
 	entryReport.runGroupNumEntries.push(group);
-
+	entryReport.runGroupRegistrationStatus.push(groupRegStatus);
 	// day1 already been added previously
 	// here we are adding day2, day3 ... etc. runGroupNumEntries
 	if (multiDayEvent) {
@@ -1348,10 +1380,17 @@ const createUpdateEventRegistration = async (req, res, next) => {
 			// but it will only be used if capDistribution option is checked
 			// run group is named starting from 0 so there is no problem to match with index
 			let group = [];
+			let groupRegStatus = [];
 			for (let i = 0; i < numGroups; ++i) {
 				group.push(0);
+				groupRegStatus.push(true);
 			}
 			entryReport.runGroupNumEntries.push(group);
+			entryReport.runGroupRegistrationStatus.push(groupRegStatus);
+			console.log(
+				'entryReport.runGroupRegistrationStatus 2 = ',
+				entryReport.runGroupRegistrationStatus
+			);
 		}
 	}
 
@@ -2665,6 +2704,112 @@ const getRegStartDate = async (req, res, next) => {
 	});
 };
 
+// GET /api/events/runGroupManager/:eid - this is for run group manager
+const getRunGroupManagerData = async (req, res, next) => {
+	// req.params is getting the eid from url, such as /api/events/:id
+	const eventId = req.params.eid;
+	let event;
+	try {
+		event = await Event.findById(eventId).populate('entryReportId');
+	} catch (err) {
+		console.log('err = ', err);
+		// this error is displayed if the request to the DB had some issues
+		const error = new HttpError(
+			'getRunGroupManagerData Cannot find the event for the entry list. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'getRunGroupManagerData Could not find the event. Please try later.',
+			404
+		);
+		return next(error);
+	}
+
+	let entryReport = event.entryReportId;
+	if (!entryReport) {
+		const error = new HttpError(
+			'Could not find the event entry report. Please try later.',
+			404
+		);
+		return next(error);
+	}
+
+	// get entires
+	let entries = entryReport.runGroupNumEntries;
+
+	res.status(200).json({
+		eventName: event.name,
+		runGroupOptions: event.runGroupOptions,
+		runGroupNumEntries: entryReport.runGroupNumEntries,
+		runGroupRegistrationStatus: entryReport.runGroupRegistrationStatus
+	});
+};
+
+// PATCH /api/events/runGroupManager/:eid - this is for run group manager to change run group registration status
+const changeRunGroupRegistration = async (req, res, next) => {
+	// req.params is getting the eid from url, such as /api/events/:id
+	const eventId = req.params.eid;
+	let event;
+	try {
+		event = await Event.findById(eventId).populate('entryReportId');
+	} catch (err) {
+		console.log('changeRunGroupRegistration err = ', err);
+		// this error is displayed if the request to the DB had some issues
+		const error = new HttpError(
+			'changeRunGroupRegistration Cannot find the event for the entry list. Please try again later.',
+			500
+		);
+		return next(error);
+	}
+	// this error is for DB not be able to find the event with provided ID
+	if (!event) {
+		const error = new HttpError(
+			'changeRunGroupRegistration Could not find the event. Please try later.',
+			404
+		);
+		return next(error);
+	}
+
+	let entryReport = event.entryReportId;
+	if (!entryReport) {
+		const error = new HttpError(
+			'Could not find the event entry report. Please try later.',
+			404
+		);
+		return next(error);
+	}
+
+	let { day, group } = req.body;
+	let newRunGroupRegistrationStatus =
+		entryReport.runGroupRegistrationStatus;
+	newRunGroupRegistrationStatus[day][group] = !entryReport
+		.runGroupRegistrationStatus[day][group];
+	entryReport.runGroupRegistrationStatus = [];
+	entryReport.runGroupRegistrationStatus = newRunGroupRegistrationStatus;
+
+	try {
+		await entryReport.save();
+	} catch (err) {
+		console.log(
+			'changeRunGroupRegistration entryReport save error  = ',
+			err
+		);
+		const error = new HttpError(
+			'changeRunGroupRegistration entryReport save error.',
+			404
+		);
+		return next(error);
+	}
+
+	res.status(200).json({
+		runGroupRegistrationStatus: newRunGroupRegistrationStatus
+	});
+};
+
 // export a pointer of the function
 exports.getAllEvents = getAllEvents;
 exports.getEventById = getEventById;
@@ -2688,3 +2833,5 @@ exports.chargeAll = chargeAll;
 exports.getEntryReportForUsers = getEntryReportForUsers;
 exports.getCommsEntryReport = getCommsEntryReport;
 exports.getRegStartDate = getRegStartDate;
+exports.getRunGroupManagerData = getRunGroupManagerData;
+exports.changeRunGroupRegistration = changeRunGroupRegistration;

@@ -70,7 +70,7 @@ const EventItem = props => {
 		}
 		// registration closed in less than 3 days
 		return (
-			<p className="h3red" role="alert">
+			<p className="h3redMSG" role="alert">
 				{MSG}
 			</p>
 		);
@@ -93,16 +93,16 @@ const EventItem = props => {
 		setShowMap(true);
 	};
 	const closeMapHandler = () => setShowMap(false);
-	const [showCourse, setShowCourse] = useState(false);
+	// const [showCourse, setShowCourse] = useState(false);
 	const openCourseHandler = () => {
 		openModalHandler();
-		setShowCourse(true);
+		// setShowCourse(true);
 	};
-	const closeCourseHandler = () => setShowCourse(false);
+	// const closeCourseHandler = () => setShowCourse(false);
 
 	const closeMapContainer = () => {
 		showMap && closeMapHandler();
-		showCourse && closeCourseHandler();
+		// showCourse && closeCourseHandler();
 	};
 
 	// date related section
@@ -361,19 +361,15 @@ const EventItem = props => {
 				}>
 				{/* render props.children */}
 				<div className="map-container">
-					{showCourse && (
+					{/* {showCourse && (
 						<React.Fragment>
 							<h3>Right click on map for more actions.</h3>
 							<img
-								src={
-									// process.env.REACT_APP_ASSET_URL +
-									// `/${props.event.courseMap}`
-									props.event.courseMap
-								}
+								src={props.event.courseMap}
 								alt={props.event.alt}
 								className="map-container"></img>
 						</React.Fragment>
-					)}
+					)} */}
 					{showMap && (
 						<Map center={props.event.coordinate} zoom={10} />
 					)}
@@ -426,7 +422,8 @@ const EventItem = props => {
 							<div className="row">
 								<div className="col-sm-12">
 									<div className="clearfix">
-										<div className="eventStatus-msg">
+										{/* <div className="eventStatus-msg"> */}
+										<div>
 											<EventStatusMSG />
 										</div>
 									</div>
@@ -472,6 +469,7 @@ const EventItem = props => {
 											</div>
 											<div id="description" className="collapse show">
 												<div
+													className="event-description"
 													dangerouslySetInnerHTML={{
 														__html: props.event.description
 													}}></div>
@@ -501,6 +499,7 @@ const EventItem = props => {
 											</div>
 											<div id="instruction" className="collapse show">
 												<div
+													className="event-description"
 													dangerouslySetInnerHTML={{
 														__html: props.event.instruction
 													}}></div>
@@ -583,8 +582,6 @@ const EventItem = props => {
 								</div> */}
 							</div>
 							{props.event.courseMap && (
-								// <div className="row">
-								// 	<div className="col">
 								<div className="courseMap-container">
 									<div className="eventitem-col-container">
 										<div className="section">
@@ -596,20 +593,17 @@ const EventItem = props => {
 											<Image
 												title={props.event.courseMap}
 												alt={props.event.courseMap}
-												src={
-													// process.env.REACT_APP_ASSET_URL +
-													// `/${props.event.courseMap}`
-													props.event.courseMap
+												src={props.event.courseMap}
+												onClick={() =>
+													window.open(props.event.courseMap)
 												}
-												onClick={() => openCourseHandler()}
+												target="_blank"
 												onHoover
 												className="courseMap"
 											/>
 										</div>
 									</div>
 								</div>
-								// 	</div>
-								// </div>
 							)}
 							{userRegisteredEvent && (
 								<div className={containerClassName}>

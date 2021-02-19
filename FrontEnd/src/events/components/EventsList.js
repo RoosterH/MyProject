@@ -76,6 +76,7 @@ const EventList = props => {
 					refundCenter={props.refundCenter}
 					dataCenter={props.dataCenter}
 					commsCenter={props.commsCenter}
+					runGroupManager={props.runGroupManager}
 				/>
 			))}
 		</ul>

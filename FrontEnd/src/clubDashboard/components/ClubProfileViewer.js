@@ -85,21 +85,23 @@ const ClubProfileViewer = props => {
 			<ErrorModal error={error} onClear={clearError} />
 			{isLoading && <LoadingSpinner asOverlay />}
 			{/* render logo/club name */}
-			<div className="event-pages eventtype-page">
+			<div className="clubprofileviewer-pages eventtype-page">
 				<section id="header" title="">
-					<div className="section-container">
-						<div className="logo-container ">
+					<div className="clubprofileviewer-section-container">
+						<div className="clubprofileviewer-logo-container ">
 							<img src={loadedImage} alt={clubName} />
 						</div>
-						<div className="primary-info">
-							<h3 className="header-title">{clubName}</h3>
+						<div className="clubprofileviewer-primary-info">
+							<h3 className="clubprofileviewer-header-title">
+								{clubName}
+							</h3>
 						</div>
-						<div className="clubname-container">
+						<div className="clubprofileviewer-clubname-container">
 							From{' '}
 							<a
 								href="/"
 								target="_blank"
-								className="provider-clubname">
+								className="clubprofileviewer-provider-clubname">
 								{clubName}
 							</a>
 						</div>
@@ -108,14 +110,14 @@ const ClubProfileViewer = props => {
 				<p />
 				{/* this section is for club profile image */}
 				{/* Regitration container */}
-				<div className="section-container">
+				<div className="clubprofileviewersection-container">
 					{/* event image on the left */}
-					<div className="page-basic-container">
-						<div className="clubimage-container">
+					<div className="clubprofileviewer-page-basic-container">
+						<div className="clubprofileviewer-clubimage-container">
 							<img
 								src={loadedProfileImage}
 								alt={clubName}
-								className="clubimage-container-img"
+								className="clubprofileviewer-clubimage-container-img"
 							/>
 						</div>
 					</div>
@@ -182,12 +184,12 @@ const ClubProfileViewer = props => {
 					</div> */}
 				</div>
 
-				<div className="section-container">
-					<div className="page-basic-container">
-						<div className="about-description">
-							<div className="toggle-section description">
+				<div className="clubprofileviewer-section-container">
+					<div className="clubprofileviewer-page-basic-container">
+						<div className="clubprofileviewer-about-description">
+							<div className="clubprofileviewer-toggle-section description">
 								<div className="short-description">
-									<div className="sub-heading">
+									<div className="clubprofileviewer-sub-heading">
 										<a
 											href="#description"
 											data-toggle="collapse"
@@ -201,6 +203,7 @@ const ClubProfileViewer = props => {
 									</div>
 									<div id="description" className="collapse show">
 										<div
+											className="clubprofileviewer-clubprofile-description"
 											dangerouslySetInnerHTML={{
 												__html: loadedDescription
 											}}></div>
@@ -236,12 +239,12 @@ const ClubProfileViewer = props => {
 					)} */}
 				</div>
 
-				<div className="section-container">
-					<div className="page-basic-container">
-						<div className="about-description">
-							<div className="toggle-section description">
+				<div className="clubprofileviewer-section-container">
+					<div className="clubprofileviewer-page-basic-container">
+						<div className="clubprofileviewer-about-description">
+							<div className="clubprofileviewer-toggle-section clubprofileviewer-description">
 								<div className="short-description">
-									<div className="sub-heading">
+									<div className="clubprofileviewer-sub-heading">
 										<a
 											href="#instruction"
 											data-toggle="collapse"
@@ -255,6 +258,7 @@ const ClubProfileViewer = props => {
 									</div>
 									<div id="instruction" className="collapse show">
 										<div
+											className="clubprofileviewer-clubprofile-description"
 											dangerouslySetInnerHTML={{
 												__html: loadedSchedule
 											}}></div>
@@ -265,9 +269,9 @@ const ClubProfileViewer = props => {
 						</div>
 					</div>
 				</div>
-				<div className="section-container">
-					<div className="page-basic-container">
-						<div className="page-footer"></div>
+				<div className="clubprofileviewer-section-container">
+					<div className="clubprofileviewer-page-basic-container">
+						<div className="clubprofileviewer-page-footer"></div>
 					</div>
 				</div>
 			</div>

@@ -6,6 +6,7 @@ import MaterialTable, {
 } from 'material-table';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
+import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
 
 import './ClubManager.css';
 
@@ -343,6 +344,37 @@ const MaterialTablePaymentCenter = props => {
 								editable: 'never'
 							}
 						]}
+						actions={[
+							rowData => ({
+								icon: 'delete',
+								tooltip: 'Delete Entry',
+								onClick: (event, rowData) => {
+									confirmDeleteUser(true);
+
+									// need to set timeout to have the table load the new value
+									setTimeout(() => {
+										const dataUpdate = [...data];
+										const index = rowData.tableData.id;
+										// return to payment center then send a request to backend
+										entryToDelete(rowData);
+									}, 1000);
+								},
+								disabled: rowData.paymentStatus !== 'Unpaid'
+							}),
+							// ! action to be overridden, do not add rowData for it
+							{
+								icon: 'Charge',
+								tooltip: 'Charge',
+								onClick: (event, rowData) => {
+									setTimeout(() => {
+										// need to set timeout to have the table load the new value
+										// console.log('rowData = ', rowData);
+									}, 2000);
+								}
+							}
+						]}
+						// action overriding, defines action first then override it here,
+						// ! for the action that will be overridden, do not put rowData => in front of it
 						components={{
 							Action: props => {
 								if (
@@ -409,34 +441,6 @@ const MaterialTablePaymentCenter = props => {
 										: '#FFF'
 							})
 						}}
-						actions={[
-							rowData => ({
-								icon: 'delete',
-								tooltip: 'Delete Entry',
-								onClick: (event, rowData) => {
-									confirmDeleteUser(true);
-
-									// need to set timeout to have the table load the new value
-									setTimeout(() => {
-										const dataUpdate = [...data];
-										const index = rowData.tableData.id;
-										// return to payment center then send a request to backend
-										entryToDelete(rowData);
-									}, 1000);
-								},
-								disabled: rowData.paymentStatus !== 'Unpaid'
-							}),
-							{
-								icon: 'Charge',
-								tooltip: 'Charge',
-								onClick: (event, rowData) => {
-									setTimeout(() => {
-										// need to set timeout to have the table load the new value
-										// console.log('rowData = ', rowData);
-									}, 2000);
-								}
-							}
-						]}
 						onRowClick={(evt, selectedRow) => {
 							setSelectedRow(selectedRow.tableData.id);
 						}}
