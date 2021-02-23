@@ -110,7 +110,7 @@ const ClubProfileViewer = props => {
 				<p />
 				{/* this section is for club profile image */}
 				{/* Regitration container */}
-				<div className="clubprofileviewersection-container">
+				<div className="clubprofileviewer-section-container">
 					{/* event image on the left */}
 					<div className="clubprofileviewer-page-basic-container">
 						<div className="clubprofileviewer-clubimage-container">
