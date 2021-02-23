@@ -70,6 +70,7 @@ const eventSchema = new Schema({
 	//! lunchOptions is optional
 	// Lunch options, becasue most of cases events don't provide lunches so we will make it optional
 	lunchOptions: [{ type: String }],
+	insuranceWaiver: { type: String, required: true },
 	privateEvent: { type: Boolean, require: true, default: false }
 });
 

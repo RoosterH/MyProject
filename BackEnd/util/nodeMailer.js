@@ -161,7 +161,8 @@ const sendRegistrationConfirmationEmail = async (
 	entryFee,
 	payMembership,
 	membershipFee,
-	memberExp
+	memberExp,
+	insuranceWaiver
 ) => {
 	// configure AWS SDK
 	// AWS.config.loadFromPath('config.json');
@@ -226,6 +227,18 @@ const sendRegistrationConfirmationEmail = async (
 		  membershipFee +
 		  '</p>'
 		: '';
+
+	let insuranceWaiverMSG = insuranceWaiver
+		? 'Please fill out insurance waiver before event day: ' +
+		  insuranceWaiver +
+		  '\n'
+		: '';
+	let insuranceWaiverMSGHTML = insuranceWaiver
+		? '<p style="color:black;">' +
+		  'Please fill out insurance waiver before event day: ' +
+		  insuranceWaiver +
+		  '</p>'
+		: '';
 	// send email
 	let info;
 	try {
@@ -259,6 +272,7 @@ const sendRegistrationConfirmationEmail = async (
 				'Event Link: ' +
 				eventLink +
 				'\n' +
+				insuranceWaiverMSG +
 				'Thanks for registering the event.\n' +
 				'Enjoy Driving!',
 			html:
@@ -286,6 +300,7 @@ const sendRegistrationConfirmationEmail = async (
 				'<p style="color:black;">Event Link: ' +
 				eventLink +
 				'</p>' +
+				insuranceWaiverMSGHTML +
 				'<p style="color:black;">Thanks for registering the event.</p>' +
 				'<p style="color:black;">Enjoy Driving!</p>',
 			sender: clubEmail,

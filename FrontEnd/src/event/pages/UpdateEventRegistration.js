@@ -3,6 +3,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { Field, Form, Formik } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
+import validator from 'validator';
 
 import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
@@ -102,6 +103,7 @@ const UpdateEventRegistration = props => {
 	const [capDistribution, setCapDistribution] = useState('');
 	const [hostPrivateEvent, setHostPrivateEvent] = useState(false);
 	const [privateEvent, setPrivateEvent] = useState(false);
+	const [insuranceWaiver, setInsuranceWaiver] = useState('UNDEFINED');
 
 	useEffect(() => {
 		const getClubSettings = async () => {
@@ -159,6 +161,9 @@ const UpdateEventRegistration = props => {
 		if (eventFormData.privateEvent) {
 			setPrivateEvent(eventFormData.privateEvent);
 		}
+		if (eventFormData.insuranceWaiver) {
+			setInsuranceWaiver(eventFormData.insuranceWaiver);
+		}
 	} else if (!initialized) {
 		setInitialized(true);
 		// initialize localStorage
@@ -170,6 +175,7 @@ const UpdateEventRegistration = props => {
 		eventFormData['numGroups'] = '';
 		eventFormData['capDistribution'] = '';
 		eventFormData['privateEvent'] = '';
+		eventFormData['insuranceWaiver'] = '';
 		localStorage.setItem(
 			'eventFormData',
 			JSON.stringify(eventFormData)
@@ -186,13 +192,16 @@ const UpdateEventRegistration = props => {
 			? moment().add(1, 'days').format('YYYY-MM-DD')
 			: moment(props.event.priorityRegEndDate).format('YYYY-MM-DD');
 	const initialValues = {
-		// editorState: new EditorState.createEmpty(),
 		totalCap: props.event.totalCap,
 		numGroups: props.event.numGroups,
 		capDistribution: props.event.capDistribution,
 		multiDayEvent: props.event.multiDayEvent,
 		privateEvent: props.event.privateEvent,
-		priorityRegEndDate: priorityRegEndDate
+		priorityRegEndDate: priorityRegEndDate,
+		insuranceWaiver:
+			props.event.insuranceWaiver === 'UNDEFINED'
+				? ''
+				: props.event.insuranceWaiver
 	};
 
 	const updateEventFormData = (key, value) => {
@@ -221,7 +230,8 @@ const UpdateEventRegistration = props => {
 					numGroups: values.numGroups,
 					capDistribution: values.capDistribution,
 					multiDayEvent: values.multiDayEvent,
-					privateEvent: values.privateEvent
+					privateEvent: values.privateEvent,
+					insuranceWaiver: values.insuranceWaiver
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -264,6 +274,18 @@ const UpdateEventRegistration = props => {
 			return error;
 		}
 	);
+
+	const [
+		validateInsuranceWaiver,
+		setValidateInsuranceWaiver
+	] = useState(() => value => {
+		console.log('value = ', value);
+		let error;
+		if (value && !validator.isURL(value, [])) {
+			error = 'Please provide a full URL starting with https.';
+		}
+		return error;
+	});
 	/***** End of Form Validation *****/
 
 	const publishHandler = async () => {
@@ -577,6 +599,37 @@ const UpdateEventRegistration = props => {
 								&nbsp; Check the box if this is a private event. (A
 								private event is only visible via the event link.)
 							</label>
+						)}
+						<label
+							htmlFor="insuranceWaiver"
+							className="event-form__label">
+							<i className="fal fa-file-signature"></i>
+							&nbsp; Optional Insurance Waiver Link (Full URL)
+						</label>
+						<Field
+							id="insuranceWaiver"
+							name="insuranceWaiver"
+							type="text"
+							className="event-form__field"
+							validate={validateInsuranceWaiver}
+							disabled={
+								submitted || initialValues.insuranceWaiver !== ''
+							}
+							onBlur={event => {
+								// without handBlure(event) touched.name will not work
+								handleBlur(event);
+								updateEventFormData(
+									'insuranceWaiver',
+									event.target.value
+								);
+								setOKLeavePage(false);
+								setShowSaveBtn(true);
+							}}
+						/>
+						{touched.insuranceWaiver && errors.insuranceWaiver && (
+							<div className="event-form__field-error">
+								{errors.insuranceWaiver}
+							</div>
 						)}
 						<Button
 							type="submit"

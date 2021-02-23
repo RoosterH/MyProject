@@ -1017,7 +1017,8 @@ const createEvent = async (req, res, next) => {
 		runGroupOptions: [],
 		workerAssignments: [],
 		closed: false,
-		priorityRegEndDate: new Date(2021, 00, 01) // the month is 0-indexed
+		priorityRegEndDate: new Date(2021, 00, 01), // the month is 0-indexed
+		insuranceWaiver: 'UNDEFINED'
 	});
 
 	// ! DO NOT REMOVE
@@ -1313,7 +1314,8 @@ const createUpdateEventRegistration = async (req, res, next) => {
 		multiDayEvent,
 		privateEvent,
 		priorityRegistration,
-		priorityRegEndDate
+		priorityRegEndDate,
+		insuranceWaiver
 	} = req.body;
 
 	event.totalCap = totalCap;
@@ -1337,6 +1339,9 @@ const createUpdateEventRegistration = async (req, res, next) => {
 			.add(59, 's')
 			.format();
 	}
+	event.insuranceWaiver = insuranceWaiver
+		? insuranceWaiver
+		: 'UNDEFINED';
 	// if capDistribution is true, we will create numGroups groups.
 	// Each group can only have totalCap / numGroups participants
 	// add day1 runGroupNumEntries
@@ -1387,10 +1392,6 @@ const createUpdateEventRegistration = async (req, res, next) => {
 			}
 			entryReport.runGroupNumEntries.push(group);
 			entryReport.runGroupRegistrationStatus.push(groupRegStatus);
-			console.log(
-				'entryReport.runGroupRegistrationStatus 2 = ',
-				entryReport.runGroupRegistrationStatus
-			);
 		}
 	}
 

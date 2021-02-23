@@ -3,15 +3,11 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { Field, Form, Formik, ErrorMessage } from 'formik';
 import moment from 'moment';
 import NavigationPrompt from 'react-router-navigation-prompt';
-
-// import { EditorState } from 'draft-js';
-// import { RichEditorExample } from '../components/RichEditor';
-import 'draft-js/dist/Draft.css';
+import validator from 'validator';
 
 import { useClubLoginValidation } from '../../shared/hooks/clubLoginValidation-hook';
 import Button from '../../shared/components/FormElements/Button';
 import ErrorModal from '../../shared/components/UIElements/ErrorModal';
-// import ImageUploader from '../../shared/components/FormElements/ImageUploader';
 import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner';
 import PromptModal from '../../shared/components/UIElements/PromptModal';
 
@@ -20,6 +16,7 @@ import { ClubAuthContext } from '../../shared/context/auth-context';
 import { FormContext } from '../../shared/context/form-context';
 
 import '../../shared/css/EventForm.css';
+import { sub } from 'date-fns';
 
 const PRIORITY_REG_END_DATE = '2021, 01, 01';
 
@@ -227,10 +224,6 @@ const EventRegistration = props => {
 
 	const history = useHistory();
 	const saveHandler = async (values, actions) => {
-		console.log(
-			'values.priorityRegistration = ',
-			values.priorityRegistration
-		);
 		let priorityRegEndDate = values.priorityRegistration
 			? values.priorityRegEndDate
 			: moment(PRIORITY_REG_END_DATE);
@@ -246,7 +239,8 @@ const EventRegistration = props => {
 					multiDayEvent: values.multiDayEvent,
 					privateEvent: values.privateEvent,
 					priorityRegistration: values.priorityRegistration,
-					priorityRegEndDate: priorityRegEndDate
+					priorityRegEndDate: priorityRegEndDate,
+					insuranceWaiver: values.insuranceWaiver
 				}),
 				{
 					'Content-Type': 'application/json',
@@ -290,6 +284,17 @@ const EventRegistration = props => {
 		}
 	);
 
+	const [
+		validateInsuranceWaiver,
+		setValidateInsuranceWaiver
+	] = useState(() => value => {
+		let error;
+		if (value && !validator.isURL(value, [])) {
+			error = 'Please provide a full URL starting with https.';
+		}
+		return error;
+	});
+
 	const publishHandler = async () => {
 		try {
 			await sendRequest(
@@ -305,6 +310,7 @@ const EventRegistration = props => {
 				}
 			);
 			setPublishButton(false);
+			setOKLeavePage(true);
 			setPublishBtnName('PUBLISHED');
 		} catch (err) {}
 	};
@@ -369,6 +375,7 @@ const EventRegistration = props => {
 							type="text"
 							className="event-form__field_quarter"
 							validate={validateTotalCap}
+							disabled={submitted}
 							onBlur={event => {
 								// without handBlure(event) touched.name will not work
 								handleBlur(event);
@@ -391,6 +398,7 @@ const EventRegistration = props => {
 							type="text"
 							className="event-form__field_quarter"
 							validate={validateNumGroups}
+							disabled={submitted}
 							onBlur={event => {
 								handleBlur(event);
 								updateEventFormData('numGroups', event.target.value);
@@ -406,6 +414,7 @@ const EventRegistration = props => {
 								id="capDistribution"
 								name="capDistribution"
 								type="checkbox"
+								disabled={submitted}
 								// validate={validateCapDistribution(values)}
 								onBlur={event => {
 									handleBlur(event);
@@ -421,6 +430,7 @@ const EventRegistration = props => {
 									id="multiDayEvent"
 									name="multiDayEvent"
 									type="checkbox"
+									disabled={submitted}
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
@@ -464,6 +474,7 @@ const EventRegistration = props => {
 										.format('YYYY-MM-DD')
 										.toString()}
 									className="event-form__checkbox"
+									disabled={submitted}
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
@@ -477,6 +488,7 @@ const EventRegistration = props => {
 									id="privateEvent"
 									name="privateEvent"
 									type="checkbox"
+									disabled={submitted}
 									onBlur={event => {
 										handleBlur(event);
 										setOKLeavePage(false);
@@ -486,16 +498,34 @@ const EventRegistration = props => {
 								private event is only visible via the event link.)
 							</label>
 						)}
-						{/* error message not working */}
-						{/* {touched.capDistribution && errors.capDistribution && (
+						<label
+							htmlFor="insuranceWaiver"
+							className="event-form__label">
+							<i className="fal fa-file-signature"></i>
+							&nbsp; Optional Insurance Waiver Link (Full URL)
+						</label>
+						<Field
+							id="insuranceWaiver"
+							name="insuranceWaiver"
+							type="text"
+							className="event-form__field"
+							validate={validateInsuranceWaiver}
+							disabled={submitted}
+							onBlur={event => {
+								// without handBlure(event) touched.name will not work
+								handleBlur(event);
+								updateEventFormData(
+									'insuranceWaiver',
+									event.target.value
+								);
+								setOKLeavePage(false);
+							}}
+						/>
+						{touched.insuranceWaiver && errors.insuranceWaiver && (
 							<div className="event-form__field-error">
-								{errors.capDistribution}
+								{errors.insuranceWaiver}
 							</div>
 						)}
-						<ErrorMessage
-							name="capDistribution"
-							className="event-form__field-error-quarter"
-						/> */}
 						<br />
 						<Button
 							type="submit"

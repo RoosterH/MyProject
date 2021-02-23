@@ -828,7 +828,8 @@ const createEntry = async (req, res, next) => {
 			totalPrice,
 			payMembership,
 			clubSettings.membershipFee,
-			memberExp
+			memberExp,
+			event.insuranceWaiver
 		);
 		// send notification email to club to inform about a new entry
 		sendRegistrationNotificationEmail(
@@ -1416,7 +1417,8 @@ const updateFormAnswer = async (req, res, next) => {
 				// There are 2 status for previous entry, either on the waitlist or not.
 				// Either one, we don't want to re-enter the event, instead giving an error message.
 				// Because drop an entry to waitlist is very bad.
-				if (days > 1) {
+				// Only give group full message if previous entry is in a different group
+				if (days > 1 && runGroupAnsTexts[i] !== entry.runGroup[i]) {
 					groupFullMsg +=
 						moment(startDate).add(i, 'd').format('L') +
 						' ' +
@@ -1425,16 +1427,22 @@ const updateFormAnswer = async (req, res, next) => {
 						entry.runGroup[i] +
 						'.';
 				} else {
-					groupFullMsg = `${
-						event.runGroupOptions[i][runGroupAnsChoices[i]]
-					} run group is full. You are still registed in ${
+					// Only give group full message if previous entry is in a different group
+					if (
+						event.runGroupOptions[i][runGroupAnsChoices[i]] !==
 						entry.runGroup[i]
-					} run group.`;
+					) {
+						groupFullMsg = `${
+							event.runGroupOptions[i][runGroupAnsChoices[i]]
+						} run group is full. You are still registed in ${
+							entry.runGroup[i]
+						} run group.`;
 
-					groupFullMsg =
-						runGroupAnsTexts[i] +
-						' is full. You are still registed in ' +
-						entry.runGroup[i];
+						groupFullMsg =
+							runGroupAnsTexts[i] +
+							' is full. You are still registed in ' +
+							entry.runGroup[i];
+					}
 				}
 				runGroupChanged.push(false);
 				// need to check whether the previous entry was on waitlist or not to get correct attenday days
@@ -1548,7 +1556,9 @@ const updateFormAnswer = async (req, res, next) => {
 		if (!groupFull[i]) {
 			entry.runGroup.set(i, runGroupAnsTexts[i]);
 		}
-		entry.workerAssignment.set(i, workerAssignmentAnsTexts[i]);
+		if (workerAssignmentAnsTexts.length !== 0) {
+			entry.workerAssignment.set(i, workerAssignmentAnsTexts[i]);
+		}
 	}
 
 	let paymentId = entry.paymentId;
@@ -1580,6 +1590,7 @@ const updateFormAnswer = async (req, res, next) => {
 		await payment.save({ session: session });
 		await session.commitTransaction();
 	} catch (err) {
+		console.log('1584 err = ', err);
 		const error = new HttpError(
 			'Entry update form answer connecting with DB failed. Please try again later.',
 			500
@@ -1611,7 +1622,11 @@ const updateFormAnswer = async (req, res, next) => {
 					runGroupAnsTexts,
 					groupFullMsg,
 					payment.paymentMethod,
-					totalPrice
+					totalPrice,
+					undefined,
+					undefined,
+					undefined,
+					event.insuranceWaiver
 				);
 			} catch (err) {
 				console.log(
@@ -1637,7 +1652,11 @@ const updateFormAnswer = async (req, res, next) => {
 				runGroupAnsTexts,
 				groupFullMsg,
 				payment.paymentMethod,
-				totalPrice
+				totalPrice,
+				undefined,
+				undefined,
+				undefined,
+				event.insuranceWaiver
 			);
 		} catch (err) {
 			console.log(
