@@ -92,7 +92,8 @@ router.patch(
 	[
 		check('memberSystem').not().isEmpty(),
 		check('hostPrivateEvent').not().isEmpty(),
-		check('carNumber').not().isEmpty()
+		check('startNumber').not().isEmpty(),
+		check('endNumber').not().isEmpty()
 	],
 	clubsController.updateClubSettings
 );
